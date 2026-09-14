@@ -1,6 +1,7 @@
 # Demo nghiệm thu — Một ngày vận hành studio, chạy thật trên API
 
-- Ngày chạy: 2026-09-14.
+- Ngày chạy: 2026-09-14. **Bổ sung 2026-09-15: Màn 13 — vai STAFF**, vai duy
+  nhất chưa có mặt trong buổi demo gốc.
 - Phạm vi: backend `src_BE` (FastAPI + PostgreSQL 16), **88 endpoint**.
 - Cách chạy: request thật qua FastAPI `TestClient` → PostgreSQL thật (container
   `pilates_db_test`, cổng 5434, database `pilates_test`), schema dựng bằng migration.
@@ -58,6 +59,7 @@ flowchart TB
         M9["Màn 9<br/>Bốn vai chạm được gì"]
         M10["Màn 10<br/>Trang công khai"]
         M11["Màn 11<br/>Ảnh tiến trình"]
+        M13["Màn 13<br/>Lễ tân trực ca<br/>và bốn cánh cửa đóng"]
     end
 
     M0 --> M1 --> A --> B --> C --> D
@@ -82,6 +84,10 @@ chỗ nối giữa các màn hình, và chúng chỉ lệch nhau khi có đủ d
 | Nam | *chưa mua gì* | — | 0 | `NO_PACKAGE` |
 | Ngân | Group 10 | CONFIRMED 2,5tr | 10 | Nhả chỗ ở lớp đầy |
 | Yến | Group 10 | **VOID** (tiền không về) | 0 | Khách web → học viên; gói bị thu hồi |
+
+**Một LỄ TÂN (STAFF)** — *Lễ tân Thảo*, dựng riêng trong Màn 13 chứ không nằm ở
+sân khấu chung: mười hai màn còn lại khẳng định "ADMIN làm được X", thêm một
+nhân vật vào seed chung sẽ đổi số đếm của chúng mà không màn nào nói về lễ tân.
 
 **Sân khấu lớp học** — 7 lớp lẻ, mỗi lớp dựng cho đúng một tình huống:
 lớp mai (sức chứa 6) · lớp **sau 2 giờ nữa** (dưới ngưỡng hủy 4 giờ của Group) ·
@@ -421,27 +427,37 @@ nhận **401**, không đợi token hết hạn. Mở khóa → dùng lại đư
 
 ### Ma trận quyền — đọc chéo một lần thay vì đọc bốn đoạn
 
-| Thao tác | 🌐 Khách | 🧑‍🎓 STUDENT | 🏋️ TRAINER | 🔑 ADMIN |
-|---|:--:|:--:|:--:|:--:|
-| Trang công khai · bảng giá · lịch | ✅ | ✅ | ✅ | ✅ |
-| Hồ sơ **của chính mình** | ⛔ 401 | ✅ | ✅ | ✅ |
-| Hồ sơ học viên **khác** | ⛔ 401 | ⛔ 403 | ⛔ 403 | ✅ |
-| Sổ buổi gói **người khác** | ⛔ 401 | ⛔ **404** | ⛔ 403 | ✅ |
-| Đặt · hủy · đổi lớp **cho mình** | ⛔ 401 | ✅ | — | ⛔ 403 |
-| Đặt **hộ** người khác | ⛔ | ⛔ 403 | ⛔ 403 | ⛔ 403 |
-| Danh sách lớp | ⛔ 401 | lớp đặt được | **chỉ lớp mình dạy** | tất cả |
-| Điểm danh | ⛔ | ⛔ 403 | ✅ lớp mình dạy,<br/>sau `ends_at` | ⛔ 403 |
-| Mở lớp · bán gói | ⛔ | ⛔ 403 | ⛔ 403 | ✅ |
-| Thanh toán · doanh thu · nhắc gia hạn | ⛔ 401 | ⛔ 403 | ⛔ 403 | ✅ |
-| Tài khoản · điều chỉnh buổi thủ công | ⛔ | ⛔ 403 | ⛔ 403 | ✅ |
-| Ảnh tiến trình của Lan | ⛔ | ✅ **chính Lan** | ✅ nếu đang dạy Lan | ✅ |
+| Thao tác | 🌐 Khách | 🧑‍🎓 STUDENT | 🏋️ TRAINER | 🧾 STAFF | 🔑 ADMIN |
+|---|:--:|:--:|:--:|:--:|:--:|
+| Trang công khai · bảng giá · lịch | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Hồ sơ **của chính mình** | ⛔ 401 | ✅ | ✅ | ✅ | ✅ |
+| Hồ sơ học viên **khác** | ⛔ 401 | ⛔ 403 | ⛔ 403 | ✅ | ✅ |
+| Sổ buổi gói **người khác** | ⛔ 401 | ⛔ **404** | ⛔ 403 | ✅ | ✅ |
+| Đặt · hủy · đổi lớp **cho mình** | ⛔ 401 | ✅ | — | — | ⛔ 403 |
+| Đặt **hộ** người khác | ⛔ | ⛔ 403 | ⛔ 403 | ⛔ 403 | ⛔ 403 |
+| Danh sách lớp | ⛔ 401 | lớp đặt được | **chỉ lớp mình dạy** | tất cả | tất cả |
+| Điểm danh | ⛔ | ⛔ 403 | ✅ lớp mình dạy,<br/>sau `ends_at` | ⛔ 403 | ⛔ 403 |
+| "Lịch dạy của tôi" | ⛔ | ⛔ 403 | ✅ **chỉ của mình** | ⛔ 403 | ⛔ 403 |
+| Thống kê tháng của một HLV | ⛔ | ⛔ 403 | ⛔ **403** kể cả của chính mình | ✅ | ✅ |
+| Mở lớp · đổi HLV · hủy lớp | ⛔ | ⛔ 403 | ⛔ 403 | ✅ | ✅ |
+| Bán gói · gia hạn · thu và xác nhận tiền | ⛔ | ⛔ 403 | ⛔ 403 | ✅ | ✅ |
+| Doanh thu · nhắc gia hạn · xuất file | ⛔ 401 | ⛔ 403 | ⛔ 403 | ✅ | ✅ |
+| Thêm HLV · chuyển khách quan tâm | ⛔ | ⛔ 403 | ⛔ 403 | ✅ | ✅ |
+| **Điều chỉnh buổi thủ công** | ⛔ | ⛔ 403 | ⛔ 403 | ⛔ **403** | ✅ |
+| **Quản lý tài khoản** | ⛔ | ⛔ 403 | ⛔ 403 | ⛔ **403** | ✅ |
+| Ảnh tiến trình của Lan | ⛔ | ✅ **chính Lan** | ✅ nếu đang dạy Lan | ⛔ **403** | ✅ |
+| **Xoá** ảnh tiến trình | ⛔ | ⛔ 403 | ⛔ 403 | ⛔ 403 | ✅ |
 
-Hai ô đáng dừng lại: **sổ buổi của người khác trả 404 chứ không 403** — 403 xác
+Ba ô đáng dừng lại. **Sổ buổi của người khác trả 404 chứ không 403** — 403 xác
 nhận "gói đó có thật", và một chuỗi 403/404 sẽ đếm ra studio đang có bao nhiêu
-gói. Và **ADMIN không đặt hộ được** — ô đó ⛔ ở cả bốn cột, không phải sót.
+gói. **ADMIN không đặt hộ được** — ô đó ⛔ ở cả năm cột, không phải sót. Và cột
+**STAFF không phải bản sao của ADMIN**: bốn ô ⛔ in đậm là toàn bộ khác biệt
+giữa lễ tân và chủ studio, chạy thật ở Màn 13.
 
-Vai **STAFF** có trong hệ thống nhưng không có trong dàn nhân vật demo này;
-quyền của STAFF được phủ ở `tests/test_permission_matrix.py`.
+Mọi ô trong bảng đều được bấm thật trong buổi demo này, trừ hai dòng ảnh tiến
+trình lấy kết quả từ `tests/test_photo_permissions.py` (quyền xoá của cả bốn vai
+không phải ADMIN nằm gọn ở đó). Bảng vai × endpoint đầy đủ, gồm cả nhánh 401 khi
+không có token, nằm ở `tests/test_permission_matrix.py`.
 
 ## Màn 10 — Trang công khai không lộ danh tính, không bịa giá
 
@@ -473,8 +489,14 @@ không phải giới hạn đúng ba người, cũng không phải chỉ ngườ
 
 ## Màn 12 — HLV điểm danh sau lớp, học viên đọc đúng kết quả
 
-**Trên màn hình.** Lan và Minh cùng đăng ký lớp mai. HLV Ngọc Mai mở danh sách
-điểm danh → thấy đúng hai người. HLV Quốc Bảo mở cùng lớp đó → **403**.
+**Trên màn hình.** Lan và Minh cùng đăng ký lớp mai. Mai mở **"Lịch dạy của tôi"**
+→ thấy lớp đó, và **giao với lịch của Quốc Bảo là tập rỗng**. Đây là đường riêng
+của vai HLV: nó lọc theo `trainer_id` của chính người đăng nhập và **không nhận
+tham số `trainer_id`**, nên không có gì để giả mạo. Admin — người thấy được mọi lớp
+qua `/classes` — mở đường này vẫn nhận **403**: "lịch dạy của tôi" chỉ có nghĩa với
+người có lớp để dạy.
+
+Mai mở danh sách điểm danh → thấy đúng hai người. HLV Quốc Bảo mở cùng lớp đó → **403**.
 
 Mai bấm điểm danh **khi lớp chưa kết thúc** → `SESSION_NOT_FINISHED`.
 
@@ -490,42 +512,216 @@ không hứa hoàn gì. Minh bấm hủy → `BOOKING_NOT_ACTIVE`.
 không được hoàn**. Sĩ số lớp vẫn là **2** sau khi điểm danh: người đặt chỗ rồi
 không đến vẫn chiếm ghế đó và HLV vẫn dạy đủ buổi.
 
+## Màn 13 — Lễ tân Thảo trực một ca, và bốn cánh cửa đóng
+
+*Bổ sung 2026-09-15. Buổi demo gốc có 4 vai trên 5: khách vãng lai, học viên, HLV,
+admin. **STAFF — vai đông người dùng nhất và luân chuyển nhiều nhất trong một
+studio — không có màn nào.** Quyền đọc của STAFF vốn đã được phủ ở
+`tests/test_permission_matrix.py`, nhưng đó là bảng vai × endpoint, không phải một
+ca trực có thật: nó không trả lời được câu "lễ tân có bán được gói không" và cũng
+không chứng minh được bốn ranh giới dưới đây.*
+
+**Trên màn hình — nửa trên, một ca trực bình thường.** Admin cấp tài khoản STAFF
+cho Thảo. Từ đây mọi thao tác đều bằng tài khoản của Thảo, không mượn quyền admin:
+
+Khách gọi điện → Thảo mở hồ sơ học viên Đỗ Minh Khánh → bán gói Group 10 →
+**còn 10 buổi** → thu 2.500.000đ tiền mặt → **xác nhận ngay tại quầy** → khách quen
+tới gia hạn +30 ngày +5 buổi → **còn 15 buổi**. Một khách khác để lại số trên web →
+Thảo tìm thấy trong danh sách khách quan tâm và **chuyển thành hồ sơ học viên**.
+
+Khách đổi số điện thoại → Thảo **sửa hồ sơ học viên** đã có. Studio ra gói mới →
+Thảo **thêm một loại gói vào danh mục** rồi **ngừng bán** nó; ngừng bán là rút khỏi
+bảng giá công khai chứ không xoá, vì gói đã bán theo loại đó vẫn phải tra lại được.
+
+Thảo **đăng một thông báo** khuyến mãi rồi **sửa lại** giờ khai giảng — bản sửa ghi
+đúng tên Thảo. Rồi Thảo thử sửa nội dung thành câu bị cấm *"Lớp tối đa 3 người mỗi
+buổi"* → **422**, và bản đang nằm trên trang công khai không đổi. Đây là đường vòng
+ngắn nhất để đưa câu bị cấm lên web: đăng sạch, rồi sửa. Nó bị bịt.
+
+Xếp lịch: Thảo mở một lớp Group cho HLV Thu Hà → đổi sang HLV Ngọc Mai → rồi hủy
+lớp vì "HLV báo nghỉ đột xuất". Thêm HLV Bảo Trâm vào danh sách, hiện công khai.
+
+Cuối ca: mở danh sách đăng ký, mở danh sách nhắc gia hạn, **gọi cho Huy và ghi
+nhận nội dung cuộc gọi** (lịch sử ghi đúng tên Thảo, không gộp về admin), xem
+**thống kê tháng của HLV Ngọc Mai**, xem bảng tổng hợp, xem doanh thu, xuất file
+CSV báo cáo HLV.
+
+Một chi tiết đáng chú ý ở đây: **chính HLV Ngọc Mai mở thống kê tháng của mình thì
+nhận 403.** Đây là mặc định an toàn đang chờ studio xác nhận, không phải lỗi —
+xem câu hỏi mở #8 trong `docs/business-rules.md`.
+
+**Hệ thống chốt — nửa dưới, bốn cánh cửa đóng.** Bốn thao tác này Thảo bấm thật và
+nhận **403**, mỗi cái vì một lý do khác nhau:
+
+| # | Thảo bấm | Nhận | Vì sao ranh giới nằm ở đây |
+|---|---|---|---|
+| 1 | Mở tab ảnh tiến trình của Lan | **403** | Ảnh cơ thể học viên không phải dữ liệu vận hành quầy. Đây là quy tắc **dễ cài sai nhất** — bản ma trận trước từng cho `STAFF ✓`, nghĩa là mọi lễ tân xem được ảnh cơ thể của toàn bộ học viên |
+| 2 | Cộng 5 buổi cho Lan, lý do "bù cho khách quen" | **403** | Điều chỉnh tay **tạo buổi từ hư không**. Người đứng quầy chịu áp lực trực tiếp từ khách là người không nên cầm nút đó |
+| 3 | Mở danh sách tài khoản | **403** | Lễ tân không tự cấp quyền cho mình, và không đổi được vai của ai |
+| 4 | Đặt lớp hộ Lan | **403** | Chỉ học viên tự đặt cho mình. Không có ngoại lệ "nhưng nhân viên đứng quầy thì được" |
+
+Thêm một cánh nữa: mở **danh sách điểm danh** của lớp → **403**. Điểm danh là việc
+của HLV đứng lớp, không phải của quầy.
+
+**Chiều ngược lại cũng được bấm.** Học viên Lan và HLV Ngọc Mai thử làm việc của
+quầy — thêm một HLV mới, mở danh sách khách quan tâm — đều nhận **403**. Không có
+đường vòng nào vào công việc vận hành ngoài vai STAFF và ADMIN.
+
+**Và phép kiểm ngược — quan trọng ngang bốn mã 403 trên.** Ngay sau đó admin mở
+đúng hai thứ Thảo vừa bị từ chối (ảnh tiến trình, danh sách tài khoản) → **200**.
+Không có bước này, bốn cái 403 kia không phân biệt được với một endpoint hỏng: một
+API trả 403 cho *mọi người* cũng làm màn này xanh.
+
+Sổ buổi được kiểm lại toàn bộ bảy bất biến sau khi Thảo bán gói, thu tiền và gia hạn.
+
+```mermaid
+flowchart LR
+    subgraph OK ["✅ Lễ tân làm được — trọn một ca vận hành"]
+        direction TB
+        A1["Mở hồ sơ học viên<br/>chuyển khách quan tâm"]
+        A2["Bán gói · gia hạn<br/>thu tiền · xác nhận"]
+        A3["Mở lớp · đổi HLV<br/>hủy lớp · thêm HLV"]
+        A4["Nhắc gia hạn · ghi liên hệ<br/>báo cáo · xuất file"]
+    end
+    subgraph NO ["⛔ Bốn cánh cửa đóng — 403"]
+        direction TB
+        B1["Ảnh tiến trình<br/>(ảnh cơ thể học viên)"]
+        B2["Điều chỉnh buổi thủ công<br/>(tạo buổi từ hư không)"]
+        B3["Quản lý tài khoản<br/>(tự cấp quyền)"]
+        B4["Đặt lớp hộ<br/>+ điểm danh"]
+    end
+    OK -.->|"cùng một tài khoản STAFF"| NO
+```
+
+---
+
+## Bịt tám endpoint chưa có test — 15/09
+
+Phép quét độ phủ đối chiếu **88 endpoint trong tài liệu** với **mọi lời gọi HTTP
+trong `tests/`**. Tám endpoint không có lời gọi nào. Bảng dưới là thứ đã viết cho
+từng cái, và **vì sao** cái đó đáng viết chứ không phải để lấp cho đủ số.
+
+| Endpoint | Test | Điều được khẳng định |
+|---|---|---|
+| `GET /announcements` | `test_announcements_api.py` | Danh sách của nhân viên **gồm cả bản nháp** — trang công khai lọc bản nháp, màn quản lý mà lọc theo thì một bản lưu dở là bản không còn đường mở lại |
+| `PATCH /announcements/{id}` | ⬆ | **Nội dung sửa đi qua đúng bộ lọc của nội dung đăng mới.** Ba câu bị cấm đều bị chặn 422, bản trên web không đổi. Còn ghi lại người sửa và thời điểm, không ghi đè người tạo |
+| `DELETE /announcements/{id}` | ⬆ | Xoá biến mất khỏi **cả** danh sách nhân viên lẫn trang công khai; bấm lần hai trả 404 |
+| `POST /trainers/{id}/photo` | `test_leads_and_trainers_api.py` | **Toạ độ GPS không sống sót qua route.** Tệp không phải ảnh bị chặn 422 và **không** để lại hồ sơ trỏ vào tệp không tồn tại. Thay ảnh thì phục vụ ảnh mới |
+| `GET /trainers/{id}/photo` | ⬆ | Trả JPEG; chưa có ảnh trả 404 mã `NO_PHOTO` để giao diện hiện ô trống thay vì lỗi đỏ. HLV mở hồ sơ người khác nhận **404**, không phải 403 |
+| `GET /accounts/{id}` | `test_student_accounts_api.py` | Không trả băm mật khẩu; chỉ ADMIN đọc được — **kể cả lễ tân cũng 403** |
+| `GET /payments/{id}` | `test_packages_payments_api.py` | Trả đủ **ba cặp người/thời điểm** (ghi nhận · xác nhận · huỷ); người xác nhận không ghi đè người ghi nhận |
+| `GET /health` | `test_meta_api.py` | Trả lời **không cần token** — bắt xác thực thì mọi lần probe trả 401 và bộ điều phối đọc 401 là "còn sống". Và **không khai phụ thuộc CSDL** |
+
+Thêm một chỗ nữa không lọt vào phép quét vì nó được gọi qua biến:
+`GET /reports/revenue/detail` có test phân quyền nhưng chưa có phép kiểm *"con số
+mở ra đúng danh sách đứng sau nó"* ở tầng HTTP. Nay có — đi theo đúng `detail_path`
+server tự sinh, rồi cộng các dòng lại và so với tổng.
+
+**Hai ghi chú về cách viết các test này.**
+
+Test `/health` **đọc bảng route của ứng dụng**, không gọi qua `TestClient`. Bản đầu
+tiên chặn `SessionLocal` rồi khẳng định "không nổ" — nhưng fixture `client` ghi đè
+`get_db` bằng session của test, nên phép kiểm đó xanh vĩnh viễn kể cả khi route đã
+thật sự khai phụ thuộc CSDL. Đã kiểm bằng đột biến: bản viết lại đỏ khi thêm
+`Depends(get_db)` vào `/health`, bản đầu thì không.
+
+Một khẳng định bị bỏ đi vì **sai hợp đồng, không phải vì khó làm xanh**: bản nháp
+kiểm `photo_key` không được trả về, theo mẫu của ảnh tiến trình. Nhưng ảnh HLV khác
+hẳn ảnh tiến trình — `app/schemas/public.py` cho HLV đúng ba trường `full_name`,
+`photo_key`, `bio`, và trang công khai **lấy ảnh bằng chính khoá đó**. Phép kiểm
+đúng là khoá dùng được ở đường ẩn danh, không phải khoá bị giấu đi.
+
+**Một quan sát, đã sửa cùng ngày.** `AccountResponse` không trả `student_id`, dù
+`PATCH /accounts/{id}` **nhận** `student_id` để nối hồ sơ — chiều đọc phải đi vòng
+qua `student.user_id`. Không sai, nhưng bất đối xứng, và màn hình admin cấp tài
+khoản là chỗ vấp đầu tiên.
+
+Cách sửa chọn theo hợp đồng **đã có**, không dựng cái mới: `MeResponse` của
+`GET /auth/me` từ lâu đã trả cặp `student_id` + `trainer_id`, nên `AccountResponse`
+nhận đúng cặp đó. Áp cho cả bốn đường trả tài khoản (`GET /accounts`,
+`GET|POST|PATCH /accounts/{id}`), và tài khoản **vừa tạo hoặc vừa nối trả liên kết
+ngay trong response đó** — đây là lúc màn hình cần con số ấy nhất, trả `null` một
+lần ở đúng bước đó buộc giao diện phải tải lại.
+
+Hai quyết định đáng ghi lại:
+
+- **Hai truy vấn cho cả trang, không phải hai truy vấn mỗi dòng.** Tra từng dòng là
+  100 lượt đi CSDL cho một trang 50 tài khoản, và chi phí đó chỉ lộ ra khi studio đã
+  có đủ người dùng. Có test đếm số câu lệnh SQL, đã kiểm bằng đột biến: đổi sang tra
+  từng dòng thì nó đỏ với 10 truy vấn thay vì 2.
+- **Tra cả hai bảng bất kể vai**, khác `get_current_actor` (hàm đó chỉ tra bảng ứng
+  với vai). Đây là màn của admin và việc của nó là nói ra hiện trạng: một tài khoản
+  STAFF lỡ nối vào hồ sơ học viên phải nhìn thấy được thì mới gỡ được.
+
+Thay đổi này là **thêm trường**, không đổi hay bỏ trường nào — FE hiện có không vỡ.
+Tài liệu API đã sinh lại (4 tệp), `api-cho-frontend.md` và `business-rules.md` §12 đã
+cập nhật.
+
+---
+
 ---
 
 ## Kết quả buổi demo
 
 | Hạng mục | Kết quả |
 |---|---|
-| **13 màn demo** (`tests/e2e/`) | **13 passed** — 24,89s |
-| Toàn bộ test, TZ=UTC | **522 passed, 0 failed** — 88,49s |
-| Demo + test múi giờ/đăng ký/điểm danh, TZ=Asia/Ho_Chi_Minh | **86 passed** — 27,96s |
+| **13 màn demo** (`tests/e2e/`) — lượt 14/09 | **13 passed** — 24,89s |
+| **14 màn demo** (thêm Màn 13 · STAFF) — lượt 15/09 | **14 passed** — 18,3s · xanh ở cả `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh` |
+| Toàn bộ test, TZ=UTC — lượt 14/09 | **522 passed, 0 failed** — 88,49s |
+| Toàn bộ test, TZ=UTC — lượt 15/09 lúc ~02:45 giờ studio | **520 passed, 3 failed** — 81,1s · lỗi múi giờ trong test, xem ghi chú |
+| Toàn bộ test, TZ=UTC — **sau khi sửa**, ~03:00 giờ studio | **525 passed, 0 failed** — 81,1s |
+| Toàn bộ test, TZ=UTC — **sau khi bịt 8 endpoint**, ~03:30 giờ studio | **551 passed, 0 failed** — 88,8s |
+| Toàn bộ test, TZ=UTC — **sau khi đối xứng liên kết tài khoản** | **553 passed, 0 failed** — 83,0s |
+| Lượt hai TZ=Asia/Ho_Chi_Minh — cùng lượt | **134 passed** — 35,6s |
+| Demo + test múi giờ/đăng ký/điểm danh, TZ=Asia/Ho_Chi_Minh | **86 passed** — 27,96s (lượt 14/09) · **112 passed** — 32,8s (lượt 15/09) |
 | `ruff check .` | **pass** |
 | `alembic check` | **pass** — không có model lệch migration |
 | `gen_api_docs --check` | **pass** — 88 endpoint khớp mã nguồn, 105 tệp tài liệu |
+| Phép quét độ phủ 88 endpoint | **0 endpoint không có test chạm tới** (trước 15/09: 8) |
 
-Lượt toàn bộ có 571 warning từ thư viện và khóa JWT kiểm thử; không có test
-thất bại. Đây là **một** lượt regression sạch — không suy ra được rằng hệ thống
-chắc chắn không có test chập chờn.
+Lượt toàn bộ ngày 14/09 có 571 warning từ thư viện và khóa JWT kiểm thử; không
+có test thất bại. Đây là **một** lượt regression sạch — không suy ra được rằng hệ
+thống chắc chắn không có test chập chờn.
 
-Chạy lượt toàn bộ và lượt múi giờ:
-
-```bash
-# Toàn bộ
-DATABASE_URL=postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test \
-ENVIRONMENT=test TZ=UTC .venv/bin/python -m pytest -q --disable-warnings
-
-# Lượt hai dưới giờ studio — bắt các ngưỡng ngày lệch 7 tiếng
-DATABASE_URL=postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test \
-ENVIRONMENT=test TZ=Asia/Ho_Chi_Minh .venv/bin/python -m pytest -q --disable-warnings \
-  tests/e2e/ tests/test_timezone_boundaries.py tests/test_timezone_rules.py \
-  tests/test_registration_policy.py tests/test_attendance_api.py
-```
-
-**Vì sao chạy hai lượt múi giờ.** Lớp lúc 00:30 giờ Việt Nam rơi vào *ngày hôm
-trước* theo UTC. Nếu lấy ngày từ timestamp UTC rồi mới so hạn gói thì ngưỡng
-ngày lệch đúng 7 tiếng, và người bị đẩy ra/vào danh sách sai ở đúng ngày biên.
-CI chạy lượt toàn bộ trên runner Ubuntu dưới giờ UTC, cộng thêm lượt hai này
-dưới `TZ=Asia/Ho_Chi_Minh`.
+> **Ba test đỏ ở lượt 15/09 — đã tìm ra nguyên nhân và đã sửa.**
+> `test_attendance_api.py::test_attendance_correction_preserves_credits_and_audits`
+> và `test_reports.py::test_dashboard_and_detail_keep_marked_registration[ATTENDED|NO_SHOW]`.
+>
+> **Không phải do Màn 13.** Đã kiểm bằng cách cất thay đổi đi (`git stash`) và chạy
+> lại ba test đó trên bản gốc: vẫn đỏ y hệt. Chúng cũng đỏ ở **cả hai** múi giờ
+> `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`, nên không phải lỗi cấu hình múi giờ của lượt chạy.
+>
+> **Điều kiện kích hoạt là giờ trong ngày.** Lượt 14/09 chạy lúc 14:08 giờ studio —
+> xanh. Lượt 15/09 chạy lúc **02:45** giờ studio — đỏ. Ở khung 00:00–07:00 giờ Việt
+> Nam, **ngày theo giờ studio và ngày theo UTC là hai ngày khác nhau**.
+>
+> **Nguyên nhân: test phá hợp đồng của `now()`.** Hợp đồng ghi ở
+> `app/domain/rules.py` là *"luôn aware, luôn theo múi giờ studio"*, và mã sản phẩm
+> dựa vào nó — `report_queries.sessions_today` lấy `now().date()` để biết hôm nay là
+> ngày nào. Ba test này `monkeypatch` `now` bằng một mốc **đọc lại từ PostgreSQL**,
+> mà giá trị đó về theo múi giờ *của kết nối* — UTC trên container. Đồng hồ giả vì
+> thế trả về **ngày hôm trước**, kỳ báo cáo kết thúc trước buổi lớp, và
+> `total_bookings` ra 0 thay vì 1.
+>
+> **Lỗi nằm ở test, không ở API** — điều này đã được kiểm chứng, không còn là phỏng
+> đoán: API nhận `period_end` nào thì lọc theo đúng cái đó, và sau khi sửa phía test
+> thì không dòng mã sản phẩm nào phải đổi.
+>
+> **Đã sửa (15/09).** Thêm `tests/conftest.py::studio_clock` — một đồng hồ giả quy đổi
+> về giờ studio, khai đúng một chỗ thay vì bắt từng test nhớ gọi `.astimezone`. Áp cho
+> **cả năm** chỗ `monkeypatch` đồng hồ trong bộ test, kể cả hai chỗ chưa đỏ nhưng phá
+> cùng hợp đồng; riêng `test_attendance_api` còn sửa `period_end` lấy ngày theo giờ
+> studio thay vì `.date()` của một timestamp UTC.
+>
+> **Chốt chặn cho chính cái bẫy này:**
+> `test_timezone_rules.py::test_studio_clock_keeps_a_faked_now_in_studio_timezone`,
+> dùng **mốc thời gian cố định** (19:30 UTC ngày 14 = 02:30 giờ studio ngày 15) chứ
+> không dùng đồng hồ hệ thống — một test chỉ đỏ được vào ban đêm thì không phải là
+> một chốt chặn. Đã kiểm bằng đột biến: làm hỏng `studio_clock` thì nó đỏ ở **cả
+> hai** múi giờ, cùng với hai test báo cáo gốc.
+>
+> Lượt sửa này chạy lúc **~03:00 giờ studio**, tức vẫn nằm trong khung gây lỗi — nên
+> 525 xanh dưới đây là bằng chứng đã sửa thật, không phải ngày đã sang giờ an toàn.
 
 ## Những gì buổi demo này **không** chứng minh
 
@@ -535,8 +731,22 @@ dưới `TZ=Asia/Ho_Chi_Minh`.
 - **Chưa chạy trên môi trường vận hành.** Migration mới nhất là `0007`, đã chạy
   trên DB test và khớp model. Khi đưa lên môi trường thật, phải chạy
   `alembic upgrade head` trước.
-- **88 endpoint là số API hiện có**, không phải tuyên bố 13 màn demo đã chạm hết
-  88 endpoint. Phần còn lại được phủ bởi 509 test chức năng và phân quyền khác
+- **88 endpoint là số API hiện có**, không phải tuyên bố 14 màn demo đã chạm hết
+  88 endpoint. Phần còn lại nằm ở các test chức năng và phân quyền theo nhóm
   trong cùng lượt chạy.
+
+  > **Sửa ngày 15/09.** Câu này trước đây viết *"phần còn lại được phủ bởi 509
+  > test chức năng và phân quyền khác"* — nói rộng hơn sự thật. Một phép quét
+  > đối chiếu 88 endpoint với mọi lời gọi HTTP trong `tests/` tìm ra **8 endpoint
+  > không có test nào chạm tới**: `GET /announcements`, `PATCH` và `DELETE
+  > /announcements/{id}`, `POST` và `GET /trainers/{id}/photo`,
+  > `GET /accounts/{id}`, `GET /payments/{id}`, `GET /health`. Hai chỗ trong số
+  > đó có rủi ro thật — đường **sửa** thông báo là đường vòng để đưa câu bị cấm
+  > lên trang công khai sau khi đã đăng một nội dung sạch, và ảnh HLV là tệp duy
+  > nhất do người dùng đưa vào rồi được phục vụ lại cho khách ẩn danh. Cả 8 đã
+  > được viết test trong ngày; chi tiết ở mục dưới.
+- **Màn 13 chứng minh ranh giới của STAFF, không phải toàn bộ bề mặt STAFF.**
+  Một ca trực đi qua khoảng hai chục endpoint; phần còn lại của vai này vẫn dựa
+  vào `tests/test_permission_matrix.py` và các test chức năng theo nhóm.
 - Dữ liệu hàng chờ cũ vẫn còn trong bảng/enum (giữ lịch sử), nhưng **không có
   đường API nào chạm tới** — mọi route `/waitlist` trả 404.
