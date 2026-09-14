@@ -311,7 +311,8 @@ chưa cần tới nó. Cài đặt: `app/core/permissions.py::is_assigned_traine
 
 - **Không có chức năng tự đăng ký tài khoản.** Học viên liên hệ studio, admin
   tạo hồ sơ rồi cấp tài khoản STUDENT kèm `student_id`. Tạo tài khoản và nối hồ
-  sơ là một giao dịch. Tài khoản cũ chưa nối có thể được admin nối bằng PATCH
+  sơ là một giao dịch. Chiều đọc của liên kết đối xứng với chiều ghi: response
+  tài khoản mang `student_id` / `trainer_id`, đúng hình dạng của `GET /auth/me`. Tài khoản cũ chưa nối có thể được admin nối bằng PATCH
   tài khoản; không chuyển chủ sở hữu hoặc đổi vai tài khoản đang nối hồ sơ.
 
 - Mật khẩu băm bằng **argon2**. JWT access ngắn hạn + refresh token.

@@ -42,6 +42,43 @@ def _student_for_link(db: Session, student_id: int, account_id: int | None = Non
     return student
 
 
+def _with_links(db: Session, users: list[User]) -> list[AccountResponse]:
+    """Gắn `student_id` / `trainer_id` vào từng tài khoản — **hai truy vấn**.
+
+    Tra từng người một sẽ là 2 truy vấn cho mỗi dòng, tức 100 truy vấn cho một
+    trang 50 tài khoản; ở đây mỗi bảng đúng một truy vấn cho cả trang.
+
+    Khác `get_current_actor` ở một điểm cố ý: hàm đó chỉ tra bảng **ứng với vai**
+    (STUDENT tra `student`, TRAINER tra `trainer`), còn ở đây tra cả hai bất kể
+    vai. Đây là màn của admin, và việc của nó là nói ra hiện trạng: một tài
+    khoản STAFF lỡ nối vào hồ sơ học viên phải **nhìn thấy được** thì mới gỡ
+    được, chứ không phải bị giấu đi vì vai không khớp.
+    """
+    if not users:
+        return []
+
+    ids = [user.id for user in users]
+    students = dict(
+        db.execute(select(Student.user_id, Student.id).where(Student.user_id.in_(ids))).all()
+    )
+    trainers = dict(
+        db.execute(select(Trainer.user_id, Trainer.id).where(Trainer.user_id.in_(ids))).all()
+    )
+    return [
+        AccountResponse.model_validate(user).model_copy(
+            update={
+                "student_id": students.get(user.id),
+                "trainer_id": trainers.get(user.id),
+            }
+        )
+        for user in users
+    ]
+
+
+def _account_response(db: Session, user: User) -> AccountResponse:
+    return _with_links(db, [user])[0]
+
+
 @router.get("", response_model=list[AccountResponse])
 def list_accounts(
     db: Session = Depends(get_db),
@@ -50,7 +87,7 @@ def list_accounts(
     q: str | None = Query(default=None, max_length=120),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-) -> list[User]:
+) -> list[AccountResponse]:
     """Danh sách tài khoản đăng nhập của studio."""
     stmt = select(User).order_by(User.id).limit(limit).offset(offset)
     if role is not None:
@@ -59,7 +96,7 @@ def list_accounts(
         stmt = stmt.where(User.is_active.is_(is_active))
     if q:
         stmt = stmt.where(User.email.ilike(f"%{q}%"))
-    return list(db.scalars(stmt))
+    return _with_links(db, list(db.scalars(stmt)))
 
 
 @router.post("", response_model=AccountResponse, status_code=201)
@@ -67,7 +104,7 @@ def create_account(
     payload: AccountCreate,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
-) -> User:
+) -> AccountResponse:
     """Admin cấp tài khoản. STUDENT bắt buộc có student_id của hồ sơ đã tạo.
 
     Tạo tài khoản và nối hồ sơ trong cùng giao dịch. Học viên không tự đăng ký.
@@ -111,17 +148,23 @@ def create_account(
         # thực sự nằm trong CSDL.
         db.commit()
         background.add_task(send_password_reset, user.email, raw_token)
-    return user
+    # `flush` để hồ sơ vừa nối đọc lại được ngay trong cùng giao dịch —
+    # không có nó, tài khoản mới trả về `student_id: null` đúng một lần, ở
+    # đúng lúc màn hình cần nó nhất.
+    db.flush()
+    return _account_response(db, user)
 
 
 @router.get("/{account_id}", response_model=AccountResponse)
-def get_account(account_id: int, db: Session = Depends(get_db)) -> User:
+def get_account(account_id: int, db: Session = Depends(get_db)) -> AccountResponse:
     """Chi tiết một tài khoản."""
-    return _get_or_404(db, account_id)
+    return _account_response(db, _get_or_404(db, account_id))
 
 
 @router.patch("/{account_id}", response_model=AccountResponse)
-def update_account(account_id: int, payload: AccountUpdate, db: Session = Depends(get_db)) -> User:
+def update_account(
+    account_id: int, payload: AccountUpdate, db: Session = Depends(get_db)
+) -> AccountResponse:
     """Sửa hồ sơ tài khoản.
 
     Từ chối mọi trường lạ bằng 422 — cố ý. Khoá tài khoản đi bằng
@@ -167,7 +210,8 @@ def update_account(account_id: int, payload: AccountUpdate, db: Session = Depend
         if field == "student_id":
             continue
         setattr(user, field, value)
-    return user
+    db.flush()
+    return _account_response(db, user)
 
 
 @router.post("/{account_id}/lock", response_model=MessageResponse)

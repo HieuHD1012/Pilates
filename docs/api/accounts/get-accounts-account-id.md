@@ -45,7 +45,9 @@ Không có.
   "role": "ADMIN",
   "status": "ACTIVE",
   "is_active": true,
-  "created_at": "2026-09-14T06:00:00+07:00"
+  "created_at": "2026-09-14T06:00:00+07:00",
+  "student_id": 1,
+  "trainer_id": 1
 }
 ```
 
@@ -59,6 +61,8 @@ Không có.
 | status | `ACTIVE` \| `PENDING_ACTIVATION` | Có | — |
 | is_active | boolean | Có | — |
 | created_at | string (date-time) | Có | — |
+| student_id | integer \| null | Không | — |
+| trainer_id | integer \| null | Không | — |
 
 ### Lỗi
 

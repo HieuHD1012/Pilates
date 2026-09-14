@@ -60,8 +60,13 @@ Quy tắc của cả nhóm: [`api/auth/README.md`](api/auth/README.md) ·
 
 Học viên liên hệ studio để admin cấp tài khoản; chưa có màn tự đăng ký.
 Khi cấp tài khoản STUDENT, chọn hồ sơ học viên đã tạo và gửi `student_id`
-cùng email/vai. `user_id` trong hồ sơ cho biết đã có tài khoản hay chưa.
-Bỏ `password` để học viên đặt mật khẩu qua liên kết email.
+cùng email/vai. Bỏ `password` để học viên đặt mật khẩu qua liên kết email.
+
+Liên kết hồ sơ đọc được ở **cả hai chiều**: mọi response tài khoản
+(`GET /accounts`, `GET|POST|PATCH /accounts/{id}`) mang `student_id` và
+`trainer_id` — cùng hình dạng như `GET /auth/me` — còn `user_id` trong hồ sơ học
+viên/HLV cho biết hồ sơ đó đã có tài khoản hay chưa. Tài khoản vừa tạo hoặc vừa
+nối trả về liên kết **ngay trong response đó**, không cần tải lại.
 
 ## F03 · Học viên
 

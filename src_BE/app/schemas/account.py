@@ -54,3 +54,10 @@ class AccountResponse(BaseModel):
     status: UserStatus
     is_active: bool
     created_at: datetime
+    #: Hồ sơ nghiệp vụ đang nối với tài khoản này, cùng hình dạng như
+    #: `MeResponse` của `GET /auth/me`. Có nó thì chiều đọc và chiều ghi của
+    #: liên kết đối xứng: `PATCH /accounts/{id}` **nhận** `student_id`, nên màn
+    #: hình cũng phải **đọc lại** được nó ở cùng chỗ thay vì đi vòng qua
+    #: `student.user_id`.
+    student_id: int | None = None
+    trainer_id: int | None = None
