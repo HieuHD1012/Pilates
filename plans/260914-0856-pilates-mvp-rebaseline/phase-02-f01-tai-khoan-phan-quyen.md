@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "F01 Tài khoản & phân quyền"
-status: pending
+status: in_progress
 priority: P1
 effort: "34h hợp đồng (BA 5 · BE 15 · FE 14) + rework 15%"
 dependencies: [1]
@@ -14,6 +14,17 @@ dependencies: [1]
 Đăng nhập, đặt lại mật khẩu, quản lý tài khoản và phân quyền cho 4 nhóm người dùng. Phân quyền phải đúng ngay từ đây vì mọi phase sau đều dựa vào nó.
 
 4 hạng mục. Cửa sổ BE: 18/09 → 23/09.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Đăng nhập, refresh token có cửa sổ ân hạn 10 giây cho lần gửi trùng, đặt lại mật khẩu
+dùng đúng một lần, khoá tài khoản thu hồi token đang cầm, chặn brute-force theo cả IP
+lẫn tài khoản — tất cả có test. Ma trận phân quyền phủ cả trường hợp bị từ chối
+(`tests/test_permission_matrix.py`, `tests/test_photo_permissions.py`).
+
+Chưa có: mọi màn hình. Không có màn nào nên cổng CI Soul-1 chưa chạy được.
 
 ## Requirements
 
@@ -90,14 +101,14 @@ Ba quy tắc dễ làm sai, phải có test riêng: **HLV chỉ thấy lớp mì
 
 ## Success Criteria
 
-- [ ] Bốn vai đăng nhập được và chỉ thấy đúng phần được phép.
-- [ ] **STAFF không truy cập được ảnh tiến trình**; HLV chỉ xem được ảnh học viên mình phụ trách — có test cho cả hai.
-- [ ] Liên kết đặt lại hết hạn đúng và **không dùng lại được lần hai**; token không bao giờ xuất hiện trong response.
-- [ ] **Khoá tài khoản → token đang dùng mất hiệu lực ngay** — có test.
-- [ ] `/auth/login` chặn được brute-force.
-- [ ] Test phân quyền phủ đủ ma trận, gồm cả trường hợp bị từ chối.
-- [ ] HLV không truy cập được lớp không phải của mình, kể cả gọi thẳng API bằng id.
-- [ ] Học viên không truy cập được dữ liệu học viên khác, kể cả gọi thẳng API bằng id.
+- [x] Bốn vai đăng nhập được và chỉ thấy đúng phần được phép.
+- [x] **STAFF không truy cập được ảnh tiến trình**; HLV chỉ xem được ảnh học viên mình phụ trách — có test cho cả hai.
+- [x] Liên kết đặt lại hết hạn đúng và **không dùng lại được lần hai**; token không bao giờ xuất hiện trong response.
+- [x] **Khoá tài khoản → token đang dùng mất hiệu lực ngay** — có test.
+- [x] `/auth/login` chặn được brute-force.
+- [x] Test phân quyền phủ đủ ma trận, gồm cả trường hợp bị từ chối.
+- [x] HLV không truy cập được lớp không phải của mình, kể cả gọi thẳng API bằng id.
+- [x] Học viên không truy cập được dữ liệu học viên khác, kể cả gọi thẳng API bằng id.
 - [ ] Cổng CI Soul-1 xanh trên các màn hình mới.
 
 ## Risk Assessment

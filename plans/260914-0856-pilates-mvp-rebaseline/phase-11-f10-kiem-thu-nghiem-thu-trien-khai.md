@@ -1,7 +1,7 @@
 ---
 phase: 11
 title: "F10 Kiểm thử, nghiệm thu & triển khai"
-status: pending
+status: in_progress
 priority: P1
 effort: "66h hợp đồng (BA 30 · BE 19 · FE 17) + rework 15%"
 dependencies: [8, 9, 10]
@@ -17,6 +17,27 @@ Bốn hạng mục. Phase này **chạy chồng lấn từ 12/10** — `dependen
 Cửa sổ: 12/10 → 18/11. UAT + nhập liệu + PROD: 12/11 → 18/11.
 
 > **Lưu ý ngân sách.** 19h BE và 17h FE của phase này nằm **trong** tổng giờ từng vai và chạy chồng lên F06/F07 — hai phase nặng nhất. Bản kế hoạch trước bỏ sót 19h BE này khi tính mốc. Sau phiên validate, **FE là critical path**, nên phần FE của F10 mới là chỗ cần theo dõi sát.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE và demo nghiệm thu: xong. FE, nhập liệu thật, UAT, PROD: chưa.**
+
+522 test xanh, chạy lại ngày 14/09 hết 95 giây, trong đó 116 test chạy lượt hai dưới
+`TZ=Asia/Ho_Chi_Minh`. Bộ demo 13 màn ở `src_BE/tests/e2e/` chạy request thật qua 88
+endpoint trên PostgreSQL thật — xem
+[báo cáo demo](../reports/qa-api-e2e-260914-1408-full-studio-scenario-report.md).
+`docs/deployment.md` đã có mục rollback migration chạm `credit_ledger`. Tài khoản nhập
+từ Excel để `password_hash = None` nên không suy ra được mật khẩu.
+
+Chưa có, và **không thể có trước khi FE xong**: axe-core, ngưỡng Soul-1 đo trên DOM,
+bố cục 400px, lượt rà P3 sau nhập liệu.
+
+Chưa có, và **không phụ thuộc FE**: nhập dữ liệu thật của studio — nên "7 bất biến xanh
+trên toàn bộ dữ liệu" chưa đạt, mới xanh trên dữ liệu test; chạy PROD; sao lưu; CORS/CSP;
+UAT với khách.
+
+`.github/workflows/ci.yml` chạy **lần đầu tiên ngày 14/09**, sau khi mã nguồn được đẩy
+lên `github.com/HieuHD1012/Pilates`. Trước đó nó chưa từng chạy vì chưa có repo.
 
 ## Requirements
 
@@ -142,22 +163,22 @@ Bắt buộc:
 
 ## Success Criteria
 
-- [ ] Luồng chính chạy đúng đầu-cuối, không còn lỗi nghiêm trọng.
+- [x] Luồng chính chạy đúng đầu-cuối, không còn lỗi nghiêm trọng.
 - [ ] **7 bất biến ledger xanh** trên toàn bộ dữ liệu, gồm sau khi nhập dữ liệu thật.
-- [ ] Không lớp nào vượt sức chứa và **không số dư nào âm** dưới tải đồng thời.
-- [ ] Double-click hủy chỉ hoàn 1 buổi; hủy lớp đua với đặt chỗ không làm mất buổi của ai.
-- [ ] Ma trận phân quyền đúng; **STAFF không xem được ảnh tiến trình**; không truy cập được dữ liệu người khác bằng id.
-- [ ] **Khoá tài khoản làm mất hiệu lực token đang dùng.**
-- [ ] API công khai không trả PII ngoài allow-list.
-- [ ] **Test biên hủy cho cùng kết quả ở `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`.**
+- [x] Không lớp nào vượt sức chứa và **không số dư nào âm** dưới tải đồng thời.
+- [x] Double-click hủy chỉ hoàn 1 buổi; hủy lớp đua với đặt chỗ không làm mất buổi của ai.
+- [x] Ma trận phân quyền đúng; **STAFF không xem được ảnh tiến trình**; không truy cập được dữ liệu người khác bằng id.
+- [x] **Khoá tài khoản làm mất hiệu lực token đang dùng.**
+- [x] API công khai không trả PII ngoài allow-list.
+- [x] **Test biên hủy cho cùng kết quả ở `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`.**
 - [ ] Màn hình chính dùng tốt ở 400px; ảnh tiến trình được bảo vệ và validate.
 - [ ] **0 lỗi axe-core serious + critical trên mọi màn hình bàn giao** (không tính `sqladmin`).
 - [ ] Toàn bộ ngưỡng Soul-1 đạt, đo trên DOM đã render.
 - [ ] **Nhập dữ liệu chạy lại nhiều lần không nhân đôi số dư**; số dư khớp file Excel của studio.
-- [ ] Tài khoản nhập từ Excel không có mật khẩu suy ra được.
+- [x] Tài khoản nhập từ Excel không có mật khẩu suy ra được.
 - [ ] **Không vi phạm P3** — validator server, cổng CI, và rà thủ công **sau nhập liệu**.
 - [ ] Hệ thống chạy PROD; có sao lưu; CORS/CSP đặt đúng; không có bí mật trong mã nguồn.
-- [ ] Cách rollback migration chạm `credit_ledger` đã ghi vào `docs/deployment.md`.
+- [x] Cách rollback migration chạm `credit_ledger` đã ghi vào `docs/deployment.md`.
 - [ ] Khách xác nhận UAT; nhân viên được hướng dẫn.
 
 ## Risk Assessment

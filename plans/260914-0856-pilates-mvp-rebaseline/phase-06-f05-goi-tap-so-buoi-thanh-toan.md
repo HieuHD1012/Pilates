@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "F05 Gói tập, số buổi & thanh toán"
-status: pending
+status: in_progress
 priority: P1
 effort: "64h hợp đồng (BA 11 · BE 30 · FE 23) + rework 15%"
 dependencies: [4]
@@ -14,6 +14,23 @@ dependencies: [4]
 Bảy hạng mục. Đây là nơi dựng **sổ buổi** — bất biến trung tâm của cả hệ thống. Mọi thứ ở F07 đứng trên nền này, nên ledger phải đúng tuyệt đối trước khi booking bắt đầu.
 
 Cửa sổ BE: 02/10 → 09/10 · FE: 06/10 → 12/10.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Sổ buổi append-only. Cả 7 bất biến đều có test âm chứng minh chúng **fail được** —
+đây là điều red team finding #1 đòi và là khác biệt với phép lặp thừa. `balance_cached`
+khớp `SUM(delta)`, CHECK chặn số dư âm, gia hạn giữ nguyên lịch sử gói cũ, điều chỉnh
+tay không lý do bị từ chối ngay ở tầng DB.
+
+`VOID` đã cài, có guard chặn khi gói đã tiêu buổi từ bất kỳ nguồn nào, và có test. Nhưng
+tiêu chí đòi "**đã chốt với khách**" — khách chưa trả lời, nên ô đó để trống.
+
+**Mã nguồn đã tự trả lời câu hỏi mở #2c.** `sell_package`
+(`src_BE/app/services/package_sales.py:107`) ghi `delta = credits` **ngay lúc bán**,
+không đợi xác nhận thanh toán. Đây là quyết định đang chạy trong sản phẩm mà khách chưa
+xác nhận — nếu khách trả lời khác thì sửa ở tầng ledger, đắt nhất khi phát hiện lúc UAT.
 
 ## Requirements
 
@@ -56,7 +73,7 @@ F00 đã chốt `balance_cached` trên `student_package` để tạo **biểu di
 | 3 | Mỗi `booking` đang hoạt động có **đúng một** `BOOKING_DEDUCT`, trỏ đúng `student_package_id` của booking |
 | 4 | Mỗi `booking_id` có **tối đa một** `CANCEL_REFUND` |
 | 5 | Mọi `BOOKING_DEDUCT` có booking tương ứng, và ngược lại |
-| 6 | `SUM(delta)` không vượt `credits_snapshot` + gia hạn + điều chỉnh |
+| 6 | Không bút toán tiêu buổi nào mang dấu dương — `BOOKING_DEDUCT` và `PAYMENT_VOID` chỉ được làm giảm số dư (sửa 14/09 theo review M3; cách viết cũ "`SUM(delta)` không vượt `credits_snapshot` + gia hạn + điều chỉnh" không bao giờ đỏ được) |
 | 7 | `student_package` của mọi dòng ledger thuộc đúng học viên của booking |
 
 Bất biến #7 là thứ duy nhất bắt được kiểu gian lận ở F07 finding #3 (dùng gói người khác) — phép đối soát cũ mù hoàn toàn với nó.
@@ -78,8 +95,15 @@ Bất biến #7 là thứ duy nhất bắt được kiểu gian lận ở F07 fi
 
 **Hệ quả khi VOID — đã chốt ở phiên validate: chặn `VOID` nếu gói đã tiêu buổi.**
 
-- Gói **chưa tiêu buổi nào** → cho `VOID`, kèm bút toán `PAYMENT_VOID` đối ứng thu hồi toàn bộ số buổi đã cộng, trong **cùng transaction**.
-- Gói **đã tiêu ít nhất một buổi** → **từ chối `VOID`** với thông báo nêu rõ đã tiêu bao nhiêu buổi. Nhân viên phải xử lý bằng `ADMIN_ADJUST` có lý do.
+- Gói **chưa tiêu buổi nào** và số buổi **chỉ đến từ đúng lần bán này** → cho `VOID`, kèm bút toán `PAYMENT_VOID` đối ứng thu hồi toàn bộ số buổi đã cộng, trong **cùng transaction**.
+- Gói **đã tiêu ít nhất một buổi** → **từ chối `VOID`** (`PACKAGE_HAS_CONSUMED_CREDITS`) với thông báo nêu rõ đã tiêu bao nhiêu buổi. Nhân viên phải xử lý bằng `ADMIN_ADJUST` có lý do.
+- Gói còn buổi đến từ **nguồn không phải lần bán này** — gia hạn, `ADMIN_ADJUST`, nhập liệu ban đầu, hoặc một giao dịch khác chưa huỷ → **từ chối `VOID`** (`PACKAGE_HAS_CREDITS_FROM_OTHER_SOURCES`).
+
+> **Nhánh thứ ba thêm ngày 14/09 — review M3 finding C1, mức Critical.** Guard ban
+> đầu chỉ nhìn bảng `payment`, nên đã tái hiện được: gói 5 buổi mua + 7 buổi gia hạn
+> + 3 buổi điều chỉnh tay, `VOID` lần bán đầu → **mất cả 10 buổi không thuộc giao
+> dịch bị huỷ**, và phép đối soát vẫn báo sạch. Số buổi không gắn với từng khoản
+> tiền, nên câu hỏi "buổi nào thuộc tiền nào" không có đáp án — vì thế từ chối.
 
 Lý do chọn: số buổi đã tiêu là chuyện phải bàn với học viên, không nên là hệ quả âm thầm của một lần đổi trạng thái thanh toán. Chặn buộc phải có một quyết định của con người, và `ADMIN_ADJUST` để lại dấu vết ai quyết định gì.
 <!-- Updated: Validation Session 1 - chặn VOID nếu gói đã tiêu buổi -->
@@ -119,7 +143,7 @@ Màn hình này tồn tại để **một điều kiểm chứng được**: s�
 3. BE: CRUD loại gói; sửa loại gói không chạm gói đã bán — có test.
 4. BE: bán/gán gói — tạo `student_package` với snapshot + ghi `PACKAGE_SOLD` trong **một transaction**.
 5. BE: ghi nhận / xác nhận / huỷ thanh toán, lưu đủ người và thời điểm cho cả ba.
-6. BE: `VOID` chỉ cho phép khi gói chưa tiêu buổi nào, kèm bút toán `PAYMENT_VOID` đối ứng cùng transaction; gói đã tiêu buổi thì từ chối và nêu rõ đã tiêu bao nhiêu.
+6. BE: `VOID` chỉ cho phép khi gói chưa tiêu buổi nào **và** không còn buổi từ nguồn khác lần bán này, kèm bút toán `PAYMENT_VOID` đối ứng cùng transaction; hai nhánh còn lại từ chối với mã lỗi riêng (`PACKAGE_HAS_CONSUMED_CREDITS`, `PACKAGE_HAS_CREDITS_FROM_OTHER_SOURCES`).
 7. BE: truy vấn sổ buổi có số dư luỹ kế theo từng dòng.
 8. BE: điều chỉnh tay — chỉ ADMIN, bắt buộc lý do.
 9. BE: gia hạn end_date hiện tại; không cần lịch sử ngày. Thêm buổi ghi ledger, bán gói mới giữ gói cũ.
@@ -132,14 +156,14 @@ Màn hình này tồn tại để **một điều kiểm chứng được**: s�
 ## Success Criteria
 
 - [ ] 7 hạng mục hoàn thành.
-- [ ] **7 bất biến ledger chạy xanh, và mỗi bất biến có test âm chứng minh nó fail được.**
-- [ ] `balance_cached` luôn khớp `SUM(delta)`; CHECK chặn được số dư âm.
-- [ ] Ledger không UPDATE/DELETE được, kể cả qua ORM — có test.
-- [ ] Sửa/ngừng bán loại gói **không đổi** gói đã mua — có test.
-- [ ] Điều chỉnh tay không lý do bị từ chối ở tầng DB.
-- [ ] Thanh toán lưu đủ người + thời điểm cho ghi nhận, xác nhận và huỷ.
+- [x] **7 bất biến ledger chạy xanh, và mỗi bất biến có test âm chứng minh nó fail được.**
+- [x] `balance_cached` luôn khớp `SUM(delta)`; CHECK chặn được số dư âm.
+- [x] Ledger không UPDATE/DELETE được, kể cả qua ORM — có test.
+- [x] Sửa/ngừng bán loại gói **không đổi** gói đã mua — có test.
+- [x] Điều chỉnh tay không lý do bị từ chối ở tầng DB.
+- [x] Thanh toán lưu đủ người + thời điểm cho ghi nhận, xác nhận và huỷ.
 - [ ] Quy tắc `VOID` → số buổi đã định nghĩa, đã chốt với khách, và có test.
-- [ ] Gia hạn giữ nguyên lịch sử gói cũ.
+- [x] Gia hạn giữ nguyên lịch sử gói cũ.
 - [ ] Màn sổ buổi: hai cột số canh phải, `tabular-nums`, U+2212, dòng đóng sổ khớp.
 - [ ] Cổng CI Soul-1 xanh.
 

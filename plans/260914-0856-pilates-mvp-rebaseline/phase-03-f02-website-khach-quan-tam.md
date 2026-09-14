@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "F02 Website & khách quan tâm"
-status: pending
+status: in_progress
 priority: P1
 effort: "38h hợp đồng (BA 6.5 · BE 8.5 · FE 23) + rework 15%"
 dependencies: [2]
@@ -17,6 +17,21 @@ Chín hạng mục: 7 trang/thành phần công khai + tiếp nhận và theo d�
 
 Cửa sổ BE: 23/09 → 25/09 · FE: 23/09 → 29/09.
 **Ngoại lệ:** *Lịch lớp công khai* chỉ hoàn tất ở lần chạy hai trong cửa sổ F06 — nó là hàm của `class_session`, chưa tồn tại ở phase này.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu — đây là phase FE nặng nhất chưa động tới (23h).**
+
+Cưỡng chế P3 phía server đã đúng thật: validator bóc thẻ HTML, chuẩn hoá NFC, xoá ký
+tự vô hình rồi mới đối chiếu, nên `Lớp tối đa <strong>3</strong> người` và các biến
+thể ZWSP / soft hyphen đều bị từ chối lúc ghi. API công khai có allow-list, kiểm bằng
+test hợp đồng fail khi thừa khoá. Lead được sanitize, chặn trùng theo số đã chuẩn hoá
+và so cả với hồ sơ học viên đã có.
+
+Chưa có: 7 trang công khai, nhãn cho ô ảnh/giá đang chờ, nút Zalo/WhatsApp.
+
+**Tiêu chí "không vi phạm P3" chưa đạt dù validator đã xong** — nó đòi ba tầng, mới có
+một. Còn thiếu cổng DOM trên route công khai và lượt rà thủ công sau khi nhập dữ liệu thật.
 
 ## Requirements
 
@@ -112,8 +127,8 @@ Test hợp đồng fail nếu response công khai chứa khoá ngoài allow-list
 
 - [ ] 8 hạng mục hoàn thành ở phase này; lịch lớp công khai hoàn tất ở lần chạy hai.
 - [ ] **Không vi phạm P3** — validator server, cổng DOM route công khai, rà thủ công.
-- [ ] Validator từ chối được bio chứa mẫu chứng chỉ và thông báo chứa "tối đa 3 người" — có test.
-- [ ] **API công khai không trả PII ngoài allow-list** — test hợp đồng fail khi thừa khoá.
+- [x] Validator từ chối được bio chứa mẫu chứng chỉ và thông báo chứa "tối đa 3 người" — có test.
+- [x] **API công khai không trả PII ngoài allow-list** — test hợp đồng fail khi thừa khoá.
 - [ ] Ô ảnh, ô giá đang chờ có nhãn nói rõ; bố cục không nhảy khi dữ liệu về.
 - [ ] Giá hiển thị khi studio cung cấp, trạng thái rỗng khi chưa có.
 - [ ] Form tư vấn tạo được lead; gửi trùng bị chặn; đầu vào được sanitize và giới hạn độ dài.

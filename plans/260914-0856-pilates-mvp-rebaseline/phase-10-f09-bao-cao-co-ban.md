@@ -1,7 +1,7 @@
 ---
 phase: 10
 title: "F09 Báo cáo cơ bản"
-status: pending
+status: in_progress
 priority: P2
 effort: "29h hợp đồng (BA 6 · BE 12 · FE 11) + rework 15%"
 dependencies: [8]
@@ -14,6 +14,20 @@ dependencies: [8]
 Bốn hạng mục. Nguyên tắc xuyên suốt: **mọi con số phải đối chiếu được với danh sách chi tiết** — không mở ra xem được các dòng tạo nên nó thì con số đó không có chỗ trên màn hình.
 
 Cửa sổ: 30/10 → 03/11.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Doanh thu chỉ gồm giao dịch đã xác nhận và ghim vào `confirmed_at`, không phải ngày ghi
+nhận — có test. Biên kỳ theo giờ studio. Ô bắt đầu bằng `=`, `+`, `-`, `@` được trung hoà
+khi xuất file. `/reports/unconfirmed-payments` liệt kê gói chưa xác nhận quá hạn.
+
+Tiêu chí khó nhất của phase — "mọi con số mở ra được danh sách chi tiết khớp với nó" —
+từng **trượt thật** (báo cáo nói 1 lớp, `detail_path` của chính nó trả 0 lớp) và đã vá
+ở M4, ghim bằng `test_every_dashboard_number_opens_a_list_of_the_same_size`.
+
+Chưa có: màn báo cáo.
 
 ## Requirements
 
@@ -83,13 +97,13 @@ Nút "Xuất file" chỉ ở báo cáo HLV.
 ## Success Criteria
 
 - [ ] 4 hạng mục hoàn thành.
-- [ ] Doanh thu **chỉ gồm giao dịch đã xác nhận** — có test với dữ liệu `PENDING` và `VOID`.
-- [ ] Biên kỳ tính đúng theo `Asia/Ho_Chi_Minh`.
-- [ ] Mọi con số trên bảng tổng hợp mở ra được danh sách chi tiết khớp với nó.
-- [ ] Số lớp theo HLV khớp con số ở chi tiết HLV (F04).
-- [ ] File xuất khớp chính xác bộ lọc và dữ liệu màn hình — có test.
-- [ ] **Ô bắt đầu bằng `=`, `+`, `-`, `@` được trung hoà** — có test với dòng chứa công thức.
-- [ ] Có danh sách gói thanh toán chưa xác nhận quá hạn.
+- [x] Doanh thu **chỉ gồm giao dịch đã xác nhận** — có test với dữ liệu `PENDING` và `VOID`.
+- [x] Biên kỳ tính đúng theo `Asia/Ho_Chi_Minh`.
+- [x] Mọi con số trên bảng tổng hợp mở ra được danh sách chi tiết khớp với nó.
+- [x] Số lớp theo HLV khớp con số ở chi tiết HLV (F04).
+- [x] File xuất khớp chính xác bộ lọc và dữ liệu màn hình — có test.
+- [x] **Ô bắt đầu bằng `=`, `+`, `-`, `@` được trung hoà** — có test với dòng chứa công thức.
+- [x] Có danh sách gói thanh toán chưa xác nhận quá hạn.
 - [ ] Bảng tổng hợp: **0 card KPI**, số ngồi trên đường kẻ; không có số liệu bịa.
 - [ ] Số chưa có dữ liệu để trống, không để 0.
 - [ ] Cổng CI Soul-1 xanh.

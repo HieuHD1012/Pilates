@@ -1,7 +1,7 @@
 ---
 phase: 9
 title: "F08 Nhắc học viên sắp hết gói"
-status: pending
+status: in_progress
 priority: P2
 effort: "20h hợp đồng (BA 4 · BE 8 · FE 8) + rework 15%"
 dependencies: [8]
@@ -16,6 +16,17 @@ Ba hạng mục: lập danh sách học viên cần liên hệ gia hạn và ghi
 Cửa sổ: 28/10 → 30/10.
 
 > Cùng F09, đây là một trong hai phase ứng viên hoãn đầu tiên nếu lịch trượt (giải phóng 20h BE ≈ 3 ngày critical path).
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Ngưỡng ≤6 buổi **HOẶC** ≤15 ngày, có test cho từng nhánh và cho nhánh chỉ thoả đúng
+một điều kiện. Chỉ lấy gói đang hoạt động theo định nghĩa F00. Biên ngày tính theo giờ
+studio. Lịch sử liên hệ append và lưu người thực hiện. Không có đường gửi tin tự động
+ở bất kỳ đâu. Bộ lọc chạy trong SQL, **trước** `LIMIT` — lỗi này đã vá ở M4.
+
+Chưa có: bảng tổng hợp và mọi ràng buộc hình thức đi kèm (0 card KPI, ô trống thay vì 0).
 
 ## Requirements
 
@@ -79,12 +90,12 @@ Không gửi Zalo/WhatsApp/SMS. Có thể có nút **mở kênh** (deep link), k
 ## Success Criteria
 
 - [ ] 3 hạng mục hoàn thành.
-- [ ] Ngưỡng đúng: ≤6 buổi **hoặc** ≤15 ngày; có test cho từng nhánh và cho nhánh **chỉ thoả một điều kiện**.
-- [ ] Chỉ lấy gói đang hoạt động theo định nghĩa F00.
-- [ ] Ngày biên tính đúng theo `Asia/Ho_Chi_Minh`.
-- [ ] Số buổi trong danh sách khớp ledger.
-- [ ] Lịch sử liên hệ append, không ghi đè; lưu người thực hiện.
-- [ ] **Không gửi tin tự động** ở bất kỳ đâu.
+- [x] Ngưỡng đúng: ≤6 buổi **hoặc** ≤15 ngày; có test cho từng nhánh và cho nhánh **chỉ thoả một điều kiện**.
+- [x] Chỉ lấy gói đang hoạt động theo định nghĩa F00.
+- [x] Ngày biên tính đúng theo `Asia/Ho_Chi_Minh`.
+- [x] Số buổi trong danh sách khớp ledger.
+- [x] Lịch sử liên hệ append, không ghi đè; lưu người thực hiện.
+- [x] **Không gửi tin tự động** ở bất kỳ đâu.
 - [ ] Bảng tổng hợp: số trên đường kẻ, **0 card KPI**; không có số liệu kinh doanh.
 - [ ] Ô chưa có dữ liệu để trống, không để 0.
 - [ ] Cổng CI Soul-1 xanh.

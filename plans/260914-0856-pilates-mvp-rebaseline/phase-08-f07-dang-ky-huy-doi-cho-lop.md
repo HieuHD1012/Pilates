@@ -1,7 +1,7 @@
 ---
 phase: 8
 title: "F07 Đăng ký, hủy, đổi & điểm danh lớp"
-status: pending
+status: in_progress
 priority: P1
 effort: "88h hợp đồng (BA 16 · BE 41 · FE 31) + rework 15%"
 dependencies: [6, 7]
@@ -16,6 +16,18 @@ hủy và đổi lớp; bỏ đặt hộ, hàng chờ và bước nhân viên x�
 HLV phụ trách điểm danh sau khi lớp kết thúc. Effort trên giữ số hợp đồng
 để đối chiếu; chưa phải ước lượng lại cho phạm vi đã điều chỉnh.
 Cửa sổ BE: 19/10 → 28/10 · FE: 19/10 → 27/10.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Chỉ học viên tự thao tác, không hàng chờ, không bước xác nhận — khớp phạm vi chốt
+ngày 14/09. Gói phải hợp lệ tại ngày học; lớp đầy không trừ buổi; khi đồng thời thì
+không vượt sức chứa, không âm số dư, không trừ đôi, không hoàn lặp. Hạn hủy Group 4h /
+Private 1h cho **cùng kết quả** ở `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`. Điểm danh sau
+`ends_at` và không đổi số buổi.
+
+Chưa có: màn đăng ký, hủy, đổi lớp của học viên.
 
 ## Requirements
 
@@ -104,14 +116,14 @@ HLV có danh sách lớp mình dạy và lựa chọn Đã đến lớp / Vắng
 
 ## Success Criteria
 
-- [ ] Chỉ học viên thao tác đăng ký của mình; nhân viên/HLV bị từ chối đặt hộ.
-- [ ] Không có hàng chờ hoặc bước xác nhận đăng ký.
-- [ ] Gói hợp lệ ngày học; lớp đầy không trừ buổi.
-- [ ] Không vượt sức chứa, âm số dư, trừ đôi hoặc hoàn lặp khi đồng thời.
-- [ ] Sau hạn khóa hủy/đổi; đúng hạn hoàn 1 buổi ở cả hai múi giờ test.
-- [ ] Đổi lớp thất bại giữ nguyên booking và ledger.
-- [ ] HLV điểm danh sau ends_at; vắng mặt không hoàn buổi.
-- [ ] Bộ bảy bất biến ledger xanh; tài liệu và quyền API khớp mã nguồn.
+- [x] Chỉ học viên thao tác đăng ký của mình; nhân viên/HLV bị từ chối đặt hộ.
+- [x] Không có hàng chờ hoặc bước xác nhận đăng ký.
+- [x] Gói hợp lệ ngày học; lớp đầy không trừ buổi.
+- [x] Không vượt sức chứa, âm số dư, trừ đôi hoặc hoàn lặp khi đồng thời.
+- [x] Sau hạn khóa hủy/đổi; đúng hạn hoàn 1 buổi ở cả hai múi giờ test.
+- [x] Đổi lớp thất bại giữ nguyên booking và ledger.
+- [x] HLV điểm danh sau ends_at; vắng mặt không hoàn buổi.
+- [x] Bộ bảy bất biến ledger xanh; tài liệu và quyền API khớp mã nguồn.
 - [ ] Giao diện dùng tốt ở 400px và thể hiện đúng hạn/trạng thái.
 
 ## Risk Assessment

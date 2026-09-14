@@ -1,7 +1,7 @@
 ---
 title: "Pilates Studio MVP — re-baseline & triển khai 58 hạng mục (Soul-1 · FastAPI)"
 description: "Dựng mới BE (FastAPI/PostgreSQL) và FE (React/TS) cho web quản lý & đặt lớp Pilates một cơ sở; 58 hạng mục / 527 giờ + 15% rework; hướng giao diện Soul-1 đã chốt; re-baseline mốc sau khi 5/8 tuần dev trôi qua với 0 dòng code."
-status: pending
+status: in_progress
 priority: P1
 branch: ""
 tags: [pilates, mvp, fastapi, react, soul-1, re-baseline]
@@ -20,7 +20,9 @@ Web quản lý & đặt lớp cho một studio Pilates tại Nha Trang. Bốn nh
 
 Phạm vi: **58 hạng mục / 11 nhóm tính năng / 527 giờ công** + **15% quỹ rework**. Team: 1 BA/PM/Test + 1 BE + 1 FE.
 
-Trạng thái xuất phát: `src_BE/` và `src_FE/` **rỗng**, chưa có git repo. Dựng mới hoàn toàn, BE và FE tách riêng, 2 người làm song song qua API contract chốt ở F00.
+Trạng thái xuất phát **khi viết plan này (sáng 14/09)**: `src_BE/` và `src_FE/` rỗng,
+chưa có git repo. Dựng mới hoàn toàn, BE và FE tách riêng, 2 người làm song song qua API
+contract chốt ở F00. Hiện trạng đã khác — xem [Trạng thái thực tế](#trạng-thái-thực-tế--14092026).
 
 > **Tiền đề chưa xác minh — việc chặn số 1.** Kế hoạch này giả định dựng mới hoàn toàn. Nhưng `soul-doi-chieu.html` ghi đã đo DOM/CSSOM + axe-core trên **hai dev server chạy song song ngày 25.08**, sáu màn hình mỗi bản (gồm cả màn vận hành), và `brief-thiet-ke-soul-1.html` — đề ngày 14.09, tức hôm nay — viết thẳng: *"Không cần dựng lại toàn bộ 58 màn hình — hệ đã có và đang chạy."* Nếu bản dựng 25/08 còn dùng được, ngân sách FE đang bị thổi lên tới ~100h và mốc dưới đây sớm hơn đáng kể. Chủ dự án sẽ chốt sau; plan hiện baseline theo giả định dựng mới. Xem câu hỏi mở #6.
 
@@ -35,6 +37,46 @@ Trạng thái xuất phát: `src_BE/` và `src_FE/` **rỗng**, chưa có git re
 
 > **Xung đột nguồn đã xử lý:** sheet "Phạm vi & giả định" trong `.xlsm` (ảnh chụp 24.08) ghi ngưỡng hủy lớp "chưa điền". File `.xlsx` (13.09, mới hơn) đã có đáp án **Group 4h / Private 1h**. `.xlsx` là baseline nghiệp vụ; xác nhận mới của chủ dự án ngày 2026-09-14
 được ưu tiên khi khác baseline. Xem [đối chiếu nguồn](../../docs/doi-chieu-nguon-va-nghiep-vu.md).
+
+---
+
+## Trạng thái thực tế — 14/09/2026
+
+Plan này được viết khi cả `src_BE/` lẫn `src_FE/` đều rỗng. Backend sau đó đã được dựng
+xong trong cùng ngày. Mục này là ảnh chụp hiện trạng; các cửa sổ ngày ở bảng phase bên
+dưới **giữ nguyên làm baseline**, không phải mô tả hiện trạng.
+
+### Đã có
+
+| | |
+|---|---|
+| Backend | **88 endpoint** — F00–F09 và phần BE của F10; 7 migration `0001`→`0007`, replay được từ `base` |
+| Test | **522 xanh**, chạy lại 14/09 hết 95 giây; 116 test chạy lượt hai dưới `TZ=Asia/Ho_Chi_Minh` |
+| Kiểm chứng | 4 lượt review đối kháng có mutation testing, cộng demo nghiệm thu 13 màn chạy thật trên PostgreSQL — xem `plans/reports/` |
+| Tài liệu | `business-rules.md` 16 mục · `deployment.md` · `api-cho-frontend.md` · 105 file mô tả endpoint |
+| Hạ tầng | Repo `github.com/HieuHD1012/Pilates`; CI chạy lần đầu 14/09 |
+
+### Chưa có
+
+**`src_FE/` vẫn rỗng — 0 file.** Kéo theo: chưa có gì để đo ngưỡng Soul-1. Không hệ
+token, không 6 cổng CI trên DOM đã render, không axe-core, không bố cục 400px. Mọi tiêu
+chí giao diện trong 11 phase file đều chưa đạt vì đúng một lý do này.
+
+Ngoài FE: nhập dữ liệu thật của studio, chạy PROD, UAT với khách. Và **ba câu hỏi gửi
+khách của F00 vẫn chưa gửi** — chúng đã được lên lịch cho "tuần F00", tức tuần này.
+
+### Hệ quả lên tiến độ — mốc 18/11 vẫn đứng, nhưng hết sạch slack
+
+FE cần 288h sau rework, tức **42 ngày làm việc** ở nhịp 7h/ngày. Tính từ 15/09, 42 ngày
+làm việc rơi đúng vào **11/11** — trùng khít mốc "dev hoàn tất" ở bảng dưới.
+
+Nói thẳng: **việc BE xong sớm không mua được thêm một ngày nào**, vì BE chưa bao giờ là
+critical path. Mốc MVP 18/11 giữ được **với điều kiện FE bắt đầu ngay**; mỗi ngày FE
+chưa bắt đầu đẩy mốc đi đúng một ngày, không có chỗ nào hấp thụ.
+
+Điều đó biến câu hỏi mở #6 (bản dựng Soul-1 ngày 25/08) từ việc "chủ dự án chốt sau"
+thành **việc chặn có ngày tháng**: nếu bản dựng đó dùng lại được, nó trả lại tới ~100h
+đúng vào vai đang thắt cổ chai.
 
 ---
 
@@ -148,13 +190,13 @@ Cấu trúc đến từ chữ và đường kẻ. Ràng buộc áp cho mọi mà
 | 8 | Thanh toán: nhân viên ghi nhận tiền mặt/chuyển khoản. Không cổng online. |
 | 9 | Nhắc gia hạn khi còn **≤6 buổi hoặc ≤15 ngày** — chỉ hiện danh sách, không tự gửi tin. |
 | 10 | Zalo/WhatsApp: chỉ nút mở kênh. |
-| 11 | Ảnh tiến trình: **Admin + HLV phụ trách + chính học viên đó**. Mặc định an toàn là HLV phụ trách, đang chờ khách xác nhận (câu hỏi mở #2a). |
+| 11 | Ảnh tiến trình: **xem** — Admin + HLV phụ trách + chính học viên đó. **Xoá vĩnh viễn — chỉ Admin** (siết ngày 14/09 theo review M2: quyền xoá vốn dùng chung quyền xem, nên HLV và cả học viên xoá vĩnh viễn được). Mặc định an toàn là HLV phụ trách, đang chờ khách xác nhận (câu hỏi mở #2a). |
 | 12 | Studio cung cấp logo, ảnh, bài giới thiệu, thông tin gói và HLV. |
 | 13 | Dữ liệu ban đầu nhập bằng file Excel. |
 | 14 | Doanh thu **chỉ tính giao dịch đã xác nhận**. |
 | 15 | **Chọn gói khi đặt lớp:** gói còn hạn cả hôm nay và ngày học, còn buổi, khớp loại lớp, có `end_date` sớm nhất. Quy tắc tất định, khai một chỗ. |
 | 16 | **Gói hết hạn:** buổi chưa dùng **không bị thu hồi**; số dư hiển thị chỉ tính gói còn hiệu lực. Đang chờ khách xác nhận (đây là quy tắc tiền). |
-| 17 | **VOID thanh toán:** **chặn `VOID` nếu gói đã tiêu buổi.** Buộc dùng `ADMIN_ADJUST` có lý do, để số buổi đã tiêu là một quyết định của con người có dấu vết, không phải hệ quả âm thầm của một lần đổi trạng thái. `VOID` chỉ cho phép khi gói chưa tiêu buổi nào. |
+| 17 | **VOID thanh toán — ba nhánh, mở rộng ngày 14/09 theo review M3 (C1).** (a) Gói chưa tiêu buổi **và** số buổi chỉ đến từ đúng lần bán này → cho `VOID` kèm bút toán `PAYMENT_VOID` đối ứng. (b) Gói **đã tiêu ít nhất một buổi** → từ chối (`PACKAGE_HAS_CONSUMED_CREDITS`). (c) Gói còn buổi đến từ **nguồn khác** — gia hạn, `ADMIN_ADJUST`, nhập liệu, hoặc một giao dịch khác chưa huỷ → từ chối (`PACKAGE_HAS_CREDITS_FROM_OTHER_SOURCES`). Nhánh (c) là bản vá của một lỗi Critical: guard cũ chỉ nhìn bảng `payment`, nên `VOID` thu hồi **toàn bộ** số dư gồm cả buổi không thuộc giao dịch bị huỷ, mà đối soát vẫn báo sạch. Mọi nhánh từ chối đều buộc dùng `ADMIN_ADJUST` có lý do. |
 
 ### Ngoài phạm vi giai đoạn này
 Thanh toán online · tự gửi Zalo/WhatsApp/SMS · QR check-in, đánh giá HLV/lớp, ghi chú bài tập · lương/hoa hồng HLV · đa cơ sở/phòng/thiết bị · mobile app · báo cáo nâng cao · bộ icon mới · minh hoạ và motion · **dark mode**.
@@ -173,13 +215,24 @@ thế các mô tả hàng chờ/đặt hộ trong phần lịch sử review bên
 
 1. **Sổ buổi append-only.** Không cột số dư nào sửa trực tiếp. Mọi biến động là một dòng ledger có `actor`, `reason`, `timestamp`.
    **Đối soát phải là mệnh đề kiểm được, không phải phép lặp thừa.** Vì số dư *được định nghĩa* là `SUM(delta)`, khẳng định "số dư = `SUM(delta)`" luôn đúng và vô giá trị. Bộ bất biến thật:
+   - `balance_cached = SUM(delta)` cho mọi `student_package` — hai biểu diễn độc lập phải khớp
    - `SUM(delta) >= 0` cho mọi `student_package`
    - mỗi `booking` đang hoạt động có **đúng một** `BOOKING_DEDUCT`, và dòng đó trỏ đúng `student_package_id` của booking
    - mỗi `booking_id` có **tối đa một** `CANCEL_REFUND`
    - mọi `BOOKING_DEDUCT` có booking tương ứng, và ngược lại
-   - `SUM(delta)` không vượt `credits_snapshot` + gia hạn + điều chỉnh
-   - mọi `ADMIN_ADJUST` có `note` khác rỗng và `actor_user_id`
+   - **không bút toán tiêu buổi nào mang dấu dương** — `BOOKING_DEDUCT` và `PAYMENT_VOID` chỉ được làm giảm số dư
    - `student_package` của mọi dòng ledger thuộc đúng học viên của booking
+
+   > **Sửa ngày 14/09 theo review M3.** Mệnh đề #6 trước đây viết là "`SUM(delta)`
+   > không vượt `credits_snapshot` + gia hạn + điều chỉnh". Cách viết đó **không bao
+   > giờ đỏ được**: mọi lần hoàn thừa hay cộng khống đều làm cả hai vế tăng cùng nhịp
+   > — đúng lỗi tautology mà red team finding #1 nhắm tới, chỉ là ở dạng kín đáo hơn.
+   > Bản đang chạy là `LEDGER_6_CONSUMPTION_ENTRIES_ARE_NEGATIVE`.
+   > "Mọi `ADMIN_ADJUST` có `note` khác rỗng và `actor_user_id`" **không** nằm trong
+   > bảy mệnh đề đối soát nữa: nó được cưỡng chế bằng CHECK ở tầng DB, nên không cần
+   > một phép quét định kỳ đi kiểm lại điều mà CSDL đã không cho phép xảy ra.
+   > Bản chuẩn: `docs/business-rules.md` § "Bất biến sổ buổi";
+   > mã nguồn: `src_BE/app/services/ledger_invariants.py`.
 2. **Không vượt sức chứa, không trừ đôi buổi, không âm số dư.** Mọi thao tác khoá **cả `student_package` lẫn `class_session`**, theo thứ tự cố định (`student_package` trước) để tránh deadlock. Khoá riêng `class_session` **không** bảo vệ số dư: hai lớp khác giờ là hai hàng khác nhau. Thêm ràng buộc số dư không âm ở tầng DB.
 3. **Mọi thay đổi trạng thái lưu người thực hiện.** Booking (gồm điểm danh), ledger, thanh toán (gồm xác nhận và huỷ), đổi HLV, hủy lớp.
 4. **Ngưỡng Soul-1 là cổng CI.** Đo trên DOM đã render với computed style — không quét CSSOM, vì CSSOM là toàn cục và không nói được "mỗi màn hình".
@@ -188,19 +241,19 @@ thế các mô tả hàng chờ/đặt hộ trong phần lịch sử review bên
 
 ## Phases
 
-| # | Mã | Tên | BE | FE | BA | Tổng | Cửa sổ (đã cộng rework) |
-|---|---|---|---|---|---|---|---|
-| 1 | F00 | [Nền tảng & chốt nghiệp vụ](./phase-01-f00-nen-tang-chot-nghiep-vu.md) | 22 | 14 | 18 | 54h | 14/09 → 18/09 |
-| 2 | F01 | [Tài khoản & phân quyền](./phase-02-f01-tai-khoan-phan-quyen.md) | 15 | 14 | 5 | 34h | 18/09 → 23/09 |
-| 3 | F02 | [Website & khách quan tâm](./phase-03-f02-website-khach-quan-tam.md) | 8.5 | 23 | 6.5 | 38h | 23/09 → 29/09 ‡ |
-| 4 | F03 | [Quản lý học viên](./phase-04-f03-quan-ly-hoc-vien.md) | 17 | 18 | 7 | 42h | 25/09 → 02/10 ‡ |
-| 5 | F04 | [Quản lý HLV](./phase-05-f04-quan-ly-hlv.md) | 9.5 | 11 | 3.5 | 24h | 30/09 → 06/10 ‡ |
-| 6 | F05 | [Gói tập, số buổi & thanh toán](./phase-06-f05-goi-tap-so-buoi-thanh-toan.md) | 30 | 23 | 11 | 64h | 02/10 → 12/10 |
-| 7 | F06 | [Lớp & lịch học](./phase-07-f06-lop-lich-hoc.md) | 33 | 25 | 10 | 68h | 09/10 → 19/10 |
-| 8 | F07 | [Đăng ký, hủy, đổi & điểm danh lớp](./phase-08-f07-dang-ky-huy-doi-cho-lop.md) | 41 | 31 | 16 | 88h | 19/10 → 28/10 |
-| 9 | F08 | [Nhắc học viên sắp hết gói](./phase-09-f08-nhac-hoc-vien-sap-het-goi.md) | 8 | 8 | 4 | 20h | 28/10 → 30/10 |
-| 10 | F09 | [Báo cáo cơ bản](./phase-10-f09-bao-cao-co-ban.md) | 12 | 11 | 6 | 29h | 30/10 → 03/11 |
-| 11 | F10 | [Kiểm thử, nghiệm thu & triển khai](./phase-11-f10-kiem-thu-nghiem-thu-trien-khai.md) | 19 | 17 | 30 | 66h | 12/10 → 18/11 |
+| # | Mã | Tên | BE | FE | BA | Tổng | Cửa sổ (đã cộng rework) | Thực tế 14/09 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | F00 | [Nền tảng & chốt nghiệp vụ](./phase-01-f00-nen-tang-chot-nghiep-vu.md) | 22 | 14 | 18 | 54h | 14/09 → 18/09 | BE + tài liệu xong · FE 0 |
+| 2 | F01 | [Tài khoản & phân quyền](./phase-02-f01-tai-khoan-phan-quyen.md) | 15 | 14 | 5 | 34h | 18/09 → 23/09 | BE xong · FE 0 |
+| 3 | F02 | [Website & khách quan tâm](./phase-03-f02-website-khach-quan-tam.md) | 8.5 | 23 | 6.5 | 38h | 23/09 → 29/09 ‡ | BE xong · FE 0 |
+| 4 | F03 | [Quản lý học viên](./phase-04-f03-quan-ly-hoc-vien.md) | 17 | 18 | 7 | 42h | 25/09 → 02/10 ‡ | BE xong · FE 0 |
+| 5 | F04 | [Quản lý HLV](./phase-05-f04-quan-ly-hlv.md) | 9.5 | 11 | 3.5 | 24h | 30/09 → 06/10 ‡ | BE xong · FE 0 |
+| 6 | F05 | [Gói tập, số buổi & thanh toán](./phase-06-f05-goi-tap-so-buoi-thanh-toan.md) | 30 | 23 | 11 | 64h | 02/10 → 12/10 | BE xong · FE 0 |
+| 7 | F06 | [Lớp & lịch học](./phase-07-f06-lop-lich-hoc.md) | 33 | 25 | 10 | 68h | 09/10 → 19/10 | BE xong · FE 0 |
+| 8 | F07 | [Đăng ký, hủy, đổi & điểm danh lớp](./phase-08-f07-dang-ky-huy-doi-cho-lop.md) | 41 | 31 | 16 | 88h | 19/10 → 28/10 | BE xong · FE 0 |
+| 9 | F08 | [Nhắc học viên sắp hết gói](./phase-09-f08-nhac-hoc-vien-sap-het-goi.md) | 8 | 8 | 4 | 20h | 28/10 → 30/10 | BE xong · FE 0 |
+| 10 | F09 | [Báo cáo cơ bản](./phase-10-f09-bao-cao-co-ban.md) | 12 | 11 | 6 | 29h | 30/10 → 03/11 | BE xong · FE 0 |
+| 11 | F10 | [Kiểm thử, nghiệm thu & triển khai](./phase-11-f10-kiem-thu-nghiem-thu-trien-khai.md) | 19 | 17 | 30 | 66h | 12/10 → 18/11 | BE + demo xong · FE, UAT, PROD 0 |
 
 Tổng hợp đồng: **527h / 58 hạng mục**. Cộng rework 15%: **606h**.
 
@@ -226,17 +279,17 @@ Tổng hợp đồng: **527h / 58 hạng mục**. Cộng rework 15%: **606h**.
 ## Điều kiện nghiệm thu MVP
 
 - [ ] Đủ 58 hạng mục hoàn thành, không còn lỗi nghiêm trọng.
-- [ ] Luồng chính đúng đầu-cuối: bán gói → đăng ký → trừ buổi → hủy đúng hạn → hoàn buổi.
+- [x] Luồng chính đúng đầu-cuối: bán gói → đăng ký → trừ buổi → hủy đúng hạn → hoàn buổi.
 - [ ] **Bộ bất biến ledger ở mục "Bất biến xuyên suốt" #1 chạy xanh trên toàn bộ dữ liệu** (7 mệnh đề, mỗi mệnh đề có thể fail).
-- [ ] Không lớp nào vượt sức chứa và **không số dư nào âm** dưới tải đặt chỗ đồng thời, gồm cả đặt hai lớp khác giờ cùng lúc.
-- [ ] Quy tắc hủy đúng ở mốc biên, kiểm với cả `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`, cho ra kết quả giống nhau.
-- [ ] Phân quyền đúng: HLV chỉ lớp mình; học viên chỉ dữ liệu mình; khoá tài khoản làm mất hiệu lực token đang dùng.
-- [ ] API công khai không trả PII ngoài allow-list.
+- [x] Không lớp nào vượt sức chứa và **không số dư nào âm** dưới tải đặt chỗ đồng thời, gồm cả đặt hai lớp khác giờ cùng lúc.
+- [x] Quy tắc hủy đúng ở mốc biên, kiểm với cả `TZ=UTC` và `TZ=Asia/Ho_Chi_Minh`, cho ra kết quả giống nhau.
+- [x] Phân quyền đúng: HLV chỉ lớp mình; học viên chỉ dữ liệu mình; khoá tài khoản làm mất hiệu lực token đang dùng.
+- [x] API công khai không trả PII ngoài allow-list.
 - [ ] 0 lỗi axe-core serious + critical trên mọi màn hình bàn giao (không tính công cụ nội bộ `sqladmin`).
 - [ ] Ràng buộc Soul-1 đạt ngưỡng, đo trên DOM đã render.
 - [ ] Không vi phạm P3 — cổng CI, validator phía server, và rà thủ công **sau khi nhập dữ liệu thật**.
 - [ ] Màn hình chính dùng tốt ở 400px.
-- [ ] Nhập dữ liệu chạy lại được nhiều lần không nhân đôi số dư.
+- [x] Nhập dữ liệu chạy lại được nhiều lần không nhân đôi số dư.
 - [ ] Khách xác nhận UAT; hệ thống chạy PROD.
 
 ---
@@ -267,7 +320,13 @@ Còn lại toàn bộ là **câu hỏi cho khách/studio** — mọi quyết đ�
 2. **Ba câu gửi khách trong tuần F00:**
    a. "HLV" ở câu 15 nghĩa là mọi HLV hay chỉ HLV phụ trách học viên đó? (ảnh cơ thể — mặc định an toàn: HLV phụ trách)
    b. Giá gói có hiển thị công khai khi studio cung cấp không? (dòng đã xác nhận ghi "nội dung/giá")
-   c. Cộng buổi khi tạo gói hay khi xác nhận thanh toán? **Chặn F05 → F07.**
+   c. Cộng buổi khi tạo gói hay khi xác nhận thanh toán?
+      **Mã nguồn đã tự chốt là "lúc bán".** `sell_package`
+      (`src_BE/app/services/package_sales.py:107`) ghi `delta = credits` ngay khi tạo
+      gói, không đợi xác nhận thanh toán — nên trong demo, học viên có thanh toán
+      `PENDING` vẫn đặt lớp được. Câu hỏi **không còn chặn việc code**, nhưng **vẫn
+      chặn nghiệm thu**: nếu khách trả lời khác thì đây là sửa ở tầng ledger, đắt nhất
+      khi phát hiện lúc UAT.
 3. **Gói hết hạn có thu hồi buổi chưa dùng không?** Quy tắc tiền. Mặc định: không thu hồi.
 4. **Khung giờ thật studio dạy?** Chặn thước giờ F06.
 5. **Studio giao dữ liệu ban đầu ngày nào?** Hạn cũ 18/09 đặt khi lịch chưa trượt.

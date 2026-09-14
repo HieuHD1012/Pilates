@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "F04 Quản lý HLV"
-status: pending
+status: in_progress
 priority: P2
 effort: "24h hợp đồng (BA 3.5 · BE 9.5 · FE 11) + rework 15%"
 dependencies: [2]
@@ -15,6 +15,18 @@ Bốn hạng mục: hồ sơ HLV, lịch dạy và số lớp.
 
 Cửa sổ BE: 30/09 → 02/10 · FE: 02/10 → 06/10.
 **Ngoại lệ:** *Chi tiết HLV — thống kê tháng* và *Lịch dạy của tôi* chỉ hoàn tất ở **lần chạy hai trong cửa sổ F06** — cả hai là hàm của `class_session`, chưa tồn tại ở phase này (red team finding #9). Phase này dựng phần hồ sơ không phụ thuộc lớp.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Hồ sơ HLV, cờ `is_public`, validator chặn mẫu chứng chỉ trong `bio`, thống kê tháng
+khớp lịch phân công và khớp báo cáo HLV ở F09 (có test biên tháng theo giờ studio).
+
+Trang công khai không thể lộ chứng chỉ hay số điện thoại HLV vì allow-list chặn ở tầng
+server — không phụ thuộc vào việc màn hình có nhớ giấu hay không.
+
+Chưa có: màn hồ sơ HLV, nhãn cho ô ảnh trống.
 
 ## Requirements
 
@@ -74,11 +86,11 @@ Tính trực tiếp từ `class_session` theo `trainer_id` và khoảng thời g
 ## Success Criteria
 
 - [ ] 4 hạng mục hoàn thành (2 hạng mục khép lại ở lần chạy hai).
-- [ ] Số lớp ở chi tiết HLV khớp lịch phân công và khớp báo cáo HLV ở F09.
-- [ ] HLV chỉ thấy lịch và danh sách lớp của mình; gọi thẳng API bằng id người khác bị từ chối.
-- [ ] Trang công khai không hiện chứng chỉ/bằng cấp/số năm kinh nghiệm, **không hiện số điện thoại HLV**.
-- [ ] `bio` chứa mẫu chứng chỉ bị validator từ chối khi ghi — có test.
-- [ ] `is_public` điều khiển đúng việc hiện HLV trên trang công khai.
+- [x] Số lớp ở chi tiết HLV khớp lịch phân công và khớp báo cáo HLV ở F09.
+- [x] HLV chỉ thấy lịch và danh sách lớp của mình; gọi thẳng API bằng id người khác bị từ chối.
+- [x] Trang công khai không hiện chứng chỉ/bằng cấp/số năm kinh nghiệm, **không hiện số điện thoại HLV**.
+- [x] `bio` chứa mẫu chứng chỉ bị validator từ chối khi ghi — có test.
+- [x] `is_public` điều khiển đúng việc hiện HLV trên trang công khai.
 - [ ] Ô ảnh HLV chưa có đều có nhãn trạng thái rỗng; không có số thống kê giả.
 - [ ] Cổng CI Soul-1 xanh.
 

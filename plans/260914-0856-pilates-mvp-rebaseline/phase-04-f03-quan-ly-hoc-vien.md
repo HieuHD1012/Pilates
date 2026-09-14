@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "F03 Quản lý học viên"
-status: pending
+status: in_progress
 priority: P1
 effort: "42h hợp đồng (BA 7 · BE 17 · FE 18) + rework 15%"
 dependencies: [2]
@@ -14,6 +14,20 @@ dependencies: [2]
 Bảy hạng mục: hồ sơ học viên và toàn bộ lịch sử liên quan. Các tab gói tập/thanh toán và lịch sử lớp dựng **khung** ở phase này, đổ dữ liệu thật khi F05 và F07 xong.
 
 Cửa sổ BE: 25/09 → 30/09 · FE: 25/09 → 02/10.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Hồ sơ học viên, ảnh tiến trình đúng ma trận quyền (Admin / HLV phụ trách / chính học
+viên; STAFF bị từ chối), upload guard chặn được polyglot đổi tên, bom giải nén 144 MPx
+và EXIF/GPS. Chuyển lead sang học viên không phải nhập lại và giữ nguyên lịch sử tư vấn.
+`balance_cached` không bị ghi ở bất kỳ đâu ngoài `credit_ledger.py` — reviewer M2 đã
+xác nhận bằng phép quét riêng.
+
+Chưa có: màn danh sách, điểm neo mép trái, bố cục 400px.
+
+Chưa kiểm: dữ liệu mẫu có tên Việt trông như thật hay không — để trống vì chưa ai soát.
 
 ## Requirements
 
@@ -90,13 +104,13 @@ Một thao tác: đọc `lead`, tạo `student`, gán `lead.converted_student_id
 ## Success Criteria
 
 - [ ] 7 hạng mục hoàn thành.
-- [ ] Số buổi hiển thị khớp ledger và **chỉ tính gói đang hoạt động** — có test với gói hết hạn còn buổi.
-- [ ] `balance_cached` không bao giờ được ghi ngoài `credit_ledger.py`.
-- [ ] Số điện thoại trùng bị chặn và chỉ ra hồ sơ đang giữ số đó.
-- [ ] Ảnh tiến trình: Admin/HLV phụ trách/chính học viên xem được; **STAFF và HLV không phụ trách bị từ chối** — có test âm.
-- [ ] Học viên khác không xem được kể cả khi có đường dẫn.
-- [ ] Upload từ chối file sai content-type và file quá lớn; ảnh lưu đã bóc EXIF.
-- [ ] Chuyển lead → học viên không phải nhập lại; lịch sử tư vấn còn nguyên.
+- [x] Số buổi hiển thị khớp ledger và **chỉ tính gói đang hoạt động** — có test với gói hết hạn còn buổi.
+- [x] `balance_cached` không bao giờ được ghi ngoài `credit_ledger.py`.
+- [x] Số điện thoại trùng bị chặn và chỉ ra hồ sơ đang giữ số đó.
+- [x] Ảnh tiến trình: Admin/HLV phụ trách/chính học viên xem được; **STAFF và HLV không phụ trách bị từ chối** — có test âm.
+- [x] Học viên khác không xem được kể cả khi có đường dẫn.
+- [x] Upload từ chối file sai content-type và file quá lớn; ảnh lưu đã bóc EXIF.
+- [x] Chuyển lead → học viên không phải nhập lại; lịch sử tư vấn còn nguyên.
 - [ ] Danh sách có điểm neo mép trái; dùng tốt ở 400px.
 - [ ] Dữ liệu mẫu không có tên Việt trông như thật.
 - [ ] Cổng CI Soul-1 xanh.

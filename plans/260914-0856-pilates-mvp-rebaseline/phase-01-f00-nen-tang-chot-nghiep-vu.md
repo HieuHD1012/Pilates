@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "F00 Nền tảng & chốt nghiệp vụ"
-status: pending
+status: in_progress
 priority: P1
 effort: "54h hợp đồng (BA 18 · BE 22 · FE 14) + 20h FE hệ token + 4h BE email + rework 15%"
 dependencies: []
@@ -18,6 +18,26 @@ Cửa sổ BE: 14/09 → 18/09.
 > **Cảnh báo quá tải — red team finding #1.** Hợp đồng cho dòng "Khởi tạo dự án, CI/CD & bộ giao diện chung" là 18h (BA 2 / BE 8 / FE 8). Phase này nạp vào đó: hai scaffold, docker-compose, CI, DEV, hệ token, specimen tiếng Việt, bộ primitive, **6 cổng CI**, spike lịch, lời giải bảng 400px, cộng thêm hạ tầng auth và validate mà 58 hạng mục không hề tính. Cộng thêm sau phiên validate: **+20h FE** cho hệ token/specimen/đặc tả chip (FE tự làm) và **+4h BE** cho transactional email. Thực tế ~70h trong một dòng 18h.
 
 **Đây là chỗ dễ trượt nhất của cả kế hoạch, và là lý do FE thành critical path.** Theo chính sách "phạm vi cố định, thời gian là biến số": nếu hết 18/09 mà chưa xong, **dự báo lại ngày và báo ngay**, không tự cắt cổng CI hay cắt phạm vi.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE và tài liệu: xong. FE: chưa bắt đầu.**
+
+Đã có: 7 migration (`0001`→`0007`) replay được từ `base`, `btree_gist` + exclusion
+constraint kèm mệnh đề `WHERE status = 'SCHEDULED'`, trigger append-only cho
+`credit_ledger` (chặn cả `TRUNCATE`), CHECK số dư không âm, `docs/business-rules.md`
+16 mục — thứ tự khoá toàn cục ở §9 — và `ruff` bật `DTZ` chặn naive datetime ở tầng lint.
+`docs/templates/mau-nhap-du-lieu-ban-dau.xlsx` đã dựng.
+
+Chưa có: toàn bộ phần FE của phase này — hệ token Soul-1, 6 cổng CI đo trên DOM đã
+render, spike thư viện lịch, bảng 6 cột ở 400px. `src_FE/` vẫn rỗng.
+
+Hai việc không phải kỹ thuật cũng chưa xong: **ba câu hỏi chưa gửi khách**, và template
+Excel đã dựng nhưng chưa giao studio.
+
+`app/core/email.py` gửi qua SMTP thật, bí mật lấy từ biến môi trường, token đặt lại
+không bao giờ nằm trong response — nhưng **chưa ai chạy thử trên DEV SMTP**, nên tiêu
+chí đó để trống.
 
 ## Requirements
 
@@ -100,6 +120,7 @@ renewal_contact(id, student_id, contacted_at, result, next_contact_date, actor_u
 | Partial UNIQUE `booking(class_session_id, student_id) WHERE status IN ('BOOKED','ATTENDED','NO_SHOW')` | Đặt trùng cùng lớp, kể cả sau điểm danh (migration 0007) |
 | Partial UNIQUE `credit_ledger(booking_id) WHERE reason_code = 'CANCEL_REFUND'` | **Hoàn buổi hai lần do double-click** |
 | Composite FK `booking(student_id, student_package_id)` | **Dùng gói của học viên khác** |
+| Trigger `trg_booking_requires_live_session` đọc `class_session` bằng `FOR SHARE` (migration 0006) | **Đăng ký chen vào lớp vừa bị hủy.** Thêm ngày 14/09 theo review M3 (H2): bước đọc-lại của luồng hủy lớp chỉ đúng nếu *mọi* đường ghi `booking` cũng khoá `class_session` — hợp đồng đó trước chỉ nằm trong docstring, nên một script vận hành hay một lần nhập liệu vẫn lách được. `FOR SHARE` buộc trigger chờ transaction hủy commit rồi mới phán quyết |
 | Partial UNIQUE `waitlist_entry(class_session_id, student_id) WHERE status = 'WAITING'` | Ràng buộc dữ liệu hàng chờ lịch sử; tính năng đã bỏ |
 | `EXCLUDE USING gist (trainer_id WITH =, slot WITH &&) WHERE (status = 'SCHEDULED')` | HLV trùng giờ. **Cần `btree_gist`.** Mệnh đề `WHERE` là bắt buộc — thiếu nó thì lớp đã hủy vẫn chặn chỗ của chính nó |
 | Số dư không âm — xem bên dưới | **Trừ đôi buổi qua hai lớp khác giờ** |
@@ -216,15 +237,15 @@ Danh sách chuỗi cấm P3: mẫu chứng chỉ/bằng cấp/"năm kinh nghiệ
 
 ## Success Criteria
 
-- [ ] `docs/business-rules.md` hoàn tất, gồm 6 quy tắc mới (múi giờ, chọn gói, gói đang hoạt động, gói hết hạn, VOID thanh toán, kênh đặt lại mật khẩu).
+- [x] `docs/business-rules.md` hoàn tất, gồm 6 quy tắc mới (múi giờ, chọn gói, gói đang hoạt động, gói hết hạn, VOID thanh toán, kênh đặt lại mật khẩu).
 - [ ] Ba câu hỏi đã gửi khách.
-- [ ] ERD + migration chạy được với **toàn bộ** ràng buộc DB ở bảng trên.
-- [ ] `btree_gist` bật; exclusion constraint tạo được **kèm mệnh đề `WHERE status = 'SCHEDULED'`**.
-- [ ] Không cột thời gian nào là naive; lint chặn naive datetime.
-- [ ] Phương án số dư không âm đã chốt và có test chứng minh nó chặn được số dư âm.
-- [ ] **Thứ tự khoá toàn cục đã chốt và ghi vào `docs/business-rules.md`**; cách hủy lớp tuân thủ nó đã xác định.
-- [ ] `credit_ledger` từ chối UPDATE/DELETE — có test.
-- [ ] Composite FK chặn được booking dùng gói của học viên khác — có test.
+- [x] ERD + migration chạy được với **toàn bộ** ràng buộc DB ở bảng trên.
+- [x] `btree_gist` bật; exclusion constraint tạo được **kèm mệnh đề `WHERE status = 'SCHEDULED'`**.
+- [x] Không cột thời gian nào là naive; lint chặn naive datetime.
+- [x] Phương án số dư không âm đã chốt và có test chứng minh nó chặn được số dư âm.
+- [x] **Thứ tự khoá toàn cục đã chốt và ghi vào `docs/business-rules.md`**; cách hủy lớp tuân thủ nó đã xác định.
+- [x] `credit_ledger` từ chối UPDATE/DELETE — có test.
+- [x] Composite FK chặn được booking dùng gói của học viên khác — có test.
 - [ ] Transactional email gửi được link đặt lại trên DEV; secret không nằm trong mã nguồn.
 - [ ] Hệ token nhập được vào mã; measure ≤55 cpl trên trang mẫu.
 - [ ] 6 cổng CI chạy **trên DOM đã render** và chặn được vi phạm (đã thử cho fail).

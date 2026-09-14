@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "F06 Lớp & lịch học"
-status: pending
+status: in_progress
 priority: P1
 effort: "68h hợp đồng (BA 10 · BE 33 · FE 25) + ~22h lần chạy hai của F02/F04 + rework 15%"
 dependencies: [5, 6]
@@ -14,6 +14,29 @@ dependencies: [5, 6]
 Sáu hạng mục, cộng **lần chạy thứ hai của 3 hạng mục F02/F04** phụ thuộc `class_session`. Lịch lớp tuần là **màn hình vận hành chính**. Ba trong năm hạng mục thiết kế của brief nằm ở đây.
 
 Cửa sổ BE: 09/10 → 19/10 · FE: 12/10 → 19/10.
+
+## Trạng thái thực tế — cập nhật 2026-09-14
+
+**BE: xong. FE: chưa bắt đầu.**
+
+Exclusion constraint chặn trùng giờ HLV kể cả với hai yêu cầu đồng thời, và trả 409
+nghiệp vụ chứ không phải 500. Lớp đã hủy không chiếm khung giờ. Lịch lặp lại có xem
+trước và ghi all-or-nothing. Hủy lớp hoàn buổi cho cả người đặt chen vào giữa chừng —
+test đua khẳng định thẳng vào phép khoá bằng `FOR UPDATE NOWAIT` từ kết nối khác, và
+đã được kiểm lại bằng mutation là **đỏ đúng** khi gỡ khoá đi.
+
+Không có API dời giờ, đúng phạm vi. Nhưng cột `has_reschedule_grace` vẫn còn ở
+`src_BE/app/models/scheduling.py:131` — tàn dư của phạm vi cũ.
+
+**Một tiêu chí đã lỗi thời vì phạm vi đổi ngày 14/09:** hàng chờ bị cắt, nên "hủy lớp
+huỷ luôn mọi entry `WAITING`" không còn là điều kiện nghiệm thu. Mã vẫn dọn dữ liệu cũ
+nên tiêu chí được tick kèm ghi chú, không xoá.
+
+Việc **giữ bảng `waitlist_entry` làm dữ liệu lịch sử và chỉ gỡ router/service** là
+quyết định đã ghi ở F00 và F07, không phải tàn dư bỏ quên — không endpoint nào mở ra.
+Thứ thật sự là tàn dư chỉ có cột `has_reschedule_grace`.
+
+Chưa có: toàn bộ lịch tuần, chip lớp, thước giờ, cột hôm nay, bố cục 400px.
 
 ## Requirements
 
@@ -60,7 +83,7 @@ Sinh ra các bản ghi `class_session` cụ thể, không lưu quy tắc rồi t
 
 | Tình huống | Xử lý |
 |---|---|
-| Hủy lớp do studio | **Hoàn buổi cho mọi người đã đăng ký**, bất kể thời điểm. Ghi `CANCEL_REFUND` kèm lý do. Huỷ luôn mọi entry `WAITING`. |
+| Hủy lớp do studio | **Hoàn buổi cho mọi người đã đăng ký**, bất kể thời điểm. Ghi `CANCEL_REFUND` kèm lý do. Đóng nốt entry hàng chờ **lịch sử** còn `WAITING`/`PROMOTION_FAILED` — tính năng hàng chờ đã bỏ ngày 14/09, đây chỉ là dọn dữ liệu cũ. |
 | Đổi giờ lớp | Không có thao tác này. Hủy lớp cũ, tạo lớp mới; học viên tự đăng ký. |
 | Đổi HLV | Giữ đăng ký; kiểm HLV mới không trùng giờ. |
 
@@ -133,20 +156,20 @@ Thêm: hình thức lớp **viết ra bằng chữ**, không mã hoá bằng mà
 ## Success Criteria
 
 - [ ] 6 hạng mục + 3 hạng mục lần chạy hai hoàn thành.
-- [ ] Không tạo được hai lớp chồng giờ cho cùng HLV — kể cả hai yêu cầu đồng thời.
-- [ ] Lớp đã hủy **không** chặn khung giờ của HLV (mệnh đề `WHERE` hoạt động).
-- [ ] Vi phạm trùng giờ trả 409 nghiệp vụ, không phải 500.
-- [ ] Lịch lặp lại có xem trước; ghi all-or-nothing; không để lại nhóm ghi dở.
-- [ ] **Hủy lớp hoàn buổi cho mọi người đăng ký, kể cả người đặt ngay trước thời điểm hủy** — có test đua.
-- [ ] Hủy lớp không hoàn hai lần cho booking đã hủy đúng hạn.
-- [ ] Hủy lớp huỷ luôn mọi entry `WAITING`.
-- [ ] Không có API dời giờ hoặc ân hạn; thay giờ qua hủy lớp và tạo lớp mới.
+- [x] Không tạo được hai lớp chồng giờ cho cùng HLV — kể cả hai yêu cầu đồng thời.
+- [x] Lớp đã hủy **không** chặn khung giờ của HLV (mệnh đề `WHERE` hoạt động).
+- [x] Vi phạm trùng giờ trả 409 nghiệp vụ, không phải 500.
+- [x] Lịch lặp lại có xem trước; ghi all-or-nothing; không để lại nhóm ghi dở.
+- [x] **Hủy lớp hoàn buổi cho mọi người đăng ký, kể cả người đặt ngay trước thời điểm hủy** — có test đua.
+- [x] Hủy lớp không hoàn hai lần cho booking đã hủy đúng hạn.
+- [x] Hủy lớp đóng nốt entry hàng chờ lịch sử (`WAITING` và `PROMOTION_FAILED`) — **tiêu chí lỗi thời**, giữ lại vì mã vẫn dọn dữ liệu cũ; hàng chờ đã bị cắt khỏi phạm vi ngày 14/09.
+- [x] Không có API dời giờ hoặc ân hạn; thay giờ qua hủy lớp và tạo lớp mới.
 - [ ] Chip lớp: góc vuông, gáy 2px trái, đúng một thông tin.
 - [ ] Hình thức lớp viết bằng chữ; **không thông tin nào chỉ mã hoá bằng màu**.
 - [ ] Thước giờ theo khung thật, không còn khoảng trống lớn giữa trưa.
 - [ ] Cột hôm nay tô nền.
-- [ ] Số lớp ở chi tiết HLV khớp lịch phân công.
-- [ ] Sức chứa Private = 1, Duo = 2; **không chỗ nào hardcode "3 người"**.
+- [x] Số lớp ở chi tiết HLV khớp lịch phân công.
+- [x] Sức chứa Private = 1, Duo = 2; **không chỗ nào hardcode "3 người"**.
 - [ ] Lịch tuần dùng tốt ở 400px; 0 card/pill/shadow; axe-core 0 lỗi serious+critical.
 
 ## Risk Assessment
