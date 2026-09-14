@@ -17,6 +17,8 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+from collections.abc import Callable
+from datetime import datetime
 
 os.environ.setdefault(
     "DATABASE_URL", "postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test"
@@ -43,7 +45,7 @@ from app.core.rate_limit import (  # noqa: E402
     password_reset_limiter,
 )
 from app.db import SessionLocal, engine, get_db  # noqa: E402
-from app.domain.rules import Role  # noqa: E402
+from app.domain.rules import TIMEZONE, Role  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.user import User  # noqa: E402
 
@@ -161,3 +163,24 @@ def login(client: TestClient, email: str, password: str = TEST_PASSWORD) -> dict
 
 def auth_header(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+def studio_clock(value: datetime) -> Callable[[], datetime]:
+    """Một `now()` giả **vẫn giữ đúng hợp đồng** của `app.domain.rules.now()`.
+
+    Hợp đồng đó là "luôn aware, luôn theo múi giờ studio", và mã sản phẩm dựa
+    vào nó: `sessions_today` lấy `now().date()` để quyết định hôm nay là ngày
+    nào.
+
+    Mốc thời gian đọc lại từ PostgreSQL về theo múi giờ **của kết nối** — UTC
+    trên container — nên `monkeypatch.setattr(..., lambda: session.ends_at)`
+    thay `now()` bằng một hàm phá hợp đồng. Hậu quả chỉ lộ ra trong khung
+    00:00–07:00 giờ Việt Nam, khi ngày theo giờ studio và ngày theo UTC là hai
+    ngày khác nhau: lớp rơi ra ngoài khoảng "hôm nay" và con số về 0. Chạy lúc
+    14:00 thì hai ngày trùng nhau và test xanh — nên lỗi này ngủ yên cho tới
+    một lượt CI chạy đêm.
+
+    Quy đổi ở đây, đúng một chỗ, thay vì bắt từng test nhớ gọi `.astimezone`.
+    """
+    at = value.astimezone(TIMEZONE)
+    return lambda: at

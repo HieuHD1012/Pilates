@@ -26,7 +26,7 @@ from app.services import (
     report_queries,
     scheduling,
 )
-from tests.conftest import auth_header, login, make_user
+from tests.conftest import auth_header, login, make_user, studio_clock
 from tests.factories import (
     actor_for,
     give_package,
@@ -667,9 +667,9 @@ def test_dashboard_attention_is_finished_classes_pending_attendance(db, client, 
     assert (
         client.get("/reports/dashboard", headers=headers).json()["sessions_needing_attention"] == []
     )
-    at = first.ends_at
-    monkeypatch.setattr(report_queries, "now", lambda: at)
-    monkeypatch.setattr(attendance, "now", lambda: at)
+    clock = studio_clock(first.ends_at)
+    monkeypatch.setattr(report_queries, "now", clock)
+    monkeypatch.setattr(attendance, "now", clock)
     rows = client.get("/reports/dashboard", headers=headers).json()["sessions_needing_attention"]
     assert [row["class_session_id"] for row in rows] == [first.id]
     assert rows[0]["booked_count"] == 1
@@ -699,10 +699,10 @@ def test_dashboard_and_detail_keep_marked_registration(
         db, class_session_id=session.id, student_id=student.id, actor=actor_for(db, user)
     ).booking
     db.commit()
-    at = session.ends_at
-    monkeypatch.setattr(report_queries, "now", lambda: at)
-    monkeypatch.setattr(attendance, "now", lambda: at)
-    monkeypatch.setattr("app.api.reports.now", lambda: at)
+    clock = studio_clock(session.ends_at)
+    monkeypatch.setattr(report_queries, "now", clock)
+    monkeypatch.setattr(attendance, "now", clock)
+    monkeypatch.setattr("app.api.reports.now", clock)
     headers = auth_header(login(client, admin.email)["access_token"])
 
     def number():

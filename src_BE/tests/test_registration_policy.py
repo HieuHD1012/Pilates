@@ -9,7 +9,7 @@ from app.domain.rules import CANCEL_CUTOFF, BookingStatus, ClassType, Role, now
 from app.models.money import CreditLedger
 from app.models.scheduling import Booking
 from app.services.ledger_invariants import assert_ledger_is_sound
-from tests.conftest import auth_header, login, make_user
+from tests.conftest import auth_header, login, make_user, studio_clock
 from tests.factories import give_package, make_session, make_student_account, make_trainer
 
 
@@ -97,9 +97,9 @@ def test_cancellation_boundary_refunds_or_locks(
     booking = client.post(
         "/bookings", headers=policy["headers"], json={"class_session_id": session.id}
     ).json()["booking"]
-    at = session.starts_at - CANCEL_CUTOFF[class_type] + timedelta(seconds=offset)
-    monkeypatch.setattr("app.services.booking_service.now", lambda: at)
-    monkeypatch.setattr("app.api.my_schedule.now", lambda: at)
+    clock = studio_clock(session.starts_at - CANCEL_CUTOFF[class_type] + timedelta(seconds=offset))
+    monkeypatch.setattr("app.services.booking_service.now", clock)
+    monkeypatch.setattr("app.api.my_schedule.now", clock)
     row = client.get("/my-schedule", headers=policy["headers"]).json()[0]
     assert row["can_cancel"] is (offset <= 0)
     assert row["refund_if_cancelled_now"] is (offset <= 0)

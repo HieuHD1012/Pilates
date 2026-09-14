@@ -24,6 +24,7 @@ from app.domain.rules import (
     now,
     today,
 )
+from tests.conftest import studio_clock
 
 
 @pytest.fixture(params=["UTC", "Asia/Ho_Chi_Minh"], autouse=True)
@@ -131,3 +132,29 @@ def test_now_and_today_follow_studio_timezone_not_process() -> None:
     assert moment.utcoffset() == timedelta(hours=7)
     # `today()` phải là ngày của **cùng thời điểm đó** quy về giờ studio.
     assert today() == datetime.now(tz=UTC).astimezone(TIMEZONE).date()
+
+
+def test_studio_clock_keeps_a_faked_now_in_studio_timezone() -> None:
+    """Đồng hồ giả của test phải giữ đúng hợp đồng của `now()`.
+
+    Mã sản phẩm lấy `now().date()` để quyết định "hôm nay là ngày nào"
+    (`report_queries.sessions_today`). Mốc thời gian đọc lại từ PostgreSQL về
+    theo múi giờ của kết nối — UTC trên container — nên gắn thẳng nó vào
+    `monkeypatch` là thay `now()` bằng một hàm trả về ngày của UTC.
+
+    Bẫy này chỉ sập trong khung 00:00–07:00 giờ Việt Nam, khi hai ngày khác
+    nhau; chạy lúc 14:00 thì test xanh. Nó từng làm ba test đỏ ở một lượt chạy
+    lúc 02:45 và xanh lại vào ban ngày — nên phép kiểm ở đây dùng **mốc thời
+    gian cố định**, không dùng đồng hồ hệ thống.
+    """
+    from datetime import UTC
+
+    # 19:30 UTC ngày 14 = 02:30 giờ studio ngày 15 — đúng khung gây lỗi.
+    utc_moment = datetime(2026, 9, 14, 19, 30, tzinfo=UTC)
+    assert utc_moment.date().day == 14
+
+    faked = studio_clock(utc_moment)()
+    assert faked.tzinfo is TIMEZONE
+    assert faked.date().day == 15
+    # Vẫn đúng một thời điểm, chỉ đổi cách đọc.
+    assert faked.timestamp() == utc_moment.timestamp()

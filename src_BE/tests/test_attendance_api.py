@@ -7,11 +7,11 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
-from app.domain.rules import BookingStatus, Role, now
+from app.domain.rules import TIMEZONE, BookingStatus, Role, now
 from app.models.money import CreditLedger, StudentPackage
 from app.models.scheduling import Booking
 from app.services.ledger_invariants import assert_ledger_is_sound
-from tests.conftest import auth_header, login, make_user
+from tests.conftest import auth_header, login, make_user, studio_clock
 from tests.factories import give_package, make_session, make_student_account, make_trainer
 
 
@@ -51,9 +51,9 @@ def stage(db, client):
 
 
 def _finish(monkeypatch, stage):
-    at = stage["session"].ends_at + timedelta(seconds=1)
-    monkeypatch.setattr("app.services.attendance.now", lambda: at)
-    return at
+    clock = studio_clock(stage["session"].ends_at + timedelta(seconds=1))
+    monkeypatch.setattr("app.services.attendance.now", clock)
+    return clock()
 
 
 def _mark(client, stage, status="ATTENDED", headers=None):
@@ -73,7 +73,7 @@ def test_attendance_correction_preserves_credits_and_audits(client, db, stage, m
     assert marked.json()["attendance_marked_by"] == stage["trainer_user"].id
     assert marked.json()["attendance_marked_at"] is not None
     assert _mark(client, stage).json() == marked.json()
-    monkeypatch.setattr("app.services.attendance.now", lambda: at + timedelta(minutes=1))
+    monkeypatch.setattr("app.services.attendance.now", studio_clock(at + timedelta(minutes=1)))
     corrected = _mark(client, stage, "NO_SHOW")
     assert corrected.status_code == 200, corrected.text
     assert corrected.json()["attendance_marked_at"] != marked.json()["attendance_marked_at"]
@@ -91,7 +91,12 @@ def test_attendance_correction_preserves_credits_and_audits(client, db, stage, m
     report = client.get(
         "/reports/classes",
         headers=stage["headers"][Role.ADMIN],
-        params={"period_end": stage["session"].ends_at.date().isoformat()},
+        # Ngày cuối kỳ là ngày **theo giờ studio**: `.date()` của một timestamp
+        # đọc về từ PostgreSQL là ngày theo UTC, lệch một ngày trong khung
+        # 00:00–07:00 giờ Việt Nam và làm buổi lớp rơi ra ngoài kỳ báo cáo.
+        params={
+            "period_end": stage["session"].ends_at.astimezone(TIMEZONE).date().isoformat()
+        },
     ).json()
     assert report["total_bookings"] == 1
     assert (
@@ -106,7 +111,7 @@ def test_attendance_correction_preserves_credits_and_audits(client, db, stage, m
 @pytest.mark.parametrize("offset,expected", [(-3600, 409), (-1, 409), (0, 200), (1, 200)])
 def test_attendance_waits_until_end_of_class(client, stage, monkeypatch, offset, expected):
     at = stage["session"].ends_at + timedelta(seconds=offset)
-    monkeypatch.setattr("app.services.attendance.now", lambda: at)
+    monkeypatch.setattr("app.services.attendance.now", studio_clock(at))
     response = _mark(client, stage)
     assert response.status_code == expected, response.text
     if expected == 409:
