@@ -36,8 +36,14 @@ Hai việc không phải kỹ thuật cũng chưa xong: **ba câu hỏi chưa g�
 Excel đã dựng nhưng chưa giao studio.
 
 `app/core/email.py` gửi qua SMTP thật, bí mật lấy từ biến môi trường, token đặt lại
-không bao giờ nằm trong response — nhưng **chưa ai chạy thử trên DEV SMTP**, nên tiêu
-chí đó để trống.
+không bao giờ nằm trong response. **Đã chạy thử end-to-end ngày 14/09** trên CSDL
+staging dựng mới, `ENVIRONMENT=prod`, SMTP là Mailpit: `POST /auth/forgot-password`
+→ 200 → email "Đặt lại mật khẩu" tới đúng hộp thư.
+
+Diễn tập đó lộ ra ba cái bẫy triển khai, đã vá vào [deployment.md](../../docs/deployment.md):
+`ENVIRONMENT` phải là `prod` chứ không phải `production`; `CORS_ORIGINS` phải viết
+dạng mảng JSON; và `PASSWORD_RESET_URL_TEMPLATE` quên đặt thì **email vẫn gửi
+bình thường còn mọi liên kết đều hỏng** — không có lỗi nào báo.
 
 ## Requirements
 

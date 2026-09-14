@@ -15,10 +15,13 @@ chỉ tồn tại trên máy dev.
 |---|---|---|
 | `DATABASE_URL` | ✅ | `postgresql+psycopg://user:pass@host:5432/db` |
 | `JWT_SECRET` | ✅ | Ít nhất 32 byte ngẫu nhiên. Ứng dụng **từ chối khởi động** ở PROD nếu còn giá trị mặc định |
-| `ENVIRONMENT` | ✅ | `production` ở PROD — nó bật các phép kiểm cấu hình |
-| `CORS_ORIGINS` | ✅ | Allow-list tường minh, **không dùng `*`** |
+| `ENVIRONMENT` | ✅ | Đúng một trong `dev` / `test` / `prod`. **`prod`, không phải `production`** — giá trị khác làm ứng dụng chết lúc khởi động. Ở `prod` các phép kiểm cấu hình được bật |
+| `CORS_ORIGINS` | ✅ | Allow-list tường minh, **không dùng `*`**. Định dạng là **mảng JSON**, kể cả khi chỉ có một origin: `CORS_ORIGINS='["https://studio.example.com"]'`. Chuỗi trần làm ứng dụng chết lúc khởi động với lỗi parse khó đọc |
 | `STORAGE_DIR` | ✅ | Thư mục ảnh tiến trình. Phải nằm ngoài cây mã nguồn và **không được web server phục vụ trực tiếp** |
 | `SMTP_*` | ✅ | Gửi email đặt lại mật khẩu và kích hoạt tài khoản |
+| `EMAIL_FROM` | ✅ | Địa chỉ người gửi. Mặc định `no-reply@pilates.local` là **tên miền dành riêng**, MTA thật sẽ từ chối |
+| `PASSWORD_RESET_URL_TEMPLATE` | ✅ | Liên kết trong email đặt lại mật khẩu. Mặc định trỏ `http://localhost:5173` — quên đặt thì email vẫn gửi đi bình thường và **mọi liên kết đều hỏng**, không có lỗi nào báo |
+| `UPLOAD_MAX_BYTES` | | Giới hạn dung lượng ảnh tiến trình, mặc định 8 MiB |
 | `TRUST_PROXY_HEADERS` | khi có proxy | `true` **chỉ khi** có reverse proxy đứng trước. Xem mục dưới |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | chỉ lần đầu | Dùng một lần cho `scripts.seed_admin`, xoá khỏi môi trường sau đó |
 
@@ -57,6 +60,12 @@ uv run alembic upgrade head
 uv run alembic check     # phải in "No new upgrade operations detected"
 ```
 
+Chạy ứng dụng (một worker — xem mục trên):
+
+```bash
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+```
+
 `alembic check` chạy ở CI: nó bắt trường hợp model đã đổi mà quên sinh
 migration — sai lệch sẽ lộ ra lần đầu trên PROD nếu không có bước này.
 
@@ -65,10 +74,14 @@ migration — sai lệch sẽ lộ ra lần đầu trên PROD nếu không có b
 Đây là phần quan trọng nhất của tài liệu.
 
 `credit_ledger` có trigger cấm `UPDATE`, `DELETE` **và `TRUNCATE`**. Quy tắc đó
-không chừa ai — nó chặn cả `alembic downgrade` và mọi migration sửa dữ liệu,
-kể cả khi chạy bằng tài khoản owner của schema. Một lần `downgrade` chạm bảng
-này sẽ **dừng giữa chừng** với lỗi trigger, để lại schema ở trạng thái nửa
-vời.
+không chừa ai — nó chặn mọi migration **sửa dữ liệu** trong bảng, kể cả khi
+chạy bằng tài khoản owner của schema. Một migration như vậy sẽ **dừng giữa
+chừng** với lỗi trigger, để lại schema ở trạng thái nửa vời.
+
+Bảy migration hiện có chỉ chạm *cấu trúc* chứ không chạm dòng nào, nên
+`alembic downgrade` hôm nay chạy suốt mà không cần thao tác gì thêm — đã diễn
+tập ngày 14/09, xuống `0002` rồi lên lại `head`, `alembic check` sạch. Phần
+dưới là bắt buộc **kể từ migration đầu tiên sửa dữ liệu sổ**.
 
 Đường hợp lệ duy nhất là tắt trigger trong đúng transaction đó:
 
@@ -147,7 +160,12 @@ ngoài mới, và mọi dòng sẽ vào lần nữa.
 - [ ] `scripts.reconcile_ledger` xanh trên dữ liệu thật.
 - [ ] Số dư sau nhập liệu khớp file Excel của studio.
 - [ ] Tài khoản ADMIN đầu tiên đã tạo, biến `SEED_ADMIN_*` đã gỡ khỏi môi trường.
-- [ ] `CORS_ORIGINS` là allow-list thật, không phải `*`.
+- [ ] `CORS_ORIGINS` là allow-list thật, không phải `*`, và viết dạng mảng JSON.
+- [ ] `PASSWORD_RESET_URL_TEMPLATE` trỏ tên miền thật, `EMAIL_FROM` không còn
+      `.local` — **gửi thử một email đặt lại mật khẩu và bấm vào liên kết**.
+- [ ] Email của ADMIN đầu tiên là **tên miền thật**. `scripts.seed_admin` nhận
+      cả `.local`, nhưng API đặt lại mật khẩu từ chối tên miền dành riêng — một
+      ADMIN seed bằng `.local` sẽ vĩnh viễn không tự lấy lại được mật khẩu.
 - [ ] Sao lưu tự động đã bật và **đã thử phục hồi một lần**.
 - [ ] Rà nội dung trang công khai bằng tay — **sau khi nhập dữ liệu**, vì nội
       dung công khai (`trainer.bio`, `announcement.body`, `specialties`) do nhân
