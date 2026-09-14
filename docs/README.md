@@ -4,6 +4,7 @@ Bắt đầu từ câu hỏi đang cần trả lời, không phải từ cây th
 
 | Câu hỏi | Đọc ở đâu |
 |---|---|
+| Hệ thống có những tính năng gì, dùng ra sao? | [`dac-ta-tinh-nang.md`](dac-ta-tinh-nang.md) — đặc tả bàn giao cho team và khách |
 | Vì sao quy tắc lại như vậy? | [`business-rules.md`](business-rules.md) — nguồn chuẩn duy nhất |
 | Màn hình này gọi những endpoint nào? | [`api-cho-frontend.md`](api-cho-frontend.md) — sắp theo màn hình |
 | Endpoint này nhận gì, trả gì? | [`api/`](api/README.md) — 88 endpoint, sinh tự động |
@@ -21,6 +22,7 @@ Sửa đường dẫn ở nhóm này là làm đỏ test, vì `src_BE/` trỏ th
 
 | Đường dẫn | Nội dung | Ai ghim |
 |---|---|---|
+| `dac-ta-tinh-nang.md` | Đặc tả 9 nhóm tính năng theo góc nhìn người dùng | — |
 | `business-rules.md` | 18 mục quy tắc nghiệp vụ | docstring trong `app/` |
 | `api/` | 88 endpoint / 16 nhóm tính năng | `tests/test_api_docs.py`, `tests/test_api_surface.py` |
 | `api-cho-frontend.md` | Endpoint sắp theo 9 nhóm màn hình F01–F09 | `tests/test_api_docs.py` |
