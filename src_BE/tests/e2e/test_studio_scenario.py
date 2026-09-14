@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -29,9 +29,11 @@ from openpyxl import load_workbook
 from PIL import Image
 from sqlalchemy.orm import Session
 
-from app.domain.rules import RENEWAL_THRESHOLD, ClassType, now, today
+from app.domain.rules import RENEWAL_THRESHOLD, ClassType, Role, now, today
 from app.services.ledger_invariants import assert_ledger_is_sound
+from tests.conftest import TEST_PASSWORD, login, studio_clock
 from tests.e2e.studio_stage import (
+    ApiUser,
     Studio,
     build_studio,
     created,
@@ -697,6 +699,16 @@ def test_hlv_diem_danh_sau_lop_va_hoc_vien_doc_dung_ket_qua(
         )["booking"]["id"]
         assert_ledger_is_sound(db)
 
+    # "Lịch dạy của tôi" là đường riêng của vai HLV: lọc theo trainer_id của
+    # chính người đăng nhập, không nhận tham số nào để giả mạo người khác.
+    mai_schedule = {row["id"] for row in ok(mai.get("/classes/my-schedule"))}
+    bao_schedule = {row["id"] for row in ok(bao.get("/classes/my-schedule"))}
+    assert session_id in mai_schedule
+    assert mai_schedule & bao_schedule == set()
+    # Vai khác không có lịch dạy — kể cả admin, người thấy được mọi lớp.
+    fails(studio.admin.get("/classes/my-schedule"), "FORBIDDEN", status=403)
+    fails(studio.students["lan"].get("/classes/my-schedule"), "FORBIDDEN", status=403)
+
     roster = ok(mai.get(f"/classes/{session_id}/attendance"))
     assert {row["student_id"] for row in roster} == {
         studio.student_ids["lan"],
@@ -710,11 +722,9 @@ def test_hlv_diem_danh_sau_lop_va_hoc_vien_doc_dung_ket_qua(
 
     # Dịch đồng hồ sau ends_at; không sửa trực tiếp dữ liệu lớp/booking.
     class_detail = ok(studio.admin.get(f"/classes/{session_id}"))
-    from datetime import datetime
-
-    finished_at = datetime.fromisoformat(class_detail["ends_at"]) + timedelta(seconds=1)
-    monkeypatch.setattr("app.services.attendance.now", lambda: finished_at)
-    monkeypatch.setattr("app.api.my_schedule.now", lambda: finished_at)
+    clock = studio_clock(datetime.fromisoformat(class_detail["ends_at"]) + timedelta(seconds=1))
+    monkeypatch.setattr("app.services.attendance.now", clock)
+    monkeypatch.setattr("app.api.my_schedule.now", clock)
 
     for key, status in (("lan", "ATTENDED"), ("minh", "NO_SHOW")):
         result = ok(mai.patch(f"/bookings/{bookings[key]}/attendance", {"status": status}))
@@ -732,3 +742,281 @@ def test_hlv_diem_danh_sau_lop_va_hoc_vien_doc_dung_ket_qua(
         studio.students["minh"].post(f"/bookings/{bookings['minh']}/cancel"), "BOOKING_NOT_ACTIVE"
     )
     assert ok(studio.admin.get(f"/classes/{session_id}"))["booked_count"] == 2
+
+
+# --- 11. Lễ tân: một ca trực đầy đủ và bốn cánh cửa đóng ----------------------
+
+
+def _receptionist(studio: Studio, client: TestClient) -> ApiUser:
+    """Lễ tân do chính admin cấp tài khoản — đúng đường studio sẽ đi thật.
+
+    Dựng trong màn này thay vì trong `build_studio`: mười hai màn còn lại
+    khẳng định "ADMIN làm được X", và thêm một nhân vật vào sân khấu chung sẽ
+    đổi số đếm của chúng mà không màn nào nói về lễ tân cả.
+    """
+    account = created(
+        studio.admin.post(
+            "/accounts",
+            {
+                "email": "letan.thao@example.com",
+                "full_name": "Lễ tân Thảo",
+                "phone": "0912000010",
+                "role": Role.STAFF.value,
+                "password": TEST_PASSWORD,
+            },
+        )
+    )
+    tokens = login(client, "letan.thao@example.com")
+    return ApiUser(
+        client=client,
+        token=tokens["access_token"],
+        user_id=account["id"],
+        label="le-tan",
+    )
+
+
+def test_le_tan_lam_tron_ca_truc_nhung_khong_cham_duoc_bon_thu(
+    studio: Studio, client: TestClient, db: Session
+) -> None:
+    """Vai STAFF: làm được cả ngày vận hành, và dừng đúng ở bốn ranh giới.
+
+    Nửa dưới quan trọng hơn nửa trên. Lễ tân là vai **đông người dùng nhất và
+    luân chuyển nhiều nhất** trong một studio; nếu quyền của nó rộng bằng
+    ADMIN thì bốn thứ nguy hiểm nhất — ảnh cơ thể học viên, số buổi, tài
+    khoản, và đặt lớp hộ — đều nằm trong tay người trực quầy.
+    """
+    staff = _receptionist(studio, client)
+    admin = studio.admin
+
+    # --- Nửa trên: một ca trực bình thường, tất cả bằng tài khoản lễ tân ---
+
+    # Khách gọi điện đăng ký học → lễ tân mở hồ sơ.
+    khanh = created(
+        staff.post(
+            "/students",
+            {"full_name": "Đỗ Minh Khánh", "phone": "0901000011", "email": "khanh@example.com"},
+        )
+    )
+
+    # Bán gói, thu tiền mặt, xác nhận ngay tại quầy.
+    package = created(
+        staff.post(
+            "/packages/sell",
+            {
+                "student_id": khanh["id"],
+                "package_type_id": studio.package_type_ids["group10"],
+            },
+        )
+    )
+    assert package["balance_cached"] == 10
+    payment = created(
+        staff.post(
+            "/payments",
+            {"student_package_id": package["id"], "amount": "2500000", "method": "CASH"},
+        )
+    )
+    assert ok(staff.post(f"/payments/{payment['id']}/confirm"))["status"] == "CONFIRMED"
+    assert_ledger_is_sound(db)
+
+    # Khách quen tới gia hạn.
+    renewed = ok(
+        staff.post(
+            f"/packages/{package['id']}/renew",
+            {"extra_days": 30, "extra_credits": 5, "note": "Khách gia hạn tại quầy"},
+        )
+    )
+    assert renewed["balance_cached"] == 15
+    assert_ledger_is_sound(db)
+
+    # Khách để lại số trên web → lễ tân chuyển thành hồ sơ học viên.
+    assert (
+        client.post(
+            "/public/leads",
+            json={"full_name": "Vũ Hà My", "phone": "0901000012", "need": "Tập sau sinh"},
+        ).status_code
+        == 201
+    )
+    lead = ok(staff.get("/leads", q="0901000012"))[0]
+    assert created(staff.post(f"/leads/{lead['id']}/convert"))["full_name"] == "Vũ Hà My"
+
+    # Xếp lịch: mở lớp, đổi HLV, rồi hủy vì HLV báo nghỉ.
+    starts_at = now() + timedelta(days=11)
+    session = created(
+        staff.post(
+            "/classes",
+            {
+                "starts_at": starts_at.isoformat(),
+                "ends_at": (starts_at + timedelta(hours=1)).isoformat(),
+                "trainer_id": studio.trainer_ids["ha"],
+                "class_type": ClassType.GROUP.value,
+                "capacity": 5,
+            },
+        )
+    )
+    changed = ok(
+        staff.post(f"/classes/{session['id']}/trainer", {"trainer_id": studio.trainer_ids["mai"]})
+    )
+    assert changed["trainer_id"] == studio.trainer_ids["mai"]
+    ok(staff.post(f"/classes/{session['id']}/cancel", {"reason": "HLV báo nghỉ đột xuất"}))
+
+    # Thêm một HLV mới vào danh sách.
+    assert created(
+        staff.post(
+            "/trainers",
+            {
+                "full_name": "HLV Bảo Trâm",
+                "phone": "0911000004",
+                "bio": "Bảo Trâm dạy tại studio từ 2021.",
+                "specialties": "Mat Pilates",
+                "is_public": True,
+            },
+        )
+    )["is_public"]
+
+    # Khách đổi số điện thoại → sửa hồ sơ đã có.
+    khanh_moi = ok(
+        staff.patch(
+            f"/students/{khanh['id']}",
+            {"phone": "0901000013", "note": "Khách đổi số, đã xác nhận qua Zalo"},
+        )
+    )
+    assert khanh_moi["phone"] == "0901000013"
+
+    # Studio ra gói mới và ngừng bán một gói cũ — danh mục là việc của quầy.
+    loai_goi = created(
+        staff.post(
+            "/package-types",
+            {
+                "name": "Group 8 buổi",
+                "price": "2000000",
+                "credits": 8,
+                "duration_days": 60,
+                "class_type": ClassType.GROUP.value,
+            },
+        )
+    )
+    ok(staff.patch(f"/package-types/{loai_goi['id']}", {"is_selling": False}))
+    # Ngừng bán là rút khỏi bảng giá công khai, không phải xoá: gói đã bán theo
+    # loại này vẫn phải tra lại được.
+    assert loai_goi["name"] not in {row["name"] for row in ok(client.get("/public/packages"))}
+
+    # Đăng thông báo khuyến mãi, rồi sửa lại giờ khai giảng.
+    thong_bao = created(
+        staff.post(
+            "/announcements",
+            {
+                "title": "Khung sáng lớp Reformer",
+                "body": "Studio mở thêm khung sáng từ tuần sau.",
+                "is_published": True,
+            },
+        )
+    )
+    sua = ok(
+        staff.patch(
+            f"/announcements/{thong_bao['id']}",
+            {"body": "Studio mở thêm khung sáng từ đầu tháng."},
+        )
+    )
+    assert sua["updated_by"] == staff.user_id
+    # Nội dung sửa vẫn phải qua bộ lọc trang công khai — không có đường vòng
+    # "đăng sạch rồi sửa thành câu bị cấm".
+    vi_pham = staff.patch(
+        f"/announcements/{thong_bao['id']}", {"body": "Lớp tối đa 3 người mỗi buổi"}
+    )
+    assert vi_pham.status_code == 422, vi_pham.text
+    assert ok(client.get("/public/announcements"))[0]["body"] == sua["body"]
+
+    # Theo dõi vận hành: đăng ký, nhắc gia hạn, báo cáo.
+    ok(staff.get("/bookings"))
+    assert ok(staff.get("/renewals/summary"))["needing_contact"] >= 1
+    contact = created(
+        staff.post(
+            "/renewals/contacts",
+            {"student_id": studio.student_ids["huy"], "result": "Đã gọi, khách hẹn ghé"},
+        )
+    )
+    # Lịch sử liên hệ ghi đúng tên người gọi, không gộp về admin.
+    assert contact["actor_user_id"] == staff.user_id
+    stats = ok(
+        staff.get(
+            "/classes/trainer-stats",
+            trainer_id=studio.trainer_ids["mai"],
+            year=today().year,
+            month=today().month,
+        )
+    )
+    # Thống kê tháng của HLV là màn của nhân viên, không phải của chính HLV.
+    assert stats["trainer_id"] == studio.trainer_ids["mai"]
+    assert stats["scheduled_sessions"] >= 1
+    fails(studio.trainers["mai"].get(
+        "/classes/trainer-stats",
+        trainer_id=studio.trainer_ids["mai"],
+        year=today().year,
+        month=today().month,
+    ), "FORBIDDEN", status=403)
+    ok(staff.get("/reports/dashboard"))
+    ok(staff.get("/reports/revenue"))
+    # File xuất là CSV, không phải JSON — đọc thân response, không gọi .json().
+    export = staff.get("/reports/trainers/export", format="csv")
+    assert export.status_code == 200, export.text
+    assert export.text.splitlines()[0]
+
+    # --- Nửa dưới: bốn cánh cửa đóng, mỗi cánh một lý do khác nhau ---
+
+    lan_id = studio.student_ids["lan"]
+
+    # 1. Ảnh tiến trình — ảnh cơ thể học viên không phải dữ liệu vận hành quầy.
+    fails(staff.get(f"/students/{lan_id}/progress-photos"), "FORBIDDEN", status=403)
+
+    # 2. Điều chỉnh số buổi thủ công — chỉ ADMIN, vì nó tạo buổi từ hư không.
+    fails(
+        staff.post(
+            f"/packages/{studio.package_ids['lan']}/adjust",
+            {"delta": 5, "reason": "Bù buổi cho khách quen"},
+        ),
+        "FORBIDDEN",
+        status=403,
+    )
+
+    # 3. Quản lý tài khoản — lễ tân không tự cấp quyền cho mình hay cho ai.
+    fails(staff.get("/accounts"), "FORBIDDEN", status=403)
+
+    # 4. Đặt lớp hộ học viên — chỉ học viên tự đặt cho mình, kể cả khi đứng quầy.
+    fails(
+        staff.post(
+            "/bookings",
+            {
+                "class_session_id": studio.session_ids["group_tomorrow"],
+                "student_id": lan_id,
+            },
+        ),
+        "FORBIDDEN",
+        status=403,
+    )
+
+    # Và điểm danh là việc của HLV đứng lớp, không phải của quầy.
+    fails(
+        staff.get(f"/classes/{studio.session_ids['group_tomorrow']}/attendance"),
+        "FORBIDDEN",
+        status=403,
+    )
+
+    # Và chiều ngược lại: việc của quầy không mở cho học viên hay HLV.
+    for outsider in (studio.students["lan"], studio.trainers["mai"]):
+        fails(
+            outsider.post(
+                "/trainers",
+                {"full_name": "HLV Tự Phong", "phone": "0911000009", "is_public": True},
+            ),
+            "FORBIDDEN",
+            status=403,
+        )
+        fails(outsider.get("/leads"), "FORBIDDEN", status=403)
+
+    # Sổ buổi vẫn cân sau trọn một ca trực của lễ tân.
+    assert_ledger_is_sound(db)
+
+    # Admin vẫn làm được đúng thứ lễ tân vừa bị từ chối — bốn mã 403 ở trên là
+    # ranh giới phân quyền, không phải một tính năng hỏng.
+    ok(admin.get(f"/students/{lan_id}/progress-photos"))
+    ok(admin.get("/accounts"))

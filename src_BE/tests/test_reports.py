@@ -348,6 +348,36 @@ def test_students_cannot_read_reports(db: Session, client, admin) -> None:
 # --- Con số phải mở ra được danh sách khớp với nó ----------------------------
 
 
+def test_revenue_number_matches_the_list_behind_its_own_link(
+    db: Session, client, admin
+) -> None:
+    """Cùng tiêu chí với báo cáo lớp, áp cho con số nhạy cảm nhất: doanh thu.
+
+    `test_revenue_total_equals_the_sum_of_its_detail_rows` đã kiểm mệnh đề này
+    ở tầng truy vấn. Phép kiểm ở đây đi qua **HTTP và qua đúng `detail_path` mà
+    server tự sinh** — đó mới là đường người dùng bấm, và là đường duy nhất có
+    thể hỏng vì biên kỳ hoặc múi giờ trên query string.
+    """
+    for index, amount in enumerate(["1000000.00", "2500000.00", "500000.00"]):
+        student = make_student(db, f"Khách Doanh Thu {index}")
+        method = PaymentMethod.CASH if index % 2 == 0 else PaymentMethod.TRANSFER
+        _confirmed_payment(db, admin, student, amount, method)
+
+    token = login(client, admin.email)["access_token"]
+    report = client.get(
+        "/reports/revenue",
+        params={"period_start": str(today() - timedelta(days=7)), "period_end": str(today())},
+        headers=auth_header(token),
+    ).json()
+    assert report["payment_count"] == 3
+
+    detail = client.get(report["detail_path"], headers=auth_header(token))
+    assert detail.status_code == 200, detail.text
+    rows = detail.json()
+    assert len(rows) == report["payment_count"]
+    assert sum(Decimal(row["amount"]) for row in rows) == Decimal(report["total"])
+
+
 def test_class_report_number_matches_the_list_behind_its_own_link(
     db: Session, client, admin
 ) -> None:

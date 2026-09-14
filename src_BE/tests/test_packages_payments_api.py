@@ -567,3 +567,45 @@ def test_void_refuses_when_credits_came_from_a_manual_adjustment(
     )
     assert response.status_code == 409
     assert db.get(StudentPackage, package["id"]).balance_cached == 13
+
+
+# --- Chi tiết một giao dịch --------------------------------------------------
+
+
+def test_payment_detail_carries_the_full_audit_trail(
+    client: TestClient, setup: dict
+) -> None:
+    """Màn chi tiết phải trả đủ **ba cặp người/thời điểm**.
+
+    Ghi nhận, xác nhận và huỷ là ba lần một khoản tiền đổi trạng thái, và mỗi
+    lần đều phải truy được ai làm. Một màn chi tiết chỉ hiện trạng thái cuối
+    biến câu hỏi "ai đã huỷ khoản này" thành một câu không trả lời được.
+    """
+    package = _sell(client, setup)
+    payment = client.post(
+        "/payments",
+        headers=setup["staff_headers"],
+        json={"student_package_id": package["id"], "amount": "2500000.00", "method": "CASH"},
+    ).json()
+
+    fresh = client.get(f"/payments/{payment['id']}", headers=setup["staff_headers"])
+    assert fresh.status_code == 200
+    body = fresh.json()
+    assert body["status"] == "PENDING"
+    assert body["recorded_by"] == setup["staff"].id
+    assert body["recorded_at"] is not None
+    assert body["confirmed_by"] is None and body["voided_by"] is None
+
+    client.post(f"/payments/{payment['id']}/confirm", headers=setup["admin_headers"])
+    confirmed = client.get(f"/payments/{payment['id']}", headers=setup["staff_headers"]).json()
+    assert confirmed["status"] == "CONFIRMED"
+    assert confirmed["confirmed_by"] == setup["admin"].id
+    assert confirmed["confirmed_at"] is not None
+    # Người ghi nhận ban đầu không bị người xác nhận ghi đè.
+    assert confirmed["recorded_by"] == setup["staff"].id
+
+
+def test_reading_an_unknown_payment_is_a_404(client: TestClient, setup: dict) -> None:
+    assert (
+        client.get("/payments/999999", headers=setup["staff_headers"]).status_code == 404
+    )

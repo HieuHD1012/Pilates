@@ -170,3 +170,59 @@ def test_changing_role_to_student_requires_profile(client: TestClient, db: Sessi
     assert response.status_code == 200, response.text
     me = client.get("/auth/me", headers=auth_header(login(client, user.email)["access_token"]))
     assert me.json()["student_id"] == student.id
+
+
+# --- Chi tiết một tài khoản --------------------------------------------------
+
+
+def test_admin_reads_one_account_without_the_password_hash(
+    client: TestClient, db: Session
+) -> None:
+    """Màn chi tiết tài khoản trả đủ thứ admin cần, và **không** trả băm mật khẩu.
+
+    Băm argon2 lọt ra response là thứ không thu hồi được: nó nằm lại trong log
+    proxy, trong cache trình duyệt và trong mọi bản ghi màn hình.
+    """
+    admin = make_user(db, Role.ADMIN)
+    headers = auth_header(login(client, admin.email)["access_token"])
+    student = make_student(db)
+    created = client.post("/accounts", headers=headers, json=_payload(student.id)).json()
+
+    detail = client.get(f"/accounts/{created['id']}", headers=headers)
+    assert detail.status_code == 200
+    body = detail.json()
+    assert body["email"] == "new-student@example.com"
+    assert body["role"] == "STUDENT"
+    assert body["status"] == "ACTIVE"
+    assert not any("password" in key or "hash" in key for key in body)
+
+    # Hợp đồng hiện tại **không** trả `student_id` ở chiều đọc, dù chiều ghi
+    # nhận nó (`PATCH /accounts/{id}` dùng `student_id` để nối hồ sơ). Chiều
+    # đọc của liên kết đi từ phía học viên: `student.user_id`.
+    assert "student_id" not in body
+    linked = client.get(f"/students/{student.id}", headers=headers).json()
+    assert linked["user_id"] == created["id"]
+
+
+def test_reading_an_unknown_account_is_a_404(client: TestClient, db: Session) -> None:
+    admin = make_user(db, Role.ADMIN)
+    headers = auth_header(login(client, admin.email)["access_token"])
+    assert client.get("/accounts/999999", headers=headers).status_code == 404
+
+
+@pytest.mark.parametrize("role", [Role.STAFF, Role.TRAINER, Role.STUDENT])
+def test_only_admin_reads_account_details(
+    client: TestClient, db: Session, role: Role
+) -> None:
+    """Kể cả lễ tân: danh sách tài khoản là bản đồ ai có quyền gì trong studio."""
+    admin = make_user(db, Role.ADMIN)
+    admin_headers = auth_header(login(client, admin.email)["access_token"])
+    other = make_user(db, role, email=f"{role.value.lower()}-chi-tiet@example.com")
+
+    response = client.get(
+        f"/accounts/{admin.id}",
+        headers=auth_header(login(client, other.email)["access_token"]),
+    )
+    assert response.status_code == 403
+    # Và admin vẫn đọc được — 403 ở trên là ranh giới, không phải endpoint hỏng.
+    assert client.get(f"/accounts/{admin.id}", headers=admin_headers).status_code == 200

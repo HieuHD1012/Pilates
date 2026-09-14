@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import io
+
+import piexif
 from fastapi.testclient import TestClient
+from PIL import Image
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -314,3 +318,140 @@ def test_package_without_price_shows_empty_not_zero(client: TestClient, db: Sess
     body = {row["name"]: row["price"] for row in client.get("/public/packages").json()}
     assert body["Gói chưa có giá"] is None
     assert body["Gói có giá"] == "2500000.00"
+
+
+# --- Ảnh đại diện HLV --------------------------------------------------------
+#
+# Ảnh này lên thẳng trang công khai, nên nó là đường duy nhất trong hệ mà một
+# tệp do người dùng đưa vào được phục vụ lại cho khách vãng lai. Hai mối nguy
+# đi kèm — metadata vị trí và tệp không phải ảnh — được gác ở `upload_guard` và
+# đã có test đơn vị riêng; phần dưới đây kiểm rằng **endpoint thật sự gọi tới
+# lớp gác đó**, vì một lớp gác đúng mà route quên gọi thì cũng bằng không.
+
+
+def _jpeg_with_gps() -> bytes:
+    """Ảnh mang toạ độ GPS — đúng thứ điện thoại gắn vào mọi ảnh chụp."""
+    exif = {
+        "0th": {piexif.ImageIFD.Make: b"TestPhone"},
+        "GPS": {
+            piexif.GPSIFD.GPSLatitudeRef: b"N",
+            piexif.GPSIFD.GPSLatitude: ((12, 1), (14, 1), (0, 1)),
+            piexif.GPSIFD.GPSLongitudeRef: b"E",
+            piexif.GPSIFD.GPSLongitude: ((109, 1), (11, 1), (0, 1)),
+        },
+        "Exif": {},
+        "1st": {},
+        "thumbnail": None,
+    }
+    buffer = io.BytesIO()
+    Image.new("RGB", (64, 64), (180, 170, 160)).save(
+        buffer, format="JPEG", exif=piexif.dump(exif)
+    )
+    return buffer.getvalue()
+
+
+def _new_trainer(client: TestClient, headers: dict) -> int:
+    return client.post(
+        "/trainers",
+        headers=headers,
+        json={"full_name": "HLV Demo 01", "bio": "Dạy Pilates.", "is_public": True},
+    ).json()["id"]
+
+
+def test_uploading_a_trainer_photo_strips_location_metadata(
+    client: TestClient, db: Session
+) -> None:
+    """Toạ độ GPS không được sống sót qua route.
+
+    Ảnh HLV được phục vụ cho khách ẩn danh; một tấm ảnh chụp tại nhà HLV mà còn
+    nguyên EXIF là địa chỉ nhà họ, đăng công khai.
+    """
+    headers = _headers(client, make_user(db, Role.STAFF))
+    trainer_id = _new_trainer(client, headers)
+
+    uploaded = client.post(
+        f"/trainers/{trainer_id}/photo",
+        headers=headers,
+        files={"file": ("anh.jpg", _jpeg_with_gps(), "image/jpeg")},
+    )
+    assert uploaded.status_code == 200, uploaded.text
+
+    served = client.get(f"/trainers/{trainer_id}/photo", headers=headers)
+    assert served.status_code == 200
+    assert served.headers["content-type"] == "image/jpeg"
+    assert Image.open(io.BytesIO(served.content)).getexif().get(piexif.GPSIFD.GPSLatitude) is None
+
+    # `photo_key` **được** trả về: khác ảnh tiến trình, nó là khoá công khai —
+    # `app/schemas/public.py` cho HLV đúng ba trường `full_name`, `photo_key`,
+    # `bio`, và trang công khai lấy ảnh bằng chính khoá đó. Nên phép kiểm là
+    # khoá dùng được ở đường ẩn danh, không phải khoá bị giấu đi.
+    public_photo = client.get(f"/public/trainer-photos/{uploaded.json()['photo_key']}")
+    assert public_photo.status_code == 200
+    assert public_photo.content == served.content
+
+
+def test_a_trainer_without_a_photo_answers_no_photo(client: TestClient, db: Session) -> None:
+    """404 kèm mã riêng, để giao diện hiện ô trống thay vì một lỗi đỏ."""
+    headers = _headers(client, make_user(db, Role.STAFF))
+    trainer_id = _new_trainer(client, headers)
+
+    response = client.get(f"/trainers/{trainer_id}/photo", headers=headers)
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "NO_PHOTO"
+
+
+def test_a_non_image_upload_is_rejected_by_the_route(client: TestClient, db: Session) -> None:
+    """Phần mở rộng `.jpg` không nói lên gì; tệp phải mở được bằng bộ giải mã ảnh."""
+    headers = _headers(client, make_user(db, Role.STAFF))
+    trainer_id = _new_trainer(client, headers)
+
+    response = client.post(
+        f"/trainers/{trainer_id}/photo",
+        headers=headers,
+        files={"file": ("anh.jpg", b"<html><script>alert(1)</script></html>", "image/jpeg")},
+    )
+    assert response.status_code == 422
+    # Ảnh hỏng không được để lại hồ sơ trỏ vào một tệp không tồn tại.
+    assert client.get(f"/trainers/{trainer_id}/photo", headers=headers).status_code == 404
+
+
+def test_replacing_a_photo_serves_the_new_one(client: TestClient, db: Session) -> None:
+    headers = _headers(client, make_user(db, Role.STAFF))
+    trainer_id = _new_trainer(client, headers)
+
+    def upload(colour: tuple[int, int, int]) -> None:
+        buffer = io.BytesIO()
+        Image.new("RGB", (64, 64), colour).save(buffer, format="JPEG")
+        assert (
+            client.post(
+                f"/trainers/{trainer_id}/photo",
+                headers=headers,
+                files={"file": ("anh.jpg", buffer.getvalue(), "image/jpeg")},
+            ).status_code
+            == 200
+        )
+
+    upload((10, 10, 10))
+    upload((240, 240, 240))
+
+    served = client.get(f"/trainers/{trainer_id}/photo", headers=headers).content
+    assert Image.open(io.BytesIO(served)).getpixel((32, 32))[0] > 200
+
+
+def test_a_trainer_cannot_upload_a_photo_onto_someone_elses_profile(
+    client: TestClient, db: Session
+) -> None:
+    """Hồ sơ người khác trả 404, không phải 403 — hai mã khác nhau là bộ đếm số HLV."""
+    staff_headers = _headers(client, make_user(db, Role.STAFF))
+    other_id = _new_trainer(client, staff_headers)
+
+    trainer_user = make_user(db, Role.TRAINER, email="hlv-anh@example.com")
+    db.add(Trainer(full_name="HLV Demo 02", user_id=trainer_user.id))
+    db.commit()
+
+    response = client.post(
+        f"/trainers/{other_id}/photo",
+        headers=_headers(client, trainer_user),
+        files={"file": ("anh.jpg", _jpeg_with_gps(), "image/jpeg")},
+    )
+    assert response.status_code == 404
