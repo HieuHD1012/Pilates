@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pilates_db
+    environment:
+      POSTGRES_USER: pilates
+      POSTGRES_PASSWORD: pilates
+      POSTGRES_DB: pilates
+      TZ: UTC
+    # Cổng 5433 để không đụng PostgreSQL đang chạy sẵn trên máy dev ở 5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - pilates_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pilates -d pilates"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # CSDL riêng cho test: chạy trong tmpfs, xoá sạch khi container dừng.
+  db_test:
+    image: postgres:16-alpine
+    container_name: pilates_db_test
+    environment:
+      POSTGRES_USER: pilates
+      POSTGRES_PASSWORD: pilates
+      POSTGRES_DB: pilates_test
+      TZ: UTC
+    ports:
+      - "5434:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pilates -d pilates_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Bắt mọi email của luồng đặt lại mật khẩu ở DEV, không gửi ra ngoài.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: pilates_mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  pilates_pgdata:

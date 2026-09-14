@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src_BE
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pilates
+          POSTGRES_PASSWORD: pilates
+          POSTGRES_DB: pilates_test
+          TZ: UTC
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U pilates -d pilates_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test
+      JWT_SECRET: ci-secret-0123456789
+      ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      # Rule DTZ chặn naive datetime — lệch 7 giờ vượt cả hai ngưỡng hủy 4h/1h.
+      - name: Lint (gồm cổng chặn naive datetime)
+        run: uv run ruff check .
+
+      - name: Kiểm migration khớp model
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+        env:
+          DATABASE_URL: postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test
+
+      - name: Test
+        run: uv run pytest -q
+
+      # Lượt hai dưới giờ studio. Runner chạy UTC, máy dev chạy giờ Việt Nam,
+      # và độ lệch 7 giờ vượt cả hai ngưỡng hủy 4h/1h — một phép quy đổi sai sẽ
+      # cho hai kết quả khác nhau ở đúng các test này.
+      - name: Test quy tắc thời gian dưới giờ studio
+        run: uv run pytest -q tests/test_timezone_boundaries.py tests/test_timezone_rules.py tests/test_booking_rules.py tests/test_classes_api.py tests/test_reports.py tests/test_renewal_reminders.py tests/test_attendance_api.py tests/test_registration_policy.py
+        env:
+          TZ: Asia/Ho_Chi_Minh

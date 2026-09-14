@@ -1,0 +1,2 @@
+- [Pilates MVP baseline conflicts](project-pilates-mvp-baseline-conflicts.md) — the "no code exists" and "527h estimate" claims both rest on contradicted sources.
+- [Pilates source docs map](reference-pilates-source-docs.md) — which doc is authoritative for scope, effort, business rules, design thresholds.

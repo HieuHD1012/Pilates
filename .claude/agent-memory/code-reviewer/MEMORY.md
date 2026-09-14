@@ -1,0 +1,2 @@
+- [Phương pháp review](feedback-review-method.md) — mutation testing là phần bắt buộc; báo cáo tiếng Việt, advisory, khôi phục nguyên trạng
+- [Bối cảnh dự án Pilates](project-pilates-review-context.md) — nguồn sự thật nghiệp vụ, mốc nghiệm thu, quyết định không được đảo, không có git

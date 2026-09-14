@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Công cụ
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Môi trường — không bao giờ commit
+.env
+.env.*
+.venv/
+
+# Ảnh tiến trình học viên: dữ liệu cá nhân, ở PROD nằm ngoài cây mã nguồn
+var/
