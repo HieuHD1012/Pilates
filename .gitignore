@@ -14,3 +14,12 @@ __pycache__/
 
 # Ảnh tiến trình học viên: dữ liệu cá nhân, ở PROD nằm ngoài cây mã nguồn
 var/
+
+# Frontend (src_FE)
+src_FE/node_modules/
+src_FE/build/
+src_FE/.react-router/
+src_FE/coverage/
+src_FE/playwright-report/
+src_FE/test-results/
+src_FE/.reference-shots/

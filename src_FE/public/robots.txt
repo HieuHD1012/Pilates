@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /hv/
+Disallow: /hlv/
+Disallow: /studio/
+Disallow: /dang-nhap
+Disallow: /quen-mat-khau

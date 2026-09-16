@@ -1,0 +1,25 @@
+---
+description: Public surface design language
+globs: ["app/routes/public/**", "app/layouts/public-layout.tsx", "app/ui/**"]
+alwaysApply: false
+---
+
+Direction is "Measure" — docs/DESIGN_DIRECTION.md, governed by
+docs/REFERENCE_LOCK.md. Precedent: `app/routes/public/home.tsx`.
+
+- Rules, not cards. A bordered box needs a reason beyond grouping.
+- Sections open on a hairline with a serif numeral and a sentence-case
+  `label-micro`. **Never all-caps Vietnamese.**
+- Display type is Newsreader at weight 300–400. Weight is not how importance is
+  signalled; scale, rule and space are.
+- Every comparable number goes through `<Figures>`.
+- One chromatic mark (`lacquer`), one dominant CTA per page.
+- Long-form text is capped by the `measure` utility.
+- Photography is `<ArtDirectedImage>` with a brief in
+  `app/content/photography.ts`. If a layout needs a photo to look finished, the
+  layout is wrong.
+- Unknown studio facts use `<PendingFact>`. Never invent an address, price,
+  phone number, testimonial, rating or trainer biography.
+
+Banned: pills, gradients, glassmorphism, decorative shadow, emoji iconography,
+card-grid section rhythm, a second icon family, stock photography.

@@ -1,0 +1,22 @@
+---
+description: Data ownership and TanStack Query conventions
+globs: ["app/**/*.ts", "app/**/*.tsx"]
+alwaysApply: true
+---
+
+See docs/DATA_OWNERSHIP.md and docs/QUERY_CONVENTIONS.md.
+
+- Mutable backend state → TanStack Query. Route loaders → build-time public
+  content only. `useState` → ephemeral UI state.
+- Never use `clientLoader` and TanStack Query for the same mutable domain.
+- Never put backend entities in Zustand/Redux. Never add a second HTTP client.
+- Never use `useEffect` + `fetch` for server data.
+- All network calls go through `app/lib/api/client.ts`.
+- All query keys come from `app/lib/api/query-keys.ts`.
+- Never retry a 4xx. "Class full" is an answer, not a failure.
+- Transactions against a session balance are never optimistic.
+- Do not re-implement backend rules. Render `eligibility`, `cancellation` and
+  `waitlistAutoPromote` as returned; map codes to copy, and always produce a
+  sentence for an unknown code.
+- Do not call `Date.now()` during render; anchor to `query.dataUpdatedAt`.
+- Every remote surface designs loading, empty, error and stale states.

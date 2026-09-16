@@ -1,0 +1,21 @@
+---
+description: Architecture invariants for Soul Pilates Nha Trang
+globs: ["**/*.ts", "**/*.tsx", "react-router.config.ts", "vite.config.ts"]
+alwaysApply: true
+---
+
+Read AGENTS.md first. Summary of what must not change without an ADR:
+
+- React Router v8 **framework mode** only. No Next.js, Astro, declarative mode
+  or data mode.
+- `ssr: false` is intentional. There is no production frontend Node runtime.
+- Public SEO routes are pre-rendered via the official `prerender` option, listed
+  in `app/content/prerender-paths.ts`. A `loader` on any other route is a bug.
+- Runtime routes (`/hv`, `/hlv`, `/studio`) are served by the SPA fallback at
+  `build/client/__spa-fallback.html` and must survive a hard refresh.
+- The backend is authoritative. Route guards and hidden buttons are UX, never
+  authorization.
+- No frontend BFF, no custom SSR, no Server Actions, no RSC.
+- New architecture requires an ADR in `docs/adr/`.
+
+Run `npm run verify` before claiming anything is done.

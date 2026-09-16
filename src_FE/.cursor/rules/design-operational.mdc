@@ -1,0 +1,26 @@
+---
+description: Student, trainer and staff surface design language
+globs: ["app/routes/student/**", "app/routes/trainer/**", "app/routes/staff/**", "app/layouts/*-layout.tsx"]
+alwaysApply: false
+---
+
+Same brand, different job. Precedents: `app/routes/staff/calendar.tsx`
+(Reference B) and `app/routes/student/class-detail.tsx` (Reference C).
+
+- Optimise for clarity, speed, scanability and task completion — not for drama.
+- `<PageHeader>` with a small title, one orienting sentence, screen actions, and
+  a `meta` row of ruled figures. No 48px admin headlines.
+- Filters sit on a rule above the data they filter, never in a floating card.
+- Primary buttons are `ink`, not `lacquer`, so a brand button never sits beside
+  a danger badge.
+- Status always carries a written label; colour alone is never the signal.
+- Numbers go through `<Figures>`. Capacity uses `<CapacityMeter>`.
+- Mutations: state the consequence before the action, confirm in a `Dialog`,
+  keep the button's label while pending, announce via `<LiveRegion>`, and
+  replace the action with the result.
+- Staff is desktop-first (1440/1024); student and trainer are mobile-first
+  (390). Dense tables become ruled lists below the breakpoint — never a
+  shrunken grid.
+
+Banned: KPI tiles nobody acts on, charts that answer no question, generic SaaS
+chrome, editorial hero layouts inside operational screens.

@@ -1,0 +1,17 @@
+---
+description: Testing and verification
+globs: ["**/*.test.ts", "**/*.test.tsx", "e2e/**", "scripts/**"]
+alwaysApply: true
+---
+
+- Unit/component: Vitest + Testing Library, with MSW serving the API shape.
+  Use `renderWithProviders` from `app/test/render.tsx`.
+- Worth testing here: business-rule copy mapping, remote states, mutation
+  outcomes, formatting, and accessibility basics. Not: token values or markup
+  snapshots.
+- E2E: Playwright against the **built artifact set** served by
+  `scripts/serve-dist.mjs`, which reproduces the CDN's SPA-fallback behaviour.
+  Cover deep-link refresh, pre-rendered SEO content, and the primary flows.
+- `scripts/check-build-contract.mjs` guards the deployment invariants and must
+  never be weakened to make a build pass.
+- The gate is `npm run verify`. CI runs it plus e2e.
