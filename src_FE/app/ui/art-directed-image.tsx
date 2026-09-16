@@ -28,6 +28,7 @@ export function ArtDirectedImage({
     return (
       <img
         src={brief.src}
+        srcSet={brief.srcSet ?? undefined}
         alt={brief.alt}
         sizes={sizes}
         loading={priority ? "eager" : "lazy"}
