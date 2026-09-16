@@ -40,7 +40,7 @@ API mà quên sinh lại thì CI đỏ — đó là chủ ý.
 | `brief-thiet-ke-soul-1.html` | Brief gửi bên thiết kế: 5 bất biến P1–P5, ngưỡng đo được, quy tắc nội dung |
 | `soul-doi-chieu.html` | Đối chiếu Soul-1 / Soul-2 (25.08.2026). **Soul-1 được chọn.** 1,3 MB, ảnh nhúng base64 — mở bằng trình duyệt, đừng `cat` |
 | `anh-studio/` | 21 ảnh thương hiệu studio, kèm bảng ánh xạ tên gốc |
-| `doi-chieu-xu-ly-anh.html` | Đối chiếu 5 cách xử lý ảnh studio (16.09.2026), mỗi cách một nhánh Git. 2,1 MB, ảnh nhúng base64 — mở bằng trình duyệt |
+| `doi-chieu-xu-ly-anh.html` | Kiểm kê 21 ảnh studio và đối chiếu 11 cách xử lý (16.09.2026), mỗi cách một nhánh Git. 3,0 MB, ảnh nhúng base64 — mở bằng trình duyệt |
 
 ### 3. `nguon/` — tài liệu gốc, chỉ đọc
 
