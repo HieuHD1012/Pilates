@@ -8,6 +8,17 @@ Tỷ lệ **không đồng nhất**: phần lớn là ảnh dọc, nhưng có c�
 vuông. Bố cục nào cần khung ảnh cố định thì phải cắt trước, không đặt thẳng ảnh
 gốc vào.
 
+## Đã dùng ở đâu
+
+| Tệp | Slot trong `src_FE` | Cắt |
+|---|---|---|
+| `studio-20.jpg` | `room` (1:1) | 1100×1100 từ 1280×1280, bỏ dải đáy chứa pill "J PILATES" (viền bắt đầu ở hàng 1117; máy kết thúc ở hàng 1090) |
+| `studio-15.jpg` | `practice` (16:10) | 1280×800 từ 1280×853, cắt 53 hàng ở **đáy** để giữ khoảng trống phía trên đầu |
+
+Bản đã cắt và nén WebP nằm ở `src_FE/public/photos/`. Ba brief còn lại
+(`hero`, `method`, `city`) không có tấm nào trong 21 tấm này đáp ứng — lý do ghi
+trong `src_FE/app/content/photography.ts`.
+
 Tên gốc do Zalo sinh ra (`z8188937482853_6e6e…`) không mang thông tin nào, nên
 đã đánh số lại theo thứ tự tệp gốc. Bảng dưới giữ lại ánh xạ để còn đối chiếu
 được với tệp studio gửi nếu cần.

@@ -25,19 +25,25 @@ export default function About() {
       />
 
       <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
-            <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
-            </p>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
+        <div className="pb-20 md:pb-28">
+          <div className="grid gap-x-8 gap-y-10 md:grid-cols-12">
+            <div className="md:col-span-6">
+              <p className="measure text-ink-2 text-base">
+                Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện
+                viên đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh
+                sáng lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh
+                được cảm nhận chứ không nhìn thấy.
+              </p>
             </div>
+            <div className="md:col-span-5 md:col-start-8">
+              <div className="aspect-square w-full">
+                <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 aspect-16/10 w-full md:mt-16">
+            <ArtDirectedImage photo="practice" sizes="100vw" />
           </div>
         </div>
       </Section>

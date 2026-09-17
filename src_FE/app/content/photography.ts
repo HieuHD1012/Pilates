@@ -1,13 +1,18 @@
 /**
  * ART DIRECTION BRIEFS
  *
- * Soul Pilates Nha Trang has not supplied photography yet, and the Đà Nẵng
- * studio's images are a different room, a different team and a different city —
- * using them here would be a lie about this branch. So every image slot in the
- * product is declared as a brief first. `src` stays null until the studio
- * delivers the frame; `<ArtDirectedImage>` renders a designed placeholder that
- * reserves the exact aspect ratio, so no layout shifts when the real photograph
- * lands and no design decision was ever made to flatter a stock image.
+ * Every image slot in the product is declared as a brief before a picture
+ * exists. Another branch's images are a different room, a different team and a
+ * different city — using them here would be a lie about this one. `src` stays
+ * null until the studio delivers a frame that answers the brief;
+ * `<ArtDirectedImage>` renders a designed placeholder that reserves the exact
+ * aspect ratio, so no layout shifts when the real photograph lands and no
+ * design decision was ever made to flatter a stock image.
+ *
+ * The studio sent 21 frames on 28.08.2026 (`../docs/thiet-ke/anh-studio/`).
+ * Two slots are filled from it. The other three are not, and each says what the
+ * delivery was missing, so the next reader does not review the same 21 pictures
+ * a second time to reach the same answer.
  *
  * Shared direction for every frame (docs/REFERENCE_LOCK.md):
  *   Light      Hard equatorial daylight, shaped by the room. Windows are the
@@ -34,6 +39,12 @@ export interface PhotoBrief {
   typeRegion: string | null;
   /** null until the studio supplies the frame. */
   src: string | null;
+  /**
+   * The widths `src` was rendered at, as an `img` srcset. Null while `src` is
+   * null, and never null once it is not: `sizes` on its own does nothing, which
+   * is how one 1280px file ends up being sent to a 390px phone.
+   */
+  srcSet: string | null;
   /** Written for a screen reader, not for SEO stuffing. */
   alt: string;
   aspect: string;
@@ -51,7 +62,11 @@ function brief(b: PhotoBrief): PhotoBrief {
 export const PHOTOGRAPHY = {
   hero: brief({
     id: "hero",
+    // 28.08.2026: nothing qualifies. The room was only shot portrait, so the
+    // delivery holds no 16/9 of it at all, and no wall in it is dark enough to
+    // carry the typeRegion below without the scrim that region forbids.
     src: null,
+    srcSet: null,
     alt: "Phòng tập Soul Pilates Nha Trang vào buổi sáng sớm, ánh sáng tự nhiên đổ dài trên sàn gỗ và các máy reformer.",
     aspect: "3 / 4 on mobile, 16 / 9 from md",
     typeRegion:
@@ -71,7 +86,10 @@ export const PHOTOGRAPHY = {
 
   method: brief({
     id: "method",
+    // 28.08.2026: nothing qualifies. Not one of the 21 frames has two people in
+    // it, and an adjustment needs two.
     src: null,
+    srcSet: null,
     typeRegion: null,
     alt: "Bàn tay huấn luyện viên chỉnh vị trí vai của học viên trên máy reformer.",
     aspect: "4 / 5",
@@ -85,9 +103,18 @@ export const PHOTOGRAPHY = {
 
   room: brief({
     id: "room",
-    src: null,
+    // studio-20 of the 28.08.2026 delivery, cropped to 1100x1100 out of
+    // 1280x1280: a "J PILATES" pill is drawn over the floor, its outline
+    // starting at row 1117, and the apparatus ends by row 1090, so the cut
+    // clears the pill without touching a leg. It answers the brief on frame,
+    // light and feeling and misses it twice: the apparatus is a ladder barrel
+    // rather than a reformer, and it is shot at room distance rather than the
+    // 40-60cm asked for. `alt` describes what arrived; the direction below
+    // still describes what a reshoot should go and get.
+    src: "/photos/room-1024.webp",
+    srcSet: "/photos/room-512.webp 512w, /photos/room-1024.webp 1024w",
     typeRegion: null,
-    alt: "Chi tiết máy reformer: dây, lò xo và khung gỗ trong ánh sáng ban ngày.",
+    alt: "Máy ladder barrel bằng gỗ đặt trước cửa sổ rèm voan, trong ánh sáng ban ngày.",
     aspect: "1 / 1",
     subject: "Reformer detail — springs, strap, carriage edge, worn leather or wood.",
     lighting: "Flat daylight, no flash. Texture over drama.",
@@ -98,9 +125,13 @@ export const PHOTOGRAPHY = {
 
   practice: brief({
     id: "practice",
-    src: null,
+    // studio-15 of the 28.08.2026 delivery, 1280x853 cut to 1280x800 for the
+    // ratio. The 53 rows come off the bottom, never the top, because the brief
+    // asks for headroom. One deviation: no trainer is in the frame.
+    src: "/photos/practice-1280.webp",
+    srcSet: "/photos/practice-640.webp 640w, /photos/practice-1280.webp 1280w",
     typeRegion: null,
-    alt: "Học viên đang giữ một tư thế trên máy reformer, tập trung vào hơi thở.",
+    alt: "Học viên giữ tư thế chùng chân trên máy reformer, ngược sáng trước cửa sổ.",
     aspect: "16 / 10",
     subject: "One student mid-repetition, holding. Trainer visible but not centred.",
     lighting: "Backlit against the window. Silhouette edge, face in shade is fine.",
@@ -111,7 +142,10 @@ export const PHOTOGRAPHY = {
 
   city: brief({
     id: "city",
+    // 28.08.2026: nothing qualifies. Every window in the delivery sits behind a
+    // sheer curtain, so it contains no view out and no letterbox of one.
     src: null,
+    srcSet: null,
     typeRegion: null,
     alt: "Ánh sáng buổi chiều ở Nha Trang nhìn từ cửa sổ studio.",
     aspect: "21 / 9",
