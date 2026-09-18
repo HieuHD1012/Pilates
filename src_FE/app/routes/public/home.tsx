@@ -80,6 +80,7 @@ function Hero() {
               <ArtDirectedImage
                 photo="hero"
                 priority
+                fade
                 sizes="(min-width: 768px) 45vw, 100vw"
               />
             </div>

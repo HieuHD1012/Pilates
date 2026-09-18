@@ -27,11 +27,12 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 
 try:
     import numpy as np
-    from PIL import Image, ImageEnhance
+    from PIL import Image, ImageFilter
 except ImportError:  # pragma: no cover
     sys.exit("Cần Pillow và numpy: python3 -m pip install pillow numpy")
 
@@ -51,33 +52,131 @@ def _img(a: np.ndarray) -> Image.Image:
     return Image.fromarray((np.clip(a, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
-def grade(im: Image.Image, *, wb=99.0, bp=0.5, floor=0.035, k=0.22, sat=0.96) -> Image.Image:
-    """Bốn bước, theo thứ tự này.
+def _lum(a: np.ndarray) -> np.ndarray:
+    return (a * np.array([0.2126, 0.7152, 0.0722])).sum(axis=2, keepdims=True)
 
-    1. Cân trắng theo rèm. Rèm voan ngược sáng là vật trắng duy nhất chắc chắn
-       có trong khung; ghim nó về trung tính là cách bỏ ám xanh lá mà không phải
-       đoán nhiệt độ màu.
-    2. Neo điểm đen. Ảnh gốc không có điểm đen — vùng tối dừng ở xám nhạt, nên
-       mặt nào cũng đục. `floor` > 0 để bóng vẫn mở: bết đen là kiểu "cinematic"
-       rẻ tiền, và nó giết luôn nếp rèm.
-    3. S-curve nhẹ quanh trung gian, không đụng hai đầu, nên highlight của rèm
-       không bị chặn thành mảng trắng phẳng.
-    4. Ngả bóng về sắc cát. Nền trang là #f2f0ea; ảnh lạnh hơn nền thì luôn
-       trông như dán vào chứ không thuộc về trang.
 
-    Tham số để mở cho từng khung, không phải để dùng chung: `wb` phải hạ xuống
-    ở khung 20 vì rèm ở đó đã ngả ấm sẵn, lấy percentile 99 sẽ đẩy cả ảnh sang
-    vàng. Một bộ số cho cả bộ ảnh là định nghĩa của "phủ filter".
+def grade(
+    im: Image.Image,
+    *,
+    wb=0.70,
+    denoise=(1.1, 4.0, 0.70),
+    floor=0.018,
+    contrast=0.28,
+    sat=0.90,
+    volume=(80, 0.24),
+    bloom=0.10,
+    warm_bg=(0.64, 0.85),
+    sweep=(0.72, 0.70, 0.80),
+    grain=0.011,
+    tone=0.0,
+) -> Image.Image:
+    """Chín bước, theo đúng thứ tự này. Mỗi bước sửa một khuyết tật cụ thể của
+    bộ ảnh gốc, và thứ tự không đổi được: làm mịn phải đứng TRƯỚC mọi phép tăng
+    tương phản, nếu không tương phản sẽ nhân vân nén lên trước khi bị dập.
+
+    Các con số dưới đây tìm ra bằng cách thử — chừng hai mươi vòng đối chiếu
+    trên khung studio-13, xem ở đúng kích thước sẽ hiển thị trên trang chứ
+    không xem phóng to. Ghi lại ở đây để lần sau khỏi dò lại từ đầu.
     """
     a = _arr(im)
-    ref = np.percentile(a.reshape(-1, 3), wb, axis=0)
-    a = a * (ref.mean() / np.maximum(ref, 1e-4))
-    lo = np.percentile(a, bp)
+
+    # 1. Cân trắng MỘT PHẦN theo rèm (percentile 99 là vật trắng chắc chắn có
+    #    trong khung). Cân đủ 100% thì hết ám xanh lá nhưng da chuyển cam;
+    #    0.70 là chỗ vừa bỏ được ám vừa giữ da đúng.
+    ref = np.percentile(a.reshape(-1, 3), 99.0, axis=0)
+    a = a * (1 + (ref.mean() / np.maximum(ref, 1e-4) - 1) * wb)
+
+    # 2. Dập vân nén ở trung gian — tức là ở da. Tệp gốc đi qua Zalo nên có vân;
+    #    không dập trước thì bước 5 và 6 sẽ biến vân thành vệt loang trên tay.
+    if denoise:
+        lr, cr, amt = denoise
+        yy, cb, cr_ = im.convert("YCbCr").split() if False else _img(a).convert("YCbCr").split()
+        soft = _arr(Image.merge("YCbCr", (
+            yy.filter(ImageFilter.GaussianBlur(lr)),
+            cb.filter(ImageFilter.GaussianBlur(cr)),
+            cr_.filter(ImageFilter.GaussianBlur(cr)),
+        )).convert("RGB"))
+        l = _lum(a)
+        m = np.clip((l - 0.18) / 0.68, 0, 1)
+        m = (np.sin((m - 0.5) * np.pi) * 0.5 + 0.5) * amt
+        a = np.clip(a * (1 - m) + soft * m, 0, 1)
+
+    # 3. Neo điểm đen. Ảnh gốc không có điểm đen — vùng tối dừng ở xám nhạt nên
+    #    mặt nào cũng đục. floor > 0 để bóng vẫn mở.
+    lo = np.percentile(a, 0.5)
     a = floor + (1 - floor) * np.clip((a - lo) / max(1e-4, 1 - lo), 0, 1)
-    a = np.clip(a + k * (a - 0.5) * (1 - np.abs(a - 0.5) * 2), 0, 1)
-    lum = a.mean(axis=2, keepdims=True)
-    a = np.clip(a * (1 + (SAND_HUE - 1) * (0.9 * (1 - lum) ** 2 + 0.24 * lum**3)), 0, 1)
-    return ImageEnhance.Color(_img(a)).enhance(sat)
+
+    # 4. Nén mềm phần trên 0.70, nhưng 1.0 vẫn ra 1.0 — giãn khoảng sáng để nếp
+    #    rèm không dồn thành một mảng phẳng.
+    x = a.copy(); m = x > 0.70
+    t = (x[m] - 0.70) / 0.30
+    x[m] = 0.70 + 0.30 * np.tanh(t * 1.7) / np.tanh(1.7)
+    a = np.clip(x, 0, 1)
+
+    # 5. S-curve quanh trung gian, không đụng hai đầu.
+    a = np.clip(a + contrast * (a - 0.5) * (1 - np.abs(a - 0.5) * 2), 0, 1)
+
+    # 6. Ngả bóng về sắc cát (tone=0 là tắt). Nền trang là #f2f0ea; ảnh lạnh hơn
+    #    nền thì luôn trông như dán vào. Sau khi đã cân trắng một phần thì
+    #    thường không cần thêm nữa, nên mặc định tắt.
+    if tone:
+        l = _lum(a)
+        a = np.clip(a * (1 + (SAND_HUE - 1) * (tone * (1 - l) ** 2 + 0.24 * l ** 3)), 0, 1)
+
+    # 7. Hạ bão hoà nhẹ. Đệm vinyl và tường bạc hà trong phòng này quá tươi so
+    #    với bảng màu cát/mực.
+    l = _lum(a); a = np.clip(l + (a - l) * sat, 0, 1)
+
+    # 8. Tương phản cục bộ BÁN KÍNH LỚN, chỉ trên độ sáng, chừa vùng sáng.
+    #    Bán kính nhỏ (kiểu "clarity") tạo viền quanh cánh tay trên nền rèm
+    #    trắng — đó là vệt HDR và nó trông rẻ. Bán kính lớn thêm khối mà không
+    #    để lại viền.
+    if volume:
+        r, amt = volume
+        l = _lum(a)
+        lb = np.asarray(_img(np.repeat(l, 3, axis=2)).filter(ImageFilter.GaussianBlur(r)),
+                        dtype=np.float32)[:, :, :1] / 255.0
+        w = np.clip((0.78 - l) / 0.78, 0, 1) ** 0.6
+        a = np.clip(a + (l - lb) * amt * w, 0, 1)
+
+    # 9. Loang sáng nhẹ quanh vùng chói — thứ làm ảnh ngược sáng đọc ra như
+    #    chụp phim chứ không như chụp điện thoại. Quá tay thì ảnh mờ như sương.
+    if bloom:
+        l = _lum(a)
+        mask = np.clip((l - 0.80) / 0.20, 0, 1)
+        gl = _arr(_img(np.repeat(mask, 3, axis=2)).filter(ImageFilter.GaussianBlur(26)))
+        a = np.clip(1 - (1 - a) * (1 - gl * bloom), 0, 1)
+
+    # 10. Rút màu ở những mảng SÁNG và NGẢ VÀNG. Tường rèm không đồng màu: có
+    #     một dải bắt nắng ngả be nằm giữa những dải trắng và nó đọc ra như vệt
+    #     ố. Ngưỡng đặt trên da nên da không bị đụng.
+    if warm_bg:
+        th, amt = warm_bg
+        l = _lum(a); mx = a.max(axis=2, keepdims=True); mn = a.min(axis=2, keepdims=True)
+        s = (mx - mn) / np.maximum(mx, 1e-4)
+        warm = np.clip((a[..., 0:1] - a[..., 2:3]) / np.maximum(mx, 1e-4) * 6, 0, 1)
+        m = np.clip((l - th) / max(1e-4, 1 - th), 0, 1) * warm * np.clip(s * 4, 0, 1) * amt
+        a = np.clip(a + (l - a) * m, 0, 1)
+
+    # 11. Làm sạch hậu cảnh: vùng đã sáng thì đẩy về trắng và rút màu. Rèm voan
+    #     trong ảnh gốc không trắng — nó có mảng be, mảng xám xanh và vệt nén.
+    if sweep:
+        th, push, desat = sweep
+        l = _lum(a)
+        m = np.clip((l - th) / 0.18, 0, 1); m = m * m * (3 - 2 * m)
+        a = a * (1 - desat * m) + (l * np.ones_like(a)) * (desat * m)
+        a = np.clip(a + (1 - a) * m * push, 0, 1)
+
+    # 12. Hạt. Vừa che vân nén còn sót, vừa chặn hiện tượng dải màu (banding)
+    #     trên mảng rèm lớn sau khi WebP nén lần nữa.
+    if grain:
+        rng = np.random.default_rng(7)
+        n = rng.normal(0, 1, a.shape[:2]).astype(np.float32)
+        w = (1 - np.abs(_lum(a)[..., 0] - 0.5) * 2) ** 0.7
+        a = np.clip(a + (n * w * grain)[..., None], 0, 1)
+
+    return _img(a)
 
 
 class Cut:
@@ -117,11 +216,15 @@ class Cut:
 # đã đúng thì thứ duy nhất còn phải làm là cho nó chỗ thở.
 A = {
     "hero": Cut(
-        "13", (0.25, 0.00, 0.90, 0.93), 4 / 5, [374, 748],
+        "13", (0.20, 0.00, 0.83, 0.80), 4 / 5, [321, 643],
         why="Cả người lẫn kiến trúc trong một khung: lồng thép của Cadillac dựng "
             "khung hình, người treo trong đó, rèm sáng phía sau. Hero cần một "
             "hình học, không cần một danh mục thiết bị.",
-        drops="Sàn gạch ở đáy, mảng tường thừa bên trái.",
+        drops="Sàn gạch VÀ dải diềm trắng dưới chân bàn. Khung dừng ở thân bàn, "
+              "nên đáy là một đường ngang sạch.\n"
+              "Giá: chiều cao cắt đi kéo bề rộng xuống còn 643px — vừa đủ 1:1 ở "
+              "màn hình thường, hơi mềm trên retina. Đây là trần của bộ ảnh gốc "
+              "(1280px cạnh dài), không phải của khung cắt.",
     ),
     "method": Cut(
         "12", (0.00, 0.00, 1.00, 0.97), 4 / 5, [377, 754],
@@ -134,7 +237,7 @@ A = {
         why="Thiết bị đứng một mình trước rèm sáng: gỗ, đệm, thang. Đây là ô "
             "'vật liệu thật' — nó cần một vật, không cần một căn phòng.",
         drops="Viên watermark 'J PILATES' ở đáy, phần lớn sàn.",
-        wb=97.0,
+        wb=0.55,
     ),
     "practice": Cut(
         "15", (0.04, 0.16, 0.68, 0.80), 16 / 10, [409, 819],
@@ -154,6 +257,25 @@ A = {
 OPTIONS = {"a": A}
 
 
+def kiem_tra_khop() -> int:
+    """Mọi đường dẫn ảnh trong `photography.ts` phải trỏ vào một tệp có thật.
+
+    Đổi khung cắt thì bề rộng tệp đổi theo, và rất dễ quên sửa `srcSet`. Lần
+    trước quên đúng một dòng và ô hero trên trang chủ hiện ra chữ alt.
+    """
+    brief = os.path.join(ROOT, "src_FE", "app", "content", "photography.ts")
+    if not os.path.exists(brief):
+        return 0
+    want = set(re.findall(r"/photos/([a-z]+-\d+\.webp)", open(brief, encoding="utf-8").read()))
+    have = set(os.listdir(DEST)) if os.path.isdir(DEST) else set()
+    missing, extra = sorted(want - have), sorted(have - want)
+    for m in missing:
+        print(f"  THIẾU  {m} — photography.ts trỏ vào nhưng không có tệp", file=sys.stderr)
+    for e in extra:
+        print(f"  THỪA   {e} — có tệp nhưng không ai dùng", file=sys.stderr)
+    return 1 if missing else 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--phuong-an", default="a", choices=sorted(OPTIONS))
@@ -162,7 +284,7 @@ def main() -> int:
     for slot, cut in OPTIONS[args.phuong_an].items():
         im = cut.render(slot)
         print(f"{slot:9} ← studio-{cut.frame}  {im.size[0]}x{im.size[1]}  ({', '.join(map(str, cut.widths))})")
-    return 0
+    return kiem_tra_khop()
 
 
 if __name__ == "__main__":

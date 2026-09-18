@@ -61,8 +61,8 @@ export const PHOTOGRAPHY = {
     // draws the frame, the figure hangs inside it, the curtain wall lights it
     // from behind. A hero needs a geometry — the previous frame (studio-08) was
     // a room inventory with no subject at all.
-    src: "/photos/hero-748.webp",
-    srcSet: "/photos/hero-374.webp 374w, /photos/hero-748.webp 748w",
+    src: "/photos/hero-643.webp",
+    srcSet: "/photos/hero-321.webp 321w, /photos/hero-643.webp 643w",
     alt: "Học viên treo người trên khung Cadillac, ngược sáng trước tường rèm voan.",
     aspect: "4 / 5",
     typeRegion: null,
