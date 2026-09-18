@@ -154,7 +154,9 @@ function Method() {
     <Section index="02" label="Phương pháp" tone="deep">
       <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-5">
-          <div className="aspect-square w-full">
+          {/* 4/5, không phải ô vuông. Nội dung của khung này là cái vươn tay lên
+              hết biên độ; ô vuông cắt mất bàn tay, tức là cắt mất nội dung. */}
+          <div className="aspect-4/5 w-full">
             <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
           </div>
         </div>
@@ -338,10 +340,11 @@ function FirstVisit() {
 function Closing() {
   return (
     <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
+      {/* Ở đây từng có một dải ảnh 21/9 tràn viền. Không khung nào trong bộ ảnh
+          làm được việc của nó — mọi khung đủ rộng đều là một cảnh, không phải một
+          chất liệu, nên cắt ra chỉ được một lát trông như lỗi hiển thị. Khối cát
+          gặp thẳng khối mực; chỗ nghỉ là một khoảng trống, không phải một tấm ảnh
+          lấp chỗ. */}
       <Section tone="ink">
         <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
           <div className="md:col-span-7">

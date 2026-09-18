@@ -102,7 +102,7 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        <ArtDirectedImage photo="trainerPortrait" />
                       )}
                     </div>
                   </div>

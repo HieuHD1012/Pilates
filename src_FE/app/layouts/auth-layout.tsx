@@ -31,7 +31,7 @@ export default function AuthLayout() {
       </div>
 
       <div className="hidden lg:block">
-        <ArtDirectedImage photo="room" sizes="50vw" />
+        <ArtDirectedImage photo="welcome" sizes="50vw" />
       </div>
     </div>
   );
