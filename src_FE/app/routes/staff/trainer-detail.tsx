@@ -1,10 +1,14 @@
 import { Link, useParams } from "react-router";
 
-import { useTrainerDetail } from "~/features/people/queries";
-import type { TrainerDetail as TrainerDetailRecord } from "~/lib/api/types";
-import { formatDate, formatPhone, telHref } from "~/lib/format";
+import {
+  useTrainer,
+  useTrainerMonthStats,
+  useTrainerPhoto,
+} from "~/features/people/queries";
+import type { TrainerResponse } from "~/lib/api/schema";
+import { formatDate, formatNumber, formatPhone, telHref } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { DetailList, DetailRow } from "~/ui/detail-list";
 import { Skeleton, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
@@ -26,14 +30,17 @@ export function meta(_: Route.MetaArgs) {
  * One trainer, as a record.
  *
  * A read screen: the ruled definition list carries the facts the studio has
- * supplied, `<PendingFact>` carries the ones it has not, and the two figures
- * are the backend's own rolling-30-day counts — not a chart, and not a tile
- * grid. Assigning classes lives on the calendar, so this screen states where
- * that happens instead of growing a second subject.
+ * supplied and `<PendingFact>` carries the ones it has not. The figures are
+ * `GET /classes/trainer-stats`, which is the **same function the trainer
+ * report uses** — two screens saying "classes taught" must not run two
+ * different queries, or one of them is wrong and nobody knows which.
+ *
+ * Assigning classes lives on the calendar, so this screen states where that
+ * happens instead of growing a second subject.
  */
 export default function StaffTrainerDetail() {
   const { trainerId = "" } = useParams();
-  const query = useTrainerDetail(trainerId);
+  const query = useTrainer(Number(trainerId));
 
   return (
     <div className="gutter max-w-(--container-column) py-6">
@@ -56,15 +63,15 @@ export default function StaffTrainerDetail() {
   );
 }
 
-function TrainerRecord({ trainer }: { trainer: TrainerDetailRecord }) {
+function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
   return (
     <>
       <PageHeader
         className="mt-4"
-        title={trainer.fullName}
+        title={trainer.full_name}
         description="Hồ sơ huấn luyện viên và mức độ hoạt động trong 30 ngày gần nhất."
         meta={
-          trainer.active ? (
+          trainer.is_active ? (
             <StatusBadge tone="positive">Đang dạy</StatusBadge>
           ) : (
             <StatusBadge tone="neutral">Tạm nghỉ</StatusBadge>
@@ -72,21 +79,17 @@ function TrainerRecord({ trainer }: { trainer: TrainerDetailRecord }) {
         }
       />
 
-      <DemoDataNotice className="mt-5" />
+      <Portrait trainer={trainer} />
 
       <DetailList className="mt-5">
-        <DetailRow label="Họ và tên">{trainer.fullName}</DetailRow>
+        <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>
 
         <DetailRow label="Giới thiệu ngắn">
-          {trainer.headline ?? <PendingFact label="Giới thiệu ngắn" />}
+          {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
         </DetailRow>
 
         <DetailRow label="Chuyên môn">
-          {trainer.specialties.length > 0 ? (
-            trainer.specialties.join(", ")
-          ) : (
-            <PendingFact label="Chuyên môn" />
-          )}
+          {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
         </DetailRow>
 
         <DetailRow label="Điện thoại">
@@ -102,47 +105,28 @@ function TrainerRecord({ trainer }: { trainer: TrainerDetailRecord }) {
           )}
         </DetailRow>
 
-        <DetailRow label="Email">
-          {trainer.email ? (
-            <a
-              href={`mailto:${trainer.email}`}
-              className="decoration-rule-2 hover:decoration-lacquer underline underline-offset-[6px]"
-            >
-              {trainer.email}
-            </a>
+        {/* A trainer record has no email of its own: the email is the login,
+            and it lives on the account. `user_id` says whether there is one. */}
+        <DetailRow label="Tài khoản đăng nhập">
+          {trainer.user_id !== null ? (
+            "Đã có tài khoản"
           ) : (
-            <PendingFact label="Email huấn luyện viên" />
+            <Absent>Chưa có tài khoản</Absent>
           )}
         </DetailRow>
 
-        <DetailRow label="Bắt đầu làm việc">
-          <Figures>{formatDate(`${trainer.joinedAt}T00:00:00+07:00`)}</Figures>
+        <DetailRow label="Thêm vào studio">
+          <Figures>{formatDate(trainer.created_at)}</Figures>
         </DetailRow>
 
         <DetailRow label="Trang công khai">
-          {trainer.publicProfile
+          {trainer.is_public
             ? "Đã hiện trên trang huấn luyện viên"
             : "Chưa hiện trên trang huấn luyện viên"}
         </DetailRow>
       </DetailList>
 
-      <section className="mt-10">
-        <h2 className="text-ink text-sm font-medium">Hoạt động 30 ngày gần nhất</h2>
-        <p className="measure-wide text-ink-2 mt-1 text-xs">
-          Hệ thống tính trên 30 ngày liên tục tính đến hôm nay.
-        </p>
-
-        <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-          <Metric
-            label="Lớp trong 30 ngày"
-            value={<Figures display>{trainer.monthlyClassCount}</Figures>}
-          />
-          <Metric
-            label="Học viên trong 30 ngày"
-            value={<Figures display>{trainer.monthlyStudentCount}</Figures>}
-          />
-        </div>
-      </section>
+      <MonthStats trainerId={trainer.id} />
 
       <section className="rule-t mt-10 pt-5">
         <h2 className="text-ink text-sm font-medium">So sánh giữa các huấn luyện viên</h2>
@@ -175,5 +159,74 @@ function RecordSkeleton() {
       </div>
       <SkeletonRows rows={7} className="mt-5" />
     </div>
+  );
+}
+
+/**
+ * The portrait, fetched as bytes. `GET /trainers/{id}/photo` is behind the
+ * token and re-authorised on every read, so there is no static URL to point an
+ * `<img src>` at, and no photo means no frame.
+ */
+function Portrait({ trainer }: { trainer: TrainerResponse }) {
+  const photo = useTrainerPhoto(trainer.id, trainer.photo_key !== null);
+  if (!photo.data) return null;
+
+  return (
+    <img
+      src={photo.data}
+      alt={trainer.full_name}
+      decoding="async"
+      className="border-rule mt-5 size-24 rounded-full border object-cover"
+    />
+  );
+}
+
+/**
+ * This calendar month, counted in studio time. The month boundary matters: read
+ * in the container's timezone, a 06:00 class on the 1st falls into the previous
+ * month — which is why the backend takes a year and a month rather than a range.
+ */
+function MonthStats({ trainerId }: { trainerId: number }) {
+  const now = new Date();
+  const query = useTrainerMonthStats({
+    trainer_id: trainerId,
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+  });
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-ink text-sm font-medium">Tháng này</h2>
+      <p className="measure-wide text-ink-2 mt-1 text-xs">
+        Tính theo tháng dương lịch, giờ studio. Cùng cách tính với báo cáo huấn luyện viên.
+      </p>
+
+      <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-3">
+        <Metric
+          label="Lớp đã xếp"
+          value={
+            <Figures display>
+              {query.data ? formatNumber(query.data.scheduled_sessions) : "—"}
+            </Figures>
+          }
+        />
+        <Metric
+          label="Lớp đã hủy"
+          value={
+            <Figures display>
+              {query.data ? formatNumber(query.data.cancelled_sessions) : "—"}
+            </Figures>
+          }
+        />
+        <Metric
+          label="Lượt đăng ký"
+          value={
+            <Figures display>
+              {query.data ? formatNumber(query.data.total_bookings) : "—"}
+            </Figures>
+          }
+        />
+      </div>
+    </section>
   );
 }

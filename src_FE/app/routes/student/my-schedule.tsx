@@ -1,14 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { refusalCopy } from "~/features/booking/booking-copy";
 import {
+  useBookableClasses,
   useCancelBooking,
-  useStudentBookings,
-  useStudentReschedule,
-  useStudentRescheduleOptions,
+  useChangeBooking,
+  useMySchedule,
 } from "~/features/booking/queries";
-import type { Booking } from "~/lib/api/types";
-import { formatDate, formatLeadTime, formatTimeRange, weekdayLong } from "~/lib/format";
+import type { MyScheduleItem } from "~/lib/api/schema";
+import {
+  addDays,
+  formatDate,
+  formatLeadTime,
+  formatTime,
+  formatTimeRange,
+  studioDateKey,
+  weekdayLong,
+} from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { EmptyState, ErrorState, LiveRegion, SkeletonRows } from "~/ui/feedback";
@@ -22,10 +31,12 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function MySchedule() {
-  const query = useStudentBookings("upcoming");
-  const items = query.data ?? [];
-  const [rescheduling, setRescheduling] = useState<Booking | null>(null);
-  const [cancelling, setCancelling] = useState<Booking | null>(null);
+  const query = useMySchedule();
+  // `GET /my-schedule` without `include_cancelled` still returns finished
+  // classes; the live ones are the bookings still being held.
+  const items = (query.data ?? []).filter((item) => item.booking_status === "BOOKED");
+  const [changing, setChanging] = useState<MyScheduleItem | null>(null);
+  const [cancelling, setCancelling] = useState<MyScheduleItem | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   return (
@@ -59,16 +70,16 @@ export default function MySchedule() {
 
         <LiveRegion message={notice} />
 
-        <StudentRescheduleDialog
-          booking={rescheduling}
-          onClose={() => setRescheduling(null)}
+        <ChangeBookingDialog
+          booking={changing}
+          onClose={() => setChanging(null)}
           onDone={(message) => {
-            setRescheduling(null);
+            setChanging(null);
             setNotice(message);
           }}
         />
 
-        <StudentCancelDialog
+        <CancelBookingDialog
           booking={cancelling}
           onClose={() => setCancelling(null)}
           onDone={(message) => {
@@ -79,64 +90,63 @@ export default function MySchedule() {
 
         {query.isSuccess && items.length > 0 ? (
           <ul className="rule-t">
-            {items.map((booking) => {
-              const item = booking.classSession;
-              const refundable = booking.cancellation?.refundable ?? false;
-
-              return (
-                <li key={booking.id} className="rule-b py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-ink-2 text-xs">
-                        {weekdayLong(item.startsAt)} · {formatDate(item.startsAt)}
-                      </p>
-                      <p className="figures text-ink mt-1 text-base">
-                        {formatTimeRange(item.startsAt, item.endsAt)}
-                      </p>
-                      <p className="text-ink mt-1 text-sm">{item.title}</p>
-                      <p className="text-ink-2 mt-0.5 text-xs">
-                        {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"} ·{" "}
-                        {item.trainer.fullName}
-                      </p>
-                    </div>
-                    <StatusBadge tone="positive">Đã đặt</StatusBadge>
+            {items.map((item) => (
+              <li key={item.booking_id} className="rule-b py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-ink-2 text-xs">
+                      {weekdayLong(item.starts_at)} · {formatDate(item.starts_at)}
+                    </p>
+                    <p className="figures text-ink mt-1 text-base">
+                      {formatTimeRange(item.starts_at, item.ends_at)}
+                    </p>
+                    <p className="text-ink mt-1 text-sm">
+                      {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                    </p>
+                    <p className="text-ink-2 mt-0.5 text-xs">{item.trainer_name}</p>
                   </div>
-
-                  <p className="text-ink-2 mt-3 text-xs">
-                    Bắt đầu sau {formatLeadTime(item.startsAt)} ·{" "}
-                    {refundable
-                      ? "hủy bây giờ vẫn được hoàn buổi"
-                      : "hủy bây giờ sẽ không được hoàn buổi"}
-                  </p>
-
-                  {/* The hook and the endpoint have existed since booking was
-                      built; nothing on this screen had ever called them, so a
-                      student could book a buổi and then not get out of it. */}
-                  {booking.cancellation?.cancellable ? (
-                    <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <button
-                        type="button"
-                        onClick={() => setRescheduling(booking)}
-                        className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
-                      >
-                        Đổi buổi
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCancelling(booking)}
-                        className="text-ink-2 decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
-                      >
-                        Hủy buổi
-                      </button>
-                    </p>
+                  {item.session_status === "CANCELLED" ? (
+                    <StatusBadge tone="critical">Studio đã hủy</StatusBadge>
                   ) : (
-                    <p className="text-ink-2 mt-3 text-xs">
-                      Đã qua hạn tự đổi hoặc tự hủy. Nhắn studio nếu bạn cần thay đổi.
-                    </p>
+                    <StatusBadge tone="positive">Đã đặt</StatusBadge>
                   )}
-                </li>
-              );
-            })}
+                </div>
+
+                {/* Both facts come decided: `refund_if_cancelled_now` folds
+                    three rules together, and `can_cancel` is the deadline
+                    already applied. Neither is recomputed here. */}
+                <p className="text-ink-2 mt-3 text-xs">
+                  Bắt đầu sau {formatLeadTime(item.starts_at)} ·{" "}
+                  {item.refund_if_cancelled_now
+                    ? "hủy bây giờ vẫn được hoàn buổi"
+                    : "hủy bây giờ sẽ không được hoàn buổi"}
+                </p>
+
+                {item.can_cancel ? (
+                  <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setChanging(item)}
+                      className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+                    >
+                      Đổi buổi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCancelling(item)}
+                      className="text-ink-2 decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+                    >
+                      Hủy buổi
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-ink-2 mt-3 text-xs">
+                    Hạn tự đổi hoặc tự hủy là {formatTime(item.cancel_deadline)}{" "}
+                    {formatDate(item.cancel_deadline)}. Nhắn studio nếu bạn cần thay đổi.
+                  </p>
+                )}
+              </li>
+            ))}
           </ul>
         ) : null}
       </div>
@@ -147,32 +157,37 @@ export default function MySchedule() {
 /**
  * A student moving their own buổi.
  *
- * The window is the studio's cancellation policy: past the deadline a student
- * cannot move a booking either, because moving out of a buổi they would not be
- * refunded for is the same decision as cancelling it. Staff can still act, and
- * the copy says so rather than leaving a dead control on the screen.
+ * There is no "which classes may this booking move to" endpoint: the student
+ * picks any upcoming class their packages can pay for, and
+ * `POST /bookings/{id}/change` accepts or refuses it as one transaction. The
+ * list below is therefore the same bookable list the class screen shows — not
+ * a second, narrower idea of what is allowed.
  */
-function StudentRescheduleDialog({
+function ChangeBookingDialog({
   booking,
   onClose,
   onDone,
 }: {
-  booking: Booking | null;
+  booking: MyScheduleItem | null;
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
-  const [targetClassId, setTargetClassId] = useState("");
-  const options = useStudentRescheduleOptions(booking?.id ?? null);
-  const move = useStudentReschedule();
-  const items = options.data?.items ?? [];
+  const [targetId, setTargetId] = useState("");
+  const today = studioDateKey(new Date());
+  const candidates = useBookableClasses({ from: today, to: addDays(today, 14) });
+  const change = useChangeBooking();
+
+  const options = (candidates.data ?? []).filter(
+    (item) => item.canBook && item.id !== booking?.class_session_id,
+  );
 
   return (
     <Dialog
       open={booking !== null}
       onOpenChange={(next) => {
         if (!next) {
-          move.reset();
-          setTargetClassId("");
+          change.reset();
+          setTargetId("");
           onClose();
         }
       }}
@@ -180,30 +195,30 @@ function StudentRescheduleDialog({
       {booking ? (
         <DialogContent
           title="Đổi buổi"
-          description={`Bạn đang đặt ${booking.classSession.title}, ${weekdayLong(booking.classSession.startsAt)} ${formatTimeRange(booking.classSession.startsAt, booking.classSession.endsAt)}. Đổi buổi không trừ thêm buổi nào.`}
+          description={`Bạn đang đặt ${weekdayLong(booking.starts_at)} ${formatTimeRange(booking.starts_at, booking.ends_at)}. Đổi buổi không trừ thêm buổi nào.`}
         >
           <div className="flex flex-col gap-4">
-            {options.isPending ? (
+            {candidates.isPending ? (
               <SkeletonRows rows={2} />
-            ) : items.length === 0 ? (
+            ) : options.length === 0 ? (
               <p className="measure text-ink-2 text-sm">
-                Hiện không còn buổi nào cùng hình thức lớp, còn chỗ và chưa diễn ra. Nhắn
-                studio nếu bạn cần xếp lại.
+                Hiện không còn buổi nào bạn đặt được bằng gói đang có. Nhắn studio nếu bạn
+                cần xếp lại.
               </p>
             ) : (
               <Field label="Đổi sang buổi" required>
                 {({ id }) => (
                   <Select
                     id={id}
-                    value={targetClassId}
-                    onChange={(event) => setTargetClassId(event.target.value)}
+                    value={targetId}
+                    onChange={(event) => setTargetId(event.target.value)}
                   >
                     <option value="">— Chọn buổi —</option>
-                    {items.map((option) => (
-                      <option key={option.classId} value={option.classId}>
-                        {weekdayLong(option.startsAt)} {formatDate(option.startsAt)}{" "}
-                        {formatTimeRange(option.startsAt, option.endsAt)} · {option.title} ·{" "}
-                        {option.trainerName}
+                    {options.map((option) => (
+                      <option key={option.id} value={String(option.id)}>
+                        {weekdayLong(option.starts_at)} {formatDate(option.starts_at)}{" "}
+                        {formatTimeRange(option.starts_at, option.ends_at)} ·{" "}
+                        {option.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                       </option>
                     ))}
                   </Select>
@@ -211,10 +226,9 @@ function StudentRescheduleDialog({
               </Field>
             )}
 
-            {move.error ? (
+            {change.error ? (
               <p role="alert" className="text-danger text-sm">
-                Chưa đổi được buổi. Buổi bạn chọn có thể vừa hết chỗ — thử lại hoặc chọn
-                buổi khác.
+                {refusalCopy(change.error).title}
               </p>
             ) : null}
 
@@ -224,11 +238,14 @@ function StudentRescheduleDialog({
               </Button>
               <Button
                 size="sm"
-                pending={move.isPending}
-                disabled={targetClassId === ""}
+                pending={change.isPending}
+                disabled={targetId === ""}
                 onClick={() => {
-                  move.mutate(
-                    { bookingId: booking.id, targetClassId },
+                  change.mutate(
+                    {
+                      bookingId: booking.booking_id,
+                      newClassSessionId: Number(targetId),
+                    },
                     { onSuccess: () => onDone("Đã đổi buổi. Không trừ thêm buổi nào.") },
                   );
                 }}
@@ -244,17 +261,17 @@ function StudentRescheduleDialog({
 }
 
 /** Cancelling states which way the refund will go before the button, not after. */
-function StudentCancelDialog({
+function CancelBookingDialog({
   booking,
   onClose,
   onDone,
 }: {
-  booking: Booking | null;
+  booking: MyScheduleItem | null;
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
   const cancel = useCancelBooking();
-  const refundable = booking?.cancellation?.refundable ?? false;
+  const refundable = booking?.refund_if_cancelled_now ?? false;
 
   return (
     <Dialog
@@ -269,7 +286,7 @@ function StudentCancelDialog({
       {booking ? (
         <DialogContent
           title="Hủy buổi này"
-          description={`${booking.classSession.title}, ${weekdayLong(booking.classSession.startsAt)} ${formatTimeRange(booking.classSession.startsAt, booking.classSession.endsAt)}.`}
+          description={`${weekdayLong(booking.starts_at)} ${formatTimeRange(booking.starts_at, booking.ends_at)}.`}
         >
           <div className="flex flex-col gap-4">
             <p className="measure text-ink text-sm">
@@ -280,7 +297,7 @@ function StudentCancelDialog({
 
             {cancel.error ? (
               <p role="alert" className="text-danger text-sm">
-                Chưa hủy được buổi. Vui lòng thử lại sau ít phút.
+                {refusalCopy(cancel.error).title}
               </p>
             ) : null}
 
@@ -293,11 +310,11 @@ function StudentCancelDialog({
                 variant="danger"
                 pending={cancel.isPending}
                 onClick={() => {
-                  cancel.mutate(booking.id, {
+                  cancel.mutate(booking.booking_id, {
                     onSuccess: (result) =>
                       onDone(
                         result.refunded
-                          ? `Đã hủy buổi và hoàn lại ${result.sessionsReturned} buổi vào gói.`
+                          ? `Đã hủy buổi. Gói của bạn còn ${result.credits_remaining} buổi.`
                           : "Đã hủy buổi. Ngoài hạn hoàn buổi nên không hoàn lại.",
                       ),
                   });

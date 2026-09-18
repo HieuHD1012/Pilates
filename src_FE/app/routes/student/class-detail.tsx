@@ -1,25 +1,15 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 
-import { eligibilityCopy, primaryReason } from "~/features/booking/eligibility-copy";
-import {
-  useBookableClass,
-  useBookClass,
-  useStudentPackages,
-} from "~/features/booking/queries";
-import { ApiError } from "~/lib/api/client";
-import {
-  formatDate,
-  formatLeadTime,
-  formatTime,
-  formatTimeRange,
-  weekdayLong,
-} from "~/lib/format";
+import { refusalCopy } from "~/features/booking/booking-copy";
+import { useBookableIds, useBookClass, useClassSession } from "~/features/booking/queries";
+import { useStudentPackages } from "~/features/commerce/queries";
+import { formatDate, formatLeadTime, formatTimeRange, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { ErrorState, LiveRegion, Skeleton } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { CapacityMeter, StatusBadge } from "~/ui/status";
+import { StatusBadge } from "~/ui/status";
 
 import type { Route } from "./+types/class-detail";
 
@@ -33,19 +23,22 @@ export function meta(_: Route.MetaArgs) {
  * The rules this screen establishes for every mutation in the product:
  *   1. State the consequence BEFORE the action: what is deducted, and what the
  *      balance becomes.
- *   2. State the exit terms before entry: when this booking stops being
- *      refundable, in the backend's own numbers.
+ *   2. State the exit terms where the backend states them. The cancellation
+ *      deadline is only computed for a booking that exists, so this screen
+ *      says where it will appear rather than printing a policy of its own.
  *   3. Never optimistically apply a transaction the backend has not confirmed.
  *   4. Render the backend's refusal as a sentence the student can act on.
  */
 export default function ClassDetail() {
   const { classId = "" } = useParams();
-  const query = useBookableClass(classId);
+  const sessionId = Number(classId);
+  const query = useClassSession(sessionId);
+  const bookable = useBookableIds();
   const packages = useStudentPackages();
   const booking = useBookClass();
   const [confirming, setConfirming] = useState(false);
 
-  const activePackage = (packages.data ?? []).find((item) => item.status === "active");
+  const activePackage = (packages.data ?? []).find((item) => item.status === "ACTIVE");
   const item = query.data;
 
   if (query.isPending) {
@@ -76,10 +69,16 @@ export default function ClassDetail() {
     );
   }
 
-  const reason = item.eligibility.canBook ? null : primaryReason(item.eligibility.reasons);
-  const copy = reason ? eligibilityCopy(reason) : null;
-  const cost = item.eligibility.sessionCost ?? 1;
-  const remaining = activePackage?.sessionsRemaining ?? null;
+  /**
+   * `GET /my-schedule/bookable` is the eligibility answer: the ids this
+   * student's packages can actually pay for. While it is loading the button
+   * stays disabled rather than guessing in either direction.
+   */
+  const canBook = (bookable.data ?? []).includes(sessionId);
+  // A booking always costs exactly one credit; the backend deducts one.
+  const cost = 1;
+  const remaining = activePackage?.balance_cached ?? null;
+  const hasRoom = item.seats_left > 0;
   const booked = booking.isSuccess;
 
   return (
@@ -103,23 +102,32 @@ export default function ClassDetail() {
 
       <header className="mt-4">
         <p className="label-micro">
-          {weekdayLong(item.startsAt)} · {formatDate(item.startsAt)}
+          {weekdayLong(item.starts_at)} · {formatDate(item.starts_at)}
         </p>
-        <h1 className="font-display text-d3 text-ink mt-2 font-light">{item.title}</h1>
+        <h1 className="font-display text-d3 text-ink mt-2 font-light">
+          {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+        </h1>
         <p className="figures text-ink mt-2 text-lg">
-          {formatTimeRange(item.startsAt, item.endsAt)}
+          {formatTimeRange(item.starts_at, item.ends_at)}
         </p>
       </header>
 
       <dl className="rule-t mt-6">
         <Row label="Hình thức">
-          {item.type === "private" ? "Lớp riêng (1 kèm 1)" : "Lớp nhóm"}
+          {item.class_type === "PRIVATE" ? "Lớp riêng (1 kèm 1)" : "Lớp nhóm"}
         </Row>
-        <Row label="Huấn luyện viên">{item.trainer.fullName}</Row>
+        <Row label="Huấn luyện viên">{item.trainer_name}</Row>
+        {/* `seats_left` reaches a student as 1 or 0 — room or no room. It is
+            not a count, and printing it as one would say how empty the class
+            is, which the studio deliberately does not publish. */}
         <Row label="Chỗ trống">
-          <CapacityMeter booked={item.bookedCount} capacity={item.capacity} />
+          {hasRoom ? (
+            <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+          ) : (
+            <StatusBadge tone="critical">Hết chỗ</StatusBadge>
+          )}
         </Row>
-        <Row label="Bắt đầu sau">{formatLeadTime(item.startsAt)}</Row>
+        <Row label="Bắt đầu sau">{formatLeadTime(item.starts_at)}</Row>
       </dl>
 
       {/* The consequence, before the action. */}
@@ -140,17 +148,13 @@ export default function ClassDetail() {
               </span>
             </Row>
           ) : null}
-          {item.cancellationPreview?.deadlineAt ? (
-            <Row label="Hủy được hoàn buổi">
-              trước <Figures>{formatTime(item.cancellationPreview.deadlineAt)}</Figures>{" "}
-              ngày <Figures>{formatDate(item.cancellationPreview.deadlineAt)}</Figures>
-              {item.cancellationPreview.policyHours ? (
-                <span className="text-ink-2 ml-1">
-                  (trước <Figures>{item.cancellationPreview.policyHours}</Figures> giờ)
-                </span>
-              ) : null}
-            </Row>
-          ) : null}
+          {/* The deadline is computed per booking, so it exists only once the
+              booking does. Rather than restate the studio's policy here — a
+              second copy that would drift the day it changes — this points at
+              the row that will carry the backend's own number. */}
+          <Row label="Hạn hủy">
+            hiện trong <Link to="/hv/lich-cua-toi">Lịch của tôi</Link> sau khi đặt
+          </Row>
         </dl>
       </section>
 
@@ -171,40 +175,36 @@ export default function ClassDetail() {
         </div>
       ) : (
         <div className="rule-t mt-8 pt-5">
-          {copy ? (
+          {bookable.isSuccess && !canBook ? (
             <div className="mb-5">
-              <p className="text-ink text-base">{copy.title}</p>
-              {copy.hint ? <p className="text-ink-2 mt-1 text-sm">{copy.hint}</p> : null}
+              <p className="text-ink text-base">
+                {hasRoom
+                  ? "Gói tập hiện tại của bạn chưa dùng được cho buổi này."
+                  : "Buổi này đã hết chỗ."}
+              </p>
+              <p className="text-ink-2 mt-1 text-sm">
+                {hasRoom
+                  ? "Liên hệ studio để được tư vấn gói phù hợp."
+                  : "Bạn có thể chọn một buổi khác trong tuần."}
+              </p>
             </div>
           ) : null}
 
           {booking.isError ? (
             <p role="alert" className="text-danger mb-5 text-sm">
-              {booking.error instanceof ApiError && booking.error.isConflict
-                ? eligibilityCopy(booking.error.code).title
-                : "Chưa đặt được lớp này. Vui lòng thử lại."}
+              {refusalCopy(booking.error).title}
             </p>
           ) : null}
 
           <div className="flex flex-wrap gap-3">
             <Button
               size="lg"
-              disabled={!item.eligibility.canBook}
+              disabled={!canBook}
               pending={booking.isPending}
               onClick={() => setConfirming(true)}
             >
               Đặt lớp này
             </Button>
-            {item.eligibility.canJoinWaitlist ? (
-              <Button
-                size="lg"
-                variant="secondary"
-                disabled
-                title="Danh sách chờ thuộc giai đoạn tiếp theo"
-              >
-                Đăng ký chờ
-              </Button>
-            ) : null}
           </div>
         </div>
       )}
@@ -212,7 +212,7 @@ export default function ClassDetail() {
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent
           title="Xác nhận đặt lớp"
-          description={`${item.title} · ${weekdayLong(item.startsAt)} ${formatDate(item.startsAt)}`}
+          description={`${item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"} · ${weekdayLong(item.starts_at)} ${formatDate(item.starts_at)}`}
           footer={
             <>
               <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
@@ -223,7 +223,7 @@ export default function ClassDetail() {
                 pending={booking.isPending}
                 onClick={() =>
                   booking
-                    .mutateAsync(item.id)
+                    .mutateAsync(sessionId)
                     .then(() => setConfirming(false))
                     .catch(() => setConfirming(false))
                 }
@@ -236,7 +236,7 @@ export default function ClassDetail() {
           <p className="text-ink-2 text-sm">
             Buổi tập bắt đầu lúc{" "}
             <Figures className="text-ink">
-              {formatTimeRange(item.startsAt, item.endsAt)}
+              {formatTimeRange(item.starts_at, item.ends_at)}
             </Figures>
             . Gói của bạn sẽ bị trừ <Figures className="text-ink">{cost}</Figures> buổi.
           </p>

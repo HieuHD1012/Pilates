@@ -1,12 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
-import type { ClassSession } from "~/lib/api/types";
+import { useTrainerSchedule } from "~/features/schedule/use-staff-calendar";
 import { formatDate, formatTimeRange, studioDateKey, weekdayLong } from "~/lib/format";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { CapacityMeter } from "~/ui/status";
 
 import type { Route } from "./+types/today";
 
@@ -16,15 +11,7 @@ export function meta(_: Route.MetaArgs) {
 
 export default function TrainerToday() {
   const today = studioDateKey(new Date());
-  const query = useQuery({
-    queryKey: queryKeys.trainer.schedule(today, today),
-    queryFn: () =>
-      api.get<{ items: ClassSession[] }>("/trainer/schedule", {
-        searchParams: { from: today, to: today },
-      }),
-    select: (data) => data.items,
-    staleTime: 15_000,
-  });
+  const query = useTrainerSchedule(today, today);
 
   const items = query.data ?? [];
 
@@ -61,15 +48,22 @@ export default function TrainerToday() {
               >
                 <div className="min-w-0">
                   <Figures className="text-ink block text-base">
-                    {formatTimeRange(item.startsAt, item.endsAt)}
+                    {formatTimeRange(item.starts_at, item.ends_at)}
                   </Figures>
-                  <p className="text-ink mt-1 text-sm">{item.title}</p>
-                  <p className="text-ink-2 mt-0.5 text-xs">
-                    {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"}
-                    {item.room ? ` · ${item.room}` : ""}
+                  <p className="text-ink mt-1 text-sm">
+                    {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                   </p>
+                  {item.status === "CANCELLED" ? (
+                    <p className="text-danger mt-0.5 text-xs">Lớp đã hủy</p>
+                  ) : null}
                 </div>
-                <CapacityMeter booked={item.bookedCount} capacity={item.capacity} />
+                {/* Capacity, not occupancy: `GET /classes/my-schedule` carries
+                    the seats a class has, and a trainer cannot read the
+                    bookings list that would say how many are taken. The roster
+                    on the class itself answers that. */}
+                <Figures className="text-ink-2 shrink-0 text-sm">
+                  {item.capacity} chỗ
+                </Figures>
               </li>
             ))}
           </ul>

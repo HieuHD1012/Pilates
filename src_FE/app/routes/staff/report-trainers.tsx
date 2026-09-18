@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useTrainerReport } from "~/features/reports/queries";
-import type { TrainerReportRow } from "~/lib/api/types";
-import { downloadCsv, toCsv } from "~/lib/csv";
+import { useReportExport, useTrainerReport } from "~/features/reports/queries";
+import type { TrainerStatsResponse } from "~/lib/api/schema";
 import { formatDate, formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
@@ -37,37 +36,35 @@ function dayLabel(dateKey: string): string {
   return formatDate(`${dateKey}T00:00:00+07:00`);
 }
 
-function fillRate(bookingCount: number, capacity: number): number | null {
-  if (capacity <= 0) return null;
-  return Math.round((bookingCount / capacity) * 100);
-}
-
 /** Most classes first; then most bookings; then Vietnamese collation by name. */
-function byTeachingLoad(a: TrainerReportRow, b: TrainerReportRow): number {
-  if (b.classCount !== a.classCount) return b.classCount - a.classCount;
-  if (b.bookingCount !== a.bookingCount) return b.bookingCount - a.bookingCount;
-  return a.fullName.localeCompare(b.fullName, "vi");
+function byTeachingLoad(a: TrainerStatsResponse, b: TrainerStatsResponse): number {
+  if (b.scheduled_sessions !== a.scheduled_sessions) {
+    return b.scheduled_sessions - a.scheduled_sessions;
+  }
+  if (b.total_bookings !== a.total_bookings) return b.total_bookings - a.total_bookings;
+  return a.trainer_name.localeCompare(b.trainer_name, "vi");
 }
 
 /**
  * Teaching load per trainer, for a range the user chooses.
  *
  * One table, sorted by the column the question is about — who is carrying the
- * timetable. Fill rate keeps a hairline under the number because it is the one
- * column read across rows rather than down; it is 3rem wide inside a cell whose
- * width the table's own scroll container preserves at 390, so it stays legible
- * instead of collapsing into a smear.
+ * timetable. There is no fill-rate column: `GET /reports/trainers` answers with
+ * sessions and attendances and **not** with capacity, so a percentage here
+ * would have to invent its own denominator. The class-size breakdown on the
+ * class report answers the shape of that question from a query that has it.
  */
 export default function StaffReportTrainers() {
   const [range, setRange] = useState(currentMonth);
-  const [exported, setExported] = useState<number | null>(null);
-  const query = useTrainerReport(range.from, range.to);
+  const params = { period_start: range.from, period_end: range.to };
+  const query = useTrainerReport(params);
+  const download = useReportExport("trainers");
 
   const rangeError =
     range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
 
-  const rows = query.data?.rows;
-  const classTotal = (rows ?? []).reduce((sum, row) => sum + row.classCount, 0);
+  const rows = query.data;
+  const classTotal = (rows ?? []).reduce((sum, row) => sum + row.scheduled_sessions, 0);
 
   return (
     <div className="gutter py-6">
@@ -79,39 +76,24 @@ export default function StaffReportTrainers() {
             <Button asChild size="sm" variant="secondary">
               <Link to="/studio/bao-cao">Tất cả báo cáo</Link>
             </Button>
+            {/* The file comes from the server's own query, not from the rows
+                on screen: same period, same filters, and nothing lost to
+                whatever this table happens to have fetched. */}
             <Button
               size="sm"
               variant="secondary"
-              disabled={!rows || rows.length === 0}
-              onClick={() => {
-                if (!rows) return;
-                downloadCsv(
-                  `bao-cao-hlv-${range.from}-${range.to}.csv`,
-                  toCsv(
-                    [
-                      "Huấn luyện viên",
-                      "Số lớp",
-                      "Lượt đăng ký",
-                      "Tổng sức chứa",
-                      "Tỷ lệ lấp đầy",
-                    ],
-                    rows.map((row) => [
-                      row.fullName,
-                      row.classCount,
-                      row.bookingCount,
-                      row.capacityTotal,
-                      // A ratio, written as the studio reads it. Excel gets the
-                      // three raw numbers beside it, so nothing is lost.
-                      row.capacityTotal > 0
-                        ? `${Math.round((row.bookingCount / row.capacityTotal) * 100)}%`
-                        : "",
-                    ]),
-                  ),
-                );
-                setExported(rows.length);
-              }}
+              pending={download.isPending}
+              onClick={() => download.mutate({ ...params, format: "csv" })}
             >
               Xuất CSV
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              pending={download.isPending}
+              onClick={() => download.mutate({ ...params, format: "xlsx" })}
+            >
+              Xuất Excel
             </Button>
           </>
         }
@@ -186,8 +168,8 @@ export default function StaffReportTrainers() {
       </FilterBar>
 
       <p className="measure-wide text-ink-2 mb-3 text-xs">
-        Sắp xếp theo số lớp, nhiều nhất trước. Tỉ lệ lấp đầy là lượt đăng ký chia cho sức
-        chứa của chính huấn luyện viên đó.
+        Sắp xếp theo số lớp đã xếp, nhiều nhất trước. Lớp đã hủy được đếm riêng, không trừ
+        vào cột số lớp.
       </p>
 
       <DemoDataNotice className="mb-3" />
@@ -195,7 +177,7 @@ export default function StaffReportTrainers() {
       <QueryBoundary
         query={query}
         skeletonRows={6}
-        isEmpty={(report) => report.rows.length === 0}
+        isEmpty={(report) => report.length === 0}
         emptyTitle="Không có huấn luyện viên nào dạy trong khoảng ngày này"
         emptyDescription="Chưa có lớp nào được phân công trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem phân công."
         emptyAction={
@@ -214,55 +196,35 @@ export default function StaffReportTrainers() {
             <thead>
               <tr>
                 <Th>Huấn luyện viên</Th>
-                <Th numeric>Số lớp</Th>
+                <Th numeric>Lớp đã xếp</Th>
+                <Th numeric>Lớp đã hủy</Th>
                 <Th numeric>Lượt đăng ký</Th>
-                <Th numeric>Sức chứa</Th>
-                <Th numeric>Tỉ lệ lấp đầy</Th>
               </tr>
             </thead>
             <tbody>
-              {[...report.rows].sort(byTeachingLoad).map((row) => {
-                const rate = fillRate(row.bookingCount, row.capacityTotal);
-
-                return (
-                  <Tr key={row.trainerId}>
-                    <Td>
-                      {/* Names wrap; a Vietnamese name is never truncated and
-                          never hidden behind a hover title. */}
-                      <Link
-                        to={`/studio/huan-luyen-vien/${row.trainerId}`}
-                        className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
-                      >
-                        {row.fullName}
-                      </Link>
-                    </Td>
-                    <Td numeric>
-                      <Figures>{formatNumber(row.classCount)}</Figures>
-                    </Td>
-                    <Td numeric>
-                      <Figures>{formatNumber(row.bookingCount)}</Figures>
-                    </Td>
-                    <Td numeric>
-                      <Figures>{formatNumber(row.capacityTotal)}</Figures>
-                    </Td>
-                    <Td numeric>
-                      {rate === null ? (
-                        <Placeholder />
-                      ) : (
-                        <span className="inline-flex flex-col items-end gap-1">
-                          <Figures>{rate}%</Figures>
-                          <span aria-hidden="true" className="bg-rule block h-px w-12">
-                            <span
-                              className="bg-ink block h-px transition-[width]"
-                              style={{ width: `${Math.min(rate, 100)}%` }}
-                            />
-                          </span>
-                        </span>
-                      )}
-                    </Td>
-                  </Tr>
-                );
-              })}
+              {[...report].sort(byTeachingLoad).map((row) => (
+                <Tr key={row.trainer_id}>
+                  <Td>
+                    {/* Names wrap; a Vietnamese name is never truncated and
+                        never hidden behind a hover title. */}
+                    <Link
+                      to={`/studio/huan-luyen-vien/${row.trainer_id}`}
+                      className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+                    >
+                      {row.trainer_name}
+                    </Link>
+                  </Td>
+                  <Td numeric>
+                    <Figures>{formatNumber(row.scheduled_sessions)}</Figures>
+                  </Td>
+                  <Td numeric>
+                    <Figures>{formatNumber(row.cancelled_sessions)}</Figures>
+                  </Td>
+                  <Td numeric>
+                    <Figures>{formatNumber(row.total_bookings)}</Figures>
+                  </Td>
+                </Tr>
+              ))}
             </tbody>
           </DataTable>
         )}
@@ -270,14 +232,18 @@ export default function StaffReportTrainers() {
 
       <LiveRegion
         message={
-          exported === null ? null : `Đã xuất ${exported} dòng. Kiểm tra thư mục tải về.`
+          download.isSuccess
+            ? "Đã tải tệp báo cáo. Kiểm tra thư mục tải về."
+            : download.isError
+              ? "Chưa tải được tệp báo cáo."
+              : null
         }
       />
 
       <p className="rule-t measure-wide text-ink-2 mt-8 pt-4 text-xs">
-        Tệp CSV mở trực tiếp bằng Excel — có BOM UTF-8 và dấu chấm phẩy, nên tiếng Việt
-        không bị lỗi phông và các cột không dồn vào một ô. Chưa xuất .xlsx vì việc đó cần
-        thêm một thư viện chỉ để phục vụ một báo cáo.
+        Tệp được sinh ở máy chủ từ đúng truy vấn của bảng này, nên con số trong tệp và con
+        số trên màn hình luôn khớp. Chọn CSV để mở nhanh bằng Excel, hoặc Excel để giữ định
+        dạng cột.
       </p>
     </div>
   );

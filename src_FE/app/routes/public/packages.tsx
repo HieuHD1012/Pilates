@@ -1,8 +1,13 @@
 import { Link } from "react-router";
 
+import { usePublicPackages } from "~/features/public/queries";
+import { formatNumber, formatVnd } from "~/lib/format";
 import { Button } from "~/ui/button";
+import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
+import { PendingFact } from "~/ui/pending-fact";
 import { PublicPageHeader } from "~/ui/public-page";
+import { QueryBoundary } from "~/ui/query-boundary";
 
 import type { Route } from "./+types/packages";
 
@@ -18,10 +23,13 @@ export function meta(_: Route.MetaArgs) {
 }
 
 /**
- * Prices for the Nha Trang branch have not been supplied, and the Đà Nẵng
- * branch's prices are not this studio's prices. Rather than print a plausible
- * table, this page explains exactly how a package works — which is confirmed
- * product behaviour — and routes the visitor to a real conversation.
+ * The catalogue is the studio's, not ours.
+ *
+ * `GET /public/packages` returns what is actually on sale. A package whose
+ * price the studio has not entered comes back with `price: null`, and that
+ * renders as a waiting slot — never as 0, and never as a number invented to
+ * finish the table. The explanation of how a package works stays above it:
+ * that part is confirmed product behaviour and does not depend on the data.
  */
 export default function Packages() {
   return (
@@ -63,24 +71,63 @@ export default function Packages() {
       </Section>
 
       <Section index="02" label="Bảng giá" tone="deep">
-        <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-7">
-            <h2 className="font-display text-d3 text-ink font-light">
-              Bảng giá hiện hành được studio gửi trực tiếp.
-            </h2>
-            <p className="measure text-ink-2 mt-5 text-base">
-              Số buổi, thời hạn và mức giá thay đổi theo từng đợt. Để lại số điện thoại,
-              nhân viên sẽ gửi bảng giá đang áp dụng cùng gợi ý gói phù hợp với lịch của
-              bạn.
-            </p>
-            <div className="mt-8">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Nhận bảng giá</Link>
-              </Button>
-            </div>
+        <div className="pb-20 md:pb-28">
+          <PriceList />
+          <div className="mt-10">
+            <Button asChild variant="lacquer" size="lg">
+              <Link to="/dat-tu-van">Nhận tư vấn gói phù hợp</Link>
+            </Button>
           </div>
         </div>
       </Section>
     </>
+  );
+}
+
+function PriceList() {
+  const query = usePublicPackages();
+
+  return (
+    <QueryBoundary
+      query={query}
+      skeletonRows={4}
+      emptyTitle="Bảng giá đang được cập nhật"
+      emptyDescription="Studio chưa mở bán gói nào trên trang này. Để lại số điện thoại, nhân viên sẽ gửi bảng giá đang áp dụng."
+      emptyAction={
+        <Button asChild variant="secondary">
+          <Link to="/dat-tu-van">Nhận bảng giá</Link>
+        </Button>
+      }
+      errorDescription="Chưa tải được bảng giá. Bạn có thể thử lại, hoặc để lại thông tin để nhân viên gửi trực tiếp."
+    >
+      {(packages) => (
+        <ul className="rule-t">
+          {packages.map((pack) => (
+            <li
+              key={`${pack.name}-${pack.class_type}-${pack.credits}`}
+              className="rule-b grid gap-x-8 gap-y-2 py-6 md:grid-cols-12"
+            >
+              <div className="md:col-span-5">
+                <h3 className="text-ink text-lg">{pack.name}</h3>
+                <p className="text-ink-2 mt-1 text-sm">
+                  {pack.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                </p>
+              </div>
+              <p className="text-ink-2 text-sm md:col-span-4">
+                <Figures>{formatNumber(pack.credits)}</Figures> buổi · dùng trong{" "}
+                <Figures>{formatNumber(pack.duration_days)}</Figures> ngày
+              </p>
+              <p className="text-ink text-sm md:col-span-3 md:justify-self-end">
+                {pack.price ? (
+                  <Figures>{formatVnd(pack.price)}</Figures>
+                ) : (
+                  <PendingFact label={`Giá gói ${pack.name}`} />
+                )}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </QueryBoundary>
   );
 }

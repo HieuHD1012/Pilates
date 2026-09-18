@@ -16,7 +16,7 @@ export default function TrainerLayout() {
   const logout = useLogout();
 
   return (
-    <RoleGate allow={["trainer"]}>
+    <RoleGate allow={["TRAINER"]}>
       <div className="bg-chalk flex min-h-dvh flex-col">
         <header className="rule-b bg-sand/95 sticky top-0 z-(--z-nav) backdrop-blur-[2px]">
           <div className="gutter mx-auto flex h-14 max-w-(--container-page) items-center justify-between gap-4">

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
 import { HydrateFallback } from "~/root";
-import type { Role } from "~/lib/api/types";
+import type { Role } from "~/lib/api/schema";
 
 import { ROLE_HOME, useSession } from "./use-session";
 

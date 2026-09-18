@@ -3,31 +3,33 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { ApiError } from "~/lib/api/client";
+import { ApiError, errorMessage } from "~/lib/api/client";
 import { cn } from "~/lib/cn";
 import type {
-  ClassInput,
+  ClassCreateRequest,
   ClassType,
-  RecurringClassInput,
-  Trainer,
-  TrainerConflict,
-} from "~/lib/api/types";
-import { addDays, formatDate, formatTimeRange, weekdayLong } from "~/lib/format";
+  RecurrenceRequest,
+  TrainerResponse,
+} from "~/lib/api/schema";
+import { addDays, formatDate } from "~/lib/format";
 import { Button } from "~/ui/button";
-import { Field, FormActions, Input, Select, Textarea } from "~/ui/field";
+import { Field, FormActions, Input, Select } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 
 /**
- * One form for scheduling a class and for editing one.
+ * Scheduling a class, one or a weekly pattern of them.
  *
- * It collects a local date, a wall-clock start and a duration rather than two
- * instants — see `ClassInput`. The end time is shown as it is typed, because
- * "6:30 for 50 minutes" and "ends 7:20" are the same fact stated two ways and
- * staff check the second one against the room's next booking.
+ * Staff think in "thứ Ba, 6:30, 50 phút"; the API takes two instants. The two
+ * are composed here with the studio's fixed `+07:00` — Vietnam keeps one offset
+ * all year, so this is a formatting step, not a timezone calculation.
  *
- * The rejection this form exists to handle is the trainer clash (CONFIRMED, Q4).
- * The backend refuses and names the class it collided with; the form shows that
- * class by name, day and time, because "trùng lịch" alone cannot be acted on.
+ * A session has **no title, no room and no note**: it is a time, a trainer, a
+ * type and a capacity. Fields for the other three used to exist here and wrote
+ * to nothing.
+ *
+ * The rejection this form exists to handle is the trainer clash. The backend
+ * refuses with `TRAINER_DOUBLE_BOOKED` and a sentence already written for the
+ * person reading it, so that sentence is what gets shown.
  */
 
 /** Common studio durations, plus whatever is already on the class being edited. */
@@ -51,8 +53,7 @@ const WEEKDAYS: Array<{ value: number; short: string; long: string }> = [
 const MAX_HORIZON_DAYS = 26 * 7;
 
 const schema = z.object({
-  title: z.string().trim().min(2, "Nhập tên lớp").max(80, "Tên lớp quá dài"),
-  type: z.enum(["group", "private"]),
+  type: z.enum(["GROUP", "PRIVATE"]),
   trainerId: z.string().min(1, "Chọn huấn luyện viên"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Chọn ngày"),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Chọn giờ bắt đầu"),
@@ -63,54 +64,30 @@ const schema = z.object({
     .string()
     .refine((v) => /^\d+$/.test(v) && Number(v) >= 1, "Sức chứa tối thiểu 1 người")
     .refine((v) => Number(v) <= 40, "Sức chứa vượt mức hợp lý"),
-  room: z.string().trim().max(40, "Tên phòng quá dài"),
-  note: z.string().trim().max(300, "Ghi chú quá dài"),
   /** Only read when the form is in recurring mode. */
   repeatUntil: z.string(),
 });
 
 export type ClassFormValues = z.input<typeof schema>;
 
-const FIELD_NAMES = new Set([
-  "title",
-  "type",
-  "trainerId",
-  "date",
-  "startTime",
-  "durationMinutes",
-  "capacity",
-  "room",
-  "note",
-]);
+/** The backend names its fields differently; map the ones a form can show. */
+const FIELD_ALIASES: Record<string, keyof ClassFormValues> = {
+  trainer_id: "trainerId",
+  class_type: "type",
+  capacity: "capacity",
+  starts_at: "startTime",
+  ends_at: "durationMinutes",
+  start_time: "startTime",
+  duration_minutes: "durationMinutes",
+  start_date: "date",
+  end_date: "repeatUntil",
+};
 
-/**
- * Narrows the backend's structured rejection. Anything malformed is ignored —
- * a half-formed conflict is worse than a generic failure, because it would name
- * a class that might not be the one in the way.
- *
- * Exported because reassigning a trainer hits the same rule from a different
- * dialog, and both have to name what they collided with.
- */
-export function readTrainerConflict(error: unknown): TrainerConflict | null {
-  if (!(error instanceof ApiError) || error.code !== "trainer_conflict") return null;
-  const d = error.details;
-  if (
-    !d ||
-    typeof d.classId !== "string" ||
-    typeof d.title !== "string" ||
-    typeof d.startsAt !== "string" ||
-    typeof d.endsAt !== "string" ||
-    typeof d.trainerName !== "string"
-  ) {
-    return null;
-  }
-  return {
-    classId: d.classId,
-    title: d.title,
-    startsAt: d.startsAt,
-    endsAt: d.endsAt,
-    trainerName: d.trainerName,
-  };
+/** The studio keeps one UTC offset all year, so this is formatting, not maths. */
+const STUDIO_OFFSET = "+07:00";
+
+function studioInstant(date: string, time: string): string {
+  return `${date}T${time}:00${STUDIO_OFFSET}`;
 }
 
 /** "06:30" plus 50 minutes is "07:20". Wall clock only — no date arithmetic. */
@@ -133,7 +110,7 @@ export function ClassForm({
   onSubmit,
   onCancel,
 }: {
-  trainers: Trainer[];
+  trainers: TrainerResponse[];
   defaultValues?: Partial<ClassFormValues>;
   submitLabel: string;
   /** Editing a class people have already booked; shown so capacity is not a guess. */
@@ -146,7 +123,7 @@ export function ClassForm({
   recurring?: boolean;
   pending: boolean;
   error: unknown;
-  onSubmit: (input: ClassInput | RecurringClassInput) => Promise<unknown>;
+  onSubmit: (input: ClassCreateRequest | RecurrenceRequest) => Promise<unknown>;
   onCancel: () => void;
 }) {
   const [weekdays, setWeekdays] = useState<number[]>([]);
@@ -160,15 +137,12 @@ export function ClassForm({
   } = useForm<ClassFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: defaultValues?.title ?? "",
-      type: defaultValues?.type ?? "group",
+      type: defaultValues?.type ?? "GROUP",
       trainerId: defaultValues?.trainerId ?? "",
       date: defaultValues?.date ?? "",
       startTime: defaultValues?.startTime ?? "",
       durationMinutes: defaultValues?.durationMinutes ?? "50",
       capacity: defaultValues?.capacity ?? "",
-      room: defaultValues?.room ?? "",
-      note: defaultValues?.note ?? "",
       repeatUntil: defaultValues?.repeatUntil ?? "",
     },
   });
@@ -198,13 +172,16 @@ export function ClassForm({
       ? countOccurrences(dateField, repeatUntil, weekdays)
       : null;
 
-  const conflict = readTrainerConflict(error);
-  const otherFailure =
-    error instanceof ApiError && !error.isValidation && conflict === null;
+  const clash =
+    error instanceof ApiError &&
+    (error.code === "TRAINER_DOUBLE_BOOKED" || error.code === "RECURRENCE_CONFLICT");
+  const otherFailure = error instanceof ApiError && !error.isValidation && !clash;
 
   // Only active trainers can be assigned new work; an inactive one already on the
   // class stays in the list so editing something else does not silently reassign.
-  const assignable = trainers.filter((t) => t.active || t.id === defaultValues?.trainerId);
+  const assignable = trainers.filter(
+    (trainer) => trainer.is_active || String(trainer.id) === defaultValues?.trainerId,
+  );
 
   const durations = Array.from(
     new Set([
@@ -223,46 +200,44 @@ export function ClassForm({
           setWeekdayError("Chọn ít nhất một ngày trong tuần");
           return;
         }
-        const base: ClassInput = {
-          title: parsed.title,
-          type: parsed.type as ClassType,
-          trainerId: parsed.trainerId,
-          date: parsed.date,
-          startTime: parsed.startTime,
-          durationMinutes: Number(parsed.durationMinutes),
-          capacity: Number(parsed.capacity),
-          room: parsed.room === "" ? null : parsed.room,
-          note: parsed.note === "" ? null : parsed.note,
-        };
-        return onSubmit(
-          recurring
-            ? { ...base, weekdays: [...weekdays].sort((a, b) => a - b), repeatUntil }
-            : base,
-        ).catch((cause) => {
+        const duration = Number(parsed.durationMinutes);
+        const endTimeOfDay = endOfDay(parsed.startTime, duration);
+        if (endTimeOfDay === null) {
+          setError("durationMinutes", { message: "Lớp phải kết thúc trong ngày" });
+          return;
+        }
+
+        const payload: ClassCreateRequest | RecurrenceRequest = recurring
+          ? {
+              start_date: parsed.date,
+              end_date: repeatUntil,
+              weekdays: [...weekdays].sort((a, b) => a - b),
+              start_time: `${parsed.startTime}:00`,
+              duration_minutes: duration,
+              trainer_id: Number(parsed.trainerId),
+              class_type: parsed.type as ClassType,
+              capacity: Number(parsed.capacity),
+            }
+          : {
+              starts_at: studioInstant(parsed.date, parsed.startTime),
+              ends_at: studioInstant(parsed.date, endTimeOfDay),
+              trainer_id: Number(parsed.trainerId),
+              class_type: parsed.type as ClassType,
+              capacity: Number(parsed.capacity),
+            };
+
+        return onSubmit(payload).catch((cause) => {
           if (cause instanceof ApiError && cause.isValidation) {
             for (const [field, messages] of Object.entries(cause.fieldErrors)) {
-              if (FIELD_NAMES.has(field)) {
-                setError(field as keyof ClassFormValues, {
-                  message: messages[0] ?? "Giá trị chưa hợp lệ",
-                });
+              const target = FIELD_ALIASES[field];
+              if (target !== undefined) {
+                setError(target, { message: messages[0] ?? "Giá trị chưa hợp lệ" });
               }
             }
           }
         });
       })}
     >
-      <Field label="Tên lớp" required error={errors.title?.message}>
-        {({ id, describedBy, invalid }) => (
-          <Input
-            id={id}
-            autoComplete="off"
-            aria-describedby={describedBy}
-            aria-invalid={invalid}
-            {...register("title")}
-          />
-        )}
-      </Field>
-
       <div className="grid gap-5 sm:grid-cols-2 sm:items-end">
         <Field label="Hình thức" required error={errors.type?.message}>
           {({ id, describedBy, invalid }) => (
@@ -272,8 +247,8 @@ export function ClassForm({
               aria-invalid={invalid}
               {...register("type")}
             >
-              <option value="group">Lớp nhóm</option>
-              <option value="private">Lớp riêng</option>
+              <option value="GROUP">Lớp nhóm</option>
+              <option value="PRIVATE">Lớp riêng</option>
             </Select>
           )}
         </Field>
@@ -288,9 +263,9 @@ export function ClassForm({
             >
               <option value="">— Chọn huấn luyện viên —</option>
               {assignable.map((trainer) => (
-                <option key={trainer.id} value={trainer.id}>
-                  {trainer.fullName}
-                  {trainer.active ? "" : " (đã nghỉ)"}
+                <option key={trainer.id} value={String(trainer.id)}>
+                  {trainer.full_name}
+                  {trainer.is_active ? "" : " (đã nghỉ)"}
                 </option>
               ))}
             </Select>
@@ -377,34 +352,6 @@ export function ClassForm({
         )}
       </p>
 
-      <Field label="Phòng" hint="Không bắt buộc." error={errors.room?.message}>
-        {({ id, describedBy, invalid }) => (
-          <Input
-            id={id}
-            autoComplete="off"
-            aria-describedby={describedBy}
-            aria-invalid={invalid}
-            {...register("room")}
-          />
-        )}
-      </Field>
-
-      <Field
-        label="Ghi chú"
-        hint="Điều cần lưu ý cho huấn luyện viên hoặc học viên."
-        error={errors.note?.message}
-      >
-        {({ id, describedBy, invalid }) => (
-          <Textarea
-            id={id}
-            rows={2}
-            aria-describedby={describedBy}
-            aria-invalid={invalid}
-            {...register("note")}
-          />
-        )}
-      </Field>
-
       {recurring ? (
         <fieldset className="rule-t pt-4">
           <legend className="text-ink text-xs font-medium">Lặp hàng tuần</legend>
@@ -416,7 +363,7 @@ export function ClassForm({
 
           <div
             role="group"
-            aria-label="Ngày trong tuần"
+            aria-label="Các thứ lặp lại"
             aria-describedby={weekdayError ? "weekday-error" : undefined}
             className="mt-3 flex flex-wrap gap-2"
           >
@@ -492,27 +439,23 @@ export function ClassForm({
               " "
             ) : (
               <>
-                Sẽ tạo <Figures className="text-ink">{plannedCount}</Figures> buổi. Buổi nào
-                trùng lịch huấn luyện viên sẽ bị bỏ qua và được liệt kê sau khi lưu.
+                Sẽ tạo tối đa <Figures className="text-ink">{plannedCount}</Figures> buổi.
+                Bản xem trước ở bước sau cho biết buổi nào trùng lịch huấn luyện viên.
               </>
             )}
           </p>
         </fieldset>
       ) : null}
 
-      {conflict ? (
+      {clash ? (
         <div role="alert" className="rule-t border-t-danger/40 pt-3">
+          {/* The backend's sentence, which already names the problem in
+              Vietnamese. Re-deriving copy from the code would say less. */}
           <p className="text-danger text-sm">
-            {conflict.trainerName} đã có lớp trong khoảng giờ này.
+            {errorMessage(error, "Huấn luyện viên đã có lớp trong khoảng giờ này.")}
           </p>
           <p className="text-ink-2 mt-1.5 text-xs">
-            Trùng với <span className="text-ink">{conflict.title}</span> —{" "}
-            {weekdayLong(conflict.startsAt)},{" "}
-            <Figures className="text-ink">{formatDate(conflict.startsAt)}</Figures>{" "}
-            <Figures className="text-ink">
-              {formatTimeRange(conflict.startsAt, conflict.endsAt)}
-            </Figures>
-            . Đổi giờ, hoặc chọn huấn luyện viên khác.
+            Đổi giờ, hoặc chọn huấn luyện viên khác.
           </p>
         </div>
       ) : null}

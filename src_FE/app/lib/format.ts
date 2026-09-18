@@ -35,9 +35,26 @@ const fullDate = new Intl.DateTimeFormat(LOCALE, {
   timeZone: STUDIO_TIME_ZONE,
 });
 
-/** "1.250.000 ₫" */
-export function formatVnd(amount: number): string {
-  return currency.format(amount);
+/**
+ * "1.250.000 ₫"
+ *
+ * Accepts the backend's decimal string as well as a number. Money crosses the
+ * network as `"1500000.00"` and is parsed here, at the last possible moment —
+ * parsing it at the network edge is how a total picks up a floating-point tail.
+ */
+export function formatVnd(amount: number | string): string {
+  return currency.format(typeof amount === "string" ? Number(amount) : amount);
+}
+
+/**
+ * A decimal string as a number, for arithmetic the backend has not already
+ * done. Returns `null` for a missing price, which is not the same as zero:
+ * `null` means the studio has not supplied one, and must render as a gap.
+ */
+export function decimalToNumber(value: string | null | undefined): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 /**

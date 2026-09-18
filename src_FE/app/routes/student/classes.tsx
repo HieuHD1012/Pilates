@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useBookableClasses, useStudentPackages } from "~/features/booking/queries";
-import { eligibilityCopy, primaryReason } from "~/features/booking/eligibility-copy";
-import type { ClassType } from "~/lib/api/types";
+import { useBookableClasses } from "~/features/booking/queries";
+import { useStudentPackages } from "~/features/commerce/queries";
+import type { ClassType } from "~/lib/api/schema";
 import { cn } from "~/lib/cn";
 import {
   addDays,
+  formatDate,
   formatTimeRange,
   studioDateKey,
   weekdayLong,
@@ -34,13 +35,16 @@ export function meta(_: Route.MetaArgs) {
 export default function StudentClasses() {
   const today = studioDateKey(new Date());
   const [activeDay, setActiveDay] = useState(today);
-  const [type, setType] = useState<ClassType | "all">("all");
+  const [classType, setClassType] = useState<ClassType | "all">("all");
 
   const days = Array.from({ length: 14 }, (_, index) => addDays(today, index));
-  const query = useBookableClasses({ from: today, to: addDays(today, 13), type });
+  const query = useBookableClasses({ from: today, to: addDays(today, 13), classType });
   const packages = useStudentPackages();
 
-  const activePackage = (packages.data ?? []).find((item) => item.status === "active");
+  // The package a student is actually spending from: active, and with credits
+  // left. The backend picks the one expiring soonest when a booking is made;
+  // this banner only has to show a balance, so the first active one is enough.
+  const activePackage = (packages.data ?? []).find((item) => item.status === "ACTIVE");
 
   // Classes that have already started are removed rather than rendered as dead
   // rows: "chỉ hiển thị lớp có thể đăng ký" (bảng chức năng, Đăng ký/hủy/đổi).
@@ -50,8 +54,8 @@ export default function StudentClasses() {
   // that re-reads the clock while rendering produces unstable output.
   const now = query.dataUpdatedAt || 0;
   const items = (query.data ?? [])
-    .filter((item) => studioDateKey(item.startsAt) === activeDay)
-    .filter((item) => new Date(item.startsAt).getTime() > now);
+    .filter((item) => studioDateKey(item.starts_at) === activeDay)
+    .filter((item) => new Date(item.starts_at).getTime() > now);
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -59,9 +63,9 @@ export default function StudentClasses() {
 
       <BalanceBanner
         pending={packages.isPending}
-        remaining={activePackage?.sessionsRemaining ?? null}
-        packageName={activePackage?.packageName ?? null}
-        renewalDue={activePackage?.renewalDue ?? false}
+        remaining={activePackage?.balance_cached ?? null}
+        packageName={activePackage?.name_snapshot ?? null}
+        endDate={activePackage?.end_date ?? null}
       />
 
       <div
@@ -98,18 +102,20 @@ export default function StudentClasses() {
         {(
           [
             { value: "all", label: "Tất cả" },
-            { value: "group", label: "Lớp nhóm" },
-            { value: "private", label: "Lớp riêng" },
+            { value: "GROUP", label: "Lớp nhóm" },
+            { value: "PRIVATE", label: "Lớp riêng" },
           ] as const
         ).map((option) => (
           <button
             key={option.value}
             type="button"
-            aria-pressed={type === option.value}
-            onClick={() => setType(option.value)}
+            aria-pressed={classType === option.value}
+            onClick={() => setClassType(option.value)}
             className={cn(
               "rounded-sm px-3 py-1.5 text-xs transition-colors",
-              type === option.value ? "bg-ink text-sand" : "text-ink-2 hover:bg-sand-deep",
+              classType === option.value
+                ? "bg-ink text-sand"
+                : "text-ink-2 hover:bg-sand-deep",
             )}
           >
             {option.label}
@@ -138,11 +144,12 @@ export default function StudentClasses() {
       {query.isSuccess && items.length > 0 ? (
         <ul className="rule-t">
           {items.map((item) => {
-            const reason = item.eligibility.canBook
-              ? null
-              : primaryReason(item.eligibility.reasons);
-            const seatsLeft = Math.max(item.capacity - item.bookedCount, 0);
-
+            /**
+             * `canBook` is the backend's answer from `/my-schedule/bookable`,
+             * and it is the whole answer: the reasons behind it are not
+             * published, so the row says what a student can do rather than
+             * guessing why. Seats left are not published to a student either.
+             */
             return (
               <li key={item.id} className="rule-b">
                 <Link
@@ -151,27 +158,19 @@ export default function StudentClasses() {
                 >
                   <span className="min-w-0">
                     <Figures className="text-ink block text-sm">
-                      {formatTimeRange(item.startsAt, item.endsAt)}
+                      {formatTimeRange(item.starts_at, item.ends_at)}
                     </Figures>
-                    <span className="text-ink mt-1 block text-base">{item.title}</span>
-                    <span className="text-ink-2 mt-0.5 block text-xs">
-                      {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"} ·{" "}
-                      {item.trainer.fullName}
+                    <span className="text-ink mt-1 block text-base">
+                      {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                     </span>
-                    {reason ? (
-                      <span className="text-ink-2 mt-2 block text-xs">
-                        {eligibilityCopy(reason).title}
-                      </span>
-                    ) : null}
+                    <span className="text-ink-2 mt-0.5 block text-xs">
+                      <Figures>{item.capacity}</Figures> chỗ
+                    </span>
                   </span>
 
                   <span className="flex shrink-0 flex-col items-end gap-2">
-                    {item.eligibility.canBook ? (
-                      <StatusBadge tone="positive">
-                        Còn <Figures>{seatsLeft}</Figures> chỗ
-                      </StatusBadge>
-                    ) : item.eligibility.canJoinWaitlist ? (
-                      <StatusBadge tone="attention">Chờ chỗ</StatusBadge>
+                    {item.canBook ? (
+                      <StatusBadge tone="positive">Đặt được</StatusBadge>
                     ) : (
                       <StatusBadge tone="neutral">Không đặt được</StatusBadge>
                     )}
@@ -190,12 +189,12 @@ function BalanceBanner({
   pending,
   remaining,
   packageName,
-  renewalDue,
+  endDate,
 }: {
   pending: boolean;
   remaining: number | null;
   packageName: string | null;
-  renewalDue: boolean;
+  endDate: string | null;
 }) {
   if (pending) {
     return (
@@ -223,11 +222,12 @@ function BalanceBanner({
         </Figures>
         <span>buổi</span>
       </p>
+      {/* No "renewal due" flag: whether a package needs renewing is a studio
+          judgement, decided on the staff side by /renewals. A student sees the
+          two facts it is made of — what is left and until when. */}
       <p className="text-ink-2 text-xs">
         {packageName}
-        {renewalDue ? (
-          <span className="text-lacquer ml-2">Sắp hết — studio sẽ liên hệ</span>
-        ) : null}
+        {endDate ? <span className="ml-2">đến {formatDate(endDate)}</span> : null}
       </p>
     </div>
   );

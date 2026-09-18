@@ -1,13 +1,8 @@
 import { Link } from "react-router";
 
-import { useStaffCalendar } from "~/features/schedule/use-staff-calendar";
-import {
-  addDays,
-  formatDayMonth,
-  formatTimeRange,
-  studioDateKey,
-  weekdayShort,
-} from "~/lib/format";
+import { useDashboard } from "~/features/reports/queries";
+import type { SessionRowResponse } from "~/lib/api/schema";
+import { formatDayMonth, formatNumber, formatTime, weekdayShort } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
@@ -23,28 +18,37 @@ export function meta(_: Route.MetaArgs) {
 /**
  * The dashboard answers one question: what needs attention today?
  *
- * There is no donut chart and there are no decorative KPI tiles. Every figure
- * here is either something a staff member acts on, or it is not on the screen.
- * Sections that depend on domains not yet built (leads, renewals, payments)
- * are deliberately absent rather than mocked into a convincing-looking chart.
+ * The whole screen is `GET /reports/dashboard` — four numbers, today's classes,
+ * and the classes that have ended without a trainer marking attendance. Two
+ * properties of that endpoint are design decisions, not omissions:
+ *
+ *  - **There is no revenue figure.** This board is open all day at a counter
+ *    customers can see. Money has its own screen, behind a sign-in and a click.
+ *  - **A number may be `null`,** meaning not measured. The cell is then left
+ *    empty; "0" would be a measurement, and a wrong one.
+ *
+ * `detail_path` on each number is an **API** path, not a route. The link below
+ * is the studio screen that answers the same question, chosen by `key`; a
+ * number whose screen does not exist yet is shown without a link rather than
+ * pointing at a page that is not there.
  */
-export default function StaffDashboard() {
-  const today = studioDateKey(new Date());
-  const query = useStaffCalendar({ from: today, to: addDays(today, 6), type: "all" });
 
-  const items = query.data ?? [];
-  const todayItems = items.filter((item) => studioDateKey(item.startsAt) === today);
-  const attention = items.filter(
-    (item) => item.bookedCount >= item.capacity && item.status === "scheduled",
-  );
-  const bookedToday = todayItems.reduce((sum, item) => sum + item.bookedCount, 0);
-  const capacityToday = todayItems.reduce((sum, item) => sum + item.capacity, 0);
+/** Dashboard number keys → the studio screen that shows those rows. */
+const DETAIL_ROUTE: Record<string, string> = {
+  sessions_today: "/studio/lich",
+  bookings_today: "/studio/lich",
+  renewals_due: "/studio/gia-han",
+  unconfirmed_payments: "/studio/thanh-toan",
+};
+
+export default function StaffDashboard() {
+  const query = useDashboard();
 
   return (
     <div className="gutter py-6">
       <PageHeader
         title="Tổng quan"
-        description="Tình hình lớp học trong hôm nay và bảy ngày tới."
+        description="Bốn con số của hôm nay, lịch trong ngày, và những lớp đã kết thúc còn chờ điểm danh."
         actions={
           <Button asChild size="sm" variant="secondary">
             <Link to="/studio/lich">Mở lịch tuần</Link>
@@ -57,7 +61,7 @@ export default function StaffDashboard() {
       {query.isError ? (
         <ErrorState
           className="mt-6"
-          description="Không tải được dữ liệu lớp học."
+          description="Không tải được bảng tổng quan."
           detail={query.error instanceof Error ? query.error.message : undefined}
           onRetry={() => void query.refetch()}
         />
@@ -66,72 +70,44 @@ export default function StaffDashboard() {
       {query.isSuccess ? (
         <>
           <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric
-              label="Lớp hôm nay"
-              value={<Figures display>{todayItems.length}</Figures>}
-            />
-            <Metric
-              label="Lượt đăng ký hôm nay"
-              value={
-                <Figures display>
-                  {bookedToday}/{capacityToday}
-                </Figures>
-              }
-            />
-            <Metric
-              label="Lớp đủ chỗ · 7 ngày"
-              value={<Figures display>{attention.length}</Figures>}
-              tone={attention.length > 0 ? "attention" : "neutral"}
-            />
-            <Metric
-              label="Lớp trong 7 ngày"
-              value={<Figures display>{items.length}</Figures>}
-            />
+            {query.data.numbers.map((number) => {
+              const route = DETAIL_ROUTE[number.key];
+              const value =
+                number.value === null ? (
+                  <Placeholder />
+                ) : (
+                  <Figures display>{formatNumber(number.value)}</Figures>
+                );
+
+              return (
+                <Metric
+                  key={number.key}
+                  label={number.label}
+                  value={route ? <Link to={route}>{value}</Link> : value}
+                />
+              );
+            })}
           </div>
 
           <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Cần chú ý</h2>
+            <h2 className="text-ink text-sm font-medium">Chờ điểm danh</h2>
             <p className="measure-wide text-ink-2 mt-1 text-xs">
-              Lớp đã đủ chỗ trong bảy ngày tới. Nếu có người chờ, cân nhắc mở thêm buổi hoặc
-              xử lý danh sách chờ.
+              Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ
+              trách mới điểm danh được — nhắc họ mở lớp của mình.
             </p>
 
-            {attention.length === 0 ? (
+            {query.data.sessions_needing_attention.length === 0 ? (
               <EmptyState
                 className="mt-4"
-                title="Không có lớp nào đang đầy"
-                description="Mọi lớp trong bảy ngày tới vẫn còn chỗ trống."
+                title="Không có lớp nào chờ điểm danh"
+                description="Mọi lớp đã kết thúc đều đã được điểm danh."
               />
             ) : (
               <ul className="rule-t mt-4">
-                {attention.map((item) => (
-                  <li
-                    key={item.id}
-                    className="rule-b grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3"
-                  >
-                    <span className="flex shrink-0 items-baseline gap-2">
-                      {/* Over a seven-day window a time alone is ambiguous. */}
-                      <span className="text-ink-2 w-13 text-xs">
-                        {weekdayShort(item.startsAt)}{" "}
-                        <Figures>{formatDayMonth(item.startsAt)}</Figures>
-                      </span>
-                      <Figures className="text-ink-2 text-xs">
-                        {formatTimeRange(item.startsAt, item.endsAt)}
-                      </Figures>
-                    </span>
-                    <span className="text-ink min-w-0 truncate text-sm">
-                      {item.title}
-                      <span className="text-ink-2 ml-2">{item.trainer.fullName}</span>
-                    </span>
-                    <span className="flex items-center gap-3">
-                      {item.waitlistCount > 0 ? (
-                        <span className="text-ink-2 text-xs">
-                          Chờ <Figures className="text-ink">{item.waitlistCount}</Figures>
-                        </span>
-                      ) : null}
-                      <StatusBadge tone="attention">Đủ chỗ</StatusBadge>
-                    </span>
-                  </li>
+                {query.data.sessions_needing_attention.map((session) => (
+                  <SessionRow key={session.class_session_id} session={session} dated>
+                    <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
+                  </SessionRow>
                 ))}
               </ul>
             )}
@@ -139,7 +115,7 @@ export default function StaffDashboard() {
 
           <section className="mt-12">
             <h2 className="text-ink text-sm font-medium">Lớp hôm nay</h2>
-            {todayItems.length === 0 ? (
+            {query.data.sessions_today.length === 0 ? (
               <EmptyState
                 className="mt-4"
                 title="Hôm nay không có lớp"
@@ -147,23 +123,17 @@ export default function StaffDashboard() {
               />
             ) : (
               <ul className="rule-t mt-4">
-                {todayItems.map((item) => (
-                  <li
-                    key={item.id}
-                    className="rule-b grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3"
-                  >
-                    <Figures className="text-ink-2 text-xs">
-                      {formatTimeRange(item.startsAt, item.endsAt)}
-                    </Figures>
-                    <span className="text-ink min-w-0 truncate text-sm">
-                      {item.title}
-                      <span className="text-ink-2 ml-2">
-                        {item.type === "private" ? "Riêng" : "Nhóm"} ·{" "}
-                        {item.trainer.fullName}
-                      </span>
-                    </span>
-                    <CapacityMeter booked={item.bookedCount} capacity={item.capacity} />
-                  </li>
+                {query.data.sessions_today.map((session) => (
+                  <SessionRow key={session.class_session_id} session={session}>
+                    {session.status === "CANCELLED" ? (
+                      <StatusBadge tone="critical">Đã hủy</StatusBadge>
+                    ) : (
+                      <CapacityMeter
+                        booked={session.booked_count}
+                        capacity={session.capacity}
+                      />
+                    )}
+                  </SessionRow>
                 ))}
               </ul>
             )}
@@ -171,5 +141,51 @@ export default function StaffDashboard() {
         </>
       ) : null}
     </div>
+  );
+}
+
+function SessionRow({
+  session,
+  dated,
+  children,
+}: {
+  session: SessionRowResponse;
+  /** Outside today's list a time alone is ambiguous, so the day comes with it. */
+  dated?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="rule-b grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3">
+      <span className="flex shrink-0 items-baseline gap-2">
+        {dated ? (
+          <span className="text-ink-2 w-13 text-xs">
+            {weekdayShort(session.starts_at)}{" "}
+            <Figures>{formatDayMonth(session.starts_at)}</Figures>
+          </span>
+        ) : null}
+        <Figures className="text-ink-2 text-xs">{formatTime(session.starts_at)}</Figures>
+      </span>
+      <span className="text-ink min-w-0 text-sm">
+        <Link
+          to={`/studio/lich/${session.class_session_id}`}
+          className="decoration-rule-2 underline-offset-[6px] hover:underline"
+        >
+          {session.trainer_name}
+        </Link>
+      </span>
+      <span className="flex items-center gap-3">{children}</span>
+    </li>
+  );
+}
+
+/** A figure the backend did not measure. The dash is decoration, so it speaks. */
+function Placeholder() {
+  return (
+    <>
+      <span aria-hidden="true" className="text-ink-2">
+        —
+      </span>
+      <span className="sr-only">chưa có số liệu</span>
+    </>
   );
 }

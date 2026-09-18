@@ -1,8 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
+import { usePublicAnnouncements } from "~/features/public/queries";
 import { formatDate } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Skeleton } from "~/ui/feedback";
@@ -35,21 +33,7 @@ export function meta(_: Route.MetaArgs) {
  * instead — rather than as a placeholder waiting to be replaced.
  */
 export default function Promotions() {
-  const query = useQuery({
-    queryKey: queryKeys.publicPromotions(),
-    queryFn: () =>
-      api.get<{
-        items: Array<{
-          id: string;
-          slug: string;
-          title: string;
-          excerpt: string;
-          publishedAt: string;
-        }>;
-      }>("/public/promotions"),
-    select: (data) => data.items,
-    staleTime: 5 * 60_000,
-  });
+  const query = usePublicAnnouncements();
 
   return (
     <>
@@ -91,28 +75,36 @@ export default function Promotions() {
           >
             {(items) => (
               <ul className="rule-t">
-                {items.map((item) => (
+                {items.map((item, index) => (
                   /**
-                   * The slug is the row's anchor, not a link: there is no
-                   * announcement detail route, and the excerpt is the whole
-                   * payload. A link to a page that does not exist is worse
-                   * than no link.
+                   * `GET /public/announcements` returns a title, a body and a
+                   * publish date — no id and no slug, so there is nothing to
+                   * anchor or link to, and the body is the whole payload. A
+                   * link to a detail page that does not exist is worse than no
+                   * link. The date may be absent on an item published
+                   * immediately; the row then carries no timestamp rather than
+                   * today's date, which would be a claim the studio never made.
                    */
                   <li
-                    key={item.id}
-                    id={item.slug}
+                    key={`${item.publish_at ?? "immediate"}-${index}`}
                     className="rule-b grid gap-x-8 gap-y-3 py-7 md:grid-cols-12"
                   >
-                    <time dateTime={item.publishedAt} className="md:col-span-3">
-                      <Figures className="text-ink-2 text-sm">
-                        {formatDate(item.publishedAt)}
-                      </Figures>
-                    </time>
+                    {item.publish_at ? (
+                      <time dateTime={item.publish_at} className="md:col-span-3">
+                        <Figures className="text-ink-2 text-sm">
+                          {formatDate(item.publish_at)}
+                        </Figures>
+                      </time>
+                    ) : (
+                      <span className="md:col-span-3" />
+                    )}
                     <div className="md:col-span-8 md:col-start-5">
                       <h2 className="font-display text-ink text-xl font-light">
                         {item.title}
                       </h2>
-                      <p className="measure text-ink-2 mt-2 text-sm">{item.excerpt}</p>
+                      <p className="measure text-ink-2 mt-2 text-sm whitespace-pre-line">
+                        {item.body}
+                      </p>
                     </div>
                   </li>
                 ))}

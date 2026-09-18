@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useRevenueReport } from "~/features/reports/queries";
-import type { PaymentMethod } from "~/lib/api/types";
+import { useRevenueDetail, useRevenueReport } from "~/features/reports/queries";
+import type { PaymentMethod } from "~/lib/api/schema";
 import {
+  decimalToNumber,
   formatDate,
   formatNumber,
+  formatTime,
   formatVnd,
   studioDateKey,
-  weekdayShort,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
@@ -28,8 +29,8 @@ export function meta(_: Route.MetaArgs) {
 }
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: "Tiền mặt",
-  transfer: "Chuyển khoản",
+  CASH: "Tiền mặt",
+  TRANSFER: "Chuyển khoản",
 };
 
 /** The studio's current calendar month, as two date keys. */
@@ -61,7 +62,12 @@ function dayLabel(dateKey: string): string {
  */
 export default function StaffReportRevenue() {
   const [range, setRange] = useState(currentMonth);
-  const query = useRevenueReport(range.from, range.to);
+  const params = { period_start: range.from, period_end: range.to };
+  const query = useRevenueReport(params);
+  // The rows behind the number, from the same period and the same query on the
+  // server. `detail_path` names this route; it is fetched here rather than
+  // linked so the total and its rows can never be read from two periods.
+  const detail = useRevenueDetail(params, query.isSuccess);
 
   const rangeError =
     range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
@@ -131,7 +137,7 @@ export default function StaffReportRevenue() {
       <QueryBoundary
         query={query}
         skeletonRows={6}
-        isEmpty={(report) => report.transactionCount === 0}
+        isEmpty={(report) => report.payment_count === 0}
         emptyTitle="Chưa có giao dịch đã xác nhận"
         emptyDescription="Trong khoảng ngày này không có giao dịch nào đã xác nhận. Kiểm tra lại khoảng ngày, hoặc xác nhận giao dịch ở màn hình thanh toán."
         emptyAction={
@@ -151,7 +157,7 @@ export default function StaffReportRevenue() {
               />
               <Metric
                 label="Số giao dịch"
-                value={<Figures display>{formatNumber(report.transactionCount)}</Figures>}
+                value={<Figures display>{formatNumber(report.payment_count)}</Figures>}
                 unit="giao dịch"
               />
             </div>
@@ -168,9 +174,12 @@ export default function StaffReportRevenue() {
               </p>
 
               <ul className="rule-t mt-4">
-                {report.byMethod.map((row) => {
-                  const share =
-                    report.total > 0 ? Math.round((row.total / report.total) * 100) : 0;
+                {report.by_method.map((row) => {
+                  // Money crosses the network as a decimal string; it is parsed
+                  // here, at the point of display, and only to rank two bars.
+                  const total = decimalToNumber(report.total) ?? 0;
+                  const rowTotal = decimalToNumber(row.total) ?? 0;
+                  const share = total > 0 ? Math.round((rowTotal / total) * 100) : 0;
 
                   return (
                     <li key={row.method} className="rule-b py-4">
@@ -197,7 +206,9 @@ export default function StaffReportRevenue() {
                       </div>
 
                       <p className="text-ink-2 mt-1.5 text-xs">
-                        <Figures className="text-ink">{formatNumber(row.count)}</Figures>{" "}
+                        <Figures className="text-ink">
+                          {formatNumber(row.payment_count)}
+                        </Figures>{" "}
                         giao dịch
                       </p>
                     </li>
@@ -207,34 +218,46 @@ export default function StaffReportRevenue() {
             </section>
 
             <section className="mt-10">
-              <h2 className="text-ink mb-4 text-sm font-medium">Theo ngày</h2>
+              <h2 className="text-ink text-sm font-medium">Từng giao dịch</h2>
+              <p className="measure-wide text-ink-2 mt-1 mb-4 text-xs">
+                Các dòng tạo nên con số trên, cùng khoảng ngày và cùng truy vấn.
+              </p>
 
-              {report.byDay.length === 0 ? (
+              {detail.isPending ? (
+                <p className="rule-t text-ink-2 pt-4 text-xs">Đang tải danh sách.</p>
+              ) : detail.isError ? (
                 <p className="rule-t text-ink-2 pt-4 text-xs">
-                  Không có ngày nào phát sinh doanh thu trong khoảng này.
+                  Không tải được danh sách giao dịch.
+                </p>
+              ) : (detail.data?.length ?? 0) === 0 ? (
+                <p className="rule-t text-ink-2 pt-4 text-xs">
+                  Không có giao dịch nào trong khoảng này.
                 </p>
               ) : (
-                <DataTable caption="Doanh thu theo ngày" minWidth="20rem">
+                <DataTable caption="Giao dịch đã xác nhận" minWidth="44rem">
                   <thead>
                     <tr>
-                      <Th>Ngày</Th>
-                      <Th numeric>Doanh thu</Th>
+                      <Th>Xác nhận lúc</Th>
+                      <Th>Học viên</Th>
+                      <Th>Gói tập</Th>
+                      <Th>Hình thức</Th>
+                      <Th numeric>Số tiền</Th>
                     </tr>
                   </thead>
                   <tbody>
-                    {report.byDay.map((row, index) => (
-                      <Tr key={`${row.date}-${index}`}>
+                    {(detail.data ?? []).map((row) => (
+                      <Tr key={row.payment_id}>
                         <Td>
-                          <span className="text-ink-2 mr-2 text-xs">
-                            {weekdayShort(`${row.date}T00:00:00+07:00`)}
-                          </span>
                           <Figures className="whitespace-nowrap">
-                            {dayLabel(row.date)}
+                            {formatTime(row.confirmed_at)} {formatDate(row.confirmed_at)}
                           </Figures>
                         </Td>
+                        <Td>{row.student_name}</Td>
+                        <Td>{row.package_name}</Td>
+                        <Td>{METHOD_LABEL[row.method]}</Td>
                         <Td numeric>
                           <Figures className="whitespace-nowrap">
-                            {formatVnd(row.total)}
+                            {formatVnd(row.amount)}
                           </Figures>
                         </Td>
                       </Tr>

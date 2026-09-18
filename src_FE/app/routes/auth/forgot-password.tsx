@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { z } from "zod";
 
-import { api } from "~/lib/api/client";
+import { authApi } from "~/lib/api/endpoints";
 import { Button } from "~/ui/button";
 import { Field, Input } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
@@ -19,7 +19,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 const schema = z.object({
-  identifier: z.string().trim().min(1, "Nhập số điện thoại hoặc email"),
+  email: z.email("Nhập đúng địa chỉ email"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -31,11 +31,11 @@ export default function ForgotPassword() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { identifier: "" },
+    defaultValues: { email: "" },
   });
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) => api.post<void>("/auth/forgot-password", values),
+    mutationFn: (values: FormValues) => authApi.forgotPassword(values),
   });
 
   /**
@@ -63,9 +63,7 @@ export default function ForgotPassword() {
         </>
       ) : (
         <>
-          <p className="text-ink-2 mt-3 text-sm">
-            Nhập số điện thoại hoặc email bạn dùng để đăng nhập.
-          </p>
+          <p className="text-ink-2 mt-3 text-sm">Nhập email bạn dùng để đăng nhập.</p>
           <form
             noValidate
             onSubmit={handleSubmit((values) =>
@@ -73,18 +71,15 @@ export default function ForgotPassword() {
             )}
             className="mt-8 flex flex-col gap-5"
           >
-            <Field
-              label="Số điện thoại hoặc email"
-              required
-              error={errors.identifier?.message}
-            >
+            <Field label="Email" required error={errors.email?.message}>
               {({ id, describedBy, invalid }) => (
                 <Input
                   id={id}
+                  type="email"
                   autoComplete="username"
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
-                  {...register("identifier")}
+                  {...register("email")}
                 />
               )}
             </Field>

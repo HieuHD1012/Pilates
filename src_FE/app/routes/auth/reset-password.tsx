@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { Link, useSearchParams } from "react-router";
 import { z } from "zod";
 
-import { api, ApiError } from "~/lib/api/client";
+import { ApiError } from "~/lib/api/client";
+import { authApi } from "~/lib/api/endpoints";
 import { Button } from "~/ui/button";
 import { Field, Input } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
@@ -20,7 +21,8 @@ export function meta(_: Route.MetaArgs) {
 
 const schema = z
   .object({
-    password: z.string().min(8, "Mật khẩu cần ít nhất 8 ký tự"),
+    // Ten characters, because that is what the backend enforces.
+    password: z.string().min(10, "Mật khẩu cần ít nhất 10 ký tự"),
     confirmPassword: z.string().min(1, "Nhập lại mật khẩu mới"),
   })
   .refine((values) => values.password === values.confirmPassword, {
@@ -31,6 +33,9 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 const FORM_FIELDS = new Set<keyof FormValues>(["password", "confirmPassword"]);
+
+/** The backend calls it `new_password`; this form calls it `password`. */
+const FIELD_ALIASES: Record<string, keyof FormValues> = { new_password: "password" };
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -48,17 +53,16 @@ export default function ResetPassword() {
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) =>
-      api.post<void>("/auth/reset-password", { token, password: values.password }),
+      authApi.resetPassword({ token: token ?? "", new_password: values.password }),
     onError: (error) => {
       // 422 belongs to the fields. Anything the backend rejects about the
       // password itself is shown under the password, not in a banner the user
       // has to map back onto a control.
       if (error instanceof ApiError && error.isValidation) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {
-          if (FORM_FIELDS.has(field as keyof FormValues)) {
-            setError(field as keyof FormValues, {
-              message: messages[0] ?? "Giá trị chưa hợp lệ",
-            });
+          const target = FIELD_ALIASES[field] ?? (field as keyof FormValues);
+          if (FORM_FIELDS.has(target)) {
+            setError(target, { message: messages[0] ?? "Giá trị chưa hợp lệ" });
           }
         }
       }

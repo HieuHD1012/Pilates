@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { useLeads } from "~/features/leads/queries";
-import type { Lead, LeadStatus } from "~/lib/api/types";
+import type { LeadResponse, LeadStatus } from "~/lib/api/schema";
 import { formatDate, formatPhone, formatTime, telHref } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
@@ -35,26 +35,29 @@ export function meta(_: Route.MetaArgs) {
  * it, it moves into ~/features/leads.
  */
 
+/**
+ * Four states, not five. There is no "đã hẹn": the backend's lead statuses are
+ * NEW, CONTACTED, CONVERTED and LOST, and an appointment is something staff
+ * write into the note rather than a state the system tracks.
+ */
 const STATUS_LABEL: Record<LeadStatus, string> = {
-  new: "Mới",
-  contacted: "Đã liên hệ",
-  scheduled: "Đã hẹn",
-  converted: "Đã thành học viên",
-  lost: "Không tiếp tục",
+  NEW: "Mới",
+  CONTACTED: "Đã liên hệ",
+  CONVERTED: "Đã thành học viên",
+  LOST: "Không tiếp tục",
 };
 
 const STATUS_TONE: Record<LeadStatus, StatusTone> = {
-  new: "info",
-  contacted: "neutral",
-  scheduled: "attention",
-  converted: "positive",
+  NEW: "info",
+  CONTACTED: "neutral",
+  CONVERTED: "positive",
   // Not a failure state: a person who chose not to continue is simply closed.
-  lost: "neutral",
+  LOST: "neutral",
 };
 
-const STATUS_ORDER: LeadStatus[] = ["new", "contacted", "scheduled", "converted", "lost"];
+const STATUS_ORDER: LeadStatus[] = ["NEW", "CONTACTED", "CONVERTED", "LOST"];
 
-/** `source` is a free string from the backend, so unknown values pass through. */
+/** `source` is a free, nullable string from the backend; unknowns pass through. */
 const SOURCE_LABEL: Record<string, string> = {
   website: "Website",
   zalo: "Zalo",
@@ -63,16 +66,17 @@ const SOURCE_LABEL: Record<string, string> = {
   referral: "Người quen giới thiệu",
 };
 
-function sourceLabel(source: string): string {
+function sourceLabel(source: string | null): string {
+  if (source === null || source.trim() === "") return "Không rõ nguồn";
   return SOURCE_LABEL[source] ?? source;
 }
 
 export default function StaffLeads() {
   const [status, setStatus] = useState<LeadStatus | "all">("all");
-  const query = useLeads(status);
+  const query = useLeads({ status: status === "all" ? undefined : status, limit: 200 });
 
   const items = query.data ?? [];
-  const newCount = items.filter((item) => item.status === "new").length;
+  const newCount = items.filter((item) => item.status === "NEW").length;
 
   return (
     <div className="gutter py-6">
@@ -151,7 +155,7 @@ export default function StaffLeads() {
       >
         {(leads) => {
           const sorted = [...leads].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
           );
 
           return (
@@ -175,7 +179,7 @@ export default function StaffLeads() {
  * a Vietnamese sentence about a lower-back problem is the reason staff pick up
  * the phone, so it is never truncated to keep a column tidy.
  */
-function LeadTable({ leads }: { leads: Lead[] }) {
+function LeadTable({ leads }: { leads: LeadResponse[] }) {
   return (
     <DataTable caption="Khách quan tâm, mới nhất trước" minWidth="50rem">
       <thead>
@@ -196,7 +200,7 @@ function LeadTable({ leads }: { leads: Lead[] }) {
                 to={`/studio/khach-quan-tam/${lead.id}`}
                 className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
               >
-                {lead.fullName}
+                {lead.full_name}
               </Link>
             </Td>
             <Td className="align-top">
@@ -212,9 +216,9 @@ function LeadTable({ leads }: { leads: Lead[] }) {
             </Td>
             <Td className="text-ink-2 align-top">{sourceLabel(lead.source)}</Td>
             <Td numeric className="align-top whitespace-nowrap">
-              <Figures>{formatDate(lead.createdAt)}</Figures>
+              <Figures>{formatDate(lead.created_at)}</Figures>
               <Figures className="text-ink-2 ml-2 text-xs">
-                {formatTime(lead.createdAt)}
+                {formatTime(lead.created_at)}
               </Figures>
             </Td>
             <Td className="align-top">
@@ -230,7 +234,7 @@ function LeadTable({ leads }: { leads: Lead[] }) {
 }
 
 /** Below lg the table becomes ruled rows: a studio phone gets the same facts. */
-function LeadList({ leads }: { leads: Lead[] }) {
+function LeadList({ leads }: { leads: LeadResponse[] }) {
   return (
     <ul className="rule-t">
       {leads.map((lead) => (
@@ -240,7 +244,7 @@ function LeadList({ leads }: { leads: Lead[] }) {
               to={`/studio/khach-quan-tam/${lead.id}`}
               className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
             >
-              {lead.fullName}
+              {lead.full_name}
             </Link>
             <StatusBadge tone={STATUS_TONE[lead.status]}>
               {STATUS_LABEL[lead.status]}
@@ -263,8 +267,8 @@ function LeadList({ leads }: { leads: Lead[] }) {
           <p className="text-ink mt-1.5 text-sm">{needText(lead.need)}</p>
 
           <p className="text-ink-2 mt-1.5 text-xs">
-            Nhận lúc <Figures className="text-ink">{formatDate(lead.createdAt)}</Figures>{" "}
-            <Figures className="text-ink">{formatTime(lead.createdAt)}</Figures>
+            Nhận lúc <Figures className="text-ink">{formatDate(lead.created_at)}</Figures>{" "}
+            <Figures className="text-ink">{formatTime(lead.created_at)}</Figures>
           </p>
         </li>
       ))}
@@ -272,6 +276,6 @@ function LeadList({ leads }: { leads: Lead[] }) {
   );
 }
 
-function needText(need: string): string {
-  return need.trim() === "" ? "Chưa ghi nhu cầu" : need;
+function needText(need: string | null): string {
+  return need === null || need.trim() === "" ? "Chưa ghi nhu cầu" : need;
 }

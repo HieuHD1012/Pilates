@@ -13,7 +13,7 @@ import { cn } from "~/lib/cn";
  */
 export default function StaffLayout() {
   return (
-    <RoleGate allow={["staff", "owner"]}>
+    <RoleGate allow={["ADMIN", "STAFF"]}>
       <div className="bg-chalk min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
         <StaffRail />
         <div className="min-w-0">
@@ -77,7 +77,7 @@ function StaffRail() {
 
       {user ? (
         <div className="hidden px-6 pb-6 lg:mt-auto lg:block">
-          <p className="rule-t text-ink-2 pt-4 text-xs">{user.fullName}</p>
+          <p className="rule-t text-ink-2 pt-4 text-xs">{user.full_name}</p>
           <button
             type="button"
             onClick={() => logout.mutate()}

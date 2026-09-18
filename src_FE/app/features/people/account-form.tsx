@@ -2,18 +2,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { ApiError } from "~/lib/api/client";
-import type { AccountInput, Role } from "~/lib/api/types";
+import { ApiError, errorMessage } from "~/lib/api/client";
+import type { AccountCreateRequest, Role } from "~/lib/api/schema";
 import { Button } from "~/ui/button";
 import { Field, FormActions, Input, Select } from "~/ui/field";
 
+import { useStudents } from "./queries";
+
 /**
- * Creating an account for someone.
+ * Creating a login for someone.
  *
- * There is no password field, and adding one would be a mistake rather than a
- * convenience: a studio that types a person's password knows it. The backend
- * sends an invitation and the person sets their own — the same principle behind
- * "forgot password" answering identically whether or not the account exists.
+ * Three things the contract decides, not this form:
+ *
+ *  - **The login is an email.** `POST /accounts` takes `email`; the studio
+ *    identifies people by phone, but a phone is not a credential here.
+ *  - **A `STUDENT` account must name an existing student profile.** The studio
+ *    creates the person first and the login second, and they are linked in one
+ *    transaction — so the picker below is required for that role and absent for
+ *    every other.
+ *  - **There is no password field.** Omitting `password` emails a set-your-own
+ *    link, which is the normal path: a studio that types someone's password
+ *    knows it. The same principle as "forgot password" answering identically
+ *    whether or not the account exists.
  */
 
 /** Same permissiveness as every other phone field in the product. */
@@ -21,37 +31,50 @@ const phonePattern = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
 
 const schema = z.object({
   fullName: z.string().trim().min(2, "Vui lòng nhập họ tên"),
-  identifier: z
+  email: z.email("Email chưa đúng định dạng"),
+  phone: z
     .string()
     .trim()
     .transform((value) => value.replace(/[\s.-]/g, ""))
-    .refine((value) => phonePattern.test(value), "Số điện thoại chưa đúng định dạng"),
-  role: z.enum(["student", "trainer", "staff", "owner"]),
+    .refine(
+      (value) => value === "" || phonePattern.test(value),
+      "Số điện thoại chưa đúng định dạng",
+    ),
+  role: z.enum(["STUDENT", "TRAINER", "STAFF", "ADMIN"]),
+  /** Only read, and only required, when the role is `STUDENT`. */
+  studentId: z.string(),
 });
 
 export type AccountFormValues = z.input<typeof schema>;
 
-const FIELD_NAMES = new Set(["fullName", "identifier", "role"]);
+/** The backend names its fields in snake_case; this form does not. */
+const FIELD_ALIASES: Record<string, keyof AccountFormValues> = {
+  full_name: "fullName",
+  email: "email",
+  phone: "phone",
+  role: "role",
+  student_id: "studentId",
+};
 
 /**
  * What each role can reach, in one line each. A role picker with four bare words
  * makes the studio guess; the consequence of the choice belongs beside it.
  */
 const ROLE_NOTE: Record<Role, string> = {
-  student: "Xem lịch của mình, đặt và hủy buổi.",
-  trainer: "Xem lịch dạy và danh sách học viên của lớp mình.",
-  staff: "Toàn bộ phần vận hành studio: lịch, học viên, thu chi.",
-  owner: "Như nhân viên, cộng báo cáo và quản lý tài khoản.",
+  STUDENT: "Xem lịch của mình, đặt và hủy buổi.",
+  TRAINER: "Xem lịch dạy và điểm danh lớp mình dạy.",
+  STAFF: "Toàn bộ phần vận hành studio: lịch, học viên, thu chi.",
+  ADMIN: "Như nhân viên, cộng quản lý tài khoản và điều chỉnh số buổi.",
 };
 
 const ROLE_LABEL: Record<Role, string> = {
-  student: "Học viên",
-  trainer: "Huấn luyện viên",
-  staff: "Nhân viên",
-  owner: "Chủ studio",
+  STUDENT: "Học viên",
+  TRAINER: "Huấn luyện viên",
+  STAFF: "Nhân viên",
+  ADMIN: "Quản trị",
 };
 
-const ROLE_ORDER: Role[] = ["student", "trainer", "staff", "owner"];
+const ROLE_ORDER: Role[] = ["STUDENT", "TRAINER", "STAFF", "ADMIN"];
 
 export function AccountForm({
   pending,
@@ -61,7 +84,7 @@ export function AccountForm({
 }: {
   pending: boolean;
   error: unknown;
-  onSubmit: (input: AccountInput) => Promise<unknown>;
+  onSubmit: (input: AccountCreateRequest) => Promise<unknown>;
   onCancel: () => void;
 }) {
   const {
@@ -72,14 +95,25 @@ export function AccountForm({
     setError,
   } = useForm<AccountFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { fullName: "", identifier: "", role: "student" },
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      role: "STUDENT",
+      studentId: "",
+    },
   });
 
-  const duplicate = error instanceof ApiError && error.code === "identifier_taken";
+  const duplicate = error instanceof ApiError && error.isConflict;
   const otherFailure = error instanceof ApiError && !duplicate && !error.isValidation;
 
   // The note beside the picker has to follow the picker.
-  const role = (useWatch({ control, name: "role" }) ?? "student") as Role;
+  const role = (useWatch({ control, name: "role" }) ?? "STUDENT") as Role;
+
+  // Only fetched for the role that needs it. Student profiles without a login
+  // are the ones worth offering, but the backend refuses a second link anyway,
+  // so the list stays whole rather than second-guessing it.
+  const students = useStudents({ limit: 200 });
 
   return (
     <form
@@ -87,17 +121,23 @@ export function AccountForm({
       className="flex flex-col gap-5"
       onSubmit={handleSubmit((values) => {
         const parsed = schema.parse(values);
+        if (parsed.role === "STUDENT" && parsed.studentId === "") {
+          setError("studentId", { message: "Chọn hồ sơ học viên" });
+          return;
+        }
+
         return onSubmit({
-          fullName: parsed.fullName,
-          identifier: parsed.identifier,
+          email: parsed.email,
+          full_name: parsed.fullName,
+          phone: parsed.phone === "" ? null : parsed.phone,
           role: parsed.role as Role,
+          student_id: parsed.role === "STUDENT" ? Number(parsed.studentId) : null,
         }).catch((cause) => {
           if (cause instanceof ApiError && cause.isValidation) {
             for (const [field, messages] of Object.entries(cause.fieldErrors)) {
-              if (FIELD_NAMES.has(field)) {
-                setError(field as keyof AccountFormValues, {
-                  message: messages[0] ?? "Giá trị chưa hợp lệ",
-                });
+              const target = FIELD_ALIASES[field];
+              if (target !== undefined) {
+                setError(target, { message: messages[0] ?? "Giá trị chưa hợp lệ" });
               }
             }
           }
@@ -117,13 +157,28 @@ export function AccountForm({
       </Field>
 
       <Field
-        label="Số điện thoại"
+        label="Email đăng nhập"
         required
-        hint="Số này là tên đăng nhập, nên mỗi số chỉ có một tài khoản."
+        hint="Đây là tên đăng nhập, nên mỗi email chỉ có một tài khoản."
         error={
-          duplicate ? "Số điện thoại này đã có tài khoản." : errors.identifier?.message
+          duplicate
+            ? errorMessage(error, "Email này đã có tài khoản.")
+            : errors.email?.message
         }
       >
+        {({ id, describedBy, invalid }) => (
+          <Input
+            id={id}
+            type="email"
+            autoComplete="email"
+            aria-describedby={describedBy}
+            aria-invalid={invalid || duplicate}
+            {...register("email")}
+          />
+        )}
+      </Field>
+
+      <Field label="Số điện thoại" hint="Không bắt buộc." error={errors.phone?.message}>
         {({ id, describedBy, invalid }) => (
           <Input
             id={id}
@@ -131,8 +186,8 @@ export function AccountForm({
             inputMode="tel"
             autoComplete="tel"
             aria-describedby={describedBy}
-            aria-invalid={invalid || duplicate}
-            {...register("identifier")}
+            aria-invalid={invalid}
+            {...register("phone")}
           />
         )}
       </Field>
@@ -154,9 +209,37 @@ export function AccountForm({
         )}
       </Field>
 
+      {role === "STUDENT" ? (
+        <Field
+          label="Hồ sơ học viên"
+          required
+          hint="Tài khoản học viên phải gắn với một hồ sơ đã có trong studio."
+          error={errors.studentId?.message}
+        >
+          {({ id, describedBy, invalid }) => (
+            <Select
+              id={id}
+              disabled={students.isPending}
+              aria-describedby={describedBy}
+              aria-invalid={invalid}
+              {...register("studentId")}
+            >
+              <option value="">
+                {students.isPending ? "Đang tải hồ sơ…" : "— Chọn hồ sơ học viên —"}
+              </option>
+              {(students.data ?? []).map((student) => (
+                <option key={student.id} value={String(student.id)}>
+                  {student.full_name}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+      ) : null}
+
       <p className="measure text-ink-2 rule-t pt-3 text-xs">
-        Studio không đặt mật khẩu cho người khác. Hệ thống gửi lời mời, người này tự đặt mật
-        khẩu của mình.
+        Studio không đặt mật khẩu cho người khác. Hệ thống gửi liên kết qua email, người này
+        tự đặt mật khẩu của mình.
       </p>
 
       {otherFailure ? (

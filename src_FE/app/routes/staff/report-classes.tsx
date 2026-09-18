@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useClassReport } from "~/features/reports/queries";
-import type { ClassType } from "~/lib/api/types";
-import { formatDate, formatNumber, studioDateKey, weekdayShort } from "~/lib/format";
+import { useClassReport, useTrainerClassSizes } from "~/features/reports/queries";
+import { formatDate, formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
@@ -21,11 +20,6 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-const TYPE_LABEL: Record<ClassType, string> = {
-  group: "Lớp nhóm",
-  private: "Lớp riêng",
-};
-
 /** The studio's current calendar month, as two date keys. */
 function currentMonth(): { from: string; to: string } {
   const key = studioDateKey(new Date());
@@ -41,26 +35,19 @@ function dayLabel(dateKey: string): string {
 }
 
 /**
- * Bookings over capacity, as a whole percentage. `null` when there is no
- * capacity to divide by — an empty range must not render "NaN%" or a
- * confident-looking zero.
- */
-function fillRate(bookingCount: number, capacity: number): number | null {
-  if (capacity <= 0) return null;
-  return Math.round((bookingCount / capacity) * 100);
-}
-
-/**
  * Classes and how full they were, for a range the user chooses.
  *
- * The comparison worth drawing is group against private fill rate: it is the
- * question behind "should we schedule another group slot or another private
- * hour". Two hairline bars, both labelled, each with its percentage written
- * out. The daily figures stay a table — they are looked up, not ranked.
+ * `fill_rate` is the **backend's** number and it is `null` when no class ran in
+ * the period. That is not zero: an empty cell says "not measured", and "0%"
+ * would say classes were open and nobody came. The breakdown underneath is the
+ * per-trainer class-size table, which is the other query the studio has for
+ * this question — row totals there equal `scheduled_sessions` here.
  */
 export default function StaffReportClasses() {
   const [range, setRange] = useState(currentMonth);
-  const query = useClassReport(range.from, range.to);
+  const params = { period_start: range.from, period_end: range.to };
+  const query = useClassReport(params);
+  const sizes = useTrainerClassSizes(params);
 
   const rangeError =
     range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
@@ -130,7 +117,7 @@ export default function StaffReportClasses() {
       <QueryBoundary
         query={query}
         skeletonRows={6}
-        isEmpty={(report) => report.classCount === 0}
+        isEmpty={(report) => report.scheduled_sessions === 0}
         emptyTitle="Không có lớp nào trong khoảng ngày này"
         emptyDescription="Chưa có lớp nào được xếp trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem lớp đã xếp."
         emptyAction={
@@ -142,24 +129,30 @@ export default function StaffReportClasses() {
         showErrorDetail
       >
         {(report) => {
-          const overall = fillRate(report.bookingCount, report.capacityTotal);
+          // Percent, from the backend's ratio. `null` stays null all the way
+          // to the cell — see the note above.
+          const overall =
+            report.fill_rate === null ? null : Math.round(report.fill_rate * 100);
 
           return (
             <>
               <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
                 <Metric
-                  label="Số lớp"
-                  value={<Figures display>{formatNumber(report.classCount)}</Figures>}
+                  label="Lớp đã xếp"
+                  value={
+                    <Figures display>{formatNumber(report.scheduled_sessions)}</Figures>
+                  }
                   unit="lớp"
+                  detail={`${formatNumber(report.cancelled_sessions)} lớp đã hủy`}
                 />
                 <Metric
                   label="Lượt đăng ký"
-                  value={<Figures display>{formatNumber(report.bookingCount)}</Figures>}
+                  value={<Figures display>{formatNumber(report.total_bookings)}</Figures>}
                   unit="lượt"
                 />
                 <Metric
                   label="Sức chứa"
-                  value={<Figures display>{formatNumber(report.capacityTotal)}</Figures>}
+                  value={<Figures display>{formatNumber(report.total_capacity)}</Figures>}
                   unit="chỗ"
                 />
                 <Metric
@@ -177,94 +170,64 @@ export default function StaffReportClasses() {
               </div>
 
               <section className="mt-10">
-                <h2 className="text-ink text-sm font-medium">Theo hình thức lớp</h2>
-                <p className="measure-wide text-ink-2 mt-1 text-xs">
-                  Vạch bên dưới mỗi hình thức là tỉ lệ lấp đầy của chính hình thức đó, không
-                  phải tỉ trọng trong tổng số lớp.
+                <h2 className="text-ink text-sm font-medium">Sĩ số theo huấn luyện viên</h2>
+                <p className="measure-wide text-ink-2 mt-1 mb-4 text-xs">
+                  Mỗi dòng là số lớp của một huấn luyện viên theo sĩ số. Cột “không ai đăng
+                  ký” là lớp đã xếp nhưng không diễn ra — không phải lớp bị hủy.
                 </p>
 
-                <ul className="rule-t mt-4">
-                  {report.byType.map((row) => {
-                    const rate = fillRate(row.bookingCount, row.capacity);
-
-                    return (
-                      <li key={row.type} className="rule-b py-4">
-                        <div className="flex items-baseline justify-between gap-4">
-                          <span className="text-ink text-sm">{TYPE_LABEL[row.type]}</span>
-                          <span className="text-ink-2 shrink-0 text-xs">
-                            Tỉ lệ lấp đầy{" "}
-                            {rate === null ? (
-                              <Placeholder />
-                            ) : (
-                              <Figures className="text-ink text-sm">{rate}%</Figures>
-                            )}
-                          </span>
-                        </div>
-
-                        {rate === null ? null : (
-                          <span
-                            aria-hidden="true"
-                            className="bg-rule mt-2.5 block h-px w-full"
-                          >
-                            <span
-                              className="bg-ink block h-px transition-[width]"
-                              style={{ width: `${Math.min(rate, 100)}%` }}
-                            />
-                          </span>
-                        )}
-
-                        <p className="text-ink-2 mt-1.5 text-xs">
-                          <Figures className="text-ink">
-                            {formatNumber(row.classCount)}
-                          </Figures>{" "}
-                          lớp ·{" "}
-                          <Figures className="text-ink">
-                            {formatNumber(row.bookingCount)}
-                          </Figures>
-                          /
-                          <Figures className="text-ink">
-                            {formatNumber(row.capacity)}
-                          </Figures>{" "}
-                          chỗ đã đăng ký
-                        </p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-
-              <section className="mt-10">
-                <h2 className="text-ink mb-4 text-sm font-medium">Theo ngày</h2>
-
-                {report.byDay.length === 0 ? (
+                {sizes.isPending ? (
+                  <p className="rule-t text-ink-2 pt-4 text-xs">Đang tải bảng sĩ số.</p>
+                ) : sizes.isError ? (
                   <p className="rule-t text-ink-2 pt-4 text-xs">
-                    Không có ngày nào có lớp trong khoảng này.
+                    Không tải được bảng sĩ số.
+                  </p>
+                ) : (sizes.data?.length ?? 0) === 0 ? (
+                  <p className="rule-t text-ink-2 pt-4 text-xs">
+                    Không có lớp nào trong khoảng này.
                   </p>
                 ) : (
-                  <DataTable caption="Lớp học theo ngày" minWidth="26rem">
+                  <DataTable caption="Số lớp theo sĩ số" minWidth="46rem">
                     <thead>
                       <tr>
-                        <Th>Ngày</Th>
-                        <Th numeric>Số lớp</Th>
-                        <Th numeric>Lượt đăng ký</Th>
+                        <Th>Huấn luyện viên</Th>
+                        <Th numeric>1</Th>
+                        <Th numeric>2</Th>
+                        <Th numeric>3</Th>
+                        <Th numeric>4</Th>
+                        <Th numeric>5</Th>
+                        <Th numeric>Trên 5</Th>
+                        <Th numeric>Không ai đăng ký</Th>
+                        <Th numeric>Tổng</Th>
                       </tr>
                     </thead>
                     <tbody>
-                      {report.byDay.map((row) => (
-                        <Tr key={row.date}>
-                          <Td>
-                            <span className="text-ink-2 mr-2 text-xs">
-                              {weekdayShort(`${row.date}T00:00:00+07:00`)}
-                            </span>
-                            <Figures className="whitespace-nowrap">
-                              {dayLabel(row.date)}
-                            </Figures>
+                      {(sizes.data ?? []).map((row) => (
+                        <Tr key={row.trainer_id}>
+                          <Td>{row.trainer_name}</Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.size_1)}</Figures>
                           </Td>
                           <Td numeric>
-                            <Figures>{formatNumber(row.classCount)}</Figures>
+                            <Figures>{formatNumber(row.size_2)}</Figures>
                           </Td>
                           <Td numeric>
-                            <Figures>{formatNumber(row.bookingCount)}</Figures>
+                            <Figures>{formatNumber(row.size_3)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.size_4)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.size_5)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.sessions_over_max)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.sessions_empty)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(row.total_sessions)}</Figures>
                           </Td>
                         </Tr>
                       ))}

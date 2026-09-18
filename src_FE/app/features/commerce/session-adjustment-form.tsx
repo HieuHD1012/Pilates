@@ -3,7 +3,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { ApiError } from "~/lib/api/client";
-import type { SessionAdjustmentInput } from "~/lib/api/types";
+import type { AdjustCreditsRequest } from "~/lib/api/schema";
 import { formatNumber, formatSigned } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Field, FormActions, Input, Select, Textarea } from "~/ui/field";
@@ -51,7 +51,7 @@ export function SessionAdjustmentForm({
   currentBalance: number;
   pending: boolean;
   error: unknown;
-  onSubmit: (input: SessionAdjustmentInput) => Promise<unknown>;
+  onSubmit: (input: AdjustCreditsRequest) => Promise<unknown>;
   onCancel: () => void;
 }) {
   const {

@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
-import type { Trainer } from "~/lib/api/types";
+import { usePublicTrainers } from "~/features/public/queries";
+import { publicApi } from "~/lib/api/endpoints";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
@@ -30,12 +28,7 @@ export function meta(_: Route.MetaArgs) {
  * inventing a person.
  */
 export default function Trainers() {
-  const query = useQuery({
-    queryKey: queryKeys.publicTrainers(),
-    queryFn: () => api.get<{ items: Trainer[] }>("/public/trainers"),
-    select: (data) => data.items,
-    staleTime: 5 * 60_000,
-  });
+  const query = usePublicTrainers();
 
   return (
     <>
@@ -87,16 +80,22 @@ export default function Trainers() {
           {query.isSuccess && query.data.length > 0 ? (
             <ul className="rule-t">
               {query.data.map((trainer) => (
+                /**
+                 * `GET /public/trainers` returns a name, a photo key and a bio
+                 * — no id, and no specialties. The specialties column that used
+                 * to sit here had nothing behind it: the field exists on the
+                 * staff-facing trainer record and is deliberately not published.
+                 */
                 <li
-                  key={trainer.id}
+                  key={trainer.full_name}
                   className="rule-b grid gap-x-8 gap-y-4 py-7 md:grid-cols-12"
                 >
                   <div className="md:col-span-3">
                     <div className="aspect-4/5 w-28 md:w-full md:max-w-40">
-                      {trainer.photoUrl ? (
+                      {trainer.photo_key ? (
                         <img
-                          src={trainer.photoUrl}
-                          alt={`Chân dung ${trainer.fullName}`}
+                          src={publicApi.trainerPhotoUrl(trainer.photo_key)}
+                          alt={`Chân dung ${trainer.full_name}`}
                           loading="lazy"
                           decoding="async"
                           className="size-full object-cover"
@@ -106,26 +105,12 @@ export default function Trainers() {
                       )}
                     </div>
                   </div>
-                  <div className="md:col-span-5">
+                  <div className="md:col-span-8 md:col-start-5">
                     <h2 className="font-display text-ink text-xl font-light">
-                      {trainer.fullName}
+                      {trainer.full_name}
                     </h2>
-                    {trainer.headline ? (
-                      <p className="measure text-ink-2 mt-2 text-sm">{trainer.headline}</p>
-                    ) : null}
-                  </div>
-                  <div className="md:col-span-3 md:col-start-10">
-                    {trainer.specialties.length > 0 ? (
-                      <>
-                        <p className="label-micro">Chuyên môn</p>
-                        <ul className="mt-2 space-y-1">
-                          {trainer.specialties.map((item) => (
-                            <li key={item} className="text-ink text-sm">
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
+                    {trainer.bio ? (
+                      <p className="measure text-ink-2 mt-2 text-sm">{trainer.bio}</p>
                     ) : null}
                   </div>
                 </li>

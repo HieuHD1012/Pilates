@@ -54,7 +54,7 @@ describe("StudentForm", () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit).toHaveBeenCalledWith({
-      fullName: "Trần Quốc Huy",
+      full_name: "Trần Quốc Huy",
       phone: "0900000001",
       email: null,
       note: null,
@@ -84,7 +84,8 @@ describe("StudentForm", () => {
           {
             code: "validation_failed",
             message: "invalid",
-            fieldErrors: { fullName: ["Họ tên trùng với hồ sơ đã khoá"] },
+            // The backend names its fields in snake_case; the form maps them.
+            fieldErrors: { full_name: ["Họ tên trùng với hồ sơ đã khoá"] },
           },
           "fallback",
         ),
