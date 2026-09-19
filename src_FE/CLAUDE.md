@@ -10,6 +10,7 @@ Then, depending on the task:
 | Anything at all               | [AGENTS.md](AGENTS.md), [AI_PLAYBOOK.md](AI_PLAYBOOK.md)                                                 |
 | Adding a screen               | [docs/UI_PATTERNS.md](docs/UI_PATTERNS.md), the nearest reference screen                                 |
 | Calling the backend           | [docs/API_MAPPING.md](docs/API_MAPPING.md) — every endpoint and its one caller                           |
+| Testing against the real API  | [docs/LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md) — seed a studio, sign in as each role                     |
 | Fetching or mutating data     | [docs/DATA_OWNERSHIP.md](docs/DATA_OWNERSHIP.md), [docs/QUERY_CONVENTIONS.md](docs/QUERY_CONVENTIONS.md) |
 | Styling                       | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), [docs/REFERENCE_LOCK.md](docs/REFERENCE_LOCK.md)         |
 | Adding a route                | [docs/ROUTING.md](docs/ROUTING.md)                                                                       |

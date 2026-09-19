@@ -40,6 +40,25 @@ identified by **phone**, but `POST /auth/login` authenticates by **email**. Ever
 sign-in screen now asks for an email. If the studio expects staff to sign in with
 a phone number, that is a backend change, not a frontend one.
 
+### What the first run against the real backend added (18/09/2026)
+
+Signing in as each role and working the screens against a live API turned up
+four defects the fixture run could not, all now fixed. Two are worth carrying
+forward as backend-side notes:
+
+- **`weekdays` has no documented convention.** `POST /classes/recurrence` reads
+  the array with Python's `date.weekday()` — Monday 0 … Sunday 6 — but the
+  generated page says only `integer[]`, and the note block is empty. The
+  frontend had guessed ISO-8601 (Monday 1 … Sunday 7), so every recurring class
+  landed a day late and a Sunday pattern was refused outright. The convention
+  lives in `src_BE/app/schemas/scheduling.py` as a comment; it should be in the
+  endpoint's note block, where a client author reads.
+- **`scripts/seed_admin.py` does not validate the email it writes.** Seeding
+  `admin@soulpilates.local` succeeds, that account signs in, and then
+  `GET /accounts` answers `500` for every ADMIN — `AccountResponse` re-validates
+  the address and `email-validator` rejects the special-use domain. Whatever
+  writes a user should hold to the same rule as whatever reads one.
+
 ## Studio facts (all null in `app/content/studio.ts`)
 
 Address · map link · phone · Zalo · WhatsApp · Instagram · email · opening hours.
