@@ -1,6 +1,14 @@
+import type { Role } from "~/lib/api/schema";
+
 export interface NavItem {
   to: string;
   label: string;
+  /**
+   * Roles that may see the entry. Absent means everyone the layout already
+   * admits. This is presentation, not permission — the backend still refuses,
+   * and `RoleGate` on the route is what actually keeps someone out.
+   */
+  roles?: Role[];
 }
 
 /**
@@ -80,7 +88,9 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
     label: "Báo cáo & hệ thống",
     items: [
       { to: "/studio/bao-cao", label: "Báo cáo" },
-      { to: "/studio/tai-khoan", label: "Tài khoản" },
+      // Accounts are ADMIN-only on the backend; showing the entry to STAFF
+      // offers a door that answers 403.
+      { to: "/studio/tai-khoan", label: "Tài khoản", roles: ["ADMIN"] },
     ],
   },
 ];

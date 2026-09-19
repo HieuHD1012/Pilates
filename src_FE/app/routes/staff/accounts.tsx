@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { RoleGate } from "~/features/auth/role-gate";
 import {
   useAccounts,
   useCreateAccount,
@@ -53,7 +54,21 @@ const ROLE_LABEL: Record<Role, string> = {
 
 type Result = { fullName: string; locked: boolean };
 
+/**
+ * ADMIN only, and gated here rather than only in the rail: the whole of
+ * `/accounts` is ADMIN on the backend, so a STAFF account that bookmarked this
+ * URL would otherwise land on a screen whose every request answers 403.
+ * Gating it also means `useAccounts` never fires for them.
+ */
 export default function StaffAccounts() {
+  return (
+    <RoleGate allow={["ADMIN"]}>
+      <AccountsScreen />
+    </RoleGate>
+  );
+}
+
+function AccountsScreen() {
   const query = useAccounts({ limit: 200 });
   const create = useCreateAccount();
   const [creating, setCreating] = useState(false);

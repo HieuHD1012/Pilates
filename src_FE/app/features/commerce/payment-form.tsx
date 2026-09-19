@@ -97,7 +97,8 @@ export function PaymentForm({
   const studentField = useWatch({ control, name: "studentId" });
   const selectedStudentId = studentField === "" ? null : Number(studentField);
   const packages = useStudentPackages(
-    selectedStudentId === null ? {} : { student_id: selectedStudentId },
+    { student_id: selectedStudentId ?? undefined },
+    { enabled: selectedStudentId !== null },
   );
 
   const roster = [...(students ?? [])].sort((a, b) =>

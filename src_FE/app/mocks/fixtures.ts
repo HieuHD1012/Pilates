@@ -382,7 +382,9 @@ export function buildDemoClasses(): ClassSessionResponse[] {
   let id = 1;
 
   for (let offset = -7; offset <= 14; offset += 1) {
-    const weekday = new Date(`${dayKey(offset)}T00:00:00+07:00`).getUTCDay();
+    // Read at UTC midnight: a `+07:00` anchor lands the instant on the previous
+    // evening, and `getUTCDay()` would then skip Mondays while claiming Sundays.
+    const weekday = new Date(`${dayKey(offset)}T00:00:00Z`).getUTCDay();
     if (weekday === 0) continue; // The studio is closed on Sundays in this fixture.
 
     sessions.push({

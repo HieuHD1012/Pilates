@@ -86,7 +86,10 @@ export default function StaffPayments() {
   // Package names, when a student is selected. Without one there is nothing to
   // resolve `student_package_id` against, and the row shows the id instead of
   // borrowing a name from somewhere it does not belong.
-  const packages = useStudentPackages(studentId === null ? {} : { student_id: studentId });
+  const packages = useStudentPackages(
+    { student_id: studentId ?? undefined },
+    { enabled: studentId !== null },
+  );
   const packageNames = new Map(
     (studentId === null ? [] : (packages.data ?? [])).map((item) => [
       item.id,

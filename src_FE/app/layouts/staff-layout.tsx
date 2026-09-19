@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router";
 
-import { STAFF_NAV, STAFF_NAV_GROUPS } from "~/content/nav";
+import { STAFF_NAV, STAFF_NAV_GROUPS, type NavItem } from "~/content/nav";
 import { RoleGate } from "~/features/auth/role-gate";
 import { useLogout } from "~/features/auth/use-logout";
 import { useSession } from "~/features/auth/use-session";
@@ -36,6 +36,11 @@ function StaffRail() {
   const { data: user } = useSession();
   const logout = useLogout();
 
+  // An entry with no `roles` is for everyone this layout admits.
+  const visible = (item: NavItem) =>
+    item.roles === undefined ||
+    (user !== undefined && user !== null && item.roles.includes(user.role));
+
   return (
     <div className="rule-b bg-sand lg:border-rule lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0">
       <div className="flex items-center justify-between gap-4 px-5 py-4 lg:block lg:px-6 lg:py-6">
@@ -50,7 +55,7 @@ function StaffRail() {
             the same destinations without a drawer to open. */}
         <nav aria-label="Điều hướng studio" className="min-w-0 lg:mt-8">
           <ul className="flex gap-4 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
-            {STAFF_NAV.map((item) => (
+            {STAFF_NAV.filter(visible).map((item) => (
               <li key={item.to} className="lg:rule-b shrink-0 lg:py-1.5">
                 <NavLink to={item.to} className={linkClass} end>
                   {item.label}
@@ -61,7 +66,7 @@ function StaffRail() {
               <li key={group.label} className="shrink-0 lg:mt-5 lg:block">
                 <p className="label-micro hidden lg:mb-1.5 lg:block">{group.label}</p>
                 <ul className="flex gap-4 lg:flex-col lg:gap-0">
-                  {group.items.map((item) => (
+                  {group.items.filter(visible).map((item) => (
                     <li key={item.to} className="shrink-0 lg:py-1.5">
                       <NavLink to={item.to} className={linkClass}>
                         {item.label}

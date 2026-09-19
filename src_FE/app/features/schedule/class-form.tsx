@@ -36,17 +36,23 @@ import { Figures } from "~/ui/figure";
 const DURATIONS = [30, 45, 50, 60, 75, 90];
 
 /**
- * ISO weekday order, Monday first, because that is how a Vietnamese studio week
- * is written and how the calendar grid above is laid out.
+ * Monday first, because that is how a Vietnamese studio week is written and how
+ * the calendar grid above is laid out.
+ *
+ * The numbers are the BACKEND's, not ISO-8601's: `POST /classes/recurrence`
+ * reads `weekdays` with Python's `date.weekday()`, where Monday is 0 and Sunday
+ * is 6 (`src_BE/app/schemas/scheduling.py`). Sending ISO numbers — Monday 1 …
+ * Sunday 7 — puts every class one day later than the one that was ticked, and
+ * a Sunday pattern is refused outright because 7 is out of range.
  */
 const WEEKDAYS: Array<{ value: number; short: string; long: string }> = [
-  { value: 1, short: "T2", long: "Thứ hai" },
-  { value: 2, short: "T3", long: "Thứ ba" },
-  { value: 3, short: "T4", long: "Thứ tư" },
-  { value: 4, short: "T5", long: "Thứ năm" },
-  { value: 5, short: "T6", long: "Thứ sáu" },
-  { value: 6, short: "T7", long: "Thứ bảy" },
-  { value: 7, short: "CN", long: "Chủ nhật" },
+  { value: 0, short: "T2", long: "Thứ hai" },
+  { value: 1, short: "T3", long: "Thứ ba" },
+  { value: 2, short: "T4", long: "Thứ tư" },
+  { value: 3, short: "T5", long: "Thứ năm" },
+  { value: 4, short: "T6", long: "Thứ sáu" },
+  { value: 5, short: "T7", long: "Thứ bảy" },
+  { value: 6, short: "CN", long: "Chủ nhật" },
 ];
 
 /** Not a studio rule — a guard. A pattern is a plan, not a permanent timetable. */
@@ -478,14 +484,21 @@ export function ClassForm({
   );
 }
 
-/** Mirrors the backend's walk so the count shown is the count attempted. */
+/**
+ * Mirrors the backend's walk so the count shown is the count attempted.
+ *
+ * `cursor` is a calendar date, not an instant, so it is read at UTC midnight:
+ * anchoring it at `+07:00` makes the underlying instant the previous evening in
+ * UTC and `getUTCDay()` then answers with yesterday's weekday.
+ */
 function countOccurrences(from: string, until: string, weekdays: number[]): number {
   const wanted = new Set(weekdays);
   let count = 0;
   let cursor = from;
   for (let guard = 0; guard < 400 && cursor <= until; guard += 1) {
-    const day = new Date(`${cursor}T00:00:00+07:00`).getUTCDay();
-    if (wanted.has(day === 0 ? 7 : day)) count += 1;
+    // `getUTCDay()` is Sunday 0 … Saturday 6; the backend is Monday 0 … Sunday 6.
+    const day = new Date(`${cursor}T00:00:00Z`).getUTCDay();
+    if (wanted.has((day + 6) % 7)) count += 1;
     cursor = addDays(cursor, 1);
   }
   return count;

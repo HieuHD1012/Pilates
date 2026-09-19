@@ -64,11 +64,24 @@ export function useUpdatePackageType(packageTypeId: number) {
 
 /* ── What a student holds ───────────────────────────────────────────────── */
 
-/** Omit `student_id` as a signed-in student and the backend pins it to you. */
-export function useStudentPackages(params: StudentPackageListParams = {}) {
+/**
+ * What a student holds.
+ *
+ * A signed-in student omits `student_id` and the backend pins the list to them.
+ * **Staff must name one.** `GET /packages` with no `student_id` answers 404 —
+ * credits belong to a package, and there is no studio-wide list of everyone's
+ * remaining sessions. So a staff screen with no student chosen passes
+ * `enabled: false` rather than firing a request whose only possible answer is
+ * a refusal.
+ */
+export function useStudentPackages(
+  params: StudentPackageListParams = {},
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: queryKeys.packages.ofStudent(params),
     queryFn: () => packagesApi.list(params),
+    enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
 }

@@ -91,13 +91,37 @@ describe("ClassForm", () => {
     expect(onSubmit).toHaveBeenCalledWith({
       start_date: "2026-08-25",
       end_date: "2026-09-29",
-      weekdays: [2],
+      // Monday 0 … Sunday 6, `date.weekday()`. Tuesday is 1, not 2.
+      weekdays: [1],
       start_time: "06:30:00",
       duration_minutes: 50,
       trainer_id: 1,
       class_type: "GROUP",
       capacity: 6,
     });
+  });
+
+  /**
+   * The bug this pins: the form used to number the days ISO-style, Monday 1 …
+   * Sunday 7, while `POST /classes/recurrence` reads them with Python's
+   * `date.weekday()`. Ticking "Thứ hai" produced a term of Tuesday classes, and
+   * "Chủ nhật" was refused because 7 is outside the backend's range.
+   */
+  it("numbers the weekdays the way the backend counts them, Monday 0 to Sunday 6", async () => {
+    const { onSubmit, user } = setup({ recurring: true, submitLabel: "Xem trước" });
+
+    await user.selectOptions(screen.getByLabelText(/Huấn luyện viên/), "1");
+    await user.type(screen.getByLabelText(/^Ngày/), "2026-08-25");
+    await user.type(screen.getByLabelText(/Giờ bắt đầu/), "06:30");
+    await user.selectOptions(screen.getByLabelText(/Thời lượng/), "50");
+    await user.type(screen.getByLabelText(/Sức chứa/), "6");
+    await user.click(screen.getByLabelText("Thứ hai"));
+    await user.click(screen.getByLabelText("Chủ nhật"));
+    await user.type(screen.getByLabelText(/Lặp đến ngày/), "2026-09-29");
+    await user.click(screen.getByRole("button", { name: "Xem trước" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ weekdays: [0, 6] });
   });
 
   it("shows the end time as the duration changes, because staff check it", async () => {

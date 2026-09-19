@@ -139,7 +139,10 @@ function LedgerBody({
   const adjust = useAdjustCredits(ledger.student_package_id);
 
   const student = useStudent(studentId);
-  const packages = useStudentPackages(studentId === null ? {} : { student_id: studentId });
+  const packages = useStudentPackages(
+    { student_id: studentId ?? undefined },
+    { enabled: studentId !== null },
+  );
   const thisPackage = (packages.data ?? []).find(
     (item) => item.id === ledger.student_package_id,
   );

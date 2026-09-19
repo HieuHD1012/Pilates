@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { refusalCopy } from "~/features/booking/booking-copy";
-import { useBookableIds, useBookClass, useClassSession } from "~/features/booking/queries";
+import {
+  useBookableIds,
+  useBookClass,
+  useClassSession,
+  useMySchedule,
+} from "~/features/booking/queries";
 import { useStudentPackages } from "~/features/commerce/queries";
 import { formatDate, formatLeadTime, formatTimeRange, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
@@ -34,6 +39,7 @@ export default function ClassDetail() {
   const sessionId = Number(classId);
   const query = useClassSession(sessionId);
   const bookable = useBookableIds();
+  const mySchedule = useMySchedule();
   const packages = useStudentPackages();
   const booking = useBookClass();
   const [confirming, setConfirming] = useState(false);
@@ -79,7 +85,19 @@ export default function ClassDetail() {
   const cost = 1;
   const remaining = activePackage?.balance_cached ?? null;
   const hasRoom = item.seats_left > 0;
-  const booked = booking.isSuccess;
+
+  /**
+   * A seat this student already holds.
+   *
+   * `/my-schedule/bookable` excludes a class they are already in, so without
+   * this the screen reads that exclusion as an eligibility problem and tells
+   * someone who did nothing wrong that their package does not cover the class
+   * they are already booked into.
+   */
+  const alreadyBooked = (mySchedule.data ?? []).some(
+    (row) => row.class_session_id === sessionId && row.booking_status === "BOOKED",
+  );
+  const booked = booking.isSuccess || alreadyBooked;
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -130,33 +148,36 @@ export default function ClassDetail() {
         <Row label="Bắt đầu sau">{formatLeadTime(item.starts_at)}</Row>
       </dl>
 
-      {/* The consequence, before the action. */}
-      <section className="rule-t mt-8 pt-5">
-        <h2 className="text-ink text-sm font-medium">Khi bạn đặt lớp này</h2>
-        <dl className="mt-3">
-          <Row label="Trừ vào gói">
-            <Figures>{cost}</Figures> buổi
-          </Row>
-          {remaining !== null ? (
-            <Row label="Số buổi còn lại">
-              <span className="flex items-baseline gap-2">
-                <Figures className="text-ink-2 line-through">{remaining}</Figures>
-                <span aria-hidden="true" className="text-ink-3">
-                  →
-                </span>
-                <Figures className="text-ink">{Math.max(remaining - cost, 0)}</Figures>
-              </span>
+      {/* The consequence, before the action — and only before it. Once the seat
+          is held, a forecast of a balance that has already moved is noise. */}
+      {booked ? null : (
+        <section className="rule-t mt-8 pt-5">
+          <h2 className="text-ink text-sm font-medium">Khi bạn đặt lớp này</h2>
+          <dl className="mt-3">
+            <Row label="Trừ vào gói">
+              <Figures>{cost}</Figures> buổi
             </Row>
-          ) : null}
-          {/* The deadline is computed per booking, so it exists only once the
+            {remaining !== null ? (
+              <Row label="Số buổi còn lại">
+                <span className="flex items-baseline gap-2">
+                  <Figures className="text-ink-2 line-through">{remaining}</Figures>
+                  <span aria-hidden="true" className="text-ink-3">
+                    →
+                  </span>
+                  <Figures className="text-ink">{Math.max(remaining - cost, 0)}</Figures>
+                </span>
+              </Row>
+            ) : null}
+            {/* The deadline is computed per booking, so it exists only once the
               booking does. Rather than restate the studio's policy here — a
               second copy that would drift the day it changes — this points at
               the row that will carry the backend's own number. */}
-          <Row label="Hạn hủy">
-            hiện trong <Link to="/hv/lich-cua-toi">Lịch của tôi</Link> sau khi đặt
-          </Row>
-        </dl>
-      </section>
+            <Row label="Hạn hủy">
+              hiện trong <Link to="/hv/lich-cua-toi">Lịch của tôi</Link> sau khi đặt
+            </Row>
+          </dl>
+        </section>
+      )}
 
       {booked ? (
         <div className="rule-t border-t-success mt-8 pt-5">

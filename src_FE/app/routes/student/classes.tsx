@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useBookableClasses } from "~/features/booking/queries";
+import { useBookableClasses, useMySchedule } from "~/features/booking/queries";
 import { useStudentPackages } from "~/features/commerce/queries";
 import type { ClassType } from "~/lib/api/schema";
 import { cn } from "~/lib/cn";
@@ -40,6 +40,19 @@ export default function StudentClasses() {
   const days = Array.from({ length: 14 }, (_, index) => addDays(today, index));
   const query = useBookableClasses({ from: today, to: addDays(today, 13), classType });
   const packages = useStudentPackages();
+
+  /**
+   * The seats this student already holds. `/my-schedule/bookable` leaves out a
+   * class they are already in, which arrives here as `canBook: false` — the
+   * same signal as "full" and as "your package does not cover this". Their own
+   * booking is the one reason they can act on, so it gets its own badge.
+   */
+  const mySchedule = useMySchedule();
+  const mine = new Set(
+    (mySchedule.data ?? [])
+      .filter((row) => row.booking_status === "BOOKED")
+      .map((row) => row.class_session_id),
+  );
 
   // The package a student is actually spending from: active, and with credits
   // left. The backend picks the one expiring soonest when a booking is made;
@@ -169,7 +182,9 @@ export default function StudentClasses() {
                   </span>
 
                   <span className="flex shrink-0 flex-col items-end gap-2">
-                    {item.canBook ? (
+                    {mine.has(item.id) ? (
+                      <StatusBadge tone="positive">Đã đặt</StatusBadge>
+                    ) : item.canBook ? (
                       <StatusBadge tone="positive">Đặt được</StatusBadge>
                     ) : (
                       <StatusBadge tone="neutral">Không đặt được</StatusBadge>

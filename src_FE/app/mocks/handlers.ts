@@ -1354,16 +1354,24 @@ export const handlers: HttpHandler[] = [
   http.get(url("/health"), () => HttpResponse.json({ status: "ok" })),
 ];
 
-/** Every occurrence a weekly pattern would produce, as instants. */
+/**
+ * Every occurrence a weekly pattern would produce, as instants.
+ *
+ * The cursor walks calendar dates at UTC midnight. Anchoring it at `+07:00`
+ * puts the instant on the previous evening in UTC, and then both
+ * `getUTCDay()` and `toISOString()` answer about the day before the one being
+ * walked — which is how a mock comes to disagree with the backend it stands in
+ * for.
+ */
 function expandPattern(pattern: RecurrenceRequest): string[] {
   const out: string[] = [];
-  const start = new Date(`${pattern.start_date}T00:00:00+07:00`);
-  const end = new Date(`${pattern.end_date}T00:00:00+07:00`);
+  const day = new Date(`${pattern.start_date}T00:00:00Z`);
+  const end = new Date(`${pattern.end_date}T00:00:00Z`);
 
-  for (let day = new Date(start); day <= end; day.setUTCDate(day.getUTCDate() + 1)) {
-    // The backend counts weekdays from Monday; `getUTCDay` counts from Sunday.
-    const weekday = day.getUTCDay() === 0 ? 7 : day.getUTCDay();
-    if (!pattern.weekdays.includes(weekday)) continue;
+  for (; day <= end; day.setUTCDate(day.getUTCDate() + 1)) {
+    // `getUTCDay()` is Sunday 0 … Saturday 6; the backend's `weekdays` are
+    // Python's `date.weekday()`, Monday 0 … Sunday 6.
+    if (!pattern.weekdays.includes((day.getUTCDay() + 6) % 7)) continue;
     const key = day.toISOString().slice(0, 10);
     out.push(`${key}T${pattern.start_time.slice(0, 5)}:00+07:00`);
   }
