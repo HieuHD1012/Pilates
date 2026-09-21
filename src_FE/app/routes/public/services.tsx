@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
@@ -27,6 +28,21 @@ export default function Services() {
         title="Nhóm nhỏ, hoặc một kèm một."
         lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
       />
+
+      {/* Khung duy nhất của trang này, và nó thuộc về đây chứ không thuộc về
+          trang chủ: một cử động ở biên độ đầy đủ nói đúng thứ trang này bán —
+          mức điều chỉnh riêng cho từng cơ thể. Trước đây nó nằm cách ảnh trang
+          chủ đúng một màn hình, cùng người mẫu, cùng bức tường rèm, nên hai tấm
+          tố cáo lẫn nhau rằng cả bộ chỉ có một buổi chụp.
+
+          754px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được vẽ. */}
+      <Section tone="sand">
+        <div className="mx-auto w-full max-w-[754px] pb-16 md:pb-24">
+          <div className="aspect-4/5 w-full">
+            <ArtDirectedImage photo="method" sizes="(min-width: 802px) 754px, 100vw" />
+          </div>
+        </div>
+      </Section>
 
       {CLASS_FORMATS.map((format, index) => (
         <Section

@@ -67,17 +67,28 @@ export const PHOTOGRAPHY = {
     // draws the frame, the figure hangs inside it, the curtain wall lights it
     // from behind. A hero needs a geometry — the previous frame (studio-08) was
     // a room inventory with no subject at all.
-    src: "/photos/hero-643.webp",
-    srcSet: "/photos/hero-321.webp 321w, /photos/hero-643.webp 643w",
-    avifSrcSet: "/photos/hero-321.avif 321w, /photos/hero-643.avif 643w",
+    //
+    // LANDSCAPE, because that is what the frame is: studio-13 came off the
+    // camera 1280x1005. The 4/5 portrait cut this slot used before threw most
+    // of it away and came back 643px wide — soft on retina, as that version's
+    // own notes admit. Returning the frame to its own orientation costs nothing
+    // and returns 1088px, 69% more resolution, from the same file.
+    //
+    // 1088 is also the widest this may ever be DRAWN. It does not bleed to the
+    // page edge: at 1440px that would be a 1.3x upscale, which is the one thing
+    // the build script refuses to write to disk. The margin left over is the
+    // resolution ceiling made visible.
+    src: "/photos/hero-1088.webp",
+    srcSet: "/photos/hero-544.webp 544w, /photos/hero-1088.webp 1088w",
+    avifSrcSet: "/photos/hero-544.avif 544w, /photos/hero-1088.avif 1088w",
     alt: "Học viên treo người trên khung Cadillac, ngược sáng trước tường rèm voan.",
-    aspect: "4 / 5",
+    aspect: "4 / 3",
     typeRegion: null,
     subject:
       "One body inside the apparatus, holding. The frame of the machine is the composition.",
     lighting:
       "Backlit by the window wall. The figure reads as shape before it reads as a person.",
-    crop: "Portrait. The top bar crosses the frame; the floor is out.",
+    crop: "Landscape. The steel cage encloses the figure; the floor is out and the bottom edge stops on the table body.",
     distance: "Whole body, 3–4m.",
     feeling: "Control, suspended. Effort that does not look like effort.",
   }),

@@ -260,7 +260,37 @@ A = {
     # Không có 'city'. Xem ghi chú ở cuối tệp.
 }
 
-OPTIONS = {"a": A}
+# ── PHƯƠNG ÁN G3 — "Một khung" ──────────────────────────────────────────────
+# Trang chủ mang ĐÚNG MỘT bức ảnh. Lý do không phải thẩm mỹ tối giản, mà là ba
+# phép đo đã có sẵn trong chính dự án này:
+#
+#   1. Sáu khung dùng được đều từ một buổi chụp, một người, một bức tường rèm.
+#      Bày ba tấm cạnh nhau thì người xem đọc ra "một bộ ảnh mỏng bị kéo dài".
+#      Bày một tấm thì không có gì để so, và sự đơn điệu thôi hiện ra.
+#   2. Khung hero của phương án A cắt dọc 4/5 từ studio-13 — vốn là khung NGANG
+#      1280x1005. Ép khung ngang vào ô dọc là chỗ mất độ phân giải: còn 643px,
+#      và chính tài liệu A ghi "hơi mềm trên retina". Trả nó về chiều ngang tự
+#      nhiên thì được 1088px, hơn 69% chiều dài cạnh.
+#   3. Trần 1280px của bộ ảnh quyết định luôn bề rộng trình bày. Ảnh 1088px
+#      kéo tràn màn hình 1440px là phóng to 1.3 lần — đúng thứ Cut.render từ
+#      chối làm khi ghi tệp. Nên ảnh KHÔNG tràn viền: nó dừng ở đúng 1088px.
+#      Cái lề còn lại không phải trang trí, nó là trần độ phân giải nhìn thấy
+#      được — và một tấm ảnh dừng trước mép trang đọc ra là được CHỌN, không
+#      phải được lấp vào.
+G3 = dict(A)
+G3["hero"] = Cut(
+    "13", (0.07, 0.00, 0.92, 0.82), 4 / 3, [544, 1088],
+    why="Cùng khung với phương án A, trả về chiều ngang vốn có của nó. Khung "
+        "thép của Cadillac dựng thành một hình chữ nhật, người treo bên trong, "
+        "rèm sáng phía sau — hình học đủ mạnh để một mình gánh cả trang chủ.",
+    drops="Dải tường xám ở mép trái, sàn gạch. Đáy dừng ở thân bàn nên mép dưới "
+          "là một đường ngang sạch.\n"
+          "Được: 1088px thay vì 643px. Đổi lại, khung này nói về căn phòng và "
+          "về sự kiểm soát, không nói về một lớp nhóm nhỏ cho người mới — phần "
+          "đó nay do chữ gánh, vì không còn tấm thứ hai để gánh hộ.",
+)
+
+OPTIONS = {"a": A, "g3": G3}
 
 
 def kiem_tra_khop() -> int:

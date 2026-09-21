@@ -42,15 +42,25 @@ export default function Home() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
+   Hero — the sentence owns the fold; one photograph owns the screen under it.
+   Neither is set on top of the other, so nothing has to be dimmed to make type
+   legible, and the photograph stays a photograph.
+
+   ONE photograph, and it is the only one on this page. Every usable frame in
+   the delivery comes from a single shoot — one room, one model, one curtain
+   wall — so three of them side by side read as a thin set stretched thin.
+   Shown alone, there is nothing to compare it against and the sameness never
+   surfaces.
+
+   The image stops at 1088px and does not bleed: that is the true width of the
+   file, and drawing it wider would be an upscale the build script refuses to
+   write. The margin is the resolution ceiling, made visible rather than hidden.
    ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
     <section className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
+        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-10 md:grid-cols-12 md:pt-14 md:pb-12">
           <div className="md:col-span-7 lg:col-span-6">
             <p className="label-micro">Pilates reformer · Nha Trang</p>
 
@@ -75,15 +85,18 @@ function Hero() {
             </div>
           </div>
 
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                fade
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
+        </div>
+
+        {/* 1088px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được
+            phép vẽ. `sizes` khai đúng như vậy để trình duyệt không tải bản
+            1088 cho một ô 544. */}
+        <div className="mx-auto w-full max-w-[1088px] pb-14 md:pb-20">
+          <div className="aspect-4/3 w-full">
+            <ArtDirectedImage
+              photo="hero"
+              priority
+              sizes="(min-width: 1136px) 1088px, 100vw"
+            />
           </div>
         </div>
       </div>
@@ -153,33 +166,35 @@ const METHOD_NOTES = [
 function Method() {
   return (
     <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
+      {/* Khối này từng mở bằng một tấm ảnh dọc của cùng người mẫu, cùng bức
+          tường rèm với ảnh trang chủ. Bỏ đi, không thay bằng ảnh khác: hai tấm
+          từ một buổi chụp đặt cách nhau một màn hình là chỗ sự đơn điệu hiện ra
+          rõ nhất. Chỗ trống trả về cho chữ, và ba dòng định nghĩa nay được kẻ
+          hết bề ngang — đó vốn là đơn vị cấu trúc của hệ này. */}
+      <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-5">
-          {/* 4/5, không phải ô vuông. Nội dung của khung này là cái vươn tay lên
-              hết biên độ; ô vuông cắt mất bàn tay, tức là cắt mất nội dung. */}
-          <div className="aspect-4/5 w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
           <h2 className="font-display text-d2 text-ink font-light">
             Pilates là một môn học về sự chính xác.
           </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
+        </div>
+
+        <div className="md:col-span-6 md:col-start-7">
+          <p className="measure text-ink-2 text-base">
             Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
             huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
           </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
+
+        <dl className="md:col-span-12">
+          {METHOD_NOTES.map(({ term, def }) => (
+            <div key={term} className="rule-t grid gap-x-8 py-5 md:grid-cols-12">
+              <dt className="text-ink text-sm font-medium md:col-span-3">{term}</dt>
+              <dd className="text-ink-2 measure text-sm md:col-span-6 md:col-start-5">
+                {def}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </Section>
   );
