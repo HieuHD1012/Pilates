@@ -41,6 +41,12 @@ export interface PhotoBrief {
   /** null until a frame exists that answers the brief. */
   src: string | null;
   srcSet: string | null;
+  /**
+   * Cùng những bề rộng đó, mã hoá AVIF. Đi SONG SONG với `srcSet`, không thay
+   * thế: `<picture>` đưa AVIF ra trước và tự lùi về WebP khi trình duyệt không
+   * đọc được, nên không có thiết bị nào mất ảnh. Null khi `src` null.
+   */
+  avifSrcSet: string | null;
   alt: string;
   aspect: string;
   subject: string;
@@ -63,6 +69,7 @@ export const PHOTOGRAPHY = {
     // a room inventory with no subject at all.
     src: "/photos/hero-643.webp",
     srcSet: "/photos/hero-321.webp 321w, /photos/hero-643.webp 643w",
+    avifSrcSet: "/photos/hero-321.avif 321w, /photos/hero-643.avif 643w",
     alt: "Học viên treo người trên khung Cadillac, ngược sáng trước tường rèm voan.",
     aspect: "4 / 5",
     typeRegion: null,
@@ -82,6 +89,7 @@ export const PHOTOGRAPHY = {
     // the slot is 4/5 now. The picture decides the frame, not the grid.
     src: "/photos/method-754.webp",
     srcSet: "/photos/method-377.webp 377w, /photos/method-754.webp 754w",
+    avifSrcSet: "/photos/method-377.avif 377w, /photos/method-754.avif 754w",
     typeRegion: null,
     alt: "Học viên vươn hết tay lên cao trên máy chair, ngược sáng trước cửa sổ.",
     aspect: "4 / 5",
@@ -100,6 +108,7 @@ export const PHOTOGRAPHY = {
     // #f2f0ea and the studio's mark sits in the middle of it.
     src: "/photos/room-1043.webp",
     srcSet: "/photos/room-521.webp 521w, /photos/room-1043.webp 1043w",
+    avifSrcSet: "/photos/room-521.avif 521w, /photos/room-1043.avif 1043w",
     typeRegion: null,
     alt: "Ladder barrel bằng gỗ đứng một mình trước tường rèm voan.",
     aspect: "1 / 1",
@@ -117,6 +126,7 @@ export const PHOTOGRAPHY = {
     // is the figure, the reformer rail, and the curtain.
     src: "/photos/practice-819.webp",
     srcSet: "/photos/practice-409.webp 409w, /photos/practice-819.webp 819w",
+    avifSrcSet: "/photos/practice-409.avif 409w, /photos/practice-819.avif 819w",
     typeRegion: null,
     alt: "Học viên giữ tư thế chùng chân trên máy reformer, ngược sáng trước cửa sổ.",
     aspect: "16 / 10",
@@ -134,6 +144,7 @@ export const PHOTOGRAPHY = {
     // survived; a tall panel gets a tall frame of its own.
     src: "/photos/welcome-660.webp",
     srcSet: "/photos/welcome-330.webp 330w, /photos/welcome-660.webp 660w",
+    avifSrcSet: "/photos/welcome-330.avif 330w, /photos/welcome-660.avif 660w",
     typeRegion: null,
     alt: "Học viên cúi người trên máy chair, ngược sáng trước tường rèm voan.",
     aspect: "3 / 4",
@@ -156,6 +167,7 @@ export const PHOTOGRAPHY = {
     id: "trainerPortrait",
     src: null,
     srcSet: null,
+    avifSrcSet: null,
     typeRegion: null,
     alt: "Chưa có ảnh chân dung huấn luyện viên.",
     aspect: "4 / 5",

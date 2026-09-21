@@ -40,6 +40,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 DEST = os.path.join(ROOT, "src_FE", "public", "photos")
 
+#: Chất lượng AVIF. 70 không phải số tròn cho đẹp: đo PSNR của cả mười tệp
+#: so với chính bản đã grade, q70 ngang WebP q88 (chênh dưới 0.4 dB ở mọi khung)
+#: mà nhẹ hơn 29%. Hạ xuống q65 thì nhẹ hơn 45% nhưng mất nửa dB — không đổi,
+#: vì mục đích của AVIF ở đây là GIỮ NGUYÊN chất lượng và bớt byte, không phải
+#: bớt byte bằng cách bớt chất lượng. Số đo nằm trong tài liệu đối chiếu.
+AVIF_Q = 70
+
 #: #f2f0ea (--sand) chuẩn hoá quanh 1.0 — hướng mà bóng được kéo về.
 SAND_HUE = np.array([1.010, 1.000, 0.972])
 
@@ -204,10 +211,9 @@ class Cut:
         # là một lời nói dối về độ nét, và nó nặng hơn bản thật.
         for w in self.widths:
             assert w <= out.width, f"{slot}: {w}px vượt {out.width}px thật"
-            path = os.path.join(DEST, f"{slot}-{w}.webp")
-            out.resize((w, round(w / self.ratio)), Image.LANCZOS).save(
-                path, "WEBP", quality=88, method=6
-            )
+            small = out.resize((w, round(w / self.ratio)), Image.LANCZOS)
+            small.save(os.path.join(DEST, f"{slot}-{w}.webp"), "WEBP", quality=88, method=6)
+            small.save(os.path.join(DEST, f"{slot}-{w}.avif"), "AVIF", quality=AVIF_Q, speed=2)
         return out
 
 
@@ -266,7 +272,8 @@ def kiem_tra_khop() -> int:
     brief = os.path.join(ROOT, "src_FE", "app", "content", "photography.ts")
     if not os.path.exists(brief):
         return 0
-    want = set(re.findall(r"/photos/([a-z]+-\d+\.webp)", open(brief, encoding="utf-8").read()))
+    text = open(brief, encoding="utf-8").read()
+    want = set(re.findall(r"/photos/([a-z]+-\d+\.(?:webp|avif))", text))
     have = set(os.listdir(DEST)) if os.path.isdir(DEST) else set()
     missing, extra = sorted(want - have), sorted(have - want)
     for m in missing:
@@ -281,9 +288,16 @@ def main() -> int:
     ap.add_argument("--phuong-an", default="a", choices=sorted(OPTIONS))
     args = ap.parse_args()
     os.makedirs(DEST, exist_ok=True)
+    tong = {"webp": 0, "avif": 0}
     for slot, cut in OPTIONS[args.phuong_an].items():
         im = cut.render(slot)
+        for w in cut.widths:
+            for ext in tong:
+                tong[ext] += os.path.getsize(os.path.join(DEST, f"{slot}-{w}.{ext}"))
         print(f"{slot:9} ← studio-{cut.frame}  {im.size[0]}x{im.size[1]}  ({', '.join(map(str, cut.widths))})")
+    giam = (1 - tong["avif"] / tong["webp"]) * 100
+    print(f"\nWebP q88 {tong['webp'] / 1024:6.1f} kB   "
+          f"AVIF q{AVIF_Q} {tong['avif'] / 1024:6.1f} kB   nhẹ hơn {giam:.0f}%")
     return kiem_tra_khop()
 
 

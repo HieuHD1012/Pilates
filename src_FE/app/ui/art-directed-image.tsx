@@ -33,6 +33,22 @@ const FADE_STYLE = {
   WebkitMaskComposite: "source-in",
 } as const;
 
+/**
+ * VÌ SAO CÓ AVIF, VÀ VÌ SAO NÓ KHÔNG PHẢI MỘT MỤC TRONG DANH SÁCH "NÊN LÀM"
+ *
+ * Bước 12 của `dung-anh.py` rắc hạt lên ảnh, và lý do ghi ngay tại đó là để
+ * chặn hiện tượng dải màu khi WebP nén mảng rèm voan lớn. Tức là bộ ảnh này có
+ * đúng một khuyết tật mà định dạng gây ra, trên đúng vùng chiếm nhiều diện tích
+ * nhất mỗi khung. Đó là lý do AVIF vào đây — không phải vì năm 2026 người ta
+ * dùng AVIF.
+ *
+ * Đo trên cả mười tệp: AVIF q70 ngang WebP q88 về PSNR (chênh dưới 0.4 dB) và
+ * nhẹ hơn 29% — 311.9 kB xuống 221.0 kB.
+ *
+ * Hạt vẫn giữ nguyên, vì nó được nung vào điểm ảnh TRƯỚC khi mã hoá nên cả hai
+ * định dạng dùng chung một bản. Muốn bỏ hạt riêng cho AVIF thì phải dựng hai
+ * đường ảnh khác nhau; chưa đáng, và chưa đo.
+ */
 export function ArtDirectedImage({
   photo,
   className,
@@ -52,7 +68,7 @@ export function ArtDirectedImage({
   const brief = PHOTOGRAPHY[photo];
 
   if (brief.src) {
-    return (
+    const img = (
       <img
         src={brief.src}
         srcSet={brief.srcSet ?? undefined}
@@ -64,6 +80,16 @@ export function ArtDirectedImage({
         style={fade ? FADE_STYLE : undefined}
         className={cn("size-full object-cover", imgClassName, className)}
       />
+    );
+
+    // Không có AVIF thì trả thẳng <img> — đừng bọc <picture> rỗng quanh nó.
+    if (!brief.avifSrcSet) return img;
+
+    return (
+      <picture className="contents">
+        <source type="image/avif" srcSet={brief.avifSrcSet} sizes={sizes} />
+        {img}
+      </picture>
     );
   }
 
