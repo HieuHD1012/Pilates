@@ -37,9 +37,20 @@ export default function Services() {
 
           754px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được vẽ. */}
       <Section tone="sand">
-        <div className="mx-auto w-full max-w-[754px] pb-16 md:pb-24">
-          <div className="aspect-4/5 w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 802px) 754px, 100vw" />
+        <div className="grid pb-16 md:grid-cols-12 md:pb-24">
+          {/* Cột lệch, không phải tấm ảnh thả giữa trang: sáu cột trái, lề phải
+              để mở — cùng nhịp mà trang Studio đang dùng. Một khung dọc đặt
+              chính giữa một trang rộng 1408px thì hai bên thành hai dải trống
+              bằng nhau, và nó đọc ra là chưa được đặt chứ không phải được đặt.
+
+              Ở md ô này rộng 640px, dưới bề rộng thật 754px của tệp. */}
+          <div className="md:col-span-6">
+            <div className="aspect-4/5 w-full">
+              <ArtDirectedImage
+                photo="method"
+                sizes="(min-width: 64rem) calc((100vw - 8rem) / 2), (min-width: 48rem) calc((100vw - 5rem) / 2), calc(100vw - 2.5rem)"
+              />
+            </div>
           </div>
         </div>
       </Section>

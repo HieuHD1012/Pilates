@@ -279,7 +279,7 @@ A = {
 #      phải được lấp vào.
 G3 = dict(A)
 G3["hero"] = Cut(
-    "13", (0.07, 0.00, 0.92, 0.82), 4 / 3, [544, 1088],
+    "13", (0.07, 0.00, 0.92, 0.82), 4 / 3, [544, 768, 1088],
     why="Cùng khung với phương án A, trả về chiều ngang vốn có của nó. Khung "
         "thép của Cadillac dựng thành một hình chữ nhật, người treo bên trong, "
         "rèm sáng phía sau — hình học đủ mạnh để một mình gánh cả trang chủ.",
@@ -287,7 +287,11 @@ G3["hero"] = Cut(
           "là một đường ngang sạch.\n"
           "Được: 1088px thay vì 643px. Đổi lại, khung này nói về căn phòng và "
           "về sự kiểm soát, không nói về một lớp nhóm nhỏ cho người mới — phần "
-          "đó nay do chữ gánh, vì không còn tấm thứ hai để gánh hộ.",
+          "đó nay do chữ gánh, vì không còn tấm thứ hai để gánh hộ.\n"
+          "Ba bề rộng chứ không phải hai: điện thoại 390px ở DPR 2 cần khoảng "
+          "700px, mà nhảy thẳng 544 → 1088 thì máy phải tải bản to nhất — 63 kB "
+          "cho một ô rộng 350px. Bậc 768 cắt còn chừng một nửa, và đây đúng là "
+          "tấm quyết định LCP trên thiết bị chiếm phần lớn lưu lượng.",
 )
 
 OPTIONS = {"a": A, "g3": G3}

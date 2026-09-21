@@ -79,8 +79,10 @@ export const PHOTOGRAPHY = {
     // the build script refuses to write to disk. The margin left over is the
     // resolution ceiling made visible.
     src: "/photos/hero-1088.webp",
-    srcSet: "/photos/hero-544.webp 544w, /photos/hero-1088.webp 1088w",
-    avifSrcSet: "/photos/hero-544.avif 544w, /photos/hero-1088.avif 1088w",
+    srcSet:
+      "/photos/hero-544.webp 544w, /photos/hero-768.webp 768w, /photos/hero-1088.webp 1088w",
+    avifSrcSet:
+      "/photos/hero-544.avif 544w, /photos/hero-768.avif 768w, /photos/hero-1088.avif 1088w",
     alt: "Học viên treo người trên khung Cadillac, ngược sáng trước tường rèm voan.",
     aspect: "4 / 3",
     typeRegion: null,

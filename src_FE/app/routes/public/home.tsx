@@ -88,14 +88,23 @@ function Hero() {
         </div>
 
         {/* 1088px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được
-            phép vẽ. `sizes` khai đúng như vậy để trình duyệt không tải bản
-            1088 cho một ô 544. */}
+            phép vẽ.
+
+            `sizes` phải khai đúng bề rộng Ô, không phải bề rộng MÀN HÌNH. Khai
+            "100vw" trên điện thoại 390px là nói dối 40px — ô thật chỉ rộng
+            350px sau lề trang — và 40px đó đủ đẩy nhu cầu ở DPR 2 từ 700px lên
+            780px, tức là vượt bậc 768 và bắt máy tải bản 1088. Một dòng khai
+            sai làm hỏng đúng cái việc mà srcSet sinh ra để làm.
+
+            Các mốc dưới đây bám theo @utility gutter trong app.css:
+            1.25rem → 2.5rem (48rem) → 4rem (64rem), và cái mũ 1088px bắt đầu
+            có hiệu lực từ 76rem. */}
         <div className="mx-auto w-full max-w-[1088px] pb-14 md:pb-20">
           <div className="aspect-4/3 w-full">
             <ArtDirectedImage
               photo="hero"
               priority
-              sizes="(min-width: 1136px) 1088px, 100vw"
+              sizes="(min-width: 76rem) 1088px, (min-width: 64rem) calc(100vw - 8rem), (min-width: 48rem) calc(100vw - 5rem), calc(100vw - 2.5rem)"
             />
           </div>
         </div>
