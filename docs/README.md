@@ -42,6 +42,7 @@ API mà quên sinh lại thì CI đỏ — đó là chủ ý.
 | `anh-studio/` | 21 ảnh thương hiệu studio, kèm bảng ánh xạ tên gốc |
 | `doi-chieu-xu-ly-anh.html` | Kiểm kê 21 ảnh studio và đối chiếu 11 cách xử lý (16.09.2026), mỗi cách một nhánh Git. 3,0 MB, ảnh nhúng base64 — mở bằng trình duyệt |
 | `doi-chieu-anh-theo-vi-tri.html` | **Bản làm lại (18.09.2026).** Ba phương án khác nhau ở *chọn khung nào cho ô nào*, không phải ở hiệu ứng phủ lên. Kèm chẩn đoán vì sao bản cũ trông rẻ, và một mục thử nghiệm ~20 vòng xử lý ảnh trả lời "bộ ảnh hiện tại cứu được tới đâu". 1,5 MB, ảnh nhúng base64 |
+| `tong-ket-xu-ly-anh.html` | **Bản tổng kết (21.09.2026).** Kiểm lại một bản báo cáo mang từ ngoài vào (5 chỗ sai), đo trực tiếp soulpilates.com.vn, gộp bài học của cả hai thế hệ trước thành một bảng, 5 vòng tự phản biện, và 2 nhánh mới `g3-nen` + `g3-mot-khung` kèm số đo trên Chromium. 0,37 MB, ảnh nhúng base64 |
 | `anh-studio/dung-anh.py` | Script dựng ảnh cho từng ô: khung nào, cắt ở đâu, grade tham số bao nhiêu. Là nơi ghi lại mọi quyết định về ảnh |
 
 ### 3. `nguon/` — tài liệu gốc, chỉ đọc
