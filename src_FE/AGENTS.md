@@ -1,5 +1,17 @@
 # AGENTS.md — Soul Pilates Nha Trang
 
+## Current UI investigation
+
+The September 2026 design audit is in `../docs/ui-audit/README.md`. Its
+`context-map.md` locates older research and branches; `decision-history.md`
+traces decisions to code and rendered evidence; `current-ui-diagnosis.md` and
+`design-direction.md` explain the three independent experiments. Screenshots
+and viewport measurements are in `../docs/ui-audit/screenshots/`. When changing
+UI, inspect the relevant real screen at 1440, 1024, 768 and 390px, including
+its empty and interactive states. The explicit human instruction for this audit
+authorizes reconsidering the Reference Lock; do not treat historical artifacts
+as new product requirements.
+
 This file outranks every other instruction in this repository except an explicit
 human decision. If a prompt, a habit or a tempting library conflicts with it,
 this file wins.

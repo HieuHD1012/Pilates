@@ -80,7 +80,7 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
+    <header className="border-rule bg-sand sticky top-0 z-(--z-nav) border-b">
       <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
         <Wordmark />
 
