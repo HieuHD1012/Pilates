@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 import { CLASS_FORMATS, FIRST_VISIT_STEPS } from "~/content/studio";
 import { addDays, formatTime, studioDateKey, weekdayShort } from "~/lib/format";
-import { usePublicSchedule } from "~/features/schedule/use-public-schedule";
+import { usePublicSchedule } from "~/features/public/queries";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Button } from "~/ui/button";
@@ -270,40 +270,39 @@ function ThisWeek() {
                    * space after the time and detaching the badge from the class
                    * it qualifies.
                    */
-                  <li key={item.id} className="rule-b py-4">
+                  <li
+                    key={`${item.starts_at}-${item.trainer_name}`}
+                    className="rule-b py-4"
+                  >
                     <div className="flex items-baseline justify-between gap-3 sm:hidden">
                       <span className="flex items-baseline gap-2.5">
                         <span className="figures text-ink-2 text-xs">
-                          {weekdayShort(item.startsAt)}
+                          {weekdayShort(item.starts_at)}
                         </span>
                         <span className="figures text-ink text-sm">
-                          {formatTime(item.startsAt)}
+                          {formatTime(item.starts_at)}
                         </span>
                       </span>
-                      <AvailabilityBadge availability={item.availability} />
+                      <AvailabilityBadge isFull={item.is_full} />
                     </div>
                     <p className="text-ink mt-1 text-sm sm:hidden">
-                      {item.title}
-                      <span className="text-ink-2 ml-2">
-                        {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"}
-                      </span>
+                      {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                      <span className="text-ink-2 ml-2">{item.trainer_name}</span>
                     </p>
 
                     <div className="hidden grid-cols-[3.25rem_5rem_1fr_auto] items-baseline gap-x-4 sm:grid">
                       <span className="figures text-ink-2 text-xs">
-                        {weekdayShort(item.startsAt)}
+                        {weekdayShort(item.starts_at)}
                       </span>
                       <span className="figures text-ink text-sm">
-                        {formatTime(item.startsAt)}
+                        {formatTime(item.starts_at)}
                       </span>
                       <span className="text-ink text-sm">
-                        {item.title}
-                        <span className="text-ink-2 ml-2">
-                          {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"}
-                        </span>
+                        {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                        <span className="text-ink-2 ml-2">{item.trainer_name}</span>
                       </span>
                       <span className="justify-self-end">
-                        <AvailabilityBadge availability={item.availability} />
+                        <AvailabilityBadge isFull={item.is_full} />
                       </span>
                     </div>
                   </li>
@@ -317,15 +316,17 @@ function ThisWeek() {
   );
 }
 
-function AvailabilityBadge({
-  availability,
-}: {
-  availability: "open" | "few_left" | "full";
-}) {
-  if (availability === "full") return <StatusBadge tone="critical">Hết chỗ</StatusBadge>;
-  if (availability === "few_left")
-    return <StatusBadge tone="attention">Sắp đầy</StatusBadge>;
-  return <StatusBadge tone="positive">Còn chỗ</StatusBadge>;
+/**
+ * Full or not full. `GET /public/schedule` returns `is_full` and no seat count,
+ * because a count says which class has one person in it — a safety question at
+ * a small studio, not just a privacy one.
+ */
+function AvailabilityBadge({ isFull }: { isFull: boolean }) {
+  return isFull ? (
+    <StatusBadge tone="critical">Hết chỗ</StatusBadge>
+  ) : (
+    <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+  );
 }
 
 /* ────────────────────────────────────────────────────────────────────────────

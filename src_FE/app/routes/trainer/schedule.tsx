@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useTrainerSchedule } from "~/features/schedule/use-staff-calendar";
 import { WeekGrid, WeekList } from "~/features/schedule/week-grid";
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
-import type { ClassSession } from "~/lib/api/types";
+import type { ClassSessionResponse } from "~/lib/api/schema";
 import { addDays, formatDate, startOfStudioWeek, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
@@ -24,7 +22,7 @@ export function meta(_: Route.MetaArgs) {
  *
  * Same week as Reference B, one subject narrower: this is the trainer's
  * assignment, so there is no trainer filter and no class-type filter to add —
- * the backend scopes /trainer/schedule to the signed-in trainer. Selecting a
+ * `GET /classes/my-schedule` is already pinned to the signed-in trainer. Selecting a
  * class opens the roster route rather than a dialog: a trainer between classes
  * wants a page they can keep open, refresh and hand around, not a layer that
  * closes when they tap the wrong pixel.
@@ -37,20 +35,18 @@ export default function TrainerSchedule() {
   const today = studioDateKey(new Date());
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 
-  const query = useQuery({
-    queryKey: queryKeys.trainer.schedule(weekStart, weekEnd),
-    queryFn: () =>
-      api.get<{ items: ClassSession[] }>("/trainer/schedule", {
-        searchParams: { from: weekStart, to: weekEnd },
-      }),
-    select: (data) => data.items,
-    staleTime: 15_000,
-  });
+  const query = useTrainerSchedule(weekStart, weekEnd);
 
   const items = query.data;
-  const bookedTotal = items?.reduce((sum, item) => sum + item.bookedCount, 0);
+  const seatsTotal = items?.reduce((sum, item) => sum + item.capacity, 0);
 
-  const openClass = (item: ClassSession) => {
+  // `GET /classes` carries the trainer's own id and nothing else about them.
+  // On this screen every class is theirs, so the map has one entry.
+  const trainerNames = new Map(
+    (items ?? []).map((item) => [item.trainer_id, "Bạn"] as const),
+  );
+
+  const openClass = (item: ClassSessionResponse) => {
     void navigate(`/hlv/lop/${item.id}`);
   };
 
@@ -108,10 +104,13 @@ export default function TrainerSchedule() {
                     <Figures className="text-ink">{items.length}</Figures>
                   </dd>
                 </div>
+                {/* Seats offered, not seats taken. A trainer cannot read the
+                    bookings list, so an occupancy figure here would be a
+                    number with nothing behind it. */}
                 <div className="flex items-baseline gap-2">
-                  <dt>Lượt đăng ký</dt>
+                  <dt>Số chỗ</dt>
                   <dd>
-                    <Figures className="text-ink">{bookedTotal}</Figures>
+                    <Figures className="text-ink">{seatsTotal}</Figures>
                   </dd>
                 </div>
               </>
@@ -143,10 +142,17 @@ export default function TrainerSchedule() {
                 today={today}
                 onSelect={openClass}
                 selectedId={null}
+                trainerNames={trainerNames}
               />
             </div>
             <div className="lg:hidden">
-              <WeekList days={days} items={sessions} today={today} onSelect={openClass} />
+              <WeekList
+                days={days}
+                items={sessions}
+                today={today}
+                onSelect={openClass}
+                trainerNames={trainerNames}
+              />
             </div>
           </>
         )}

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 
 import { useCreateStudent, useStudents } from "~/features/people/queries";
 import { StudentForm } from "~/features/people/student-form";
-import type { StudentStatus, StudentSummary } from "~/lib/api/types";
+import type { StudentResponse, StudentStatus } from "~/lib/api/schema";
 import { formatDate, formatPhone } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
@@ -23,22 +23,30 @@ export function meta(_: Route.MetaArgs) {
   return [{ title: "Học viên — Soul Pilates" }, { name: "robots", content: "noindex" }];
 }
 
+/**
+ * Two states, not four. A student record is `ACTIVE` or `INACTIVE`; "sắp hết
+ * hạn" and "hết hạn" are properties of a **package**, not of a person, and the
+ * studio reads them on the renewals screen, which is the query that knows them.
+ */
 const STATUS: Record<StudentStatus, { label: string; tone: StatusTone }> = {
-  active: { label: "Đang học", tone: "positive" },
-  expiring: { label: "Sắp hết hạn", tone: "attention" },
-  expired: { label: "Hết hạn", tone: "critical" },
-  inactive: { label: "Tạm nghỉ", tone: "neutral" },
+  ACTIVE: { label: "Đang học", tone: "positive" },
+  INACTIVE: { label: "Tạm nghỉ", tone: "neutral" },
 };
 
-const STATUS_ORDER: StudentStatus[] = ["active", "expiring", "expired", "inactive"];
+const STATUS_ORDER: StudentStatus[] = ["ACTIVE", "INACTIVE"];
 
 /**
  * The student list.
  *
- * The winning subject is the person: the name column carries the only link, and
- * every other column is an attribute of that person's current package. The
- * renewal flag is a written marker rather than a coloured row — a list where
- * colour means "act on this" stops working the moment two things need acting on.
+ * The winning subject is the person, and the columns are what
+ * `GET /students` actually knows about them: name, phone, email, when they
+ * joined and whether they are still attending.
+ *
+ * Package and credit columns are **not** here. That data comes from
+ * `/students/{id}/overview`, one request per student, and a list that fires one
+ * request per row to fill three columns is a slow list telling you what the
+ * profile page already says. Who needs renewing is its own screen, computed by
+ * its own query.
  *
  * Search is typed straight into the query key; `useStudents` keeps the previous
  * page of rows as placeholder data, so the table does not blank per keystroke.
@@ -50,9 +58,13 @@ export default function StaffStudents() {
   const [status, setStatus] = useState<StudentStatus | "all">("all");
   const navigate = useNavigate();
 
-  const query = useStudents(search, status);
+  const query = useStudents({
+    q: search.trim() === "" ? undefined : search.trim(),
+    status: status === "all" ? undefined : status,
+    limit: 200,
+  });
   const items = query.data;
-  const renewalCount = (items ?? []).filter((student) => student.renewalDue).length;
+  const activeCount = (items ?? []).filter((s) => s.status === "ACTIVE").length;
   const filtered = search.trim() !== "" || status !== "all";
 
   function clearFilters() {
@@ -61,7 +73,7 @@ export default function StaffStudents() {
   }
 
   /** The row navigates; the name link inside it handles its own click. */
-  function openStudent(event: React.MouseEvent<HTMLTableRowElement>, id: string) {
+  function openStudent(event: React.MouseEvent<HTMLTableRowElement>, id: number) {
     if ((event.target as HTMLElement).closest("a")) return;
     void navigate(`/studio/hoc-vien/${id}`);
   }
@@ -72,7 +84,7 @@ export default function StaffStudents() {
 
       <PageHeader
         title="Học viên"
-        description="Danh sách học viên của studio, gói đang dùng và số buổi còn lại."
+        description="Danh sách học viên của studio. Gói tập và số buổi còn lại nằm trong hồ sơ từng người."
         actions={
           <>
             <Button asChild size="sm" variant="secondary">
@@ -96,10 +108,10 @@ export default function StaffStudents() {
               </dd>
             </div>
             <div className="flex items-baseline gap-2">
-              <dt>Cần gia hạn</dt>
+              <dt>Đang học</dt>
               <dd>
                 {items ? (
-                  <Figures className="text-ink">{renewalCount}</Figures>
+                  <Figures className="text-ink">{activeCount}</Figures>
                 ) : (
                   <Placeholder />
                 )}
@@ -170,16 +182,15 @@ export default function StaffStudents() {
       >
         {(students) => (
           <>
-            {/* 1440 / 1024: the six comparable columns staff scan down. */}
+            {/* 1440 / 1024: the columns staff scan down. */}
             <div className="hidden lg:block">
-              <DataTable caption="Danh sách học viên" minWidth="58rem">
+              <DataTable caption="Danh sách học viên" minWidth="52rem">
                 <thead>
                   <tr>
                     <Th>Tên</Th>
                     <Th>Điện thoại</Th>
-                    <Th>Gói hiện tại</Th>
-                    <Th numeric>Số buổi còn lại</Th>
-                    <Th numeric>Hạn dùng</Th>
+                    <Th>Email</Th>
+                    <Th numeric>Vào studio</Th>
                     <Th>Trạng thái</Th>
                   </tr>
                 </thead>
@@ -196,7 +207,7 @@ export default function StaffStudents() {
                           to={`/studio/hoc-vien/${student.id}`}
                           className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
                         >
-                          {student.fullName}
+                          {student.full_name}
                         </Link>
                       </Td>
                       <Td>
@@ -204,32 +215,16 @@ export default function StaffStudents() {
                           {formatPhone(student.phone)}
                         </Figures>
                       </Td>
-                      <Td>{student.currentPackageName ?? <Absent>Chưa có gói</Absent>}</Td>
+                      <Td>{student.email ?? <Absent>Chưa ghi</Absent>}</Td>
                       <Td numeric>
-                        {student.sessionsRemaining === null ? (
-                          <Placeholder />
-                        ) : (
-                          <Figures>{student.sessionsRemaining}</Figures>
-                        )}
-                      </Td>
-                      <Td numeric>
-                        {student.expiryDate === null ? (
-                          <Placeholder />
-                        ) : (
-                          <Figures className="whitespace-nowrap">
-                            {formatDate(`${student.expiryDate}T00:00:00+07:00`)}
-                          </Figures>
-                        )}
+                        <Figures className="whitespace-nowrap">
+                          {formatDate(student.created_at)}
+                        </Figures>
                       </Td>
                       <Td>
                         <StatusBadge tone={STATUS[student.status].tone}>
                           {STATUS[student.status].label}
                         </StatusBadge>
-                        {student.renewalDue ? (
-                          <span className="text-ink-2 text-2xs mt-1 block">
-                            Cần gia hạn
-                          </span>
-                        ) : null}
                       </Td>
                     </Tr>
                   ))}
@@ -255,7 +250,7 @@ export default function StaffStudents() {
         onClose={() => setCreating(false)}
         onCreated={(student) => {
           setCreating(false);
-          setCreatedName(student.fullName);
+          setCreatedName(student.full_name);
           // Straight to the new record: the reason staff created it is to attach
           // a package, a payment or a booking to it next.
           void navigate(`/studio/hoc-vien/${student.id}`);
@@ -278,7 +273,7 @@ function CreateStudentDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreated: (student: StudentSummary) => void;
+  onCreated: (student: StudentResponse) => void;
 }) {
   const create = useCreateStudent();
 
@@ -312,19 +307,19 @@ function CreateStudentDialog({
   );
 }
 
-function StudentRow({ student }: { student: StudentSummary }) {
+function StudentRow({ student }: { student: StudentResponse }) {
   return (
     <Link
       to={`/studio/hoc-vien/${student.id}`}
       className="hover:bg-sand-deep/50 active:bg-sand-deep flex items-start justify-between gap-4 py-3.5 transition-colors duration-200"
     >
       <span className="min-w-0">
-        <span className="text-ink block text-sm">{student.fullName}</span>
+        <span className="text-ink block text-sm">{student.full_name}</span>
         <Figures className="text-ink-2 mt-1 block text-xs">
           {formatPhone(student.phone)}
         </Figures>
         <span className="text-ink-2 mt-1 block text-xs">
-          {student.currentPackageName ?? <Absent>Chưa có gói</Absent>}
+          {student.email ?? <Absent>Chưa ghi email</Absent>}
         </span>
       </span>
 
@@ -333,33 +328,9 @@ function StudentRow({ student }: { student: StudentSummary }) {
           {STATUS[student.status].label}
         </StatusBadge>
         <span className="text-ink-2 text-xs">
-          {student.sessionsRemaining === null ? (
-            <>
-              Số buổi <Placeholder />
-            </>
-          ) : (
-            <>
-              Còn <Figures className="text-ink">{student.sessionsRemaining}</Figures> buổi
-            </>
-          )}
+          Vào studio{" "}
+          <Figures className="text-ink">{formatDate(student.created_at)}</Figures>
         </span>
-        <span className="text-ink-2 text-xs">
-          {student.expiryDate === null ? (
-            <>
-              Hạn dùng <Placeholder />
-            </>
-          ) : (
-            <>
-              Hạn{" "}
-              <Figures className="text-ink">
-                {formatDate(`${student.expiryDate}T00:00:00+07:00`)}
-              </Figures>
-            </>
-          )}
-        </span>
-        {student.renewalDue ? (
-          <span className="text-ink-2 text-2xs">Cần gia hạn</span>
-        ) : null}
       </span>
     </Link>
   );

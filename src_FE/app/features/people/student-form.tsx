@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ApiError } from "~/lib/api/client";
-import type { StudentInput } from "~/lib/api/types";
+import type { StudentCreateRequest } from "~/lib/api/schema";
 import { Button } from "~/ui/button";
 import { Field, FormActions, Input, Textarea } from "~/ui/field";
 
@@ -30,7 +30,13 @@ const schema = z.object({
 
 export type StudentFormValues = z.input<typeof schema>;
 
-const FIELD_NAMES = new Set(["fullName", "phone", "email", "note"]);
+/** The backend names these in snake_case; this form does not. */
+const FIELD_ALIASES: Record<string, keyof StudentFormValues> = {
+  full_name: "fullName",
+  phone: "phone",
+  email: "email",
+  note: "note",
+};
 
 export function StudentForm({
   defaultValues,
@@ -45,7 +51,7 @@ export function StudentForm({
   pending: boolean;
   /** The mutation's error, so field-level messages land on their own field. */
   error: unknown;
-  onSubmit: (input: StudentInput) => Promise<unknown>;
+  onSubmit: (input: StudentCreateRequest) => Promise<unknown>;
   onCancel: () => void;
 }) {
   const {
@@ -77,17 +83,16 @@ export function StudentForm({
       onSubmit={handleSubmit((values) => {
         const parsed = schema.parse(values);
         return onSubmit({
-          fullName: parsed.fullName,
+          full_name: parsed.fullName,
           phone: parsed.phone,
           email: parsed.email === "" ? null : parsed.email,
           note: parsed.note === "" ? null : parsed.note,
         }).catch((cause) => {
           if (cause instanceof ApiError && cause.isValidation) {
             for (const [field, messages] of Object.entries(cause.fieldErrors)) {
-              if (FIELD_NAMES.has(field)) {
-                setError(field as keyof StudentFormValues, {
-                  message: messages[0] ?? "Giá trị chưa hợp lệ",
-                });
+              const target = FIELD_ALIASES[field];
+              if (target !== undefined) {
+                setError(target, { message: messages[0] ?? "Giá trị chưa hợp lệ" });
               }
             }
           }

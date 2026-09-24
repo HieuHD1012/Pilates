@@ -4,17 +4,15 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router";
 import { z } from "zod";
 
-import { useLeadDetail, useUpdateLead } from "~/features/leads/queries";
-import { useConvertLead } from "~/features/people/queries";
-import { StudentForm } from "~/features/people/student-form";
-import type { LeadDetail, LeadStatus } from "~/lib/api/types";
-import { formatDate, formatPhone, formatTime, studioDateKey, telHref } from "~/lib/format";
+import { useConvertLead, useLead, useUpdateLead } from "~/features/leads/queries";
+import type { LeadResponse, LeadStatus } from "~/lib/api/schema";
+import { formatDate, formatPhone, formatTime, telHref } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { DetailList, DetailRow } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
-import { EmptyState, LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
-import { Field, Input, Select } from "~/ui/field";
+import { LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
+import { Field, Select, Textarea } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge, type StatusTone } from "~/ui/status";
@@ -29,7 +27,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 /**
- * One enquiry, and the one thing staff do with it: log what happened on the
+ * One enquiry, and the one thing staff do with it: record what happened on the
  * call. Everything above the form is the record; the form is the only ask on
  * the screen (P2).
  *
@@ -38,31 +36,27 @@ export function meta(_: Route.MetaArgs) {
  */
 
 const STATUS_LABEL: Record<LeadStatus, string> = {
-  new: "Mới",
-  contacted: "Đã liên hệ",
-  scheduled: "Đã hẹn",
-  converted: "Đã thành học viên",
-  lost: "Không tiếp tục",
+  NEW: "Mới",
+  CONTACTED: "Đã liên hệ",
+  CONVERTED: "Đã thành học viên",
+  LOST: "Không tiếp tục",
 };
 
 const STATUS_TONE: Record<LeadStatus, StatusTone> = {
-  new: "info",
-  contacted: "neutral",
-  scheduled: "attention",
-  converted: "positive",
-  lost: "neutral",
+  NEW: "info",
+  CONTACTED: "neutral",
+  CONVERTED: "positive",
+  LOST: "neutral",
 };
 
-const STATUS_ORDER: LeadStatus[] = ["new", "contacted", "scheduled", "converted", "lost"];
-
 /**
- * "Đã chuyển" is not an outcome staff can type — it is set by actually creating
- * the student record. Offering it here would let the status say converted with no
- * profile behind it.
+ * `CONVERTED` is not an outcome staff can type — the backend refuses it on
+ * `PATCH /leads/{id}` and reaches it only by actually creating the student.
+ * Offering it here would let the status say converted with no profile behind it.
  */
-const OUTCOME_STATUSES = STATUS_ORDER.filter((value) => value !== "converted");
+const OUTCOME_STATUSES = ["NEW", "CONTACTED", "LOST"] as const;
 
-/** `source` is a free string from the backend, so unknown values pass through. */
+/** `source` is a free, nullable string from the backend; unknowns pass through. */
 const SOURCE_LABEL: Record<string, string> = {
   website: "Website",
   zalo: "Zalo",
@@ -73,7 +67,7 @@ const SOURCE_LABEL: Record<string, string> = {
 
 export default function StaffLeadDetail() {
   const { leadId = "" } = useParams();
-  const query = useLeadDetail(leadId);
+  const query = useLead(Number(leadId));
 
   return (
     <div className="gutter max-w-(--container-column) py-6">
@@ -83,8 +77,6 @@ export default function StaffLeadDetail() {
       >
         Khách quan tâm
       </Link>
-
-      <DemoDataNotice className="mt-4" />
 
       <QueryBoundary
         query={query}
@@ -99,23 +91,20 @@ export default function StaffLeadDetail() {
           </div>
         }
       >
-        {(lead) => <LeadBody lead={lead} leadId={leadId} />}
+        {(lead) => <LeadBody lead={lead} />}
       </QueryBoundary>
     </div>
   );
 }
 
-function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
+function LeadBody({ lead }: { lead: LeadResponse }) {
   const [converting, setConverting] = useState(false);
-  const notes = [...lead.notes].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
 
   return (
     <>
       <header className="mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="text-ink text-xl font-medium">{lead.fullName}</h1>
+          <h1 className="text-ink text-xl font-medium">{lead.full_name}</h1>
           <p className="mt-1.5">
             <a
               href={telHref(lead.phone)}
@@ -129,9 +118,9 @@ function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
           <StatusBadge tone={STATUS_TONE[lead.status]}>
             {STATUS_LABEL[lead.status]}
           </StatusBadge>
-          {lead.convertedStudentId ? (
+          {lead.converted_student_id !== null ? (
             <Link
-              to={`/studio/hoc-vien/${lead.convertedStudentId}`}
+              to={`/studio/hoc-vien/${lead.converted_student_id}`}
               className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-xs underline underline-offset-[6px]"
             >
               Xem hồ sơ học viên
@@ -146,49 +135,34 @@ function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
 
       <DetailList className="mt-6">
         <DetailRow label="Nhu cầu" labelWidth="10rem">
-          {lead.need.trim() === "" ? (
-            <span className="text-ink-2">Chưa ghi nhu cầu</span>
+          {lead.need === null || lead.need.trim() === "" ? (
+            <Absent>Chưa ghi nhu cầu</Absent>
           ) : (
             lead.need
           )}
         </DetailRow>
-        <DetailRow label="Hình thức quan tâm" labelWidth="10rem">
-          {lead.preferredClassType === "private" ? (
-            "Lớp riêng"
-          ) : lead.preferredClassType === "group" ? (
-            "Lớp nhóm"
-          ) : (
-            <span className="text-ink-2">Chưa chọn</span>
-          )}
-        </DetailRow>
         <DetailRow label="Nguồn" labelWidth="10rem">
-          {SOURCE_LABEL[lead.source] ?? lead.source}
+          {lead.source === null ? (
+            <Absent>Không rõ nguồn</Absent>
+          ) : (
+            (SOURCE_LABEL[lead.source] ?? lead.source)
+          )}
         </DetailRow>
         <DetailRow label="Nhận lúc" labelWidth="10rem">
-          <Figures>{formatDate(lead.createdAt)}</Figures>{" "}
-          <Figures>{formatTime(lead.createdAt)}</Figures>
+          <Figures>{formatDate(lead.created_at)}</Figures>{" "}
+          <Figures>{formatTime(lead.created_at)}</Figures>
         </DetailRow>
-        <DetailRow label="Liên hệ lần cuối" labelWidth="10rem">
-          {lead.lastContactedAt ? (
-            <>
-              <Figures>{formatDate(lead.lastContactedAt)}</Figures>{" "}
-              <Figures>{formatTime(lead.lastContactedAt)}</Figures>
-            </>
+        <DetailRow label="Người phụ trách" labelWidth="10rem">
+          {lead.assigned_to === null ? (
+            <Absent>Chưa giao cho ai</Absent>
           ) : (
-            <span className="text-ink-2">Chưa liên hệ</span>
+            `Tài khoản #${lead.assigned_to}`
           )}
         </DetailRow>
-        <DetailRow label="Hẹn lại" labelWidth="10rem">
-          {lead.followUpAt ? (
-            <Figures>{formatDate(lead.followUpAt)}</Figures>
-          ) : (
-            <span className="text-ink-2">Chưa hẹn</span>
-          )}
-        </DetailRow>
-        {lead.convertedStudentId ? (
+        {lead.converted_student_id !== null ? (
           <DetailRow label="Hồ sơ học viên" labelWidth="10rem">
             <Link
-              to={`/studio/hoc-vien/${lead.convertedStudentId}`}
+              to={`/studio/hoc-vien/${lead.converted_student_id}`}
               className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
             >
               Mở hồ sơ học viên
@@ -197,38 +171,7 @@ function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
         ) : null}
       </DetailList>
 
-      <section className="mt-10">
-        <h2 className="text-ink text-sm font-medium">Lịch sử liên hệ</h2>
-        <p className="measure text-ink-2 mt-1 text-xs">
-          Mỗi lần ghi nhận kết quả đều lưu người thực hiện và thời điểm.
-        </p>
-
-        {notes.length === 0 ? (
-          <EmptyState
-            className="mt-4"
-            title="Chưa có ghi chú liên hệ"
-            description="Khách này chưa được gọi lại lần nào. Ghi nhận kết quả bên dưới để mở lịch sử liên hệ."
-          />
-        ) : (
-          <ul className="rule-t mt-4">
-            {notes.map((note) => (
-              <li key={note.id} className="rule-b py-3.5">
-                <p className="measure-wide text-ink text-sm">{note.body}</p>
-                <p className="text-ink-2 mt-1.5 text-xs">
-                  {note.actorName}
-                  <span className="mx-1.5" aria-hidden="true">
-                    ·
-                  </span>
-                  <Figures>{formatDate(note.createdAt)}</Figures>{" "}
-                  <Figures>{formatTime(note.createdAt)}</Figures>
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <OutcomeForm lead={lead} leadId={leadId} />
+      <OutcomeForm lead={lead} />
 
       <Dialog
         open={converting}
@@ -238,13 +181,9 @@ function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
       >
         <DialogContent
           title="Chuyển thành học viên"
-          description="Tạo hồ sơ học viên từ thông tin đã ghi nhận. Khách này sẽ được đánh dấu đã chuyển; gói tập và thanh toán ghi sau, trên hồ sơ mới."
+          description="Hồ sơ học viên được tạo từ chính thông tin khách đã để lại — không phải gõ lại tên và số điện thoại. Khách này sẽ được đánh dấu đã chuyển; gói tập và thanh toán ghi sau, trên hồ sơ mới."
         >
-          <ConvertLeadForm
-            lead={lead}
-            leadId={leadId}
-            onCancel={() => setConverting(false)}
-          />
+          <ConvertLead lead={lead} onCancel={() => setConverting(false)} />
         </DialogContent>
       </Dialog>
     </>
@@ -252,21 +191,25 @@ function LeadBody({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
 }
 
 const schema = z.object({
-  status: z.enum(["new", "contacted", "scheduled", "lost"]),
-  /** Empty means "no follow-up planned"; the backend receives null. */
-  followUpDate: z.string(),
+  status: z.enum(OUTCOME_STATUSES),
+  /** Free text staff keep about this person. Replaces what was there. */
+  need: z.string().trim().max(1000, "Ghi chú quá dài"),
 });
 
 type OutcomeValues = z.infer<typeof schema>;
 
 /**
- * The one mutation on this screen. It is not destructive and it moves no session
+ * The one mutation on this screen. It is not destructive and it moves no credit
  * balance, so it needs no Dialog — but it still states its consequence before
- * the action, keeps the button label while pending, announces the outcome in a
- * LiveRegion, and never shows the backend's own error text.
+ * the action, keeps the button label while pending, and announces the outcome
+ * in a LiveRegion.
+ *
+ * There is no contact-history endpoint for leads: the note **is** the record,
+ * and saving replaces it. (Renewal calls are the ones with an append-only
+ * history, on a different screen.)
  */
-function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
-  const update = useUpdateLead(leadId);
+function OutcomeForm({ lead }: { lead: LeadResponse }) {
+  const update = useUpdateLead(lead.id);
 
   const {
     register,
@@ -275,8 +218,8 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
   } = useForm<OutcomeValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      status: lead.status === "converted" ? "contacted" : lead.status,
-      followUpDate: lead.followUpAt ? studioDateKey(lead.followUpAt) : "",
+      status: lead.status === "CONVERTED" ? "CONTACTED" : lead.status,
+      need: lead.need ?? "",
     },
   });
 
@@ -294,8 +237,8 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
 
       <h2 className="text-ink text-sm font-medium">Ghi nhận kết quả liên hệ</h2>
       <p className="measure text-ink-2 mt-1 text-xs">
-        Lưu sẽ cập nhật trạng thái của khách và ghi lại thời điểm liên hệ cùng tên người
-        thực hiện. Thông tin khách để lại không bị thay đổi.
+        Lưu sẽ cập nhật trạng thái của khách và ghi đè phần ghi chú. Tên và số điện thoại
+        khách để lại không bị thay đổi.
       </p>
 
       <form
@@ -305,15 +248,12 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
           update
             .mutateAsync({
               status: values.status,
-              // A date-only field carries no time of day: send the start of that
-              // day in studio time rather than invent an appointment hour.
-              followUpAt:
-                values.followUpDate === "" ? null : `${values.followUpDate}T00:00:00+07:00`,
+              need: values.need === "" ? null : values.need,
             })
             .catch(() => {}),
         )}
       >
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="grid gap-4 sm:gap-5">
           <Field label="Trạng thái sau khi liên hệ" error={errors.status?.message}>
             {({ id, describedBy, invalid }) => (
               <Select
@@ -332,17 +272,17 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
           </Field>
 
           <Field
-            label="Hẹn lại"
-            hint="Bỏ trống nếu chưa cần hẹn lại."
-            error={errors.followUpDate?.message}
+            label="Ghi chú"
+            hint="Nhu cầu khách nói, kết quả cuộc gọi, hẹn lại khi nào."
+            error={errors.need?.message}
           >
             {({ id, describedBy, invalid }) => (
-              <Input
+              <Textarea
                 id={id}
-                type="date"
+                rows={4}
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
-                {...register("followUpDate")}
+                {...register("need")}
               />
             )}
           </Field>
@@ -359,9 +299,7 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
             Lưu kết quả
           </Button>
           {update.isSuccess && !update.isPending ? (
-            <p className="text-ink-2 text-xs">
-              Đã lưu. Lịch sử liên hệ phía trên đã được cập nhật.
-            </p>
+            <p className="text-ink-2 text-xs">Đã lưu.</p>
           ) : null}
         </div>
       </form>
@@ -370,40 +308,53 @@ function OutcomeForm({ lead, leadId }: { lead: LeadDetail; leadId: string }) {
 }
 
 /**
- * Conversion prefills from the enquiry rather than asking staff to retype a name
- * and phone the studio already has. It is a create, so the dialog states what the
- * record becomes before the button, and the screen moves to the new profile after
- * — the next thing to do is always on the student, not on the closed enquiry.
+ * Conversion takes no payload.
+ *
+ * `POST /leads/{id}/convert` builds the student from the enquiry the studio
+ * already holds — which is exactly what "keeps the consultation history and
+ * does not retype the data" means. So this is a confirmation, not a form, and
+ * corrections happen on the student profile afterwards, where they belong.
  */
-function ConvertLeadForm({
-  lead,
-  leadId,
-  onCancel,
-}: {
-  lead: LeadDetail;
-  leadId: string;
-  onCancel: () => void;
-}) {
-  const convert = useConvertLead(leadId);
+function ConvertLead({ lead, onCancel }: { lead: LeadResponse; onCancel: () => void }) {
+  const convert = useConvertLead(lead.id);
   const navigate = useNavigate();
 
   return (
-    <StudentForm
-      defaultValues={{
-        fullName: lead.fullName,
-        phone: lead.phone,
-        email: "",
-        note: lead.need.trim(),
-      }}
-      submitLabel="Tạo hồ sơ học viên"
-      pending={convert.isPending}
-      error={convert.error}
-      onCancel={onCancel}
-      onSubmit={async (input) => {
-        const result = await convert.mutateAsync(input);
-        void navigate(`/studio/hoc-vien/${result.studentId}`);
-        return result;
-      }}
-    />
+    <div className="flex flex-col gap-4">
+      <DetailList>
+        <DetailRow label="Họ và tên" labelWidth="9rem">
+          {lead.full_name}
+        </DetailRow>
+        <DetailRow label="Số điện thoại" labelWidth="9rem">
+          <Figures>{formatPhone(lead.phone)}</Figures>
+        </DetailRow>
+      </DetailList>
+
+      {convert.isError ? (
+        <p role="alert" className="text-danger text-sm">
+          {/* The common refusal is a phone number already on a student record;
+              the backend says so in words written for the person reading. */}
+          Chưa tạo được hồ sơ học viên. Vui lòng kiểm tra lại số điện thoại.
+        </p>
+      ) : null}
+
+      <div className="flex flex-wrap justify-end gap-3">
+        <Button variant="secondary" size="sm" onClick={onCancel}>
+          Quay lại
+        </Button>
+        <Button
+          size="sm"
+          pending={convert.isPending}
+          onClick={() => {
+            convert
+              .mutateAsync()
+              .then((student) => navigate(`/studio/hoc-vien/${student.id}`))
+              .catch(() => {});
+          }}
+        >
+          Tạo hồ sơ học viên
+        </Button>
+      </div>
+    </div>
   );
 }

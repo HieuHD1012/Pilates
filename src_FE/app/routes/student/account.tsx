@@ -3,8 +3,11 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { STUDENT_SECONDARY_NAV } from "~/content/nav";
+import { ChangePasswordForm, MyProfileForm } from "~/features/auth/profile-forms";
 import { useLogout } from "~/features/auth/use-logout";
-import { useStudentPackages, useStudentProfile } from "~/features/booking/queries";
+import { useSession } from "~/features/auth/use-session";
+import { useStudentPackages } from "~/features/commerce/queries";
+import { useStudent } from "~/features/people/queries";
 import { formatDate } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
@@ -32,7 +35,10 @@ function studioDate(date: string): string {
 }
 
 export default function StudentAccount() {
-  const profile = useStudentProfile();
+  const session = useSession();
+  // `GET /auth/me` is the only source of `student_id`; the studio's own record
+  // for that person is a second request against it.
+  const profile = useStudent(session.data?.student_id ?? null);
   const packages = useStudentPackages();
   const logout = useLogout();
   const [confirming, setConfirming] = useState(false);
@@ -66,25 +72,44 @@ export default function StudentAccount() {
           >
             {(student) => (
               <DetailList>
-                <DetailRow label="Họ và tên">{student.fullName}</DetailRow>
+                <DetailRow label="Họ và tên">{student.full_name}</DetailRow>
                 <DetailRow label="Số điện thoại">
-                  {student.phone ?? <Absent>Chưa ghi</Absent>}
+                  {student.phone || <Absent>Chưa ghi</Absent>}
                 </DetailRow>
                 <DetailRow label="Email">
                   {student.email ?? <Absent>Chưa ghi</Absent>}
                 </DetailRow>
                 <DetailRow label="Học viên từ">
-                  <Figures>{studioDate(student.joinedAt)}</Figures>
+                  <Figures>{formatDate(student.created_at)}</Figures>
                 </DetailRow>
               </DetailList>
             )}
           </QueryBoundary>
         </div>
-        {/* Editing is not a missing feature here: the studio owns the record. */}
+        {/* Email is the login and only an admin may change it; the name and the
+            phone are the account holder's own, and `PATCH /auth/me` writes them
+            through to this studio record in the same transaction. */}
         <p className="measure text-ink-2 mt-3 text-xs">
-          Hồ sơ học viên do studio quản lý. Cần sửa tên, số điện thoại hay email, bạn nhắn
-          cho lễ tân và studio cập nhật lại.
+          Email đăng nhập do studio quản lý. Cần đổi email, bạn nhắn cho lễ tân.
         </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-ink text-sm font-medium">Sửa thông tin của bạn</h2>
+        <div className="mt-3">
+          {session.data ? (
+            <MyProfileForm me={session.data} />
+          ) : (
+            <p className="text-ink-2 text-sm">Đang tải thông tin tài khoản.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-ink text-sm font-medium">Đổi mật khẩu</h2>
+        <div className="mt-3">
+          <ChangePasswordForm />
+        </div>
       </section>
 
       <section className="mt-8">
@@ -98,7 +123,7 @@ export default function StudentAccount() {
             errorDescription="Không tải được gói tập của bạn."
           >
             {(items) => {
-              const active = items.find((item) => item.status === "active") ?? null;
+              const active = items.find((item) => item.status === "ACTIVE") ?? null;
 
               if (!active) {
                 return (
@@ -111,17 +136,17 @@ export default function StudentAccount() {
 
               return (
                 <DetailList>
-                  <DetailRow label="Tên gói">{active.packageName}</DetailRow>
+                  <DetailRow label="Tên gói">{active.name_snapshot}</DetailRow>
                   <DetailRow label="Số buổi còn lại">
                     <span className="flex items-baseline gap-1.5">
-                      <Figures className="text-ink">{active.sessionsRemaining}</Figures>
+                      <Figures className="text-ink">{active.balance_cached}</Figures>
                       <span className="text-ink-2 text-xs">
-                        / <Figures>{active.sessionsTotal}</Figures> buổi
+                        / <Figures>{active.credits_snapshot}</Figures> buổi
                       </span>
                     </span>
                   </DetailRow>
                   <DetailRow label="Hạn dùng">
-                    <Figures>{studioDate(active.expiryDate)}</Figures>
+                    <Figures>{studioDate(active.end_date)}</Figures>
                   </DetailRow>
                 </DetailList>
               );
@@ -193,8 +218,8 @@ export default function StudentAccount() {
           }
         >
           <p className="text-ink-2 text-sm">
-            Bạn sẽ trở về trang đăng nhập. Nhập lại số điện thoại hoặc email cùng mật khẩu
-            là vào được tài khoản này.
+            Bạn sẽ trở về trang đăng nhập. Nhập lại email cùng mật khẩu là vào được tài
+            khoản này.
           </p>
         </DialogContent>
       </Dialog>

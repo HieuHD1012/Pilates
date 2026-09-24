@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { CLASS_FORMATS } from "~/content/studio";
-import { api, ApiError } from "~/lib/api/client";
+import { ApiError } from "~/lib/api/client";
+import { publicApi } from "~/lib/api/endpoints";
 import { Button } from "~/ui/button";
 import { Field, Input, Select, Textarea } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
@@ -59,24 +60,42 @@ export default function Consultation() {
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
       const parsed = schema.parse(values);
-      return api.post<{ id: string }>("/public/consultations", {
-        fullName: parsed.fullName,
+      /**
+       * `POST /public/leads` has no field for the preferred format — a lead is
+       * a name, a phone number, free text and a source. The preference goes
+       * into `need`, where staff actually read it, rather than being dropped:
+       * a select whose answer goes nowhere is a question asked in bad faith.
+       */
+      const preference =
+        parsed.preferredClassType === "group"
+          ? "Quan tâm lớp nhóm."
+          : parsed.preferredClassType === "private"
+            ? "Quan tâm lớp riêng."
+            : null;
+      const need = [preference, parsed.need?.trim() ?? ""].filter(Boolean).join(" ");
+
+      return publicApi.createLead({
+        full_name: parsed.fullName,
         phone: parsed.phone,
-        need: parsed.need ?? "",
-        preferredClassType: parsed.preferredClassType || null,
+        need: need === "" ? null : need,
         source: "website",
       });
     },
     onSuccess: () => reset(),
     onError: (error) => {
       // Field-level errors from the backend are attached to their own field so
-      // the user never has to hunt for what went wrong.
+      // the user never has to hunt for what went wrong. The backend names them
+      // in snake_case; this form does not.
       if (error instanceof ApiError && error.isValidation) {
+        const aliases: Record<string, keyof FormValues> = {
+          full_name: "fullName",
+          phone: "phone",
+          need: "need",
+        };
         for (const [field, messages] of Object.entries(error.fieldErrors)) {
-          if (field in ({ fullName: 1, phone: 1, need: 1 } as Record<string, number>)) {
-            setError(field as keyof FormValues, {
-              message: messages[0] ?? "Giá trị chưa hợp lệ",
-            });
+          const target = aliases[field];
+          if (target !== undefined) {
+            setError(target, { message: messages[0] ?? "Giá trị chưa hợp lệ" });
           }
         }
       }

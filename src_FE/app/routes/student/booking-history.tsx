@@ -1,8 +1,7 @@
 import { Link } from "react-router";
 
-import { useBookingHistory } from "~/features/booking/queries";
-import type { BookingHistoryEntry, BookingStatus, ClassType } from "~/lib/api/types";
-import { cn } from "~/lib/cn";
+import { useMySchedule } from "~/features/booking/queries";
+import type { BookingStatus, ClassType, MyScheduleItem } from "~/lib/api/schema";
 import { formatDate, formatTime, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
@@ -20,39 +19,53 @@ export function meta(_: Route.MetaArgs) {
 }
 
 /**
- * The three closed outcomes. `booked` and `waitlisted` are live bookings and
- * belong to /hv/lich-cua-toi, so they are filtered out rather than rendered
- * with a blank badge — and an unrecognised status from the backend takes the
- * same path instead of shipping an empty row.
+ * The closed outcomes.
+ *
+ * `BOOKED` is a live booking and belongs to /hv/lich-cua-toi, so it is filtered
+ * out rather than rendered with a blank badge — and an unrecognised status from
+ * the backend takes the same path instead of shipping an empty row.
+ *
+ * The two cancellations are separate states because they mean different things
+ * to a student: `CANCELLED_INTIME` returned the credit, `CANCELLED_LATE` did
+ * not. That is the backend's own distinction, read off the status rather than
+ * recomputed from the clock.
  */
 const HISTORY_STATUS: Partial<Record<BookingStatus, { label: string; tone: StatusTone }>> =
   {
-    attended: { label: "Đã tập", tone: "positive" },
-    cancelled: { label: "Đã hủy", tone: "neutral" },
-    no_show: { label: "Vắng", tone: "attention" },
+    ATTENDED: { label: "Đã tập", tone: "positive" },
+    NO_SHOW: { label: "Vắng", tone: "attention" },
+    CANCELLED_INTIME: { label: "Đã hủy", tone: "neutral" },
+    CANCELLED_LATE: { label: "Hủy muộn", tone: "neutral" },
   };
 
 const CLASS_TYPE: Record<ClassType, string> = {
-  group: "Lớp nhóm",
-  private: "Lớp riêng (1 kèm 1)",
+  GROUP: "Lớp nhóm",
+  PRIVATE: "Lớp riêng (1 kèm 1)",
 };
 
-function isClosed(entry: BookingHistoryEntry): boolean {
-  return HISTORY_STATUS[entry.status] !== undefined;
+function isClosed(entry: MyScheduleItem): boolean {
+  return HISTORY_STATUS[entry.booking_status] !== undefined;
 }
 
 /** Newest first. Ordering is presentation, not a backend rule. */
-function newestFirst(a: BookingHistoryEntry, b: BookingHistoryEntry): number {
-  return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime();
+function newestFirst(a: MyScheduleItem, b: MyScheduleItem): number {
+  return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
 }
 
-function closedEntries(items: BookingHistoryEntry[]): BookingHistoryEntry[] {
+function closedEntries(items: MyScheduleItem[]): MyScheduleItem[] {
   // `filter` already returns a new array, so the sort never touches cache data.
   return items.filter(isClosed).sort(newestFirst);
 }
 
+/**
+ * There is no history endpoint.
+ *
+ * `GET /my-schedule?include_cancelled=true` is the whole record — live, past
+ * and cancelled — and the two screens split it by status. A second endpoint
+ * would be a second definition of what counts as history.
+ */
 export default function BookingHistory() {
-  const query = useBookingHistory();
+  const query = useMySchedule({ include_cancelled: true, limit: 500 });
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -81,7 +94,7 @@ export default function BookingHistory() {
           {(items) => (
             <ul className="rule-t">
               {closedEntries(items).map((entry) => (
-                <HistoryRow key={entry.id} entry={entry} />
+                <HistoryRow key={entry.booking_id} entry={entry} />
               ))}
             </ul>
           )}
@@ -91,66 +104,48 @@ export default function BookingHistory() {
   );
 }
 
-function HistoryRow({ entry }: { entry: BookingHistoryEntry }) {
-  const status = HISTORY_STATUS[entry.status];
+function HistoryRow({ entry }: { entry: MyScheduleItem }) {
+  const status = HISTORY_STATUS[entry.booking_status];
   if (!status) return null;
 
-  const cancelled = entry.status === "cancelled";
-  const charged = entry.sessionsCharged !== 0;
+  const cancelled =
+    entry.booking_status === "CANCELLED_INTIME" ||
+    entry.booking_status === "CANCELLED_LATE";
 
   return (
     <li className="rule-b py-4">
       <div className="flex items-start justify-between gap-3">
-        {/* min-w-0 and no truncation: a Vietnamese class title or trainer name
-            wraps rather than losing its diacritics to an ellipsis. */}
+        {/* min-w-0 and no truncation: a Vietnamese trainer name wraps rather
+            than losing its diacritics to an ellipsis. */}
         <div className="min-w-0">
           <p className="text-ink-2 text-xs">
-            {weekdayLong(entry.startsAt)} · <Figures>{formatDate(entry.startsAt)}</Figures>
+            {weekdayLong(entry.starts_at)} ·{" "}
+            <Figures>{formatDate(entry.starts_at)}</Figures>
           </p>
           <p className="mt-1">
-            <Figures className="text-ink text-base">{formatTime(entry.startsAt)}</Figures>
+            <Figures className="text-ink text-base">{formatTime(entry.starts_at)}</Figures>
           </p>
-          <p className="text-ink mt-1 text-sm">{entry.classTitle}</p>
-          <p className="text-ink-2 mt-0.5 text-xs">
-            {CLASS_TYPE[entry.classType]} · {entry.trainerName}
-          </p>
+          <p className="text-ink mt-1 text-sm">{CLASS_TYPE[entry.class_type]}</p>
+          <p className="text-ink-2 mt-0.5 text-xs">{entry.trainer_name}</p>
         </div>
         <span className="shrink-0">
           <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
         </span>
       </div>
 
-      {/* The one fact a student opens this screen for: did the session come
-          back. `refunded` is the backend's answer, never our arithmetic. */}
+      {/* The one fact a student opens this screen for: did the credit come
+          back. The status says so — `CANCELLED_INTIME` is the refunded one —
+          so there is no arithmetic here and none is possible. */}
       {cancelled ? (
-        <p
-          className={cn(
-            "measure mt-3 text-sm",
-            entry.refunded === null ? "text-ink-2" : "text-ink",
-          )}
-        >
-          {entry.refunded === true
+        <p className="measure text-ink mt-3 text-sm">
+          {entry.booking_status === "CANCELLED_INTIME"
             ? "Buổi tập đã được hoàn lại vào gói."
-            : entry.refunded === false
-              ? "Buổi tập không được hoàn lại vào gói."
-              : "Studio chưa ghi nhận việc hoàn buổi cho lần hủy này."}
+            : "Hủy sau hạn nên buổi tập không được hoàn lại."}
         </p>
       ) : null}
 
-      {charged || (cancelled && entry.cancelledAt) ? (
-        <div className="text-ink-2 mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs">
-          {charged ? (
-            <span>
-              Đã trừ <Figures className="text-ink">{entry.sessionsCharged}</Figures> buổi
-            </span>
-          ) : null}
-          {cancelled && entry.cancelledAt ? (
-            <span>
-              Hủy ngày{" "}
-              <Figures className="text-ink">{formatDate(entry.cancelledAt)}</Figures>
-            </span>
-          ) : null}
-        </div>
+      {entry.session_status === "CANCELLED" ? (
+        <p className="text-ink-2 mt-2 text-xs">Studio đã hủy buổi này.</p>
       ) : null}
     </li>
   );

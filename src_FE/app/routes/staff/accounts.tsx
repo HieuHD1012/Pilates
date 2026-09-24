@@ -1,16 +1,18 @@
 import { useState } from "react";
 
+import { RoleGate } from "~/features/auth/role-gate";
 import {
   useAccounts,
   useCreateAccount,
-  useSetAccountStatus,
+  useSendPasswordReset,
+  useSetAccountLocked,
 } from "~/features/people/queries";
 import { AccountForm } from "~/features/people/account-form";
-import type { AccountRow, Role } from "~/lib/api/types";
-import { formatDate, formatTime } from "~/lib/format";
+import type { AccountResponse, Role } from "~/lib/api/schema";
+import { formatDate, formatPhone, formatTime } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { DetailList, DetailRow } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
@@ -44,54 +46,66 @@ export function meta(_: Route.MetaArgs) {
  */
 
 const ROLE_LABEL: Record<Role, string> = {
-  student: "Học viên",
-  trainer: "Huấn luyện viên",
-  staff: "Nhân viên",
-  owner: "Chủ studio",
+  STUDENT: "Học viên",
+  TRAINER: "Huấn luyện viên",
+  STAFF: "Nhân viên",
+  ADMIN: "Quản trị",
 };
 
-/** The identifier is a phone number or an email; only the former is a figure. */
-function isPhoneIdentifier(identifier: string): boolean {
-  return /^[\d+\s().-]+$/.test(identifier);
+type Result = { fullName: string; locked: boolean };
+
+/**
+ * ADMIN only, and gated here rather than only in the rail: the whole of
+ * `/accounts` is ADMIN on the backend, so a STAFF account that bookmarked this
+ * URL would otherwise land on a screen whose every request answers 403.
+ * Gating it also means `useAccounts` never fires for them.
+ */
+export default function StaffAccounts() {
+  return (
+    <RoleGate allow={["ADMIN"]}>
+      <AccountsScreen />
+    </RoleGate>
+  );
 }
 
-type Result = { fullName: string; status: AccountRow["status"] };
-
-export default function StaffAccounts() {
-  const query = useAccounts();
-  const setAccountStatus = useSetAccountStatus();
+function AccountsScreen() {
+  const query = useAccounts({ limit: 200 });
   const create = useCreateAccount();
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
 
   /** The account awaiting confirmation — also the dialog's open state. */
-  const [target, setTarget] = useState<AccountRow | null>(null);
+  const [target, setTarget] = useState<AccountResponse | null>(null);
   /** The last confirmed outcome, kept so the screen states what it did. */
   const [result, setResult] = useState<Result | null>(null);
 
-  const accounts = query.data ?? [];
-  const lockedCount = accounts.filter((account) => account.status === "locked").length;
+  // The lock mutation belongs to the account being confirmed, so it is created
+  // for that id rather than taking one as an argument.
+  const setLocked = useSetAccountLocked(target?.id ?? 0);
 
-  function ask(account: AccountRow) {
+  const accounts = query.data ?? [];
+  const lockedCount = accounts.filter((account) => !account.is_active).length;
+
+  function ask(account: AccountResponse) {
     setResult(null);
-    setAccountStatus.reset();
+    setLocked.reset();
     setTarget(account);
   }
 
   function close() {
     // Never dismissable mid-flight: the authorization is not yet decided.
-    if (setAccountStatus.isPending) return;
+    if (setLocked.isPending) return;
     setTarget(null);
-    setAccountStatus.reset();
+    setLocked.reset();
   }
 
   function applyStatus() {
     if (!target) return;
-    const next = target.status === "active" ? "locked" : "active";
-    void setAccountStatus
-      .mutateAsync({ id: target.id, status: next })
+    const lock = target.is_active;
+    void setLocked
+      .mutateAsync(lock)
       .then(() => {
-        setResult({ fullName: target.fullName, status: next });
+        setResult({ fullName: target.full_name ?? target.email, locked: lock });
         setTarget(null);
       })
       // The dialog stays open on failure, carrying the error beside the retry.
@@ -107,11 +121,11 @@ export default function StaffAccounts() {
       <LiveRegion
         message={
           result
-            ? result.status === "locked"
+            ? result.locked
               ? `Đã khóa tài khoản của ${result.fullName}.`
               : `Đã mở lại tài khoản của ${result.fullName}.`
-            : setAccountStatus.isError && target
-              ? `Chưa cập nhật được tài khoản của ${target.fullName}.`
+            : setLocked.isError && target
+              ? `Chưa cập nhật được tài khoản của ${target.full_name ?? target.email}.`
               : null
         }
       />
@@ -142,11 +156,9 @@ export default function StaffAccounts() {
         }
       />
 
-      <DemoDataNotice className="mt-3" />
-
       {result ? (
         <p className="text-ink-2 mt-3 text-xs">
-          {result.status === "locked" ? (
+          {result.locked ? (
             <>
               Đã khóa tài khoản của <span className="text-ink">{result.fullName}</span>.
               Người này sẽ không đăng nhập được cho tới khi được mở lại.
@@ -177,10 +189,11 @@ export default function StaffAccounts() {
                   <thead>
                     <tr>
                       <Th>Họ tên</Th>
-                      <Th>Điện thoại hoặc email</Th>
+                      <Th>Email đăng nhập</Th>
+                      <Th>Điện thoại</Th>
                       <Th>Vai trò</Th>
                       <Th>Trạng thái</Th>
-                      <Th numeric>Đăng nhập lần cuối</Th>
+                      <Th numeric>Tạo lúc</Th>
                       <Th className="text-right">Truy cập</Th>
                     </tr>
                   </thead>
@@ -188,27 +201,33 @@ export default function StaffAccounts() {
                     {items.map((account) => (
                       <Tr key={account.id}>
                         {/* Names wrap; a Vietnamese name is never truncated. */}
-                        <Td>{account.fullName}</Td>
+                        <Td>{account.full_name ?? <Absent>Chưa ghi tên</Absent>}</Td>
                         <Td>
-                          {isPhoneIdentifier(account.identifier) ? (
+                          <span className="text-ink-2 break-words">{account.email}</span>
+                        </Td>
+                        <Td>
+                          {account.phone ? (
                             <Figures className="text-ink-2 whitespace-nowrap">
-                              {account.identifier}
+                              {formatPhone(account.phone)}
                             </Figures>
                           ) : (
-                            <span className="text-ink-2 break-words">
-                              {account.identifier}
-                            </span>
+                            <Absent>Chưa ghi</Absent>
                           )}
                         </Td>
                         <Td className="text-ink-2">{ROLE_LABEL[account.role]}</Td>
                         <Td>
-                          <AccountStatus status={account.status} />
+                          <AccountStatus account={account} />
                         </Td>
                         <Td numeric className="whitespace-nowrap">
-                          <LastSignIn at={account.lastSignInAt} />
+                          <Figures className="text-ink">
+                            {formatDate(account.created_at)}
+                          </Figures>{" "}
+                          <Figures className="text-ink-2 text-xs">
+                            {formatTime(account.created_at)}
+                          </Figures>
                         </Td>
                         <Td className="text-right">
-                          <AccessButton account={account} onAsk={ask} />
+                          <RowActions account={account} onAsk={ask} />
                         </Td>
                       </Tr>
                     ))}
@@ -222,16 +241,14 @@ export default function StaffAccounts() {
                 {items.map((account) => (
                   <li key={account.id} className="rule-b py-4">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
-                      <span className="text-ink min-w-0 text-sm">{account.fullName}</span>
-                      <AccountStatus status={account.status} />
+                      <span className="text-ink min-w-0 text-sm">
+                        {account.full_name ?? account.email}
+                      </span>
+                      <AccountStatus account={account} />
                     </div>
 
                     <p className="text-ink-2 mt-2 text-xs">
-                      {isPhoneIdentifier(account.identifier) ? (
-                        <Figures>{account.identifier}</Figures>
-                      ) : (
-                        <span className="break-words">{account.identifier}</span>
-                      )}
+                      <span className="break-words">{account.email}</span>
                       <span className="mx-1.5" aria-hidden="true">
                         ·
                       </span>
@@ -239,20 +256,22 @@ export default function StaffAccounts() {
                     </p>
 
                     <p className="text-ink-2 mt-1.5 text-xs">
-                      Đăng nhập lần cuối <LastSignIn at={account.lastSignInAt} />
+                      Tạo lúc{" "}
+                      <Figures className="text-ink">
+                        {formatDate(account.created_at)}
+                      </Figures>
                     </p>
 
-                    <div className="mt-3">
+                    <div className="mt-3 flex flex-col gap-2">
                       <Button
                         variant="secondary"
                         size="sm"
                         fullWidth
                         onClick={() => ask(account)}
                       >
-                        {account.status === "active"
-                          ? "Khóa tài khoản"
-                          : "Mở lại tài khoản"}
+                        {account.is_active ? "Khóa tài khoản" : "Mở lại tài khoản"}
                       </Button>
+                      <ResendInvite account={account} fullWidth />
                     </div>
                   </li>
                 ))}
@@ -263,43 +282,43 @@ export default function StaffAccounts() {
       </div>
 
       <p className="rule-t text-ink-2 mt-6 pt-3 text-xs">
-        Tạo tài khoản mới chưa có trong hệ thống, nên màn hình này chỉ khóa hoặc mở lại
-        quyền đăng nhập của những người đã có tài khoản.
+        Khóa tài khoản thu hồi luôn mọi phiên đang mở, không chỉ chặn lần đăng nhập sau.
+        Studio không đặt mật khẩu thay ai — “Gửi lại liên kết” để người đó tự đặt.
       </p>
 
       <Dialog open={target !== null} onOpenChange={(open) => (open ? null : close())}>
         {target ? (
           <DialogContent
-            title={target.status === "active" ? "Khóa tài khoản" : "Mở lại tài khoản"}
-            description={`${target.fullName} · ${ROLE_LABEL[target.role]}`}
+            title={target.is_active ? "Khóa tài khoản" : "Mở lại tài khoản"}
+            description={`${target.full_name ?? target.email} · ${ROLE_LABEL[target.role]}`}
             footer={
               <>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={close}
-                  disabled={setAccountStatus.isPending}
+                  disabled={setLocked.isPending}
                 >
                   Quay lại
                 </Button>
                 {/* The label stays put while pending (UI_PATTERNS, mutations). */}
                 <Button
-                  variant={target.status === "active" ? "danger" : "primary"}
+                  variant={target.is_active ? "danger" : "primary"}
                   size="sm"
-                  pending={setAccountStatus.isPending}
+                  pending={setLocked.isPending}
                   onClick={applyStatus}
                 >
-                  {target.status === "active" ? "Khóa tài khoản" : "Mở lại tài khoản"}
+                  {target.is_active ? "Khóa tài khoản" : "Mở lại tài khoản"}
                 </Button>
               </>
             }
           >
             {/* The consequence, before the action. */}
             <p className="text-ink text-sm">
-              {target.status === "active" ? (
+              {target.is_active ? (
                 <>
-                  Người này sẽ không đăng nhập được cho tới khi được mở lại. Lớp đã đặt và
-                  dữ liệu của người này không bị thay đổi.
+                  Mọi phiên đang mở của người này bị thu hồi ngay, và họ không đăng nhập
+                  được cho tới khi được mở lại. Lớp đã đặt và dữ liệu không bị thay đổi.
                 </>
               ) : (
                 <>
@@ -310,25 +329,21 @@ export default function StaffAccounts() {
             </p>
 
             <DetailList className="mt-4">
-              <DetailRow label="Điện thoại hoặc email" labelWidth="9.5rem">
-                {isPhoneIdentifier(target.identifier) ? (
-                  <Figures>{target.identifier}</Figures>
-                ) : (
-                  <span className="break-words">{target.identifier}</span>
-                )}
+              <DetailRow label="Email đăng nhập" labelWidth="9.5rem">
+                <span className="break-words">{target.email}</span>
               </DetailRow>
               <DetailRow label="Trạng thái hiện tại" labelWidth="9.5rem">
-                <AccountStatus status={target.status} />
+                <AccountStatus account={target} />
               </DetailRow>
-              <DetailRow label="Đăng nhập lần cuối" labelWidth="9.5rem">
-                <LastSignIn at={target.lastSignInAt} />
+              <DetailRow label="Tạo lúc" labelWidth="9.5rem">
+                <Figures>{formatDate(target.created_at)}</Figures>
               </DetailRow>
             </DetailList>
 
-            {setAccountStatus.isError ? (
+            {setLocked.isError ? (
               /* Contextual copy only — the backend's message is never shown. */
               <p role="alert" className="text-danger mt-4 text-sm">
-                {target.status === "active"
+                {target.is_active
                   ? "Chưa khóa được tài khoản này. Quyền truy cập vẫn giữ nguyên như trước."
                   : "Chưa mở lại được tài khoản này. Quyền truy cập vẫn giữ nguyên như trước."}{" "}
                 Vui lòng thử lại.
@@ -357,7 +372,7 @@ export default function StaffAccounts() {
             onSubmit={async (input) => {
               const account = await create.mutateAsync(input);
               setCreating(false);
-              setCreated(account.fullName);
+              setCreated(account.full_name ?? account.email);
               return account;
             }}
           />
@@ -367,11 +382,44 @@ export default function StaffAccounts() {
   );
 }
 
-function AccountStatus({ status }: { status: AccountRow["status"] }) {
-  return status === "locked" ? (
-    <StatusBadge tone="critical">Đã khóa</StatusBadge>
-  ) : (
-    <StatusBadge tone="positive">Đang hoạt động</StatusBadge>
+/**
+ * Two independent facts, not one status. `is_active` is whether the studio has
+ * locked the account; `status` is whether the person has finished setting a
+ * password. A locked account that never activated is both, and collapsing them
+ * into one badge would hide whichever came second.
+ */
+function AccountStatus({ account }: { account: AccountResponse }) {
+  if (!account.is_active) return <StatusBadge tone="critical">Đã khóa</StatusBadge>;
+  if (account.status === "PENDING_ACTIVATION") {
+    return <StatusBadge tone="attention">Chưa đặt mật khẩu</StatusBadge>;
+  }
+  return <StatusBadge tone="positive">Đang hoạt động</StatusBadge>;
+}
+
+/**
+ * Re-sending the set-your-password link. The token only ever travels by email —
+ * it is never returned to this screen, so there is nothing here to copy.
+ */
+function ResendInvite({
+  account,
+  fullWidth,
+}: {
+  account: AccountResponse;
+  fullWidth?: boolean;
+}) {
+  const send = useSendPasswordReset(account.id);
+
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      fullWidth={fullWidth}
+      pending={send.isPending}
+      onClick={() => send.mutate()}
+      aria-label={`Gửi lại liên kết đặt mật khẩu cho ${account.full_name ?? account.email}`}
+    >
+      {send.isSuccess ? "Đã gửi" : "Gửi lại liên kết"}
+    </Button>
   );
 }
 
@@ -379,51 +427,27 @@ function AccountStatus({ status }: { status: AccountRow["status"] }) {
  * The one action per row. Locking is destructive, so it carries the danger
  * tone; unlocking restores access and stays secondary.
  */
-function AccessButton({
+function RowActions({
   account,
   onAsk,
 }: {
-  account: AccountRow;
-  onAsk: (account: AccountRow) => void;
+  account: AccountResponse;
+  onAsk: (account: AccountResponse) => void;
 }) {
-  const locking = account.status === "active";
+  const locking = account.is_active;
+  const name = account.full_name ?? account.email;
 
   return (
-    <Button
-      variant={locking ? "danger" : "secondary"}
-      size="sm"
-      onClick={() => onAsk(account)}
-      aria-label={
-        locking
-          ? `Khóa tài khoản của ${account.fullName}`
-          : `Mở lại tài khoản của ${account.fullName}`
-      }
-    >
-      {locking ? "Khóa" : "Mở lại"}
-    </Button>
-  );
-}
-
-/**
- * A sign-in that has never happened is an em dash: decoration for the eye, with
- * the meaning written out for assistive technology — never the string "null".
- */
-function LastSignIn({ at }: { at: string | null }) {
-  if (at === null) {
-    return (
-      <>
-        <span aria-hidden="true" className="text-ink-2">
-          —
-        </span>
-        <span className="sr-only">chưa đăng nhập lần nào</span>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Figures className="text-ink">{formatDate(at)}</Figures>{" "}
-      <Figures className="text-ink-2 text-xs">{formatTime(at)}</Figures>
-    </>
+    <span className="flex flex-wrap justify-end gap-2">
+      <ResendInvite account={account} />
+      <Button
+        variant={locking ? "danger" : "secondary"}
+        size="sm"
+        onClick={() => onAsk(account)}
+        aria-label={locking ? `Khóa tài khoản của ${name}` : `Mở lại tài khoản của ${name}`}
+      >
+        {locking ? "Khóa" : "Mở lại"}
+      </Button>
+    </span>
   );
 }

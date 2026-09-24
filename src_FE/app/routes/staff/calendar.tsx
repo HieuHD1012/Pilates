@@ -3,18 +3,24 @@ import { Link } from "react-router";
 
 import { ClassForm } from "~/features/schedule/class-form";
 import {
+  trainerNameMap,
+  useCalendarSeatCounts,
   useCreateClass,
-  useCreateRecurringClasses,
+  useCreateRecurrence,
+  usePreviewRecurrence,
   useStaffCalendar,
-  useStaffTrainers,
+  useStudioTrainers,
 } from "~/features/schedule/use-staff-calendar";
 import { WeekGrid, WeekList } from "~/features/schedule/week-grid";
+import { errorMessage } from "~/lib/api/client";
 import type {
-  ClassSession,
+  ClassCreateRequest,
+  ClassSessionResponse,
   ClassType,
-  RecurringClassInput,
-  SkippedOccurrence,
-} from "~/lib/api/types";
+  OccurrenceResponse,
+  RecurrencePreviewResponse,
+  RecurrenceRequest,
+} from "~/lib/api/schema";
 import {
   addDays,
   formatDate,
@@ -25,7 +31,6 @@ import {
   weekdayLong,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import {
   EmptyState,
@@ -58,29 +63,43 @@ export function meta(_: Route.MetaArgs) {
  */
 export default function StaffCalendar() {
   const [weekStart, setWeekStart] = useState(() => startOfStudioWeek(new Date()));
-  const [type, setType] = useState<ClassType | "all">("all");
-  const [trainerId, setTrainerId] = useState<string>("all");
-  const [selected, setSelected] = useState<ClassSession | null>(null);
+  const [classType, setClassType] = useState<ClassType | "all">("all");
+  const [trainerId, setTrainerId] = useState<number | "all">("all");
+  const [selected, setSelected] = useState<ClassSessionResponse | null>(null);
   const [creating, setCreating] = useState<"single" | "recurring" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [skipped, setSkipped] = useState<SkippedOccurrence[] | null>(null);
+  /** The recurrence being previewed, held until staff accept or discard it. */
+  const [pattern, setPattern] = useState<{
+    request: RecurrenceRequest;
+    preview: RecurrencePreviewResponse;
+  } | null>(null);
   const create = useCreateClass();
-  const createRecurring = useCreateRecurringClasses();
+  const preview = usePreviewRecurrence();
+  const createRecurrence = useCreateRecurrence();
 
   const today = studioDateKey(new Date());
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 
-  const trainers = useStaffTrainers();
-  const query = useStaffCalendar({
+  const filters = {
     from: weekStart,
     to: addDays(weekStart, 6),
-    type,
+    classType,
     trainerId,
-  });
+  };
+  const trainers = useStudioTrainers();
+  const query = useStaffCalendar(filters);
+  // Occupancy is a second query: `GET /classes` carries capacity, not seats
+  // taken, and counting held bookings over the same week is what the backend's
+  // own `booked_count` does.
+  const seatCounts = useCalendarSeatCounts(filters);
 
   const items = query.data ?? [];
-  const fullCount = items.filter((item) => item.bookedCount >= item.capacity).length;
-  const bookedTotal = items.reduce((sum, item) => sum + item.bookedCount, 0);
+  const seats = seatCounts.data;
+  const trainerNames = trainerNameMap(trainers.data);
+  const fullCount = items.filter(
+    (item) => (seats?.get(item.id) ?? 0) >= item.capacity,
+  ).length;
+  const bookedTotal = [...(seats?.values() ?? [])].reduce((sum, n) => sum + n, 0);
   const capacityTotal = items.reduce((sum, item) => sum + item.capacity, 0);
 
   return (
@@ -170,12 +189,12 @@ export default function StaffCalendar() {
           {({ id }) => (
             <Select
               id={id}
-              value={type}
-              onChange={(event) => setType(event.target.value as ClassType | "all")}
+              value={classType}
+              onChange={(event) => setClassType(event.target.value as ClassType | "all")}
             >
               <option value="all">Tất cả</option>
-              <option value="group">Lớp nhóm</option>
-              <option value="private">Lớp riêng</option>
+              <option value="GROUP">Lớp nhóm</option>
+              <option value="PRIVATE">Lớp riêng</option>
             </Select>
           )}
         </Field>
@@ -184,14 +203,18 @@ export default function StaffCalendar() {
           {({ id }) => (
             <Select
               id={id}
-              value={trainerId}
-              onChange={(event) => setTrainerId(event.target.value)}
+              value={trainerId === "all" ? "all" : String(trainerId)}
+              onChange={(event) =>
+                setTrainerId(
+                  event.target.value === "all" ? "all" : Number(event.target.value),
+                )
+              }
               disabled={trainers.isPending}
             >
               <option value="all">Tất cả</option>
               {(trainers.data ?? []).map((trainer) => (
-                <option key={trainer.id} value={trainer.id}>
-                  {trainer.fullName}
+                <option key={trainer.id} value={String(trainer.id)}>
+                  {trainer.full_name}
                 </option>
               ))}
             </Select>
@@ -199,7 +222,6 @@ export default function StaffCalendar() {
         </Field>
       </FilterBar>
 
-      <DemoDataNotice className="mb-3" />
       <RefreshingRule active={query.isFetching && !query.isPending} />
 
       {query.isPending ? <SkeletonRows rows={6} /> : null}
@@ -220,7 +242,7 @@ export default function StaffCalendar() {
             <Button
               variant="secondary"
               onClick={() => {
-                setType("all");
+                setClassType("all");
                 setTrainerId("all");
               }}
             >
@@ -239,15 +261,29 @@ export default function StaffCalendar() {
               today={today}
               onSelect={setSelected}
               selectedId={selected?.id ?? null}
+              trainerNames={trainerNames}
+              seats={seats}
             />
           </div>
           <div className="lg:hidden">
-            <WeekList days={days} items={items} today={today} onSelect={setSelected} />
+            <WeekList
+              days={days}
+              items={items}
+              today={today}
+              onSelect={setSelected}
+              trainerNames={trainerNames}
+              seats={seats}
+            />
           </div>
         </>
       ) : null}
 
-      <ClassDetailDialog item={selected} onClose={() => setSelected(null)} />
+      <ClassDetailDialog
+        item={selected}
+        trainerNames={trainerNames}
+        seats={seats}
+        onClose={() => setSelected(null)}
+      />
 
       <LiveRegion message={notice} />
 
@@ -256,7 +292,7 @@ export default function StaffCalendar() {
         onOpenChange={(next) => {
           if (!next) {
             create.reset();
-            createRecurring.reset();
+            preview.reset();
             setCreating(null);
           }
         }}
@@ -265,7 +301,7 @@ export default function StaffCalendar() {
           title={creating === "recurring" ? "Lớp định kỳ" : "Thêm lớp"}
           description={
             creating === "recurring"
-              ? "Một mẫu lặp hàng tuần. Buổi nào trùng lịch huấn luyện viên sẽ bị bỏ qua, và được liệt kê sau khi lưu."
+              ? "Một mẫu lặp hàng tuần. Bước sau cho xem trước từng buổi và những buổi trùng lịch huấn luyện viên."
               : "Buổi tập mới, chưa có ai đăng ký. Trùng giờ huấn luyện viên sẽ bị từ chối."
           }
         >
@@ -280,29 +316,25 @@ export default function StaffCalendar() {
               date: days.includes(today) ? today : weekStart,
               capacity: "6",
             }}
-            submitLabel={creating === "recurring" ? "Tạo mẫu lặp" : "Thêm lớp"}
-            pending={create.isPending || createRecurring.isPending}
-            error={creating === "recurring" ? createRecurring.error : create.error}
+            submitLabel={creating === "recurring" ? "Xem trước" : "Thêm lớp"}
+            pending={create.isPending || preview.isPending}
+            error={creating === "recurring" ? preview.error : create.error}
             onCancel={() => setCreating(null)}
             onSubmit={async (input) => {
               if (creating === "recurring") {
-                const result = await createRecurring.mutateAsync(
-                  input as RecurringClassInput,
-                );
+                // Preview first, always. The create is all-or-nothing, so
+                // seeing which occurrences clash before committing is the
+                // difference between a considered decision and a 409.
+                const request = input as RecurrenceRequest;
+                const result = await preview.mutateAsync(request);
                 setCreating(null);
-                setNotice(
-                  result.skipped.length === 0
-                    ? `Đã tạo ${result.created.length} buổi.`
-                    : `Đã tạo ${result.created.length} buổi, bỏ qua ${result.skipped.length} buổi trùng lịch.`,
-                );
-                // Never a silent skip: if anything was dropped, say which.
-                if (result.skipped.length > 0) setSkipped(result.skipped);
+                setPattern({ request, preview: result });
                 return result;
               }
-              const created = await create.mutateAsync(input);
+              const created = await create.mutateAsync(input as ClassCreateRequest);
               setCreating(null);
               setNotice(
-                `Đã thêm ${created.title}, ${weekdayLong(created.startsAt)} ${formatTime(created.startsAt)}.`,
+                `Đã thêm lớp ${weekdayLong(created.starts_at)} ${formatTime(created.starts_at)}.`,
               );
               return created;
             }}
@@ -311,34 +343,63 @@ export default function StaffCalendar() {
       </Dialog>
 
       <Dialog
-        open={skipped !== null}
+        open={pattern !== null}
         onOpenChange={(next) => {
-          if (!next) setSkipped(null);
+          if (!next) {
+            createRecurrence.reset();
+            setPattern(null);
+          }
         }}
       >
         <DialogContent
-          title="Những buổi đã bỏ qua"
-          description="Mẫu lặp đã tạo xong. Các ngày dưới đây bị bỏ qua vì huấn luyện viên đã có lớp — xếp lại từng buổi này nếu vẫn cần."
+          title="Xem trước lịch lặp"
+          description="Những buổi sẽ được tạo. Buổi trùng lịch huấn luyện viên được đánh dấu và sẽ bị bỏ qua."
           footer={
-            <Button size="sm" onClick={() => setSkipped(null)}>
-              Đã hiểu
-            </Button>
+            <>
+              <Button variant="secondary" size="sm" onClick={() => setPattern(null)}>
+                Quay lại
+              </Button>
+              <Button
+                size="sm"
+                pending={createRecurrence.isPending}
+                disabled={(pattern?.preview.available_count ?? 0) === 0}
+                onClick={() => {
+                  if (pattern === null) return;
+                  createRecurrence
+                    .mutateAsync(pattern.request)
+                    .then((result) => {
+                      setPattern(null);
+                      setNotice(`Đã tạo ${result.sessions.length} buổi.`);
+                    })
+                    .catch(() => {});
+                }}
+              >
+                Tạo {pattern?.preview.available_count ?? 0} buổi
+              </Button>
+            </>
           }
         >
-          <ul className="rule-t">
-            {(skipped ?? []).map((item) => (
-              <li key={item.date} className="rule-b py-3">
-                <p className="text-ink text-sm">
-                  {weekdayLong(`${item.date}T00:00:00+07:00`)},{" "}
-                  <Figures>{formatDate(`${item.date}T00:00:00+07:00`)}</Figures>
-                </p>
-                <p className="text-ink-2 mt-1 text-xs">
-                  Trùng <span className="text-ink">{item.conflict.title}</span>{" "}
-                  <Figures className="text-ink">
-                    {formatTimeRange(item.conflict.startsAt, item.conflict.endsAt)}
-                  </Figures>
-                </p>
-              </li>
+          <p className="text-ink-2 text-xs">
+            <Figures className="text-ink">{pattern?.preview.available_count ?? 0}</Figures>{" "}
+            buổi tạo được ·{" "}
+            <Figures className="text-ink">{pattern?.preview.conflict_count ?? 0}</Figures>{" "}
+            buổi trùng lịch
+          </p>
+
+          {createRecurrence.isError ? (
+            <p role="alert" className="text-danger mt-3 text-sm">
+              {/* A slot taken between the preview and the commit rolls the whole
+                  group back, rather than leaving a half-written pattern. */}
+              {errorMessage(
+                createRecurrence.error,
+                "Chưa tạo được lịch lặp. Có buổi vừa bị chiếm chỗ — xem lại rồi thử lại.",
+              )}
+            </p>
+          ) : null}
+
+          <ul className="rule-t mt-3 max-h-80 overflow-y-auto">
+            {(pattern?.preview.occurrences ?? []).map((occurrence) => (
+              <OccurrenceRow key={occurrence.starts_at} occurrence={occurrence} />
             ))}
           </ul>
         </DialogContent>
@@ -347,19 +408,44 @@ export default function StaffCalendar() {
   );
 }
 
+function OccurrenceRow({ occurrence }: { occurrence: OccurrenceResponse }) {
+  return (
+    <li className="rule-b flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5">
+      <span className="text-ink text-sm">
+        {weekdayLong(occurrence.starts_at)},{" "}
+        <Figures>{formatDate(occurrence.starts_at)}</Figures>{" "}
+        <Figures className="text-ink-2">
+          {formatTimeRange(occurrence.starts_at, occurrence.ends_at)}
+        </Figures>
+      </span>
+      {occurrence.conflict === null ? (
+        <StatusBadge tone="positive">Tạo được</StatusBadge>
+      ) : (
+        <span className="text-ink-2 text-xs">Trùng lịch — bỏ qua</span>
+      )}
+    </li>
+  );
+}
+
 function ClassDetailDialog({
   item,
+  trainerNames,
+  seats,
   onClose,
 }: {
-  item: ClassSession | null;
+  item: ClassSessionResponse | null;
+  trainerNames: Map<number, string>;
+  seats: Map<number, number> | undefined;
   onClose: () => void;
 }) {
+  const taken = item === null ? undefined : seats?.get(item.id);
+
   return (
     <Dialog open={item !== null} onOpenChange={(open) => (open ? null : onClose())}>
       {item ? (
         <DialogContent
-          title={item.title}
-          description={`${weekdayLong(item.startsAt)}, ${formatDate(item.startsAt)}`}
+          title={item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+          description={`${weekdayLong(item.starts_at)}, ${formatDate(item.starts_at)}`}
           footer={
             <>
               <Button variant="secondary" size="sm" onClick={onClose}>
@@ -373,22 +459,25 @@ function ClassDetailDialog({
         >
           <dl className="text-sm">
             <Row label="Giờ">
-              <Figures>{formatTimeRange(item.startsAt, item.endsAt)}</Figures>
+              <Figures>{formatTimeRange(item.starts_at, item.ends_at)}</Figures>
             </Row>
             <Row label="Hình thức">
-              {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"}
+              {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
             </Row>
-            <Row label="Huấn luyện viên">{item.trainer.fullName}</Row>
+            <Row label="Huấn luyện viên">
+              {trainerNames.get(item.trainer_id) ?? `HLV #${item.trainer_id}`}
+            </Row>
             <Row label="Sức chứa">
-              <CapacityMeter booked={item.bookedCount} capacity={item.capacity} />
-            </Row>
-            <Row label="Chờ chỗ">
-              <Figures>{item.waitlistCount}</Figures>
+              {taken === undefined ? (
+                <Figures>{item.capacity} chỗ</Figures>
+              ) : (
+                <CapacityMeter booked={taken} capacity={item.capacity} />
+              )}
             </Row>
             <Row label="Trạng thái">
-              {item.status === "cancelled" ? (
+              {item.status === "CANCELLED" ? (
                 <StatusBadge tone="critical">Đã hủy</StatusBadge>
-              ) : item.bookedCount >= item.capacity ? (
+              ) : taken !== undefined && taken >= item.capacity ? (
                 <StatusBadge tone="attention">Đủ chỗ</StatusBadge>
               ) : (
                 <StatusBadge tone="positive">Còn chỗ</StatusBadge>
@@ -397,8 +486,9 @@ function ClassDetailDialog({
           </dl>
 
           <p className="rule-t text-ink-2 mt-4 pt-3 text-xs">
-            Danh sách học viên, sửa lớp, đổi huấn luyện viên và hủy lớp nằm ở màn hình chi
-            tiết lớp.
+            Danh sách học viên, đổi huấn luyện viên và hủy lớp nằm ở màn hình chi tiết lớp.
+            Giờ và sức chứa của một buổi đã xếp thì không sửa được — studio tạo và hủy,
+            không dời.
           </p>
         </DialogContent>
       ) : null}

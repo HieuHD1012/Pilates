@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { usePublicSchedule } from "~/features/schedule/use-public-schedule";
+import { usePublicSchedule } from "~/features/public/queries";
 import {
   addDays,
   formatDayMonth,
@@ -50,7 +50,7 @@ export default function PublicSchedule() {
 
   const byDay = new Map<string, NonNullable<typeof query.data>>();
   for (const item of query.data ?? []) {
-    const key = studioDateKey(item.startsAt);
+    const key = studioDateKey(item.starts_at);
     const bucket = byDay.get(key) ?? [];
     bucket.push(item);
     byDay.set(key, bucket);
@@ -174,20 +174,19 @@ export default function PublicSchedule() {
                           <ul>
                             {items.map((item) => (
                               <li
-                                key={item.id}
+                                key={`${item.starts_at}-${item.trainer_name}`}
                                 className="border-rule grid grid-cols-[8.5rem_1fr_auto] items-baseline gap-4 border-b py-3 last:border-b-0"
                               >
                                 <span className="figures text-ink text-sm">
-                                  {formatTimeRange(item.startsAt, item.endsAt)}
+                                  {formatTimeRange(item.starts_at, item.ends_at)}
                                 </span>
                                 <span className="text-ink text-sm">
-                                  {item.title}
+                                  {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                                   <span className="text-ink-2 ml-2">
-                                    {item.type === "private" ? "Riêng" : "Nhóm"}
-                                    {item.trainerName ? ` · ${item.trainerName}` : ""}
+                                    {item.trainer_name}
                                   </span>
                                 </span>
-                                <Availability value={item.availability} />
+                                <Availability isFull={item.is_full} />
                               </li>
                             ))}
                           </ul>
@@ -235,26 +234,32 @@ function DayList({
   return (
     <ul>
       {items.map((item) => (
-        <li key={item.id} className="rule-b py-4">
+        <li key={`${item.starts_at}-${item.trainer_name}`} className="rule-b py-4">
           <div className="flex items-baseline justify-between gap-3">
             <span className="figures text-ink text-sm">
-              {formatTimeRange(item.startsAt, item.endsAt)}
+              {formatTimeRange(item.starts_at, item.ends_at)}
             </span>
-            <Availability value={item.availability} />
+            <Availability isFull={item.is_full} />
           </div>
-          <p className="text-ink mt-1 text-sm">{item.title}</p>
-          <p className="text-ink-2 mt-0.5 text-xs">
-            {item.type === "private" ? "Lớp riêng" : "Lớp nhóm"}
-            {item.trainerName ? ` · ${item.trainerName}` : ""}
+          <p className="text-ink mt-1 text-sm">
+            {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
           </p>
+          <p className="text-ink-2 mt-0.5 text-xs">{item.trainer_name}</p>
         </li>
       ))}
     </ul>
   );
 }
 
-function Availability({ value }: { value: "open" | "few_left" | "full" }) {
-  if (value === "full") return <StatusBadge tone="critical">Hết chỗ</StatusBadge>;
-  if (value === "few_left") return <StatusBadge tone="attention">Sắp đầy</StatusBadge>;
-  return <StatusBadge tone="positive">Còn chỗ</StatusBadge>;
+/**
+ * Two states, not three. The public endpoint returns `is_full` and nothing
+ * else on purpose: a seat count tells a stranger which 6am class has one woman
+ * in it. "Sắp đầy" needed that count, so it is gone with it.
+ */
+function Availability({ isFull }: { isFull: boolean }) {
+  return isFull ? (
+    <StatusBadge tone="critical">Hết chỗ</StatusBadge>
+  ) : (
+    <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+  );
 }

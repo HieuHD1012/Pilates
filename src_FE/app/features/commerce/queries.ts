@@ -1,134 +1,252 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
+import { packagesApi, paymentsApi, renewalsApi } from "~/lib/api/endpoints";
+import { queryKeys, roots } from "~/lib/api/query-keys";
 import type {
-  PackageDefinition,
-  Payment,
-  PaymentInput,
-  PaymentStatus,
-  RenewalCandidate,
-  SessionAdjustmentInput,
-  SessionLedger,
-} from "~/lib/api/types";
+  AdjustCreditsRequest,
+  PackageTypeCreateRequest,
+  PackageTypeListParams,
+  PackageTypeUpdateRequest,
+  PaymentListParams,
+  RecordPaymentRequest,
+  RenewalContactRequest,
+  RenewalListParams,
+  RenewPackageRequest,
+  SellPackageRequest,
+  StudentPackageListParams,
+} from "~/lib/api/schema";
 
-export function usePackageDefinitions() {
+/**
+ * Money and credits.
+ *
+ * Two things share the word "package" and must not be confused: `/package-types`
+ * is the catalogue the studio sells from, and `/packages` is what a student
+ * bought — carrying `*_snapshot` fields frozen at the sale, so re-pricing the
+ * catalogue tomorrow cannot rewrite last month's revenue.
+ */
+
+/* ── The catalogue ──────────────────────────────────────────────────────── */
+
+export function usePackageTypes(params: PackageTypeListParams = {}) {
   return useQuery({
-    queryKey: queryKeys.staff.packages(),
-    queryFn: () => api.get<{ items: PackageDefinition[] }>("/staff/packages"),
-    select: (data) => data.items,
+    queryKey: queryKeys.packages.types(params),
+    queryFn: () => packagesApi.listTypes(params),
     staleTime: 5 * 60_000,
   });
 }
 
-export function usePayments(from: string, to: string, status: string) {
+export function useCreatePackageType() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PackageTypeCreateRequest) => packagesApi.createType(input),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/**
+ * Editing a catalogue entry never touches packages already sold. Withdrawing
+ * one from sale is `is_selling: false` — the row is never deleted, because the
+ * packages people bought still point at it.
+ */
+export function useUpdatePackageType(packageTypeId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PackageTypeUpdateRequest) =>
+      packagesApi.updateType(packageTypeId, input),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/* ── What a student holds ───────────────────────────────────────────────── */
+
+/**
+ * What a student holds.
+ *
+ * A signed-in student omits `student_id` and the backend pins the list to them.
+ * **Staff must name one.** `GET /packages` with no `student_id` answers 404 —
+ * credits belong to a package, and there is no studio-wide list of everyone's
+ * remaining sessions. So a staff screen with no student chosen passes
+ * `enabled: false` rather than firing a request whose only possible answer is
+ * a refusal.
+ */
+export function useStudentPackages(
+  params: StudentPackageListParams = {},
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
-    queryKey: queryKeys.staff.payments(from, to, status),
-    queryFn: () =>
-      api.get<{ items: Payment[] }>("/staff/payments", {
-        searchParams: { from, to, status },
-      }),
-    select: (data) => data.items,
+    queryKey: queryKeys.packages.ofStudent(params),
+    queryFn: () => packagesApi.list(params),
+    enabled: options.enabled ?? true,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * One package's credit ledger.
+ *
+ * Render `balance_after` from each row. Adding up `delta` in the client is how
+ * the screen and the database start disagreeing, and the ledger is the record
+ * that settles arguments about money.
+ */
+export function usePackageLedger(packageId: number | null) {
+  return useQuery({
+    queryKey: queryKeys.packages.ledger(packageId ?? 0),
+    queryFn: () => packagesApi.ledger(packageId as number),
+    enabled: packageId !== null,
+    staleTime: 30_000,
+  });
+}
+
+/** Selling creates the package and credits it in one transaction. */
+export function useSellPackage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: SellPackageRequest) => packagesApi.sell(input),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/** Renewal credits post as their own ledger entry, distinct from the sale. */
+export function useRenewPackage(packageId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: RenewPackageRequest) => packagesApi.renew(packageId, input),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/** ADMIN only, and the reason is required by a database constraint, not taste. */
+export function useAdjustCredits(packageId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AdjustCreditsRequest) => packagesApi.adjust(packageId, input),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/* ── Payments ───────────────────────────────────────────────────────────── */
+
+export function usePayments(params: PaymentListParams) {
+  return useQuery({
+    queryKey: queryKeys.payments.list(params),
+    queryFn: () => paymentsApi.list(params),
     staleTime: 30_000,
     placeholderData: (previous) => previous,
   });
 }
 
-/**
- * The ledger is the audit trail for a session balance. The balance shown
- * anywhere else in the product must equal the sum of these deltas — that is a
- * confirmed requirement, not a display convention (docs/BUSINESS_RULES.md).
- */
-export function useSessionLedger(studentPackageId: string) {
+export function usePayment(paymentId: number | null) {
   return useQuery({
-    queryKey: queryKeys.staff.ledger(studentPackageId),
-    queryFn: () => api.get<SessionLedger>(`/staff/ledger/${studentPackageId}`),
+    queryKey: queryKeys.payments.detail(paymentId ?? 0),
+    queryFn: () => paymentsApi.get(paymentId as number),
+    enabled: paymentId !== null,
     staleTime: 30_000,
   });
 }
 
 /**
- * A manual adjustment moves a number the whole product reads, so this invalidates
- * more than its own screen: the roster row, the student's profile, the renewal
- * list and the dashboard all show a session balance.
- */
-export function useAdjustSessions(studentPackageId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: SessionAdjustmentInput) =>
-      api.post<SessionLedger>(`/staff/ledger/${studentPackageId}/adjustments`, input),
-    async onSuccess(ledger) {
-      queryClient.setQueryData(queryKeys.staff.ledger(studentPackageId), ledger);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["staff", "students"] }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.staff.student(ledger.studentId),
-        }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.staff.renewals() }),
-        queryClient.invalidateQueries({ queryKey: ["staff", "dashboard"] }),
-      ]);
-    },
-  });
-}
-
-/**
- * Recording money. Never optimistic — a receipt that appears and then vanishes is
- * worse than one that takes a moment (docs/QUERY_CONVENTIONS.md).
+ * A payment belongs to a package, not to a person: `student_package_id` is
+ * required. It lands as `PENDING`, and the credits are already there — they
+ * were added when the package was sold, not by this record.
  */
 export function useRecordPayment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: PaymentInput) => api.post<Payment>("/staff/payments", input),
-    async onSuccess(payment) {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["staff", "payments"] }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.staff.student(payment.studentId),
-        }),
-        queryClient.invalidateQueries({ queryKey: ["staff", "report"] }),
-      ]);
-    },
+    mutationFn: (input: RecordPaymentRequest) => paymentsApi.create(input),
+    onSuccess: () => invalidateCommerce(queryClient),
   });
 }
 
-export function useSetPaymentStatus(paymentId: string) {
+/** Only a `CONFIRMED` payment reaches the revenue report. */
+export function useConfirmPayment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (patch: { status: PaymentStatus; voidReason?: string }) =>
-      api.patch<Payment>(`/staff/payments/${paymentId}`, patch),
-    async onSuccess(payment) {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["staff", "payments"] }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.staff.student(payment.studentId),
-        }),
-        queryClient.invalidateQueries({ queryKey: ["staff", "report"] }),
-      ]);
-    },
+    mutationFn: (paymentId: number) => paymentsApi.confirm(paymentId),
+    onSuccess: () => invalidateCommerce(queryClient),
   });
 }
 
-export function useRenewals() {
+/**
+ * Voiding is refused with 409 once the package has spent credits — the error
+ * names how many, because the remedy is a manual credit adjustment by an
+ * admin, not pressing the button again.
+ */
+export function useVoidPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ paymentId, reason }: { paymentId: number; reason: string }) =>
+      paymentsApi.void(paymentId, { reason }),
+    onSuccess: () => invalidateCommerce(queryClient),
+  });
+}
+
+/* ── Renewal reminders ──────────────────────────────────────────────────── */
+
+/**
+ * Filters here only **narrow** the default threshold — ≤6 credits or ≤15 days.
+ * Nothing widens it, so two people with this screen open are always looking at
+ * the same definition of "needs contact".
+ */
+export function useRenewals(params: RenewalListParams = {}) {
   return useQuery({
-    queryKey: queryKeys.staff.renewals(),
-    queryFn: () => api.get<{ items: RenewalCandidate[] }>("/staff/renewals"),
-    select: (data) => data.items,
+    queryKey: queryKeys.renewals.list(params),
+    queryFn: () => renewalsApi.list(params),
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** Head-count only. This board sits at a desk customers can see. */
+export function useRenewalSummary() {
+  return useQuery({
+    queryKey: queryKeys.renewals.summary(),
+    queryFn: () => renewalsApi.summary(),
     staleTime: 60_000,
   });
 }
 
+export function useRenewalHistory(studentId: number | null) {
+  return useQuery({
+    queryKey: queryKeys.renewals.history(studentId ?? 0),
+    queryFn: () => renewalsApi.contactHistory(studentId as number),
+    enabled: studentId !== null,
+    staleTime: 60_000,
+  });
+}
+
+/**
+ * Recording a call. The history is append-only — an earlier attempt is never
+ * edited, because "we called and they said no" and "we called again" are two
+ * facts, not one corrected fact.
+ *
+ * There is no endpoint that sends anything: the Zalo button is a deep link and
+ * staff write the message themselves.
+ */
 export function useLogRenewalContact() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      studentId,
-      followUpAt,
-    }: {
-      studentId: string;
-      followUpAt: string | null;
-    }) => api.patch<RenewalCandidate>(`/staff/renewals/${studentId}`, { followUpAt }),
-    async onSuccess() {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.staff.renewals() });
-    },
+    mutationFn: (input: RenewalContactRequest) => renewalsApi.logContact(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.renewals }),
   });
+}
+
+/**
+ * Money and credits move together often enough that separating the
+ * invalidations only produces screens that disagree: selling a package changes
+ * a balance, a payment changes the revenue report, and both change who the
+ * renewal list thinks needs a call.
+ */
+function invalidateCommerce(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: roots.packages }),
+    queryClient.invalidateQueries({ queryKey: roots.payments }),
+    queryClient.invalidateQueries({ queryKey: roots.renewals }),
+    queryClient.invalidateQueries({ queryKey: roots.reports }),
+    queryClient.invalidateQueries({ queryKey: roots.students }),
+  ]);
 }

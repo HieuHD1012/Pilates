@@ -20,6 +20,45 @@ invented; each item names how the code behaves until it is answered.
 | Q16 | May a manual adjustment take a session balance below zero, and if so what happens?                             | **Unanswered.** The form shows the resulting balance before saving and says plainly that a negative one has no rule behind it; nothing blocks it, because inventing a floor would be inventing a business rule. Needs a decision before launch.                                                                                                                                                        |
 | Q15 | Store student progress photos, and who may view them?                                                          | **Blocking.** Not implemented. Personal photographs need a confirmed retention and access rule before any code is written.                                                                                                                                                                                                                                                                             |
 
+## Gaps found when wiring the real API (18/09/2026)
+
+The frontend now calls the backend's own 88 endpoints (`docs/API_MAPPING.md`).
+Five things a screen wanted turned out to have no endpoint behind them. None is
+a bug; each is a decision that has not been made, and each is listed with what
+the screen does instead.
+
+| What a screen wanted                                    | Why it cannot have it                                                                             | What it does instead                                                                                                                                                |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The cancellation deadline **before** booking            | `cancel_deadline` is computed per booking, so it exists only once the booking does.               | The class page says the deadline appears in "Lịch của tôi" after booking. It does **not** restate the 4h/1h policy — that would be a second copy of a backend rule. |
+| A trainer seeing how many people are in their own class | `GET /bookings` is ADMIN/STAFF. `GET /classes/my-schedule` carries capacity, not occupancy.       | The trainer's week shows seats offered. The class itself shows the attendance roster, which is the real answer.                                                     |
+| Fill rate per trainer                                   | `GET /reports/trainers` returns sessions and attendances, not capacity — there is no denominator. | The column is gone. The class-size breakdown on the class report answers the same question from a query that has the numbers.                                       |
+| Distinct students taught by a trainer                   | No endpoint counts them.                                                                          | Absent rather than approximated.                                                                                                                                    |
+| Class report by type and by day                         | `GET /reports/classes` is one set of totals for the period.                                       | The per-trainer class-size table replaces both breakdowns.                                                                                                          |
+
+One more, worth a decision rather than a workaround: the studio's people are
+identified by **phone**, but `POST /auth/login` authenticates by **email**. Every
+sign-in screen now asks for an email. If the studio expects staff to sign in with
+a phone number, that is a backend change, not a frontend one.
+
+### What the first run against the real backend added (18/09/2026)
+
+Signing in as each role and working the screens against a live API turned up
+four defects the fixture run could not, all now fixed. Two are worth carrying
+forward as backend-side notes:
+
+- **`weekdays` has no documented convention.** `POST /classes/recurrence` reads
+  the array with Python's `date.weekday()` — Monday 0 … Sunday 6 — but the
+  generated page says only `integer[]`, and the note block is empty. The
+  frontend had guessed ISO-8601 (Monday 1 … Sunday 7), so every recurring class
+  landed a day late and a Sunday pattern was refused outright. The convention
+  lives in `src_BE/app/schemas/scheduling.py` as a comment; it should be in the
+  endpoint's note block, where a client author reads.
+- **`scripts/seed_admin.py` does not validate the email it writes.** Seeding
+  `admin@soulpilates.local` succeeds, that account signs in, and then
+  `GET /accounts` answers `500` for every ADMIN — `AccountResponse` re-validates
+  the address and `email-validator` rejects the special-use domain. Whatever
+  writes a user should hold to the same rule as whatever reads one.
+
 ## Studio facts (all null in `app/content/studio.ts`)
 
 Address · map link · phone · Zalo · WhatsApp · Instagram · email · opening hours.

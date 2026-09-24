@@ -1,38 +1,51 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "~/lib/api/client";
-import { queryKeys } from "~/lib/api/query-keys";
-import type { Lead, LeadDetail, LeadStatus } from "~/lib/api/types";
+import { leadsApi } from "~/lib/api/endpoints";
+import { queryKeys, roots } from "~/lib/api/query-keys";
+import type { LeadListParams, LeadUpdateRequest } from "~/lib/api/schema";
 
-export function useLeads(status: string) {
+export function useLeads(params: LeadListParams) {
   return useQuery({
-    queryKey: queryKeys.staff.leads(status),
-    queryFn: () => api.get<{ items: Lead[] }>("/staff/leads", { searchParams: { status } }),
-    select: (data) => data.items,
-    staleTime: 20_000,
+    queryKey: queryKeys.leads.list(params),
+    queryFn: () => leadsApi.list(params),
+    staleTime: 30_000,
     placeholderData: (previous) => previous,
   });
 }
 
-export function useLeadDetail(leadId: string) {
+export function useLead(leadId: number | null) {
   return useQuery({
-    queryKey: queryKeys.staff.lead(leadId),
-    queryFn: () => api.get<LeadDetail>(`/staff/leads/${leadId}`),
-    staleTime: 20_000,
+    queryKey: queryKeys.leads.detail(leadId ?? 0),
+    queryFn: () => leadsApi.get(leadId as number),
+    enabled: leadId !== null,
+    staleTime: 30_000,
   });
 }
 
-/** Logging a consultation outcome. The backend records who and when. */
-export function useUpdateLead(leadId: string) {
+/** Status, the free-text need, and who is following it up. */
+export function useUpdateLead(leadId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (patch: { status?: LeadStatus; followUpAt?: string | null }) =>
-      api.patch<Lead>(`/staff/leads/${leadId}`, patch),
+    mutationFn: (input: LeadUpdateRequest) => leadsApi.update(leadId, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.leads }),
+  });
+}
+
+/**
+ * Converting a lead into a student.
+ *
+ * It takes no payload: the student is built from the lead the studio already
+ * holds, which is what "keeps the consultation history and does not retype the
+ * data" means. `CONVERTED` is reached only this way — it cannot be set by hand
+ * on the lead, because the status is a consequence, not a label.
+ */
+export function useConvertLead(leadId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => leadsApi.convert(leadId),
     async onSuccess() {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.staff.lead(leadId) }),
-        queryClient.invalidateQueries({ queryKey: ["staff", "leads"] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: roots.leads });
+      await queryClient.invalidateQueries({ queryKey: roots.students });
     },
   });
 }

@@ -1,4 +1,4 @@
-import type { ClassSession } from "~/lib/api/types";
+import type { ClassSessionResponse } from "~/lib/api/schema";
 import { cn } from "~/lib/cn";
 import {
   formatDayMonth,
@@ -28,30 +28,41 @@ const MIN_VISIBLE_HOURS = 8;
  * edge that carries the one meaningful distinction (full vs available). Class
  * type is written, never signalled by colour alone.
  */
+export interface WeekViewProps {
+  days: string[];
+  items: ClassSessionResponse[];
+  today: string;
+  onSelect: (item: ClassSessionResponse) => void;
+  /**
+   * `GET /classes` returns `trainer_id` and no name, so the name is joined in
+   * by the screen from `GET /trainers`. A missing id still renders a chip —
+   * the class is the fact, the name is the label on it.
+   */
+  trainerNames: Map<number, string>;
+  /**
+   * Seats taken per session, counted from `GET /bookings?held_only=true` over
+   * the same week. Staff only: a trainer cannot read that endpoint, so their
+   * week shows the capacity and no occupancy. Absent means "not measured" and
+   * renders as capacity alone — never as 0 of 6, which would say the class is
+   * empty when what we have is no measurement.
+   */
+  seats?: Map<number, number>;
+}
+
 export function WeekGrid({
   days,
   items,
   today,
   onSelect,
   selectedId,
-}: {
-  days: string[];
-  items: ClassSession[];
-  today: string;
-  onSelect: (item: ClassSession) => void;
-  selectedId: string | null;
-}) {
+  trainerNames,
+  seats,
+}: WeekViewProps & { selectedId: number | null }) {
   const bounds = computeBounds(items);
   const totalMinutes = (bounds.endHour - bounds.startHour) * 60;
   const gridHeight = totalMinutes * PX_PER_MINUTE;
 
-  const byDay = new Map<string, ClassSession[]>();
-  for (const item of items) {
-    const key = studioDateKey(item.startsAt);
-    const bucket = byDay.get(key) ?? [];
-    bucket.push(item);
-    byDay.set(key, bucket);
-  }
+  const byDay = groupByDay(items);
 
   const hours = Array.from(
     { length: bounds.endHour - bounds.startHour + 1 },
@@ -113,15 +124,16 @@ export function WeekGrid({
 
             {(byDay.get(day) ?? []).map((item) => {
               const offset =
-                (hourOf(item.startsAt) * 60 +
-                  minuteOf(item.startsAt) -
+                (hourOf(item.starts_at) * 60 +
+                  minuteOf(item.starts_at) -
                   bounds.startHour * 60) *
                 PX_PER_MINUTE;
               const height = Math.max(
-                minutesBetween(item.startsAt, item.endsAt) * PX_PER_MINUTE,
+                minutesBetween(item.starts_at, item.ends_at) * PX_PER_MINUTE,
                 64,
               );
-              const full = item.bookedCount >= item.capacity;
+              const taken = seats?.get(item.id);
+              const full = taken !== undefined && taken >= item.capacity;
 
               return (
                 <button
@@ -135,7 +147,7 @@ export function WeekGrid({
                     "leading-none",
                     "hover:border-ink-3 active:border-ink transition-colors duration-200",
                     full ? "border-l-danger" : "border-l-ink",
-                    item.status === "cancelled" && "opacity-55",
+                    item.status === "CANCELLED" && "opacity-55",
                     selectedId === item.id && "border-ink ring-ink ring-1",
                   )}
                   style={{ top: offset, height }}
@@ -145,17 +157,17 @@ export function WeekGrid({
                       roster fits on one line at this column width. */}
                   <span className="flex items-baseline justify-between gap-1.5 leading-[1.15]">
                     <Figures className="text-2xs text-ink-2">
-                      {formatTimeRange(item.startsAt, item.endsAt)}
+                      {formatTimeRange(item.starts_at, item.ends_at)}
                     </Figures>
                     <Figures className="text-2xs text-ink-2 shrink-0">
-                      {item.bookedCount}/{item.capacity}
+                      {taken === undefined ? item.capacity : `${taken}/${item.capacity}`}
                     </Figures>
                   </span>
                   <span className="text-ink mt-1 block text-xs leading-[1.15]">
-                    {item.title}
+                    {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                   </span>
                   <span className="text-2xs text-ink-2 mt-1 block leading-[1.15]">
-                    {item.trainer.fullName}
+                    {trainerNames.get(item.trainer_id) ?? `HLV #${item.trainer_id}`}
                   </span>
                 </button>
               );
@@ -176,19 +188,10 @@ export function WeekList({
   items,
   today,
   onSelect,
-}: {
-  days: string[];
-  items: ClassSession[];
-  today: string;
-  onSelect: (item: ClassSession) => void;
-}) {
-  const byDay = new Map<string, ClassSession[]>();
-  for (const item of items) {
-    const key = studioDateKey(item.startsAt);
-    const bucket = byDay.get(key) ?? [];
-    bucket.push(item);
-    byDay.set(key, bucket);
-  }
+  trainerNames,
+  seats,
+}: WeekViewProps) {
+  const byDay = groupByDay(items);
 
   return (
     <div className="rule-t">
@@ -212,36 +215,41 @@ export function WeekList({
               <p className="text-ink-2 mt-2 text-xs">Không có lớp</p>
             ) : (
               <ul className="mt-2">
-                {dayItems.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => onSelect(item)}
-                      className="border-rule flex w-full items-center justify-between gap-3 border-t py-3 text-left"
-                    >
-                      <span className="min-w-0">
-                        <Figures className="text-ink block text-xs">
-                          {formatTimeRange(item.startsAt, item.endsAt)}
-                        </Figures>
-                        <span className="text-ink mt-0.5 block text-sm">{item.title}</span>
-                        <span className="text-ink-2 mt-0.5 block text-xs">
-                          {item.type === "private" ? "Riêng" : "Nhóm"} ·{" "}
-                          {item.trainer.fullName}
+                {dayItems.map((item) => {
+                  const taken = seats?.get(item.id);
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => onSelect(item)}
+                        className="border-rule flex w-full items-center justify-between gap-3 border-t py-3 text-left"
+                      >
+                        <span className="min-w-0">
+                          <Figures className="text-ink block text-xs">
+                            {formatTimeRange(item.starts_at, item.ends_at)}
+                          </Figures>
+                          <span className="text-ink mt-0.5 block text-sm">
+                            {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                          </span>
+                          <span className="text-ink-2 mt-0.5 block text-xs">
+                            {trainerNames.get(item.trainer_id) ?? `HLV #${item.trainer_id}`}
+                          </span>
                         </span>
-                      </span>
-                      <span className="shrink-0">
-                        {item.bookedCount >= item.capacity ? (
-                          <StatusBadge tone="critical">Đủ chỗ</StatusBadge>
-                        ) : (
-                          <CapacityMeter
-                            booked={item.bookedCount}
-                            capacity={item.capacity}
-                          />
-                        )}
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                        <span className="shrink-0">
+                          {taken === undefined ? (
+                            <Figures className="text-ink-2 text-xs">
+                              {item.capacity} chỗ
+                            </Figures>
+                          ) : taken >= item.capacity ? (
+                            <StatusBadge tone="critical">Đủ chỗ</StatusBadge>
+                          ) : (
+                            <CapacityMeter booked={taken} capacity={item.capacity} />
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
@@ -249,6 +257,17 @@ export function WeekList({
       })}
     </div>
   );
+}
+
+function groupByDay(items: ClassSessionResponse[]): Map<string, ClassSessionResponse[]> {
+  const byDay = new Map<string, ClassSessionResponse[]>();
+  for (const item of items) {
+    const key = studioDateKey(item.starts_at);
+    const bucket = byDay.get(key) ?? [];
+    bucket.push(item);
+    byDay.set(key, bucket);
+  }
+  return byDay;
 }
 
 function hourOf(iso: string): number {
@@ -264,15 +283,18 @@ function minuteOf(iso: string): number {
  * 06–20 working day. A calendar that renders six empty midday hours every week
  * trains people to scroll past their own schedule.
  */
-function computeBounds(items: ClassSession[]): { startHour: number; endHour: number } {
+function computeBounds(items: ClassSessionResponse[]): {
+  startHour: number;
+  endHour: number;
+} {
   if (items.length === 0) {
     return { startHour: DEFAULT_START_HOUR, endHour: DEFAULT_END_HOUR };
   }
   let min = 23;
   let max = 0;
   for (const item of items) {
-    min = Math.min(min, hourOf(item.startsAt));
-    max = Math.max(max, hourOf(item.endsAt) + (minuteOf(item.endsAt) > 0 ? 1 : 0));
+    min = Math.min(min, hourOf(item.starts_at));
+    max = Math.max(max, hourOf(item.ends_at) + (minuteOf(item.ends_at) > 0 ? 1 : 0));
   }
   const startHour = Math.max(0, min);
   const endHour = Math.min(24, Math.max(max, startHour + MIN_VISIBLE_HOURS));

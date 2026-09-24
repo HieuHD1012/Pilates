@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 
-import { useAdjustSessions, useSessionLedger } from "~/features/commerce/queries";
+import {
+  useAdjustCredits,
+  usePackageLedger,
+  useStudentPackages,
+} from "~/features/commerce/queries";
 import { SessionAdjustmentForm } from "~/features/commerce/session-adjustment-form";
-import type { SessionLedger, SessionLedgerEntry } from "~/lib/api/types";
+import { useStudent } from "~/features/people/queries";
+import type {
+  LedgerEntryResponse,
+  LedgerReasonCode,
+  PackageLedgerResponse,
+} from "~/lib/api/schema";
 import { formatDate, formatNumber, formatSigned, formatTime } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
@@ -29,40 +38,35 @@ export function meta(_: Route.MetaArgs) {
  * manager can verify it by eye — entries oldest first, a signed change column,
  * and a running balance beside it that a reader can follow downward to the total.
  *
- * Nothing here is computed as policy: the deltas are the backend's, and the
- * running balance is arithmetic on them, shown so the number can be trusted.
+ * Nothing here is computed as policy. In particular the balance column is the
+ * backend's own `balance_after` for each row, not a total this screen adds up:
+ * a client-side running total is a second ledger, and a second ledger is the
+ * one that disagrees.
  */
 
-const REF_TYPE: Record<SessionLedgerEntry["refType"], string> = {
-  purchase: "Mua gói",
-  booking: "Đặt lớp",
-  cancellation: "Hủy lớp",
-  manual: "Điều chỉnh",
-  expiry: "Hết hạn",
+const REASON_LABEL: Record<LedgerReasonCode, string> = {
+  PACKAGE_SOLD: "Mua gói",
+  PACKAGE_RENEWED: "Gia hạn gói",
+  BOOKING_DEDUCT: "Đặt lớp",
+  CANCEL_REFUND: "Hủy lớp",
+  ADMIN_ADJUST: "Điều chỉnh tay",
+  PAYMENT_VOID: "Hủy thanh toán",
 };
 
-interface LedgerLine {
-  entry: SessionLedgerEntry;
-  /** Balance after this entry, i.e. the sum of every delta up to here. */
-  balance: number;
-}
-
-/** Oldest first, so the running balance reads downward like a paper ledger. */
-function withRunningBalance(entries: SessionLedgerEntry[]): LedgerLine[] {
-  const chronological = [...entries].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+/** Oldest first, so the balance column reads downward like a paper ledger. */
+function chronological(entries: LedgerEntryResponse[]): LedgerEntryResponse[] {
+  return [...entries].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
-
-  let balance = 0;
-  return chronological.map((entry) => {
-    balance += entry.delta;
-    return { entry, balance };
-  });
 }
 
 export default function StaffSessionLedger() {
   const [searchParams] = useSearchParams();
   const studentPackageId = searchParams.get("goi");
+  // Optional, and carried by the link from the student profile: the ledger
+  // itself names no student and no package, so without it the screen says
+  // which package by id rather than guessing at a name.
+  const studentId = searchParams.get("hv");
 
   /**
    * A ledger belongs to a package, so there is no such thing as "the" ledger.
@@ -90,11 +94,22 @@ export default function StaffSessionLedger() {
     );
   }
 
-  return <LedgerScreen studentPackageId={studentPackageId} />;
+  return (
+    <LedgerScreen
+      studentPackageId={Number(studentPackageId)}
+      studentId={studentId === null ? null : Number(studentId)}
+    />
+  );
 }
 
-function LedgerScreen({ studentPackageId }: { studentPackageId: string }) {
-  const query = useSessionLedger(studentPackageId);
+function LedgerScreen({
+  studentPackageId,
+  studentId,
+}: {
+  studentPackageId: number;
+  studentId: number | null;
+}) {
+  const query = usePackageLedger(studentPackageId);
 
   return (
     <div className="gutter py-6">
@@ -106,25 +121,41 @@ function LedgerScreen({ studentPackageId }: { studentPackageId: string }) {
         emptyTitle="Không tìm thấy gói này"
         emptyDescription="Mở sổ buổi từ hồ sơ học viên để chắc chắn đúng gói."
       >
-        {(ledger) => <LedgerBody ledger={ledger} />}
+        {(ledger) => <LedgerBody ledger={ledger} studentId={studentId} />}
       </QueryBoundary>
     </div>
   );
 }
 
-function LedgerBody({ ledger }: { ledger: SessionLedger }) {
+function LedgerBody({
+  ledger,
+  studentId,
+}: {
+  ledger: PackageLedgerResponse;
+  studentId: number | null;
+}) {
   const [adjusting, setAdjusting] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
-  const adjust = useAdjustSessions(ledger.studentPackageId);
+  const adjust = useAdjustCredits(ledger.student_package_id);
 
-  const lines = withRunningBalance(ledger.entries);
-  const summed = lines.reduce((sum, line) => sum + line.entry.delta, 0);
+  const student = useStudent(studentId);
+  const packages = useStudentPackages(
+    { student_id: studentId ?? undefined },
+    { enabled: studentId !== null },
+  );
+  const thisPackage = (packages.data ?? []).find(
+    (item) => item.id === ledger.student_package_id,
+  );
+  const packageName = thisPackage?.name_snapshot ?? `Gói #${ledger.student_package_id}`;
+
+  const lines = chronological(ledger.entries);
+  const summed = lines.reduce((sum, line) => sum + line.delta, 0);
   /**
-   * The one check this screen exists for. `sessionsRemaining` is authoritative and
-   * the ledger is its audit trail; if they disagree, the product must say so
-   * rather than quietly showing whichever number it happened to render.
+   * The one check this screen exists for. `closing_balance` is authoritative
+   * and the entries are its audit trail; if they disagree the product must say
+   * so rather than quietly showing whichever number it happened to render.
    */
-  const reconciles = summed === ledger.sessionsRemaining;
+  const reconciles = summed === ledger.closing_balance;
 
   return (
     <>
@@ -138,20 +169,22 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
         }
         meta={
           <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Học viên</dt>
-              <dd>
-                <Link
-                  to={`/studio/hoc-vien/${ledger.studentId}`}
-                  className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
-                >
-                  {ledger.studentName}
-                </Link>
-              </dd>
-            </div>
+            {studentId !== null ? (
+              <div className="flex items-baseline gap-2">
+                <dt>Học viên</dt>
+                <dd>
+                  <Link
+                    to={`/studio/hoc-vien/${studentId}`}
+                    className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+                  >
+                    {student.data?.full_name ?? `Học viên #${studentId}`}
+                  </Link>
+                </dd>
+              </div>
+            ) : null}
             <div className="flex items-baseline gap-2">
               <dt>Gói</dt>
-              <dd className="text-ink">{ledger.packageName}</dd>
+              <dd className="text-ink">{packageName}</dd>
             </div>
             <div className="flex items-baseline gap-2">
               <dt>Số bút toán</dt>
@@ -165,7 +198,7 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
               <dt>Số dư</dt>
               <dd>
                 <Figures className="text-ink">
-                  {formatNumber(ledger.sessionsRemaining)}
+                  {formatNumber(ledger.closing_balance)}
                 </Figures>
                 <span className="ml-1">buổi</span>
               </dd>
@@ -176,7 +209,7 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
 
       {reconciles ? null : (
         <p role="alert" className="rule-t border-t-danger/40 text-danger mt-4 pt-3 text-sm">
-          Số dư của gói ({formatNumber(ledger.sessionsRemaining)}) không bằng tổng các bút
+          Số dư của gói ({formatNumber(ledger.closing_balance)}) không bằng tổng các bút
           toán ({formatNumber(summed)}). Đừng điều chỉnh thêm trước khi đối chiếu lại — một
           trong hai con số đang sai.
         </p>
@@ -192,10 +225,10 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
       ) : (
         <>
           <div className="hidden lg:block">
-            <LedgerTable lines={lines} balance={summed} />
+            <LedgerTable entries={lines} balance={ledger.closing_balance} />
           </div>
           <div className="lg:hidden">
-            <LedgerList lines={lines} balance={summed} />
+            <LedgerList entries={lines} balance={ledger.closing_balance} />
           </div>
         </>
       )}
@@ -213,10 +246,10 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
       >
         <DialogContent
           title="Điều chỉnh buổi"
-          description={`${ledger.packageName} — ${ledger.studentName}. Bút toán này không xóa được; sửa sai bằng một bút toán ngược lại.`}
+          description={`${packageName}. Bút toán này không xóa được; sửa sai bằng một bút toán ngược lại.`}
         >
           <SessionAdjustmentForm
-            currentBalance={ledger.sessionsRemaining}
+            currentBalance={ledger.closing_balance}
             pending={adjust.isPending}
             error={adjust.error}
             onCancel={() => setAdjusting(false)}
@@ -224,7 +257,7 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
               const next = await adjust.mutateAsync(input);
               setAdjusting(false);
               setSaved(
-                `Đã ghi bút toán. Số dư còn ${formatNumber(next.sessionsRemaining)} buổi.`,
+                `Đã ghi bút toán. Số dư còn ${formatNumber(next.balance_cached)} buổi.`,
               );
               return next;
             }}
@@ -240,7 +273,13 @@ function LedgerBody({ ledger }: { ledger: SessionLedger }) {
  * the change and the balance it produces. Reading them as a pair is the
  * verification this screen is for.
  */
-function LedgerTable({ lines, balance }: { lines: LedgerLine[]; balance: number }) {
+function LedgerTable({
+  entries,
+  balance,
+}: {
+  entries: LedgerEntryResponse[];
+  balance: number;
+}) {
   return (
     <DataTable caption="Sổ buổi của gói, cũ nhất trước" minWidth="58rem">
       <thead>
@@ -254,25 +293,27 @@ function LedgerTable({ lines, balance }: { lines: LedgerLine[]; balance: number 
         </tr>
       </thead>
       <tbody>
-        {lines.map(({ entry, balance: running }) => (
+        {entries.map((entry) => (
           <Tr key={entry.id}>
             <Td className="align-top whitespace-nowrap">
-              <Figures>{formatDate(entry.createdAt)}</Figures>
+              <Figures>{formatDate(entry.created_at)}</Figures>
               <Figures className="text-ink-2 mt-0.5 block text-xs">
-                {formatTime(entry.createdAt)}
+                {formatTime(entry.created_at)}
               </Figures>
             </Td>
             <Td className="align-top">
-              <span className="block max-w-[24rem]">{entry.reason}</span>
+              <span className="block max-w-[24rem]">
+                {entry.note ?? REASON_LABEL[entry.reason_code]}
+              </span>
             </Td>
-            <Td className="text-ink-2 align-top">{REF_TYPE[entry.refType]}</Td>
+            <Td className="text-ink-2 align-top">{REASON_LABEL[entry.reason_code]}</Td>
             <Td numeric className="align-top">
               <Figures className="whitespace-nowrap">{formatSigned(entry.delta)}</Figures>
             </Td>
             <Td numeric className="align-top">
-              <Figures>{formatNumber(running)}</Figures>
+              <Figures>{formatNumber(entry.balance_after)}</Figures>
             </Td>
-            <Td className="text-ink-2 align-top">{entry.actorName}</Td>
+            <Td className="text-ink-2 align-top">Tài khoản #{entry.actor_user_id}</Td>
           </Tr>
         ))}
       </tbody>
@@ -303,35 +344,40 @@ function LedgerTable({ lines, balance }: { lines: LedgerLine[]; balance: number 
  * Below lg the ledger becomes ruled rows, each carrying its own resulting
  * balance, and closes with the same total the table's foot shows.
  */
-function LedgerList({ lines, balance }: { lines: LedgerLine[]; balance: number }) {
+function LedgerList({
+  entries,
+  balance,
+}: {
+  entries: LedgerEntryResponse[];
+  balance: number;
+}) {
   return (
     <>
       <ul className="rule-t">
-        {lines.map(({ entry, balance: running }) => (
+        {entries.map((entry) => (
           <li key={entry.id} className="rule-b py-3.5">
             <div className="flex items-baseline justify-between gap-x-4">
-              <span className="text-ink text-sm">{entry.reason}</span>
+              <span className="text-ink text-sm">
+                {entry.note ?? REASON_LABEL[entry.reason_code]}
+              </span>
               <Figures className="text-ink shrink-0 text-sm">
                 {formatSigned(entry.delta)}
               </Figures>
             </div>
 
             <p className="text-ink-2 mt-1.5 text-xs">
-              <Figures className="text-ink">{formatDate(entry.createdAt)}</Figures>{" "}
-              <Figures className="text-ink">{formatTime(entry.createdAt)}</Figures>
+              <Figures className="text-ink">{formatDate(entry.created_at)}</Figures>{" "}
+              <Figures className="text-ink">{formatTime(entry.created_at)}</Figures>
               <span className="mx-1.5" aria-hidden="true">
                 ·
               </span>
-              {REF_TYPE[entry.refType]}
-              <span className="mx-1.5" aria-hidden="true">
-                ·
-              </span>
-              {entry.actorName}
+              {REASON_LABEL[entry.reason_code]}
             </p>
 
             <p className="text-ink-2 mt-1 text-xs">
               Số dư sau bút toán{" "}
-              <Figures className="text-ink">{formatNumber(running)}</Figures> buổi
+              <Figures className="text-ink">{formatNumber(entry.balance_after)}</Figures>{" "}
+              buổi
             </p>
           </li>
         ))}

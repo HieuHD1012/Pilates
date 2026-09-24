@@ -13,7 +13,7 @@ import { cn } from "~/lib/cn";
  */
 export default function StudentLayout() {
   return (
-    <RoleGate allow={["student"]}>
+    <RoleGate allow={["STUDENT"]}>
       <div className="bg-chalk flex min-h-dvh flex-col">
         <StudentHeader />
         <main className="flex-1 pb-20 md:pb-0">
@@ -53,7 +53,7 @@ function StudentHeader() {
           </ul>
         </nav>
 
-        {user ? <span className="text-ink-2 text-xs">{user.fullName}</span> : null}
+        {user ? <span className="text-ink-2 text-xs">{user.full_name}</span> : null}
       </div>
     </header>
   );

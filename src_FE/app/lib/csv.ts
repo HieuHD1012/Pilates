@@ -44,7 +44,14 @@ export function toCsv(
  * the life of the tab.
  */
 export function downloadCsv(filename: string, content: string): void {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+  downloadBlob(filename, new Blob([content], { type: "text/csv;charset=utf-8" }));
+}
+
+/**
+ * The same handover for a file the server produced — a report export arrives as
+ * bytes behind a token, so it cannot be a plain download link.
+ */
+export function downloadBlob(filename: string, blob: Blob): void {
   const href = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = href;
