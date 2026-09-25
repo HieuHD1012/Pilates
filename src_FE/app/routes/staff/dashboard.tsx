@@ -27,19 +27,9 @@ export function meta(_: Route.MetaArgs) {
  *  - **A number may be `null`,** meaning not measured. The cell is then left
  *    empty; "0" would be a measurement, and a wrong one.
  *
- * `detail_path` on each number is an **API** path, not a route. The link below
- * is the studio screen that answers the same question, chosen by `key`; a
- * number whose screen does not exist yet is shown without a link rather than
- * pointing at a page that is not there.
+ * `detail_path` on each number is an **API** path, not a route. Action counts
+ * below link to the matching studio screens rather than that API path.
  */
-
-/** Dashboard number keys → the studio screen that shows those rows. */
-const DETAIL_ROUTE: Record<string, string> = {
-  sessions_today: "/studio/lich",
-  bookings_today: "/studio/lich",
-  renewals_due: "/studio/gia-han",
-  unconfirmed_payments: "/studio/thanh-toan",
-};
 
 export default function StaffDashboard() {
   const query = useDashboard();
@@ -68,77 +58,111 @@ export default function StaffDashboard() {
       ) : null}
 
       {query.isSuccess ? (
-        <>
-          <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            {query.data.numbers.map((number) => {
-              const route = DETAIL_ROUTE[number.key];
-              const value =
-                number.value === null ? (
-                  <Placeholder />
-                ) : (
-                  <Figures display>{formatNumber(number.value)}</Figures>
-                );
+        <div className="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1fr)_18rem] xl:gap-10">
+          <aside className="rule-t xl:border-rule pt-5 xl:col-start-2 xl:row-start-1 xl:border-t-0 xl:border-l xl:pt-0 xl:pl-8">
+            <h2 className="text-ink text-base font-medium">Việc khác hôm nay</h2>
+            <ul className="rule-t mt-3">
+              {query.data.numbers
+                .filter(
+                  (number) =>
+                    number.key === "renewals_due" || number.key === "unconfirmed_payments",
+                )
+                .map((number) => (
+                  <li key={number.key} className="rule-b">
+                    <Link
+                      to={
+                        number.key === "renewals_due"
+                          ? "/studio/gia-han"
+                          : "/studio/thanh-toan"
+                      }
+                      className="hover:bg-sand-deep/50 flex items-center justify-between gap-3 py-3"
+                    >
+                      <span className="text-ink text-sm">{number.label}</span>
+                      <span className="figures text-ink text-xl">
+                        {number.value === null ? (
+                          <Placeholder />
+                        ) : (
+                          formatNumber(number.value)
+                        )}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </aside>
 
-              return (
-                <Metric
-                  key={number.key}
-                  label={number.label}
-                  value={route ? <Link to={route}>{value}</Link> : value}
+          <div className="xl:col-start-1 xl:row-span-2 xl:row-start-1">
+            <section>
+              <h2 className="text-ink text-base font-medium">Chờ điểm danh</h2>
+              <p className="measure-wide text-ink-2 mt-1 text-xs">
+                Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Nhắc họ mở lớp của mình.
+              </p>
+              {query.data.sessions_needing_attention.length === 0 ? (
+                <p className="rule-t text-ink-2 mt-4 py-4 text-sm">
+                  Không có lớp nào chờ điểm danh.
+                </p>
+              ) : (
+                <ul className="rule-t mt-4">
+                  {query.data.sessions_needing_attention.map((session) => (
+                    <SessionRow key={session.class_session_id} session={session} dated>
+                      <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
+                    </SessionRow>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="mt-8">
+              <h2 className="text-ink text-base font-medium">Lớp hôm nay</h2>
+              {query.data.sessions_today.length === 0 ? (
+                <EmptyState
+                  className="mt-4"
+                  title="Hôm nay không có lớp"
+                  description="Không có buổi nào được xếp cho ngày hôm nay."
                 />
-              );
-            })}
+              ) : (
+                <ul className="rule-t mt-4">
+                  {query.data.sessions_today.map((session) => (
+                    <SessionRow key={session.class_session_id} session={session}>
+                      {session.status === "CANCELLED" ? (
+                        <StatusBadge tone="critical">Đã hủy</StatusBadge>
+                      ) : (
+                        <CapacityMeter
+                          booked={session.booked_count}
+                          capacity={session.capacity}
+                        />
+                      )}
+                    </SessionRow>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
 
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Chờ điểm danh</h2>
-            <p className="measure-wide text-ink-2 mt-1 text-xs">
-              Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ
-              trách mới điểm danh được — nhắc họ mở lớp của mình.
-            </p>
-
-            {query.data.sessions_needing_attention.length === 0 ? (
-              <EmptyState
-                className="mt-4"
-                title="Không có lớp nào chờ điểm danh"
-                description="Mọi lớp đã kết thúc đều đã được điểm danh."
-              />
-            ) : (
-              <ul className="rule-t mt-4">
-                {query.data.sessions_needing_attention.map((session) => (
-                  <SessionRow key={session.class_session_id} session={session} dated>
-                    <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
-                  </SessionRow>
+          <section className="rule-t xl:border-rule pt-5 xl:col-start-2 xl:row-start-2 xl:border-t-0 xl:border-l xl:pl-8">
+            <h3 className="text-ink text-sm font-medium">Tình hình hôm nay</h3>
+            <div className="mt-3 grid grid-cols-2 gap-4 xl:grid-cols-1">
+              {query.data.numbers
+                .filter(
+                  (number) =>
+                    number.key !== "renewals_due" && number.key !== "unconfirmed_payments",
+                )
+                .map((number) => (
+                  <Metric
+                    key={number.key}
+                    label={number.label}
+                    value={
+                      number.value === null ? (
+                        <Placeholder />
+                      ) : (
+                        <Figures display>{formatNumber(number.value)}</Figures>
+                      )
+                    }
+                  />
                 ))}
-              </ul>
-            )}
+            </div>
           </section>
-
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Lớp hôm nay</h2>
-            {query.data.sessions_today.length === 0 ? (
-              <EmptyState
-                className="mt-4"
-                title="Hôm nay không có lớp"
-                description="Không có buổi nào được xếp cho ngày hôm nay."
-              />
-            ) : (
-              <ul className="rule-t mt-4">
-                {query.data.sessions_today.map((session) => (
-                  <SessionRow key={session.class_session_id} session={session}>
-                    {session.status === "CANCELLED" ? (
-                      <StatusBadge tone="critical">Đã hủy</StatusBadge>
-                    ) : (
-                      <CapacityMeter
-                        booked={session.booked_count}
-                        capacity={session.capacity}
-                      />
-                    )}
-                  </SessionRow>
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
+        </div>
       ) : null}
     </div>
   );

@@ -34,7 +34,7 @@ export function meta(_: Route.MetaArgs) {
  */
 export default function StudentClasses() {
   const today = studioDateKey(new Date());
-  const [activeDay, setActiveDay] = useState(today);
+  const [chosenDay, setChosenDay] = useState<string | null>(null);
   const [classType, setClassType] = useState<ClassType | "all">("all");
 
   const days = Array.from({ length: 14 }, (_, index) => addDays(today, index));
@@ -66,9 +66,17 @@ export default function StudentClasses() {
   // Anchored to when the data was fetched, not to render time: a component
   // that re-reads the clock while rendering produces unstable output.
   const now = query.dataUpdatedAt || 0;
-  const items = (query.data ?? [])
-    .filter((item) => studioDateKey(item.starts_at) === activeDay)
-    .filter((item) => new Date(item.starts_at).getTime() > now);
+  const upcoming = (query.data ?? []).filter(
+    (item) => new Date(item.starts_at).getTime() > now,
+  );
+  const firstAvailableDay = days.find((day) =>
+    upcoming.some((item) => studioDateKey(item.starts_at) === day && item.canBook),
+  );
+  const firstClassDay = days.find((day) =>
+    upcoming.some((item) => studioDateKey(item.starts_at) === day),
+  );
+  const activeDay = chosenDay ?? firstAvailableDay ?? firstClassDay ?? today;
+  const items = upcoming.filter((item) => studioDateKey(item.starts_at) === activeDay);
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -88,20 +96,24 @@ export default function StudentClasses() {
       >
         {days.map((day) => {
           const selected = day === activeDay;
+          const dayCount = upcoming.filter(
+            (item) => studioDateKey(item.starts_at) === day,
+          ).length;
           return (
             <button
               key={day}
               type="button"
               role="tab"
               aria-selected={selected}
-              onClick={() => setActiveDay(day)}
+              onClick={() => setChosenDay(day)}
               className={cn(
-                "flex min-w-13 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors",
+                "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors",
                 selected ? "bg-ink text-sand" : "text-ink-2 hover:bg-sand-deep",
               )}
             >
               <span className="text-2xs">{weekdayShort(`${day}T00:00:00+07:00`)}</span>
               <Figures className="text-sm">{day.slice(8)}</Figures>
+              <span className="text-2xs">{dayCount > 0 ? `${dayCount} lớp` : "—"}</span>
             </button>
           );
         })}

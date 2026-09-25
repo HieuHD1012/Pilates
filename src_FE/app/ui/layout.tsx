@@ -110,7 +110,9 @@ export function PageHeader({
             <p className="measure-wide text-ink-2 mt-1 text-sm">{description}</p>
           ) : null}
         </div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        {actions ? (
+          <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>
+        ) : null}
       </div>
       {meta ? <div className="mt-3">{meta}</div> : null}
     </header>

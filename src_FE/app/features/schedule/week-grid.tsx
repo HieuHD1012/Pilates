@@ -57,8 +57,9 @@ export function WeekGrid({
   selectedId,
   trainerNames,
   seats,
-}: WeekViewProps & { selectedId: number | null }) {
-  const bounds = computeBounds(items);
+  minVisibleHours = MIN_VISIBLE_HOURS,
+}: WeekViewProps & { selectedId: number | null; minVisibleHours?: number }) {
+  const bounds = computeBounds(items, minVisibleHours);
   const totalMinutes = (bounds.endHour - bounds.startHour) * 60;
   const gridHeight = totalMinutes * PX_PER_MINUTE;
 
@@ -130,7 +131,7 @@ export function WeekGrid({
                 PX_PER_MINUTE;
               const height = Math.max(
                 minutesBetween(item.starts_at, item.ends_at) * PX_PER_MINUTE,
-                64,
+                72,
               );
               const taken = seats?.get(item.id);
               const full = taken !== undefined && taken >= item.capacity;
@@ -283,7 +284,10 @@ function minuteOf(iso: string): number {
  * 06–20 working day. A calendar that renders six empty midday hours every week
  * trains people to scroll past their own schedule.
  */
-function computeBounds(items: ClassSessionResponse[]): {
+function computeBounds(
+  items: ClassSessionResponse[],
+  minVisibleHours = MIN_VISIBLE_HOURS,
+): {
   startHour: number;
   endHour: number;
 } {
@@ -297,6 +301,6 @@ function computeBounds(items: ClassSessionResponse[]): {
     max = Math.max(max, hourOf(item.ends_at) + (minuteOf(item.ends_at) > 0 ? 1 : 0));
   }
   const startHour = Math.max(0, min);
-  const endHour = Math.min(24, Math.max(max, startHour + MIN_VISIBLE_HOURS));
+  const endHour = Math.min(24, Math.max(max, startHour + minVisibleHours));
   return { startHour, endHour };
 }

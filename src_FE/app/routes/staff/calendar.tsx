@@ -94,6 +94,8 @@ export default function StaffCalendar() {
   const seatCounts = useCalendarSeatCounts(filters);
 
   const items = query.data ?? [];
+  const morningItems = items.filter((item) => formatTime(item.starts_at) < "12:00");
+  const laterItems = items.filter((item) => formatTime(item.starts_at) >= "12:00");
   const seats = seatCounts.data;
   const trainerNames = trainerNameMap(trainers.data);
   const fullCount = items.filter(
@@ -109,33 +111,41 @@ export default function StaffCalendar() {
         description="Toàn bộ lớp trong tuần, theo huấn luyện viên và hình thức lớp."
         actions={
           <>
-            <Button size="sm" onClick={() => setCreating("single")}>
-              Thêm lớp
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setCreating("recurring")}>
-              Lớp định kỳ
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, -7))}
-            >
-              Tuần trước
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
-            >
-              Tuần này
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, 7))}
-            >
-              Tuần sau
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => setCreating("single")}>
+                Thêm lớp
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setCreating("recurring")}
+              >
+                Lớp định kỳ
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(addDays(weekStart, -7))}
+              >
+                Tuần trước
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
+              >
+                Tuần này
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(addDays(weekStart, 7))}
+              >
+                Tuần sau
+              </Button>
+            </div>
           </>
         }
         meta={
@@ -255,15 +265,36 @@ export default function StaffCalendar() {
       {query.isSuccess && items.length > 0 ? (
         <>
           <div className="hidden lg:block">
-            <WeekGrid
-              days={days}
-              items={items}
-              today={today}
-              onSelect={setSelected}
-              selectedId={selected?.id ?? null}
-              trainerNames={trainerNames}
-              seats={seats}
-            />
+            {morningItems.length > 0 ? (
+              <section>
+                <h2 className="text-ink mb-3 text-sm font-medium">Buổi sáng</h2>
+                <WeekGrid
+                  days={days}
+                  items={morningItems}
+                  today={today}
+                  onSelect={setSelected}
+                  selectedId={selected?.id ?? null}
+                  trainerNames={trainerNames}
+                  seats={seats}
+                  minVisibleHours={3}
+                />
+              </section>
+            ) : null}
+            {laterItems.length > 0 ? (
+              <section className="mt-7">
+                <h2 className="text-ink mb-3 text-sm font-medium">Buổi chiều và tối</h2>
+                <WeekGrid
+                  days={days}
+                  items={laterItems}
+                  today={today}
+                  onSelect={setSelected}
+                  selectedId={selected?.id ?? null}
+                  trainerNames={trainerNames}
+                  seats={seats}
+                  minVisibleHours={3}
+                />
+              </section>
+            ) : null}
           </div>
           <div className="lg:hidden">
             <WeekList
