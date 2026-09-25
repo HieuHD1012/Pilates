@@ -69,7 +69,7 @@ const home = await readFile(htmlPathFor("/"), "utf8").catch(() => "");
 for (const [label, needle] of [
   ["<title>", "<title>"],
   ['meta name="description"', 'name="description"'],
-  ["h1 copy", "Tập đúng hơn"],
+  ["h1 copy", "Lớp nhóm nhỏ và lớp riêng tại Nha Trang."],
   ["lang attribute", 'lang="vi"'],
 ]) {
   if (!home.includes(needle)) {

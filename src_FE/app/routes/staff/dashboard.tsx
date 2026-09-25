@@ -6,7 +6,7 @@ import { formatDayMonth, formatNumber, formatTime, weekdayShort } from "~/lib/fo
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { Metric, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { CapacityMeter, StatusBadge } from "~/ui/status";
 
 import type { Route } from "./+types/dashboard";
@@ -16,7 +16,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 /**
- * The dashboard answers one question: what needs attention today?
+ * The dashboard is a queue first, with today's classes immediately after it.
  *
  * The whole screen is `GET /reports/dashboard` — four numbers, today's classes,
  * and the classes that have ended without a trainer marking attendance. Two
@@ -27,19 +27,9 @@ export function meta(_: Route.MetaArgs) {
  *  - **A number may be `null`,** meaning not measured. The cell is then left
  *    empty; "0" would be a measurement, and a wrong one.
  *
- * `detail_path` on each number is an **API** path, not a route. The link below
- * is the studio screen that answers the same question, chosen by `key`; a
- * number whose screen does not exist yet is shown without a link rather than
- * pointing at a page that is not there.
+ * `detail_path` on each number is an **API** path, not a route. The queue links
+ * to the studio screens that can act on renewal and payment counts.
  */
-
-/** Dashboard number keys → the studio screen that shows those rows. */
-const DETAIL_ROUTE: Record<string, string> = {
-  sessions_today: "/studio/lich",
-  bookings_today: "/studio/lich",
-  renewals_due: "/studio/gia-han",
-  unconfirmed_payments: "/studio/thanh-toan",
-};
 
 export default function StaffDashboard() {
   const query = useDashboard();
@@ -48,7 +38,7 @@ export default function StaffDashboard() {
     <div className="gutter py-6">
       <PageHeader
         title="Tổng quan"
-        description="Bốn con số của hôm nay, lịch trong ngày, và những lớp đã kết thúc còn chờ điểm danh."
+        description="Việc cần xử lý và những lớp diễn ra hôm nay."
         actions={
           <Button asChild size="sm" variant="secondary">
             <Link to="/studio/lich">Mở lịch tuần</Link>
@@ -69,52 +59,84 @@ export default function StaffDashboard() {
 
       {query.isSuccess ? (
         <>
-          <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            {query.data.numbers.map((number) => {
-              const route = DETAIL_ROUTE[number.key];
-              const value =
-                number.value === null ? (
-                  <Placeholder />
-                ) : (
-                  <Figures display>{formatNumber(number.value)}</Figures>
-                );
-
-              return (
-                <Metric
-                  key={number.key}
-                  label={number.label}
-                  value={route ? <Link to={route}>{value}</Link> : value}
-                />
-              );
-            })}
-          </div>
-
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Chờ điểm danh</h2>
-            <p className="measure-wide text-ink-2 mt-1 text-xs">
-              Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ
-              trách mới điểm danh được — nhắc họ mở lớp của mình.
+          <section className="mt-6">
+            <h2 className="text-ink text-lg font-medium">Việc cần xử lý</h2>
+            <p className="text-ink-2 mt-1 text-sm">
+              Mở đúng danh sách để tiếp tục công việc.
             </p>
-
-            {query.data.sessions_needing_attention.length === 0 ? (
-              <EmptyState
-                className="mt-4"
-                title="Không có lớp nào chờ điểm danh"
-                description="Mọi lớp đã kết thúc đều đã được điểm danh."
-              />
-            ) : (
-              <ul className="rule-t mt-4">
-                {query.data.sessions_needing_attention.map((session) => (
-                  <SessionRow key={session.class_session_id} session={session} dated>
+            <ul className="rule-t mt-4">
+              {query.data.sessions_needing_attention.map((session) => (
+                <li key={session.class_session_id} className="rule-b">
+                  <Link
+                    to={`/studio/lich/${session.class_session_id}`}
+                    className="hover:bg-sand-deep/50 grid gap-1 py-4 sm:grid-cols-[9rem_1fr_auto] sm:items-center sm:gap-4"
+                  >
+                    <span className="text-ink-2 text-xs">
+                      {weekdayShort(session.starts_at)}{" "}
+                      <Figures>{formatDayMonth(session.starts_at)}</Figures> ·{" "}
+                      <Figures>{formatTime(session.starts_at)}</Figures>
+                    </span>
+                    <span className="text-ink text-sm">
+                      Nhắc điểm danh · {session.trainer_name}
+                    </span>
                     <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
-                  </SessionRow>
+                  </Link>
+                </li>
+              ))}
+              {query.data.numbers
+                .filter(
+                  (number) =>
+                    (number.key === "renewals_due" ||
+                      number.key === "unconfirmed_payments") &&
+                    (number.value ?? 0) > 0,
+                )
+                .map((number) => (
+                  <li key={number.key} className="rule-b">
+                    <Link
+                      to={
+                        number.key === "renewals_due"
+                          ? "/studio/gia-han"
+                          : "/studio/thanh-toan"
+                      }
+                      className="hover:bg-sand-deep/50 flex items-center justify-between gap-4 py-4"
+                    >
+                      <span className="text-ink text-sm">{number.label}</span>
+                      <span className="flex items-baseline gap-4">
+                        <Figures className="text-ink text-xl">
+                          {formatNumber(number.value ?? 0)}
+                        </Figures>
+                        <span aria-hidden="true">→</span>
+                      </span>
+                    </Link>
+                  </li>
                 ))}
-              </ul>
-            )}
+            </ul>
+            {query.data.sessions_needing_attention.length === 0 &&
+            query.data.numbers.every(
+              (number) =>
+                (number.key !== "renewals_due" && number.key !== "unconfirmed_payments") ||
+                (number.value ?? 0) === 0,
+            ) ? (
+              <p className="text-ink-2 py-4 text-sm">Không có việc nào đang chờ xử lý.</p>
+            ) : null}
           </section>
 
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Lớp hôm nay</h2>
+          <section className="mt-10">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="text-ink text-lg font-medium">Lịch hôm nay</h2>
+              <p className="text-ink-2 text-xs">
+                {query.data.numbers
+                  .filter(
+                    (number) =>
+                      number.key === "sessions_today" || number.key === "bookings_today",
+                  )
+                  .map(
+                    (number) =>
+                      `${number.label}: ${number.value === null ? "—" : formatNumber(number.value)}`,
+                  )
+                  .join(" · ")}
+              </p>
+            </div>
             {query.data.sessions_today.length === 0 ? (
               <EmptyState
                 className="mt-4"
@@ -175,17 +197,5 @@ function SessionRow({
       </span>
       <span className="flex items-center gap-3">{children}</span>
     </li>
-  );
-}
-
-/** A figure the backend did not measure. The dash is decoration, so it speaks. */
-function Placeholder() {
-  return (
-    <>
-      <span aria-hidden="true" className="text-ink-2">
-        —
-      </span>
-      <span className="sr-only">chưa có số liệu</span>
-    </>
   );
 }

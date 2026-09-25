@@ -17,7 +17,7 @@ test.describe("public site", () => {
     expect(html).toContain('lang="vi"');
     expect(html).toContain("<title>");
     expect(html).toContain('name="description"');
-    expect(html).toContain("Tập đúng hơn");
+    expect(html).toContain("Lớp nhóm nhỏ và lớp riêng tại Nha Trang.");
   });
 
   test("navigation reaches every page it advertises", async ({ page }) => {

@@ -11,7 +11,6 @@ import {
   formatTimeRange,
   studioDateKey,
   weekdayLong,
-  weekdayShort,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, RefreshingRule, SkeletonRows } from "~/ui/feedback";
@@ -34,8 +33,9 @@ export function meta(_: Route.MetaArgs) {
  */
 export default function StudentClasses() {
   const today = studioDateKey(new Date());
-  const [activeDay, setActiveDay] = useState(today);
   const [classType, setClassType] = useState<ClassType | "all">("all");
+  const [onlyBookable, setOnlyBookable] = useState(true);
+  const [showMoreDays, setShowMoreDays] = useState(false);
 
   const days = Array.from({ length: 14 }, (_, index) => addDays(today, index));
   const query = useBookableClasses({ from: today, to: addDays(today, 13), classType });
@@ -66,9 +66,14 @@ export default function StudentClasses() {
   // Anchored to when the data was fetched, not to render time: a component
   // that re-reads the clock while rendering produces unstable output.
   const now = query.dataUpdatedAt || 0;
-  const items = (query.data ?? [])
-    .filter((item) => studioDateKey(item.starts_at) === activeDay)
-    .filter((item) => new Date(item.starts_at).getTime() > now);
+  const upcoming = (query.data ?? [])
+    .filter((item) => new Date(item.starts_at).getTime() > now)
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const items = onlyBookable ? upcoming.filter((item) => item.canBook) : upcoming;
+  const populatedDays = days.filter((day) =>
+    items.some((item) => studioDateKey(item.starts_at) === day),
+  );
+  const visibleDays = showMoreDays ? populatedDays : populatedDays.slice(0, 4);
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -82,33 +87,7 @@ export default function StudentClasses() {
       />
 
       <div
-        className="rule-t mt-5 flex gap-1 overflow-x-auto py-3"
-        role="tablist"
-        aria-label="Chọn ngày"
-      >
-        {days.map((day) => {
-          const selected = day === activeDay;
-          return (
-            <button
-              key={day}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => setActiveDay(day)}
-              className={cn(
-                "flex min-w-13 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors",
-                selected ? "bg-ink text-sand" : "text-ink-2 hover:bg-sand-deep",
-              )}
-            >
-              <span className="text-2xs">{weekdayShort(`${day}T00:00:00+07:00`)}</span>
-              <Figures className="text-sm">{day.slice(8)}</Figures>
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        className="rule-t flex items-center gap-1 py-3"
+        className="rule-t mt-5 flex items-center gap-1 py-3"
         role="group"
         aria-label="Lọc hình thức lớp"
       >
@@ -149,52 +128,101 @@ export default function StudentClasses() {
 
       {query.isSuccess && items.length === 0 ? (
         <EmptyState
-          title={`Không có lớp vào ${weekdayLong(`${activeDay}T00:00:00+07:00`).toLowerCase()}`}
-          description="Chọn một ngày khác, hoặc bỏ bộ lọc hình thức lớp để xem thêm."
+          title={
+            onlyBookable
+              ? "Chưa có lớp đặt được trong 14 ngày tới"
+              : "Chưa có lớp trong 14 ngày tới"
+          }
+          description={
+            onlyBookable
+              ? "Bạn có thể xem các lớp đã đặt hoặc chưa đủ điều kiện để đặt."
+              : "Thử bỏ bộ lọc hình thức lớp hoặc quay lại sau khi studio mở lịch mới."
+          }
+          action={
+            onlyBookable ? (
+              <Button variant="secondary" onClick={() => setOnlyBookable(false)}>
+                Xem tất cả lớp
+              </Button>
+            ) : undefined
+          }
         />
       ) : null}
 
       {query.isSuccess && items.length > 0 ? (
-        <ul className="rule-t">
-          {items.map((item) => {
-            /**
-             * `canBook` is the backend's answer from `/my-schedule/bookable`,
-             * and it is the whole answer: the reasons behind it are not
-             * published, so the row says what a student can do rather than
-             * guessing why. Seats left are not published to a student either.
-             */
-            return (
-              <li key={item.id} className="rule-b">
-                <Link
-                  to={`/hv/lop-hoc/${item.id}`}
-                  className="hover:bg-sand-deep/50 flex items-start justify-between gap-4 py-4 transition-colors"
-                >
-                  <span className="min-w-0">
-                    <Figures className="text-ink block text-sm">
-                      {formatTimeRange(item.starts_at, item.ends_at)}
-                    </Figures>
-                    <span className="text-ink mt-1 block text-base">
-                      {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-                    </span>
-                    <span className="text-ink-2 mt-0.5 block text-xs">
-                      <Figures>{item.capacity}</Figures> chỗ
-                    </span>
-                  </span>
+        <div className="mt-4">
+          <div className="mb-3 flex items-baseline justify-between gap-4">
+            <h2 className="text-ink text-sm font-medium">
+              {onlyBookable ? "Có thể đặt · 14 ngày" : "Tất cả lớp · 14 ngày"}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setOnlyBookable((value) => !value)}
+              className="text-ink-2 hover:text-ink shrink-0 text-xs underline underline-offset-4"
+            >
+              {onlyBookable ? "Xem tất cả" : "Chỉ lớp đặt được"}
+            </button>
+          </div>
+          {visibleDays.map((day) => (
+            <section key={day} className="rule-t py-4">
+              <h3 className="text-ink mb-2 text-sm font-medium">
+                {weekdayLong(`${day}T00:00:00+07:00`)} ·{" "}
+                <Figures>{formatDate(`${day}T00:00:00+07:00`)}</Figures>
+              </h3>
+              <ul>
+                {items
+                  .filter((item) => studioDateKey(item.starts_at) === day)
+                  .map((item) => {
+                    /**
+                     * `canBook` is the backend's answer from `/my-schedule/bookable`,
+                     * and it is the whole answer: the reasons behind it are not
+                     * published, so the row says what a student can do rather than
+                     * guessing why. Seats left are not published to a student either.
+                     */
+                    return (
+                      <li key={item.id} className="rule-b">
+                        <Link
+                          to={`/hv/lop-hoc/${item.id}`}
+                          className="hover:bg-sand-deep/50 flex items-start justify-between gap-4 py-4 transition-colors"
+                        >
+                          <span className="min-w-0">
+                            <Figures className="text-ink block text-sm">
+                              {formatTimeRange(item.starts_at, item.ends_at)}
+                            </Figures>
+                            <span className="text-ink mt-1 block text-base">
+                              {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                            </span>
+                            <span className="text-ink-2 mt-0.5 block text-xs">
+                              <Figures>{item.capacity}</Figures> chỗ
+                            </span>
+                          </span>
 
-                  <span className="flex shrink-0 flex-col items-end gap-2">
-                    {mine.has(item.id) ? (
-                      <StatusBadge tone="positive">Đã đặt</StatusBadge>
-                    ) : item.canBook ? (
-                      <StatusBadge tone="positive">Đặt được</StatusBadge>
-                    ) : (
-                      <StatusBadge tone="neutral">Không đặt được</StatusBadge>
-                    )}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                          <span className="flex shrink-0 flex-col items-end gap-2">
+                            {mine.has(item.id) ? (
+                              <StatusBadge tone="positive">Đã đặt</StatusBadge>
+                            ) : item.canBook ? (
+                              <StatusBadge tone="positive">Đặt được</StatusBadge>
+                            ) : (
+                              <StatusBadge tone="neutral">Không đặt được</StatusBadge>
+                            )}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </section>
+          ))}
+          {!showMoreDays && populatedDays.length > visibleDays.length ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-5"
+              onClick={() => setShowMoreDays(true)}
+            >
+              Xem thêm ngày
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

@@ -198,7 +198,10 @@ export function WeekList({
       {days.map((day) => {
         const dayItems = byDay.get(day) ?? [];
         return (
-          <section key={day} className="rule-b py-4">
+          <section
+            key={day}
+            className="rule-b grid gap-3 py-4 lg:grid-cols-[9rem_minmax(0,1fr)]"
+          >
             <h3 className="flex items-baseline gap-2">
               <span className="text-ink text-sm">
                 {weekdayShort(`${day}T00:00:00+07:00`)}
@@ -214,7 +217,7 @@ export function WeekList({
             {dayItems.length === 0 ? (
               <p className="text-ink-2 mt-2 text-xs">Không có lớp</p>
             ) : (
-              <ul className="mt-2">
+              <ul className="mt-2 lg:mt-0">
                 {dayItems.map((item) => {
                   const taken = seats?.get(item.id);
                   return (

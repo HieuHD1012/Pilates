@@ -43,7 +43,7 @@ function StaffRail() {
 
   return (
     <div className="rule-b bg-sand lg:border-rule lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0">
-      <div className="flex items-center justify-between gap-4 px-5 py-4 lg:block lg:px-6 lg:py-6">
+      <div className="flex min-w-0 items-center justify-between gap-4 px-5 py-4 lg:block lg:px-6 lg:py-6">
         <div className="shrink-0">
           <span className="wordmark text-ink text-base">SOUL</span>
           {/* Below lg the rail is a scrolling strip and the nav needs the width;
@@ -53,7 +53,10 @@ function StaffRail() {
 
         {/* Below lg the rail collapses to a scrolling strip: a studio phone gets
             the same destinations without a drawer to open. */}
-        <nav aria-label="Điều hướng studio" className="min-w-0 lg:mt-8">
+        <nav
+          aria-label="Điều hướng studio"
+          className="min-w-0 flex-1 overflow-x-auto lg:mt-8 lg:overflow-visible"
+        >
           <ul className="flex gap-4 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
             {STAFF_NAV.filter(visible).map((item) => (
               <li key={item.to} className="lg:rule-b shrink-0 lg:py-1.5">

@@ -22,25 +22,14 @@ async function bookSomething(page: Page) {
   await asStudent(page, "/hv/lop-hoc");
   await page.getByRole("heading", { level: 1 }).waitFor();
 
-  // The list shows one day at a time, and today's remaining buổi may be full.
-  // Walk the day strip until a row the list itself calls bookable turns up.
-  const days = page.locator("button, [role='tab']").filter({ hasText: /^T[2-7]|^CN/ });
-  const dayCount = await days.count();
-  let bookable = page
+  // The agenda opens on bookable classes across the next fourteen days.
+  const bookable = page
     .locator("a[href^='/hv/lop-hoc/']")
-    .filter({ hasText: /Còn \d+ chỗ/ })
+    .filter({ hasText: /Đặt được/ })
     .first();
-  for (let i = 0; i < dayCount && (await bookable.count()) === 0; i += 1) {
-    await days.nth(i).click();
-    await page.waitForTimeout(400);
-    bookable = page
-      .locator("a[href^='/hv/lop-hoc/']")
-      .filter({ hasText: /Còn \d+ chỗ/ })
-      .first();
-  }
   await expect(bookable).toBeVisible();
   await bookable.click();
-  await expect(page).toHaveURL(/\/hv\/lop-hoc\/c-/);
+  await expect(page).toHaveURL(/\/hv\/lop-hoc\/[^/]+$/);
 
   const book = page.getByRole("button", { name: "Đặt lớp này" });
   await expect(book).toBeEnabled();
@@ -49,10 +38,14 @@ async function bookSomething(page: Page) {
   const confirm = page.getByRole("dialog");
   await confirm.getByRole("button", { name: "Xác nhận đặt" }).click();
   await expect(confirm).toBeHidden();
+  await expect(page.getByText("Đặt lớp thành công.")).toBeVisible();
 
   // Client-side navigation, not page.goto: MSW state lives in the page, so a
   // reload would discard the booking this helper just made.
-  await page.getByRole("link", { name: "Lịch của tôi" }).first().click();
+  await page
+    .getByRole("navigation", { name: "Điều hướng học viên" })
+    .getByRole("link", { name: "Lịch của tôi" })
+    .click();
   await expect(page.getByRole("heading", { name: "Lịch của tôi" })).toBeVisible();
 }
 

@@ -32,79 +32,48 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Formats />
-      <Method />
       <ThisWeek />
+      <Formats />
       <FirstVisit />
+      <Method />
       <Closing />
     </>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — the sentence owns the fold; one photograph owns the screen under it.
-   Neither is set on top of the other, so nothing has to be dimmed to make type
-   legible, and the photograph stays a photograph.
-
-   ONE photograph, and it is the only one on this page. Every usable frame in
-   the delivery comes from a single shoot — one room, one model, one curtain
-   wall — so three of them side by side read as a thin set stretched thin.
-   Shown alone, there is nothing to compare it against and the sameness never
-   surfaces.
-
-   The image stops at 1088px and does not bleed: that is the true width of the
-   file, and drawing it wider would be an upscale the build script refuses to
-   write. The margin is the resolution ceiling, made visible rather than hidden.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* The opening answers what is offered and how to proceed; schedule comes next.
+   The authentic frame supports that decision rather than owning a separate fold. */
 function Hero() {
   return (
     <section className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-10 md:grid-cols-12 md:pt-14 md:pb-12">
-          <div className="md:col-span-7 lg:col-span-6">
+        <div className="grid items-center gap-x-12 gap-y-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:py-12">
+          <div>
             <p className="label-micro">Pilates reformer · Nha Trang</p>
 
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
+            <h1 className="font-display text-d2 text-ink mt-4 font-light">
+              Lớp nhóm nhỏ và lớp riêng tại Nha Trang.
             </h1>
 
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
+            <p className="measure text-lede text-ink-2 mt-5">
+              Chọn một buổi phù hợp trong lịch tập. Nếu chưa có gói, để lại thông tin để
+              studio liên hệ tư vấn trước khi bạn bắt đầu.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+                <Link to="/lich-tap">Xem lịch tập</Link>
               </Button>
               <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
+                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
               </Button>
             </div>
           </div>
-
-        </div>
-
-        {/* 1088px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được
-            phép vẽ.
-
-            `sizes` phải khai đúng bề rộng Ô, không phải bề rộng MÀN HÌNH. Khai
-            "100vw" trên điện thoại 390px là nói dối 40px — ô thật chỉ rộng
-            350px sau lề trang — và 40px đó đủ đẩy nhu cầu ở DPR 2 từ 700px lên
-            780px, tức là vượt bậc 768 và bắt máy tải bản 1088. Một dòng khai
-            sai làm hỏng đúng cái việc mà srcSet sinh ra để làm.
-
-            Các mốc dưới đây bám theo @utility gutter trong app.css:
-            1.25rem → 2.5rem (48rem) → 4rem (64rem), và cái mũ 1088px bắt đầu
-            có hiệu lực từ 76rem. */}
-        <div className="mx-auto w-full max-w-[1088px] pb-14 md:pb-20">
           <div className="aspect-4/3 w-full">
             <ArtDirectedImage
               photo="hero"
               priority
-              sizes="(min-width: 76rem) 1088px, (min-width: 64rem) calc(100vw - 8rem), (min-width: 48rem) calc(100vw - 5rem), calc(100vw - 2.5rem)"
+              sizes="(min-width: 88rem) 600px, (min-width: 64rem) 43vw, (min-width: 48rem) calc(100vw - 5rem), calc(100vw - 2.5rem)"
             />
           </div>
         </div>
@@ -122,7 +91,7 @@ function Hero() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
+    <Section index="02" label="Hai hình thức tập">
       <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
         {CLASS_FORMATS.map((format, index) => (
           <article
@@ -174,7 +143,7 @@ const METHOD_NOTES = [
 
 function Method() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
+    <Section index="04" label="Phương pháp" tone="deep">
       {/* Khối này từng mở bằng một tấm ảnh dọc của cùng người mẫu, cùng bức
           tường rèm với ảnh trang chủ. Bỏ đi, không thay bằng ảnh khác: hai tấm
           từ một buổi chụp đặt cách nhau một màn hình là chỗ sự đơn điệu hiện ra
@@ -218,7 +187,7 @@ function ThisWeek() {
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
+    <Section index="01" label="Bảy ngày tới">
       <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
@@ -335,7 +304,7 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
    ──────────────────────────────────────────────────────────────────────────── */
 function FirstVisit() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
+    <Section index="03" label="Buổi đầu tiên">
       <div className="pb-20 md:pb-28">
         <h2 className="measure-wide font-display text-d2 text-ink font-light">
           Bạn không cần biết gì trước khi đến.
