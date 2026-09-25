@@ -1,0 +1,426 @@
+[
+  {
+    "route": "home",
+    "view": "1440",
+    "viewport": 1440,
+    "documentWidth": 1440,
+    "documentHeight": 4157,
+    "overflow": []
+  },
+  {
+    "route": "staff-dashboard",
+    "view": "1440",
+    "viewport": 1440,
+    "documentWidth": 1440,
+    "documentHeight": 900,
+    "overflow": []
+  },
+  {
+    "route": "staff-calendar",
+    "view": "1440",
+    "viewport": 1440,
+    "documentWidth": 1440,
+    "documentHeight": 900,
+    "overflow": []
+  },
+  {
+    "route": "student-classes",
+    "view": "1440",
+    "viewport": 1440,
+    "documentWidth": 1440,
+    "documentHeight": 900,
+    "overflow": []
+  },
+  {
+    "route": "student-schedule",
+    "view": "1440",
+    "viewport": 1440,
+    "documentWidth": 1440,
+    "documentHeight": 900,
+    "overflow": []
+  },
+  {
+    "route": "home",
+    "view": "1024",
+    "viewport": 1024,
+    "documentWidth": 1024,
+    "documentHeight": 4144,
+    "overflow": []
+  },
+  {
+    "route": "staff-dashboard",
+    "view": "1024",
+    "viewport": 1024,
+    "documentWidth": 1024,
+    "documentHeight": 821,
+    "overflow": []
+  },
+  {
+    "route": "staff-calendar",
+    "view": "1024",
+    "viewport": 1024,
+    "documentWidth": 1024,
+    "documentHeight": 897,
+    "overflow": [
+      {
+        "tag": "div",
+        "className": "grid min-w-[68rem] grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]"
+      },
+      {
+        "tag": "div",
+        "className": "rule-b rule-l px-2 py-2"
+      },
+      {
+        "tag": "div",
+        "className": "flex items-baseline gap-1.5"
+      },
+      {
+        "tag": "div",
+        "className": "rule-b rule-l px-2 py-2 border-b-lacquer border-b-2"
+      },
+      {
+        "tag": "div",
+        "className": "flex items-baseline gap-1.5"
+      },
+      {
+        "tag": "span",
+        "className": "text-ink-2 text-xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-ink text-xs"
+      },
+      {
+        "tag": "span",
+        "className": "label-badge text-lacquer ml-auto"
+      }
+    ]
+  },
+  {
+    "route": "student-classes",
+    "view": "1024",
+    "viewport": 1024,
+    "documentWidth": 1024,
+    "documentHeight": 768,
+    "overflow": [
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      }
+    ]
+  },
+  {
+    "route": "student-schedule",
+    "view": "1024",
+    "viewport": 1024,
+    "documentWidth": 1024,
+    "documentHeight": 768,
+    "overflow": []
+  },
+  {
+    "route": "home",
+    "view": "768",
+    "viewport": 768,
+    "documentWidth": 768,
+    "documentHeight": 4579,
+    "overflow": []
+  },
+  {
+    "route": "staff-dashboard",
+    "view": "768",
+    "viewport": 768,
+    "documentWidth": 768,
+    "documentHeight": 1024,
+    "overflow": [
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      }
+    ]
+  },
+  {
+    "route": "staff-calendar",
+    "view": "768",
+    "viewport": 768,
+    "documentWidth": 768,
+    "documentHeight": 1566,
+    "overflow": [
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      }
+    ]
+  },
+  {
+    "route": "student-classes",
+    "view": "768",
+    "viewport": 768,
+    "documentWidth": 768,
+    "documentHeight": 1024,
+    "overflow": [
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      }
+    ]
+  },
+  {
+    "route": "student-schedule",
+    "view": "768",
+    "viewport": 768,
+    "documentWidth": 768,
+    "documentHeight": 1024,
+    "overflow": []
+  },
+  {
+    "route": "home",
+    "view": "390",
+    "viewport": 390,
+    "documentWidth": 390,
+    "documentHeight": 5377,
+    "overflow": []
+  },
+  {
+    "route": "staff-dashboard",
+    "view": "390",
+    "viewport": 390,
+    "documentWidth": 390,
+    "documentHeight": 924,
+    "overflow": [
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      }
+    ]
+  },
+  {
+    "route": "staff-calendar",
+    "view": "390",
+    "viewport": 390,
+    "documentWidth": 390,
+    "documentHeight": 1725,
+    "overflow": [
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:py-1.5"
+      },
+      {
+        "tag": "a",
+        "className": "block py-1.5 text-sm transition-colors text-ink-2 hover:text-ink active:text-ink"
+      },
+      {
+        "tag": "li",
+        "className": "shrink-0 lg:mt-5 lg:block"
+      },
+      {
+        "tag": "ul",
+        "className": "flex gap-4 lg:flex-col lg:gap-0"
+      }
+    ]
+  },
+  {
+    "route": "student-classes",
+    "view": "390",
+    "viewport": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "overflow": [
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "button",
+        "className": "flex min-w-16 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors text-in"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      },
+      {
+        "tag": "span",
+        "className": "figures text-sm"
+      },
+      {
+        "tag": "span",
+        "className": "text-2xs"
+      }
+    ]
+  },
+  {
+    "route": "student-schedule",
+    "view": "390",
+    "viewport": 390,
+    "documentWidth": 390,
+    "documentHeight": 844,
+    "overflow": []
+  }
+]

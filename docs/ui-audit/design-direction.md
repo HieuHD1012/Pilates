@@ -39,7 +39,7 @@ Anti-principles: no gradients, glass, decorative badges, extra icons, oversized 
 ### B — Information restructuring
 
 - **Suspected cause:** Grouping and sequence are the main problem; style polish alone cannot establish the right hierarchy.
-- **Changes:** Put operational action items before equal metrics, organize public content around choosing a format and a next step, and make student availability visible on day tabs with an available default day. Keep the week calendar but offer a compact day/agenda path so empty hours do less work.
+- **Changes:** Put operational action items before equal metrics, organize public content around choosing a format and a next step, and make student availability visible on day tabs with an available default day. Keep the week calendar but split morning from afternoon/evening so empty midday hours do less work.
 - **Stays:** Existing routes, features, server data and transactions, the core restrained brand vocabulary.
 - **Expected:** Faster first action and less search, while staff retain their familiar weekly model.
 - **Risk:** More explicit grouping could increase visual noise or make orientation metrics too quiet.

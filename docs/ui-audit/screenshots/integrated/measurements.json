@@ -68,19 +68,15 @@
       },
       {
         "tag": "div",
-        "className": "rule-b rule-l px-2 py-2 border-b-lacquer border-b-2"
+        "className": "rule-b rule-l px-2 py-2"
       },
       {
         "tag": "div",
         "className": "flex items-baseline gap-1.5"
       },
       {
-        "tag": "span",
-        "className": "label-badge text-lacquer ml-auto"
-      },
-      {
         "tag": "div",
-        "className": "rule-b rule-l px-2 py-2"
+        "className": "rule-b rule-l px-2 py-2 border-b-lacquer border-b-2"
       },
       {
         "tag": "div",
@@ -93,6 +89,10 @@
       {
         "tag": "span",
         "className": "figures text-ink text-xs"
+      },
+      {
+        "tag": "span",
+        "className": "label-badge text-lacquer ml-auto"
       }
     ]
   },
@@ -117,7 +117,7 @@
     "view": "768",
     "viewport": 768,
     "documentWidth": 768,
-    "documentHeight": 4797,
+    "documentHeight": 4815,
     "overflow": []
   },
   {
