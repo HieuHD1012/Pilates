@@ -109,33 +109,41 @@ export default function StaffCalendar() {
         description="Toàn bộ lớp trong tuần, theo huấn luyện viên và hình thức lớp."
         actions={
           <>
-            <Button size="sm" onClick={() => setCreating("single")}>
-              Thêm lớp
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setCreating("recurring")}>
-              Lớp định kỳ
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, -7))}
-            >
-              Tuần trước
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
-            >
-              Tuần này
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, 7))}
-            >
-              Tuần sau
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => setCreating("single")}>
+                Thêm lớp
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setCreating("recurring")}
+              >
+                Lớp định kỳ
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(addDays(weekStart, -7))}
+              >
+                Tuần trước
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
+              >
+                Tuần này
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setWeekStart(addDays(weekStart, 7))}
+              >
+                Tuần sau
+              </Button>
+            </div>
           </>
         }
         meta={

@@ -130,7 +130,7 @@ export function WeekGrid({
                 PX_PER_MINUTE;
               const height = Math.max(
                 minutesBetween(item.starts_at, item.ends_at) * PX_PER_MINUTE,
-                64,
+                72,
               );
               const taken = seats?.get(item.id);
               const full = taken !== undefined && taken >= item.capacity;

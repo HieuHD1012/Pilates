@@ -31,12 +31,20 @@ for (const view of views) {
   });
   const page = await context.newPage();
   for (const route of routes) {
+    console.log(`Capturing ${view.name}px ${route.name}`);
     await page.goto(base, { waitUntil: "domcontentloaded" });
     await page.evaluate((role) => {
       if (role) localStorage.setItem("soul:demo-role", role);
       else localStorage.removeItem("soul:demo-role");
     }, route.role ?? null);
     await page.goto(`${base}${route.path}`, { waitUntil: "networkidle" });
+    if (route.name === "home") {
+      await page.getByText(/Dữ liệu mẫu dùng cho phát triển/).waitFor();
+      await page
+        .locator("main img")
+        .first()
+        .evaluate((image) => image.decode());
+    }
     await page.waitForTimeout(400);
     const metrics = await page.evaluate(() => ({
       viewport: globalThis.innerWidth,
@@ -45,20 +53,39 @@ for (const view of views) {
       overflow: [...globalThis.document.querySelectorAll("body *")]
         .filter((element) => {
           const rect = element.getBoundingClientRect();
-          return rect.width > 0 && (rect.right > globalThis.innerWidth + 2 || rect.left < -2);
+          return (
+            rect.width > 0 && (rect.right > globalThis.innerWidth + 2 || rect.left < -2)
+          );
         })
         .slice(0, 8)
-        .map((element) => ({ tag: element.tagName.toLowerCase(), className: String(element.className).slice(0, 90) })),
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className).slice(0, 90),
+        })),
     }));
     results.push({ route: route.name, view: view.name, ...metrics });
-    await page.screenshot({ path: `${out}/${route.name}-${view.name}.png`, fullPage: true });
+    if (route.name === "home") {
+      // Chromium can omit an AVIF below the initial viewport in a full-page shot.
+      // Give the page its measured height so that the image is in the viewport.
+      await page.setViewportSize({ width: view.width, height: metrics.documentHeight });
+      await page.screenshot({ path: `${out}/${route.name}-${view.name}.png` });
+      await page.setViewportSize({ width: view.width, height: view.height });
+    } else {
+      await page.screenshot({
+        path: `${out}/${route.name}-${view.name}.png`,
+        fullPage: true,
+      });
+    }
 
     if (view.width === 390 && route.name === "student-classes") {
       const tabs = page.getByRole("tab", { name: /T\d|CN/ });
       for (let i = 0; i < (await tabs.count()); i++) {
         await tabs.nth(i).click();
         if ((await page.getByRole("link", { name: /Đặt được/ }).count()) > 0) {
-          await page.screenshot({ path: `${out}/student-classes-populated-390.png`, fullPage: true });
+          await page.screenshot({
+            path: `${out}/student-classes-populated-390.png`,
+            fullPage: true,
+          });
           break;
         }
       }
@@ -77,4 +104,10 @@ for (const view of views) {
 
 await browser.close();
 await writeFile(`${out}/measurements.json`, JSON.stringify(results, null, 2));
-console.log(JSON.stringify(results.filter((entry) => entry.documentWidth > entry.viewport + 2), null, 2));
+console.log(
+  JSON.stringify(
+    results.filter((entry) => entry.documentWidth > entry.viewport + 2),
+    null,
+    2,
+  ),
+);

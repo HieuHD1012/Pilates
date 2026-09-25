@@ -69,7 +69,7 @@ export default function StaffDashboard() {
 
       {query.isSuccess ? (
         <>
-          <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-8 lg:grid-cols-4">
             {query.data.numbers.map((number) => {
               const route = DETAIL_ROUTE[number.key];
               const value =
@@ -89,7 +89,7 @@ export default function StaffDashboard() {
             })}
           </div>
 
-          <section className="mt-12">
+          <section className="mt-8">
             <h2 className="text-ink text-sm font-medium">Chờ điểm danh</h2>
             <p className="measure-wide text-ink-2 mt-1 text-xs">
               Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ
@@ -113,7 +113,7 @@ export default function StaffDashboard() {
             )}
           </section>
 
-          <section className="mt-12">
+          <section className="mt-8">
             <h2 className="text-ink text-sm font-medium">Lớp hôm nay</h2>
             {query.data.sessions_today.length === 0 ? (
               <EmptyState

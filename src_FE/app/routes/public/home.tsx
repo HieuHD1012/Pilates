@@ -84,7 +84,6 @@ function Hero() {
               </Button>
             </div>
           </div>
-
         </div>
 
         {/* 1088px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được
@@ -99,7 +98,7 @@ function Hero() {
             Các mốc dưới đây bám theo @utility gutter trong app.css:
             1.25rem → 2.5rem (48rem) → 4rem (64rem), và cái mũ 1088px bắt đầu
             có hiệu lực từ 76rem. */}
-        <div className="mx-auto w-full max-w-[1088px] pb-14 md:pb-20">
+        <div className="mx-auto w-full max-w-[1088px] pb-10 md:pb-16">
           <div className="aspect-4/3 w-full">
             <ArtDirectedImage
               photo="hero"
@@ -123,21 +122,21 @@ function Hero() {
 function Formats() {
   return (
     <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+      <div className="grid gap-y-8 pb-12 md:grid-cols-2 md:gap-x-0 md:pb-20">
         {CLASS_FORMATS.map((format, index) => (
           <article
             key={format.id}
             className={
               index === 0
                 ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
+                : "rule-t pt-8 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
             }
           >
             <p className="label-micro">{format.sub}</p>
             <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
             <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
 
-            <p className="label-micro mt-9">Phù hợp với</p>
+            <p className="label-micro mt-6">Phù hợp với</p>
             <ul className="mt-3">
               {format.forWho.map((item) => (
                 <li key={item} className="rule-b text-ink py-3 text-sm">
@@ -180,7 +179,7 @@ function Method() {
           từ một buổi chụp đặt cách nhau một màn hình là chỗ sự đơn điệu hiện ra
           rõ nhất. Chỗ trống trả về cho chữ, và ba dòng định nghĩa nay được kẻ
           hết bề ngang — đó vốn là đơn vị cấu trúc của hệ này. */}
-      <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
+      <div className="grid gap-x-8 gap-y-8 pb-12 md:grid-cols-12 md:pb-20">
         <div className="md:col-span-5">
           <h2 className="font-display text-d2 text-ink font-light">
             Pilates là một môn học về sự chính xác.
@@ -219,7 +218,7 @@ function ThisWeek() {
 
   return (
     <Section index="03" label="Bảy ngày tới">
-      <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
+      <div className="grid gap-x-8 gap-y-8 pb-12 md:grid-cols-12 md:pb-20">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
           {/* No claim about how or how often the timetable syncs: there is no
@@ -336,16 +335,16 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
 function FirstVisit() {
   return (
     <Section index="04" label="Buổi đầu tiên">
-      <div className="pb-20 md:pb-28">
+      <div className="pb-12 md:pb-20">
         <h2 className="measure-wide font-display text-d2 text-ink font-light">
           Bạn không cần biết gì trước khi đến.
         </h2>
 
-        <ol className="mt-12">
+        <ol className="mt-8">
           {FIRST_VISIT_STEPS.map((step) => (
             <li
               key={step.index}
-              className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12 md:py-8"
+              className="rule-t grid gap-x-8 gap-y-2 py-5 md:grid-cols-12 md:py-7"
             >
               <span className="figures-display text-ink-3 text-2xl md:col-span-2 md:text-3xl">
                 {step.index}
@@ -372,7 +371,7 @@ function Closing() {
           gặp thẳng khối mực; chỗ nghỉ là một khoảng trống, không phải một tấm ảnh
           lấp chỗ. */}
       <Section tone="ink">
-        <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
+        <div className="grid gap-x-8 gap-y-10 py-14 md:grid-cols-12 md:py-20">
           <div className="md:col-span-7">
             <h2 className="font-display text-d2 text-sand font-light">
               Bắt đầu bằng một cuộc gọi, không phải một gói tập.

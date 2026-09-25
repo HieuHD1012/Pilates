@@ -37,7 +37,7 @@ export function Section({
         {label ? (
           <div
             className={cn(
-              "flex items-baseline gap-4 border-t pt-5 pb-12 md:pb-16",
+              "flex items-baseline gap-4 border-t pt-5 pb-8 md:pb-12",
               tone === "ink" ? "border-rule-dark" : "border-rule",
             )}
           >
@@ -110,7 +110,9 @@ export function PageHeader({
             <p className="measure-wide text-ink-2 mt-1 text-sm">{description}</p>
           ) : null}
         </div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        {actions ? (
+          <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>
+        ) : null}
       </div>
       {meta ? <div className="mt-3">{meta}</div> : null}
     </header>
