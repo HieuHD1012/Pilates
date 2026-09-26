@@ -40,10 +40,11 @@ decorative shadow · English-first copy.
 ## Media strategy
 
 Authentic Nha Trang photography only: the studio's own room, equipment, trainers
-and students. Every slot is specified as a brief in `app/content/photography.ts`
-before a picture exists, and renders a quiet placeholder that reserves the exact
-frame. **The layout must look finished with the placeholders in place** — if a
-composition needs a photograph to work, the composition is wrong.
+and students. The empty image briefs established roles before assets existed.
+After the owner supplied real frames, retain only frames that serve a visible
+purpose and compose them at meaningful scale with adjacent copy. A section
+without a suitable frame stays image-free. See `docs/photo-direction.md` for the
+source selection and page-level composition.
 
 Never: yoga stock, AI-generated people, transformation before/after, tropical
 tourism imagery, influencer fitness photography, or another branch's pictures.
@@ -112,6 +113,13 @@ exceptions, Vietnamese typography fails, or accessibility cannot be maintained.
 
 Then: research → critique → update this file → update tokens → update the three
 reference screens → propagate. Never screen-by-screen drift.
+
+The supplied photos triggered this reconsideration of the public reference
+screen. The home opening now has one reformer image at the viewport edge and the
+method uses one movement image in an opposing field. The prior city strip and
+unused reserved slots were removed. Studio uses one room view. The existing
+type, colour and spacing tokens still serve these compositions; operational
+reference screens do not need photos.
 
 ---
 
@@ -224,12 +232,11 @@ placeholder. The discipline holds; the numbers do not yet.
 
 ### Frozen: one item
 
-**The final H1 display size, and with it the hero type-to-image balance.** The rag
-defect (`435 / 436 / 547px`) is deliberately left unfixed because rag follows
-size. Everything else that was previously frozen is not blocked: image aspect
-ratios and the 21/9 band height are already declared in
-`app/content/photography.ts` and reserved by `ArtDirectedImage`, so an arriving
-frame cannot move the geometry.
+**At the time of the empty-slot review:** the final H1 display size, and with it
+the hero type-to-image balance, was frozen until real photography arrived. The
+rag defect (`435 / 436 / 547px`) followed the display size. The owner-supplied
+frames have now triggered that review: the H1 size remains, but the image field
+meets the viewport edge, and the unused 21/9 strip and reserved slots are gone.
 
 ### Hero: A ships, B is a challenger with a written win condition
 

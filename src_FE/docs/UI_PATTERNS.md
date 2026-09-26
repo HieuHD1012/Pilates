@@ -66,9 +66,11 @@ The pattern established by Reference C (`app/routes/student/class-detail.tsx`):
 
 ## Photography
 
-`<ArtDirectedImage photo="hero">`, briefs in `app/content/photography.ts`. The
-placeholder reserves the exact frame. **If a layout only works with a photograph
-in it, the layout is wrong.**
+`<ArtDirectedImage photo="hero">` renders a selected frame from
+`app/content/photography.ts`. Give each frame a semantic role and size it for
+that role. Keep text on a solid surface and describe the image in `alt`; visible
+captions are optional and are not needed for the current compositions. See
+`docs/photo-direction.md` for the source selection and visual gate.
 
 ## Unknown facts
 

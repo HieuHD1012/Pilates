@@ -30,8 +30,8 @@ export default function AuthLayout() {
         </footer>
       </div>
 
-      <div className="hidden lg:block">
-        <ArtDirectedImage photo="room" sizes="50vw" />
+      <div className="hidden min-h-dvh overflow-hidden lg:block">
+        <ArtDirectedImage photo="welcome" className="object-[center_40%]" />
       </div>
     </div>
   );

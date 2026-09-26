@@ -25,19 +25,19 @@ export default function About() {
       />
 
       <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
-            <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
+        <div className="grid items-center gap-x-16 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
+          <div className="md:col-span-5">
+            <h2 className="font-display text-d3 text-ink font-light">
+              Một không gian để người dạy nhìn thấy từng chuyển động.
+            </h2>
+            <p className="measure text-ink-2 mt-7 text-base">
+              Các máy reformer đặt song song, để huấn luyện viên có lối đi giữa các máy và
+              theo dõi từng người trong buổi tập. Cửa sổ đưa ánh sáng vào phòng; khoảng
+              trống quanh mỗi máy dành cho việc quan sát và chỉnh tư thế.
             </p>
           </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-            </div>
+          <div className="aspect-5/6 overflow-hidden md:col-span-6 md:col-start-7">
+            <ArtDirectedImage photo="room" className="object-[center_40%]" />
           </div>
         </div>
       </Section>

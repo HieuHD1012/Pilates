@@ -75,10 +75,13 @@ phone and opening hours must not be copied across.**
 
 ## Brand assets
 
-- Logo files, real photography (five briefs in `app/content/photography.ts`),
-  and confirmed trainer profiles.
-- **Q12/Q13:** whether the studio supplies brand assets and seeds initial data by
-  Excel — both unanswered.
+- Logo files and confirmed trainer profiles. The owner confirmed on 2026-09-26
+  that the supplied J Pilates photographs show the same owner and place as the
+  Soul-inspired branch. Four selected frames are now in the preview; see
+  `docs/photo-direction.md`.
+- **Q12:** photography is supplied; a Soul logo file and confirmed trainer
+  portraits remain open. **Q13:** whether the studio seeds initial data by Excel
+  remains unanswered.
 
 Run `npm run check:content` for the live inventory.
 
