@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 import { usePublicTrainers } from "~/features/public/queries";
 import { publicApi } from "~/lib/api/endpoints";
-import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
@@ -39,7 +38,7 @@ export default function Trainers() {
       />
 
       <Section index="01" label="Đội ngũ">
-        <div className="pb-20 md:pb-28">
+        <div className="pb-16 md:pb-20">
           {query.isPending ? (
             <ul className="rule-t">
               {Array.from({ length: 3 }, (_, index) => (
@@ -90,9 +89,9 @@ export default function Trainers() {
                   key={trainer.full_name}
                   className="rule-b grid gap-x-8 gap-y-4 py-7 md:grid-cols-12"
                 >
-                  <div className="md:col-span-3">
-                    <div className="aspect-4/5 w-28 md:w-full md:max-w-40">
-                      {trainer.photo_key ? (
+                  {trainer.photo_key ? (
+                    <div className="md:col-span-3">
+                      <div className="aspect-4/5 w-28 md:w-full md:max-w-40">
                         <img
                           src={publicApi.trainerPhotoUrl(trainer.photo_key)}
                           alt={`Chân dung ${trainer.full_name}`}
@@ -100,12 +99,14 @@ export default function Trainers() {
                           decoding="async"
                           className="size-full object-cover"
                         />
-                      ) : (
-                        <ArtDirectedImage photo="trainerPortrait" />
-                      )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="md:col-span-8 md:col-start-5">
+                  ) : null}
+                  <div
+                    className={
+                      trainer.photo_key ? "md:col-span-8 md:col-start-5" : "md:col-span-8"
+                    }
+                  >
                     <h2 className="font-display text-ink text-xl font-light">
                       {trainer.full_name}
                     </h2>

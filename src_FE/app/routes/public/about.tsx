@@ -22,34 +22,39 @@ export default function About() {
         label="Studio"
         title="Một phòng tập được giữ nhỏ, có chủ đích."
         lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
+        aside={
+          <figure>
+            <div className="aspect-square overflow-hidden">
+              <ArtDirectedImage
+                photo="room"
+                sizes="(min-width: 768px) 38vw, calc(100vw - 2.5rem)"
+              />
+            </div>
+            <figcaption className="text-ink-2 mt-3 text-xs">
+              Ladder barrel trong phòng tập.
+            </figcaption>
+          </figure>
+        }
       />
 
       <Section index="01" label="Không gian">
-        <div className="pb-20 md:pb-28">
-          <div className="grid gap-x-8 gap-y-10 md:grid-cols-12">
-            <div className="md:col-span-6">
-              <p className="measure text-ink-2 text-base">
-                Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện
-                viên đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh
-                sáng lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh
-                được cảm nhận chứ không nhìn thấy.
-              </p>
-            </div>
-            <div className="md:col-span-5 md:col-start-8">
-              <div className="aspect-square w-full">
-                <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 aspect-16/10 w-full md:mt-16">
-            <ArtDirectedImage photo="practice" sizes="100vw" />
+        <div className="grid gap-x-8 gap-y-8 pb-16 md:grid-cols-12 md:pb-20">
+          <h2 className="font-display text-d3 text-ink font-light md:col-span-5">
+            Có chỗ cho người dạy quan sát.
+          </h2>
+          <div className="md:col-span-6 md:col-start-7">
+            <p className="measure text-ink-2 text-base">
+              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
+              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
+              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
+              cảm nhận chứ không nhìn thấy.
+            </p>
           </div>
         </div>
       </Section>
 
       <Section index="02" label="Nguyên tắc" tone="deep">
-        <dl className="pb-20 md:pb-28">
+        <dl className="pb-16 md:pb-20">
           {[
             {
               term: "Lớp nhỏ",

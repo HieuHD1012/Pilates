@@ -27,45 +27,27 @@ export default function Services() {
         label="Hình thức tập"
         title="Nhóm nhỏ, hoặc một kèm một."
         lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
-
-      {/* Khung duy nhất của trang này, và nó thuộc về đây chứ không thuộc về
-          trang chủ: một cử động ở biên độ đầy đủ nói đúng thứ trang này bán —
-          mức điều chỉnh riêng cho từng cơ thể. Trước đây nó nằm cách ảnh trang
-          chủ đúng một màn hình, cùng người mẫu, cùng bức tường rèm, nên hai tấm
-          tố cáo lẫn nhau rằng cả bộ chỉ có một buổi chụp.
-
-          754px là bề rộng thật của tệp, nên cũng là bề rộng tối đa được vẽ. */}
-      <Section tone="sand">
-        <div className="grid pb-16 md:grid-cols-12 md:pb-24">
-          {/* Cột lệch, không phải tấm ảnh thả giữa trang: sáu cột trái, lề phải
-              để mở — cùng nhịp mà trang Studio đang dùng. Một khung dọc đặt
-              chính giữa một trang rộng 1408px thì hai bên thành hai dải trống
-              bằng nhau, và nó đọc ra là chưa được đặt chứ không phải được đặt.
-
-              Ở md ô này rộng 640px, dưới bề rộng thật 754px của tệp. */}
-          <div className="md:col-span-6">
-            <div className="aspect-4/5 w-full">
+        aside={
+          <figure>
+            <div className="aspect-16/10 overflow-hidden">
               <ArtDirectedImage
-                photo="method"
-                sizes="(min-width: 64rem) calc((100vw - 8rem) / 2), (min-width: 48rem) calc((100vw - 5rem) / 2), calc(100vw - 2.5rem)"
+                photo="practice"
+                sizes="(min-width: 768px) 38vw, calc(100vw - 2.5rem)"
               />
             </div>
-          </div>
-        </div>
-      </Section>
+            <figcaption className="text-ink-2 mt-3 text-xs">
+              Một buổi tập trên reformer tại studio.
+            </figcaption>
+          </figure>
+        }
+      />
 
       {CLASS_FORMATS.map((format, index) => (
-        <Section
-          key={format.id}
-          index={`0${index + 1}`}
-          label={format.name}
-          tone={index % 2 === 0 ? "sand" : "deep"}
-        >
-          <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
+        <Section key={format.id} index={`0${index + 1}`} label={format.name} tone="sand">
+          <div className="grid gap-x-8 gap-y-8 pb-16 md:grid-cols-12 md:pb-20">
             <div className="md:col-span-6">
               <p className="label-micro">{format.sub}</p>
-              <h2 className="font-display text-d2 text-ink mt-3 font-light">
+              <h2 className="font-display text-d3 text-ink mt-3 font-light">
                 {format.name}
               </h2>
               <p className="measure text-ink-2 mt-6 text-base">{format.body}</p>

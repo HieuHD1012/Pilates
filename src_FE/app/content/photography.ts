@@ -97,9 +97,9 @@ export const PHOTOGRAPHY = {
 
   method: brief({
     id: "method",
-    // studio-12. One movement at full extension. The slot was square and the
-    // square amputated the reaching hands, which are the entire subject — so
-    // the slot is 4/5 now. The picture decides the frame, not the grid.
+    // studio-12. One movement at full extension. The earlier square crop
+    // amputated the reaching hands. This frame is kept in the asset library
+    // but is not used to describe the reformer service: it shows a chair.
     src: "/photos/method-754.webp",
     srcSet: "/photos/method-377.webp 377w, /photos/method-754.webp 754w",
     avifSrcSet: "/photos/method-377.avif 377w, /photos/method-754.avif 754w",
@@ -171,10 +171,9 @@ export const PHOTOGRAPHY = {
   /**
    * A trainer's portrait, which the studio has not supplied.
    *
-   * `src` stays null on purpose. The trainers page used to fall back to the
-   * `method` frame — a photograph of a student, mid-exercise, standing in for a
-   * named person. A designed empty frame says "no portrait yet"; a borrowed one
-   * says something false about whoever it sits beside.
+   * `src` stays null on purpose. A trainer without a real portrait is listed
+   * without an image; a student photograph or an empty image box would imply
+   * visual evidence that the studio has not supplied.
    */
   trainerPortrait: brief({
     id: "trainerPortrait",

@@ -37,7 +37,7 @@ export function Section({
         {label ? (
           <div
             className={cn(
-              "flex items-baseline gap-4 border-t pt-5 pb-12 md:pb-16",
+              "flex items-baseline gap-4 border-t pt-5 pb-8 md:pb-10",
               tone === "ink" ? "border-rule-dark" : "border-rule",
             )}
           >

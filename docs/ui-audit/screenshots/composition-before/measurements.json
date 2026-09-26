@@ -1,0 +1,164 @@
+[
+  {
+    "route": "home",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 5026
+  },
+  {
+    "route": "about",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 2956
+  },
+  {
+    "route": "services",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 2797
+  },
+  {
+    "route": "packages",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1977
+  },
+  {
+    "route": "trainers",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1354
+  },
+  {
+    "route": "schedule",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1731
+  },
+  {
+    "route": "promotions",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1211
+  },
+  {
+    "route": "contact",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1471
+  },
+  {
+    "route": "consultation",
+    "viewport": 1440,
+    "width": 1440,
+    "height": 1481
+  },
+  {
+    "route": "home",
+    "viewport": 768,
+    "width": 768,
+    "height": 4815
+  },
+  {
+    "route": "about",
+    "viewport": 768,
+    "width": 768,
+    "height": 2386
+  },
+  {
+    "route": "services",
+    "viewport": 768,
+    "width": 768,
+    "height": 2611
+  },
+  {
+    "route": "packages",
+    "viewport": 768,
+    "width": 768,
+    "height": 1996
+  },
+  {
+    "route": "trainers",
+    "viewport": 768,
+    "width": 768,
+    "height": 1406
+  },
+  {
+    "route": "schedule",
+    "viewport": 768,
+    "width": 768,
+    "height": 1763
+  },
+  {
+    "route": "promotions",
+    "viewport": 768,
+    "width": 768,
+    "height": 1259
+  },
+  {
+    "route": "contact",
+    "viewport": 768,
+    "width": 768,
+    "height": 1490
+  },
+  {
+    "route": "consultation",
+    "viewport": 768,
+    "width": 768,
+    "height": 1561
+  },
+  {
+    "route": "home",
+    "viewport": 390,
+    "width": 390,
+    "height": 5488
+  },
+  {
+    "route": "about",
+    "viewport": 390,
+    "width": 390,
+    "height": 2572
+  },
+  {
+    "route": "services",
+    "viewport": 390,
+    "width": 390,
+    "height": 3022
+  },
+  {
+    "route": "packages",
+    "viewport": 390,
+    "width": 390,
+    "height": 2371
+  },
+  {
+    "route": "trainers",
+    "viewport": 390,
+    "width": 390,
+    "height": 1501
+  },
+  {
+    "route": "schedule",
+    "viewport": 390,
+    "width": 390,
+    "height": 1465
+  },
+  {
+    "route": "promotions",
+    "viewport": 390,
+    "width": 390,
+    "height": 1409
+  },
+  {
+    "route": "contact",
+    "viewport": 390,
+    "width": 390,
+    "height": 1678
+  },
+  {
+    "route": "consultation",
+    "viewport": 390,
+    "width": 390,
+    "height": 1922
+  }
+]
