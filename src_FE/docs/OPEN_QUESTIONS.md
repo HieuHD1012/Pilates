@@ -75,8 +75,11 @@ phone and opening hours must not be copied across.**
 
 ## Brand assets
 
-- Logo files, real photography (five briefs in `app/content/photography.ts`),
-  and confirmed trainer profiles.
+- Logo files and confirmed trainer profiles. Three photographs from the supplied
+  `docs/thiet-ke/anh-studio/` set are now composed into the preview; the source
+  folder calls this set **J Pilates**, while this product is **Soul Pilates Nha
+  Trang**. The owner must confirm that Soul may represent these pictures as its
+  own room and sessions before release. See `docs/photo-composition-from-zero.md`.
 - **Q12/Q13:** whether the studio supplies brand assets and seeds initial data by
   Excel — both unanswered.
 

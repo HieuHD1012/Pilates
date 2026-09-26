@@ -41,52 +41,52 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* The reformer session and the proposition form one opening, not two blocks. */
 function Hero() {
   return (
     <section className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
+        <div className="grid items-center gap-x-10 gap-y-10 py-12 md:grid-cols-12 md:py-16">
+          <div className="md:col-span-5">
             <p className="label-micro">Pilates reformer · Nha Trang</p>
 
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
+            <h1 className="font-display text-d2 text-ink mt-4 font-light">
               Không tập nhiều hơn.
               <br />
               <em>Tập đúng hơn.</em>
             </h1>
 
-            <p className="measure text-lede text-ink-2 mt-7">
+            <p className="measure text-lede text-ink-2 mt-6">
               Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
               người trong suốt buổi tập.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
               <Button asChild variant="lacquer" size="lg">
                 <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
               </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
+              <Link
+                to="/lich-tap"
+                className="text-ink decoration-rule-2 hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+              >
+                Xem lịch tập
+              </Link>
             </div>
           </div>
 
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
+          <figure className="min-w-0 md:col-span-6 md:col-start-7">
+            <div className="aspect-3/2 w-full overflow-hidden">
               <ArtDirectedImage
                 photo="hero"
                 priority
-                sizes="(min-width: 768px) 45vw, 100vw"
+                sizes="(min-width: 1024px) 46vw, (min-width: 768px) 48vw, calc(100vw - 2.5rem)"
               />
             </div>
-          </div>
+            <figcaption className="text-ink-2 mt-3 text-xs">
+              Một buổi tập trên máy reformer.
+            </figcaption>
+          </figure>
         </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
         <TickRule />
       </div>
     </section>
@@ -129,11 +129,7 @@ function Formats() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* The method is explained by copy; the supplied photos do not show correction. */
 const METHOD_NOTES = [
   {
     term: "Hơi thở",
@@ -152,27 +148,28 @@ const METHOD_NOTES = [
 function Method() {
   return (
     <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
+      <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-24">
         <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
+          <h2 className="font-display text-d3 text-ink font-light">
+            Pilates là một môn học về sự chính xác.
+          </h2>
         </div>
 
         <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
+          <p className="measure text-ink-2 text-base">
             Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
             huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
           </p>
+        </div>
 
-          <dl className="mt-10">
+        <div className="md:col-span-12">
+          <dl>
             {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
+              <div key={term} className="rule-t grid gap-x-8 gap-y-2 py-5 md:grid-cols-12">
+                <dt className="text-ink text-sm font-medium md:col-span-3">{term}</dt>
+                <dd className="measure text-ink-2 text-sm md:col-span-6 md:col-start-5">
+                  {def}
+                </dd>
               </div>
             ))}
           </dl>
@@ -338,29 +335,23 @@ function FirstVisit() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Closing() {
   return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
-        <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
-            <h2 className="font-display text-d2 text-sand font-light">
-              Bắt đầu bằng một cuộc gọi, không phải một gói tập.
-            </h2>
-            <p className="measure text-sand/70 mt-6 text-base">
-              Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn
-              trước khi đề xuất bất cứ điều gì.
-            </p>
-          </div>
-          <div className="flex items-end md:col-span-4 md:col-start-9">
-            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-            </Button>
-          </div>
+    <Section tone="ink">
+      <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
+        <div className="md:col-span-7">
+          <h2 className="font-display text-d2 text-sand font-light">
+            Bắt đầu bằng một cuộc gọi, không phải một gói tập.
+          </h2>
+          <p className="measure text-sand/70 mt-6 text-base">
+            Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn trước
+            khi đề xuất bất cứ điều gì.
+          </p>
         </div>
-      </Section>
-    </>
+        <div className="flex items-end md:col-span-4 md:col-start-9">
+          <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+          </Button>
+        </div>
+      </div>
+    </Section>
   );
 }

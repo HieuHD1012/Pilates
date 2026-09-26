@@ -40,10 +40,12 @@ decorative shadow · English-first copy.
 ## Media strategy
 
 Authentic Nha Trang photography only: the studio's own room, equipment, trainers
-and students. Every slot is specified as a brief in `app/content/photography.ts`
-before a picture exists, and renders a quiet placeholder that reserves the exact
-frame. **The layout must look finished with the placeholders in place** — if a
-composition needs a photograph to work, the composition is wrong.
+and students. Every image must have a stated role and a composition that works
+with its adjacent content. The original empty slots were useful briefs before
+the supplied image set arrived. The first real-image pass kept three frames and
+removed slots that had no matching evidence; see `docs/photo-composition-from-zero.md`.
+The layout must remain coherent when a photograph fails to load. Confirm the
+supplied set's studio identity before release (tracked in `docs/OPEN_QUESTIONS.md`).
 
 Never: yoga stock, AI-generated people, transformation before/after, tropical
 tourism imagery, influencer fitness photography, or another branch's pictures.
@@ -112,6 +114,14 @@ exceptions, Vietnamese typography fails, or accessibility cannot be maintained.
 
 Then: research → critique → update this file → update tokens → update the three
 reference screens → propagate. Never screen-by-screen drift.
+
+The supplied photographs triggered this reconsideration of image slots. The
+public home reference screen now pairs one reformer session with its opening
+claim; the Studio page pairs a room view with its room claim. The method and
+closing photo slots were removed because no supplied frame served their claims.
+The existing typography, colour and spacing tokens still cover these layouts,
+and the operational reference screens need no image changes. Full-page captures
+at 1440, 768 and 390px are recorded in `docs/photo-review/`.
 
 ---
 

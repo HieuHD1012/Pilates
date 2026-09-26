@@ -21,15 +21,13 @@ export function PublicPageHeader({
   return (
     <header className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid gap-x-8 gap-y-6 pt-12 pb-12 md:grid-cols-12 md:pt-20 md:pb-16">
-          <div className="md:col-span-7">
+        <div className="grid items-center gap-x-8 gap-y-8 pt-12 pb-12 md:grid-cols-12 md:pt-16 md:pb-16">
+          <div className={aside ? "md:col-span-6" : "md:col-span-7"}>
             <p className="label-micro">{label}</p>
             <h1 className="font-display text-d2 text-ink mt-5 font-light">{title}</h1>
             {lede ? <p className="measure text-lede text-ink-2 mt-6">{lede}</p> : null}
           </div>
-          {aside ? (
-            <div className="md:col-span-4 md:col-start-9 md:self-end">{aside}</div>
-          ) : null}
+          {aside ? <div className="md:col-span-5 md:col-start-8">{aside}</div> : null}
         </div>
         <TickRule />
       </div>
