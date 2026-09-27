@@ -11,6 +11,7 @@ This directory is the current design investigation. Treat older design files as 
 | Rendered comparison and recommendation | [version-comparison.md](version-comparison.md) |
 | Revised public site composition and visual review | [public-composition-revision.md](public-composition-revision.md) |
 | Independent review of the two summaries, per-screen workflow and live references | [screen-workflow.md](screen-workflow.md) |
+| Current premium fitness, sport and wellness references, with Soul photography brief | [cross-category-inspiration.md](cross-category-inspiration.md) |
 
 ## Reproduce the screenshots
 

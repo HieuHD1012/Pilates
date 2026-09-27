@@ -61,6 +61,8 @@ Một câu trả lời “không” ở 1–2 hoặc ảnh mồ côi là **trư�
 
 ## 3. Website tham khảo đã mở và bài học có thể chuyển giao
 
+For the newer cross-category review of premium fitness, sport and wellness sites, see [cross-category-inspiration.md](cross-category-inspiration.md). It adds a ranked visual shortlist, mobile caveats, an authentic Soul photography brief and route-level composition experiments. The references below remain useful for the specific flows they document.
+
 R1–R7, R15–R17 và R21 là website studio để **xem bố cục, ảnh, chữ và hành trình** trên desktop/mobile. Tôi đã mở 10 site ở 1440/390px, nên bảng cũng ghi điều **không nên học**: Red Spring cắt chữ ở 390px, Silo và Luma để lớp consent che hero; Pilates by Ang đặt chữ lên ảnh tối. R18–R20 có ảnh minh họa giao diện nghiệp vụ để tham khảo thứ bậc và mật độ thông tin. R8–R14 là tài liệu chính thức về **luồng thao tác**, không phải chuẩn thẩm mỹ. Website tham khảo có thể đổi theo thời gian; kiểm lại trước khi vẽ.
 
 | Mã | Nguồn chính thức | Chỉ học điểm này |
