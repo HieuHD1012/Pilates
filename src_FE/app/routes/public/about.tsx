@@ -1,72 +1,63 @@
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router";
+
+import { STUDIO } from "~/content/studio";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
-import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
+import { PendingFact } from "~/ui/pending-fact";
 
 import type { Route } from "./+types/about";
 
 export function meta(_: Route.MetaArgs) {
   return [
     { title: "Studio — Soul Pilates Nha Trang" },
-    {
-      name: "description",
-      content:
-        "Soul Pilates Nha Trang: studio reformer với lớp nhóm nhỏ và lớp riêng, tập trung vào căn chỉnh và kiểm soát chuyển động.",
-    },
+    { name: "description", content: "Xem không gian tập Pilates reformer, hình thức lớp và thông tin liên hệ của Soul Pilates Nha Trang." },
   ];
 }
 
 export default function About() {
   return (
     <>
-      <PublicPageHeader
-        label="Studio"
-        title="Một phòng tập được giữ nhỏ, có chủ đích."
-        lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
-      />
-
-      <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
-            <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
-            </p>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-            </div>
-          </div>
+      <section className="barrys-studio-hero">
+        <div className="barrys-studio-hero__intro">
+          <p className="barrys-eyebrow">Soul Pilates · Nha Trang</p>
+          <h1>Studio.</h1>
+          <p>Một không gian thật để tập trung vào chuyển động, hơi thở và cách cơ thể của bạn làm việc.</p>
+          <Link to="/lien-he" className="barrys-text-link">Liên hệ studio <ArrowUpRight size={18} aria-hidden="true" /></Link>
         </div>
-      </Section>
+        <div className="barrys-studio-hero__image"><ArtDirectedImage photo="room" priority sizes="(min-width: 900px) 60vw, 100vw" /></div>
+      </section>
 
-      <Section index="02" label="Nguyên tắc" tone="deep">
-        <dl className="pb-20 md:pb-28">
-          {[
-            {
-              term: "Lớp nhỏ",
-              def: "Số chỗ mỗi buổi do studio đặt cho từng lớp, và không được vượt qua — kể cả khi có người muốn tập thêm.",
-            },
-            {
-              term: "Một huấn luyện viên cho mỗi buổi",
-              def: "Người dạy buổi của bạn là người chịu trách nhiệm cho buổi đó, từ đầu đến cuối.",
-            },
-            {
-              term: "Không có buổi tập bù cho việc tập sai",
-              def: "Nếu một động tác chưa đúng, buổi tập dừng lại ở đó và chỉnh, thay vì đi tiếp cho đủ bài.",
-            },
-          ].map(({ term, def }) => (
-            <div key={term} className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12">
-              <dt className="text-ink text-lg md:col-span-4">{term}</dt>
-              <dd className="measure text-ink-2 text-sm md:col-span-7 md:col-start-6">
-                {def}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Section>
+      <nav className="barrys-studio-links" aria-label="Khám phá studio">
+        <a href="#khong-gian">Không gian</a>
+        <a href="#thong-tin">Thông tin studio</a>
+        <a href="#buoi-dau">Buổi đầu tiên</a>
+      </nav>
+
+      <section id="khong-gian" className="barrys-studio-story barrys-wrap">
+        <div><p className="barrys-eyebrow">Không gian tập</p><h2>Ở đây, điều quan trọng là cách bạn tập.</h2></div>
+        <div>
+          <p>Phòng tập bố trí các máy reformer cùng thiết bị Pilates khác. Lớp nhóm nhỏ và lớp riêng cho bạn hai cách bắt đầu, tùy vào sự thoải mái và mục tiêu của mình.</p>
+          <p>Hình ảnh trên là phòng tập thực tế do chủ cơ sở cung cấp. Để biết buổi tập nào phù hợp, studio sẽ trao đổi với bạn trước khi đề xuất lịch và gói.</p>
+          <Link to="/dich-vu" className="barrys-text-link">Xem hình thức tập <ArrowUpRight size={18} aria-hidden="true" /></Link>
+        </div>
+      </section>
+
+      <section id="thong-tin" className="barrys-arrival">
+        <div className="barrys-wrap">
+          <div className="barrys-section-heading"><p className="barrys-eyebrow">Trước khi đến</p><h2>Thông tin studio.</h2></div>
+          <dl className="barrys-arrival__facts">
+            <div><dt>Địa chỉ</dt><dd>{STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}</dd></div>
+            <div><dt>Giờ mở cửa</dt><dd>{STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}</dd></div>
+            <div><dt>Điện thoại</dt><dd>{STUDIO.phone ?? <PendingFact label="Số điện thoại" />}</dd></div>
+          </dl>
+          <Link to="/lien-he" className="barrys-text-link">Xem các kênh liên hệ <ArrowUpRight size={18} aria-hidden="true" /></Link>
+        </div>
+      </section>
+
+      <section id="buoi-dau" className="barrys-studio-next barrys-wrap">
+        <div><p className="barrys-eyebrow">Buổi đầu tiên</p><h2>Hãy nói với chúng tôi bạn đang muốn cải thiện điều gì.</h2></div>
+        <div><p>Để lại tên, số điện thoại và điều bạn quan tâm. Studio sẽ liên hệ để hiểu rõ trước khi gợi ý hình thức tập.</p><Link to="/dat-tu-van" className="barrys-action-link">Đặt lịch tư vấn <ArrowUpRight size={18} aria-hidden="true" /></Link></div>
+      </section>
     </>
   );
 }

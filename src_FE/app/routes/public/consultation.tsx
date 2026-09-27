@@ -10,7 +10,6 @@ import { Button } from "~/ui/button";
 import { Field, Input, Select, Textarea } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/consultation";
 
@@ -106,13 +105,13 @@ export default function Consultation() {
 
   return (
     <>
-      <PublicPageHeader
-        label="Tư vấn"
-        title="Để lại thông tin, studio sẽ gọi lại."
-        lede="Không cần tạo tài khoản. Chỉ cần tên và số điện thoại — phần còn lại nói qua điện thoại sẽ nhanh hơn."
-      />
+      <header className="barrys-consultation-hero barrys-wrap">
+        <p className="barrys-eyebrow">Bắt đầu tại Soul Pilates</p>
+        <h1>Cho chúng tôi biết bạn cần gì.</h1>
+        <p>Không cần tạo tài khoản. Để lại tên và số điện thoại để studio có thể liên hệ và nghe rõ mục tiêu của bạn.</p>
+      </header>
 
-      <Section>
+      <Section className="barrys-consultation">
         <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
           <div className="md:col-span-7 lg:col-span-6">
             <LiveRegion
@@ -132,7 +131,7 @@ export default function Consultation() {
                 </h2>
                 <p className="measure text-ink-2 mt-4 text-base">
                   Nhân viên studio sẽ liên hệ trong giờ làm việc. Nếu cần gấp, bạn có thể
-                  gọi trực tiếp theo thông tin ở trang liên hệ.
+                  xem thêm các kênh ở trang liên hệ.
                 </p>
                 <div className="mt-8">
                   <Button variant="secondary" onClick={() => mutation.reset()}>
@@ -220,8 +219,7 @@ export default function Consultation() {
                 {mutation.isError &&
                 !(mutation.error instanceof ApiError && mutation.error.isValidation) ? (
                   <p role="alert" className="text-danger text-sm">
-                    Chưa gửi được thông tin. Vui lòng thử lại, hoặc gọi trực tiếp cho
-                    studio.
+                    Chưa gửi được thông tin. Vui lòng thử lại hoặc xem trang liên hệ.
                   </p>
                 ) : null}
 

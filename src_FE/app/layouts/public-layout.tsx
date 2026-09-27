@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="barrys-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -30,7 +30,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
   return (
     <Link
       to="/"
-      className="group flex items-baseline gap-2.5"
+      className="barrys-wordmark group flex items-baseline gap-2.5"
       aria-label="Soul Pilates Nha Trang — trang chủ"
     >
       <span className={cn("wordmark text-lg", tone === "ink" ? "text-ink" : "text-sand")}>
@@ -49,7 +49,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
           tone === "ink" ? "text-ink-2" : "text-sand/70",
         )}
       >
-        Nha Trang
+        Pilates · Nha Trang
       </span>
     </Link>
   );
@@ -62,7 +62,7 @@ function PublicHeader() {
   // P2 — one ask, stated once. The homepage hero already carries this exact
   // label at 48px; repeating it at 32px in the same viewport is one subject
   // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  const heroOwnsTheAsk = ["/", "/lien-he", "/dat-tu-van"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -80,11 +80,11 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+    <header className="barrys-header sticky top-0 z-(--z-nav)">
+      <div className="gutter mx-auto flex h-17 max-w-(--container-page) items-center justify-between gap-6">
         <Wordmark />
 
-        <nav aria-label="Điều hướng chính" className="hidden lg:block">
+        <nav aria-label="Điều hướng chính" className="barrys-header__nav hidden lg:block">
           <ul className="flex items-center gap-7">
             {PUBLIC_NAV.map((item) => (
               <li key={item.to}>
@@ -107,11 +107,11 @@ function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button asChild variant="ghost" size="sm" className="barrys-header__login hidden sm:inline-flex">
             <Link to="/dang-nhap">Đăng nhập</Link>
           </Button>
           {heroOwnsTheAsk ? null : (
-            <Button asChild variant="lacquer" size="sm" className="hidden sm:inline-flex">
+            <Button asChild variant="lacquer" size="sm" className="barrys-header__cta hidden sm:inline-flex">
               <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
             </Button>
           )}
@@ -120,7 +120,7 @@ function PublicHeader() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            className="barrys-header__menu -mr-2 p-2 lg:hidden"
           >
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (
@@ -135,7 +135,7 @@ function PublicHeader() {
       {open ? (
         <div
           id="menu-di-dong"
-          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
+          className="barrys-mobile-menu fixed inset-x-0 top-17 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
         >
           <nav aria-label="Điều hướng chính (di động)" className="gutter">
             <ul>
