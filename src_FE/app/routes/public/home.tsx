@@ -65,10 +65,10 @@ function Hero() {
         <div className="ts-hero-story">
           <span className="ts-chapter">01 / Thực hành</span>
           <div>
-            <h2>Tập có người theo sát.</h2>
+            <h2>Chuyển động có kiểm soát.</h2>
             <p>
-              Lớp nhóm nhỏ và lớp riêng trên reformer. Huấn luyện viên theo từng người trong
-              suốt buổi tập.
+              Từ tư thế đến nhịp di chuyển, bài tập trên reformer cần sự chú ý ở từng đoạn.
+              Chọn lớp nhóm nhỏ hoặc lớp riêng để bắt đầu.
             </p>
             <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
               <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
