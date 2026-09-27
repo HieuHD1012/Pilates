@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -32,8 +31,8 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Stories />
       <Formats />
-      <Method />
       <ThisWeek />
       <FirstVisit />
       <Closing />
@@ -41,66 +40,25 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
-      </div>
-    </section>
+    <section className="on-opening" aria-labelledby="on-title"><div className="on-opening-photo"><ArtDirectedImage photo="hero" priority sizes="(min-width: 800px) 65vw, 100vw" /></div><div className="on-opening-copy"><p className="on-kicker">Soul Pilates · Nha Trang</p><h1 id="on-title">Chuyển động<br />bắt đầu từ <em>sự chú ý.</em></h1><p>Không cần làm nhiều động tác hơn. Bắt đầu bằng cách hiểu cơ thể mình trong từng chuyển động trên reformer.</p><Link to="/dich-vu">Khám phá hình thức tập <span aria-hidden="true">↗</span></Link></div></section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
-   ──────────────────────────────────────────────────────────────────────────── */
+function Stories() {
+  const stories = [
+    { n: "01", title: "Cách chúng tôi tập", body: "Huấn luyện viên quan sát, điều chỉnh và giúp bạn tìm nhịp tập phù hợp.", photo: "method" as const, to: "/gioi-thieu", action: "Về studio" },
+    { n: "02", title: "Người đồng hành", body: "Gặp những người hướng dẫn buổi tập của bạn và tìm hiểu cách lớp vận hành.", photo: "room" as const, to: "/huan-luyen-vien", action: "Xem huấn luyện viên" },
+    { n: "03", title: "Buổi đầu tiên", body: "Không cần thuộc động tác trước khi đến. Bắt đầu từ một cuộc trao đổi ngắn.", photo: "practice" as const, to: "/dat-tu-van", action: "Bắt đầu với Soul" },
+  ];
+  return <section className="on-stories" aria-labelledby="on-stories-title"><div className="on-stories-head"><p className="on-kicker">Những câu chuyện ở Soul</p><h2 id="on-stories-title">Từ chuyển động<br />đến cách bạn bắt đầu.</h2></div><div className="on-story-grid">{stories.map((story) => <article key={story.n} className="on-story"><div className="on-story-image"><ArtDirectedImage photo={story.photo} sizes="(min-width: 800px) 33vw, 100vw" /></div><div className="on-story-copy"><span>{story.n}</span><h3>{story.title}</h3><p>{story.body}</p><Link to={story.to}>{story.action} ↗</Link></div></article>)}</div></section>;
+}
+
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+    <Section index="01" label="Hai hình thức tập" className="on-formats">
+      <div className="on-formats-head"><h2>Chọn cách tập của bạn.</h2><p>Nhóm nhỏ hoặc một kèm một. Cùng là bài tập trên reformer, khác mức độ điều chỉnh riêng.</p></div><div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
         {CLASS_FORMATS.map((format, index) => (
           <article
             key={format.id}
@@ -122,61 +80,9 @@ function Formats() {
                 </li>
               ))}
             </ul>
+            <Link className="on-text-link" to={index === 0 ? "/lich-tap" : "/dat-tu-van"}>{index === 0 ? "Xem lịch lớp" : "Hỏi về lớp riêng"} ↗</Link>
           </article>
         ))}
-      </div>
-    </Section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  {
-    term: "Hơi thở",
-    def: "Nhịp thở dẫn động tác, không phải ngược lại. Đây là phần khó nhất của buổi đầu tiên.",
-  },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm bất kỳ lực nào.",
-  },
-  {
-    term: "Kiểm soát",
-    def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào trong động tác.",
-  },
-];
-
-function Method() {
-  return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
       </div>
     </Section>
   );

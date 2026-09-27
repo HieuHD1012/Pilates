@@ -4,7 +4,7 @@ import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 
 import type { Route } from "./+types/services";
 
@@ -22,44 +22,10 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
+      <header className="on-interior-head"><p className="on-kicker">Hình thức tập</p><h1>Chọn cách chuyển động.</h1><p>Nhóm nhỏ hoặc một kèm một. Mỗi buổi tập có người hướng dẫn và điều chỉnh.</p></header>
 
       {CLASS_FORMATS.map((format, index) => (
-        <Section
-          key={format.id}
-          index={`0${index + 1}`}
-          label={format.name}
-          tone={index % 2 === 0 ? "sand" : "deep"}
-        >
-          <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-            <div className="md:col-span-6">
-              <p className="label-micro">{format.sub}</p>
-              <h2 className="font-display text-d2 text-ink mt-3 font-light">
-                {format.name}
-              </h2>
-              <p className="measure text-ink-2 mt-6 text-base">{format.body}</p>
-            </div>
-
-            <div className="md:col-span-5 md:col-start-8">
-              <p className="label-micro">Phù hợp với</p>
-              <ul className="mt-3">
-                {format.forWho.map((item) => (
-                  <li key={item} className="rule-b text-ink py-3 text-sm">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-ink-2 mt-6 text-xs">
-                Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ
-                bắt đầu để được hoàn lại buổi tập.
-              </p>
-            </div>
-          </div>
-        </Section>
+        <section key={format.id} className="on-service-stage"><div className="on-service-photo"><ArtDirectedImage photo={index === 0 ? "room" : "hero"} sizes="(min-width: 800px) 50vw, 100vw" /></div><div className="on-service-copy"><p className="on-kicker">0{index + 1} / {format.sub}</p><h2>{format.name}</h2><p>{format.body}</p><ul>{format.forWho.map((item) => <li key={item}>{item}</li>)}</ul><p className="text-ink-2 my-5 text-xs">Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ bắt đầu để được hoàn lại buổi tập.</p><Link className="on-text-link" to={index === 0 ? "/lich-tap" : "/dat-tu-van"}>{index === 0 ? "Xem lịch lớp" : "Hỏi về lớp riêng"} ↗</Link></div></section>
       ))}
 
       <Section tone="ink">

@@ -2,11 +2,10 @@ import { Link } from "react-router";
 
 import { usePublicTrainers } from "~/features/public/queries";
 import { publicApi } from "~/lib/api/endpoints";
-import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
+import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/trainers";
 
@@ -32,11 +31,7 @@ export default function Trainers() {
 
   return (
     <>
-      <PublicPageHeader
-        label="Huấn luyện viên"
-        title="Một người chịu trách nhiệm cho buổi tập của bạn."
-        lede="Mỗi lớp có đúng một huấn luyện viên phụ trách. Bạn biết trước ai sẽ dạy buổi mình đã đặt."
-      />
+      <header className="on-interior-head"><p className="on-kicker">Huấn luyện viên</p><h1>Người theo sát chuyển động của bạn.</h1><p>Mỗi lớp có một huấn luyện viên phụ trách. Bạn biết trước ai sẽ dạy buổi mình đã đặt.</p></header>
 
       <Section index="01" label="Đội ngũ">
         <div className="pb-20 md:pb-28">
@@ -78,7 +73,7 @@ export default function Trainers() {
           ) : null}
 
           {query.isSuccess && query.data.length > 0 ? (
-            <ul className="rule-t">
+            <><DemoDataNotice className="mb-3" /><ul className="rule-t">
               {query.data.map((trainer) => (
                 /**
                  * `GET /public/trainers` returns a name, a photo key and a bio
@@ -101,7 +96,7 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        <div role="img" aria-label={`Chưa có ảnh chân dung của ${trainer.full_name}`} className="border-rule bg-sand-deep size-full border" />
                       )}
                     </div>
                   </div>
@@ -115,7 +110,7 @@ export default function Trainers() {
                   </div>
                 </li>
               ))}
-            </ul>
+            </ul></>
           ) : null}
         </div>
       </Section>
