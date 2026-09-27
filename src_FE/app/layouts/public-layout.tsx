@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="th-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -59,10 +59,9 @@ function PublicHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  // The home stage has its own ask; the consultation form already is the ask.
+  // Neither route needs a header link to the same action.
+  const heroOwnsTheAsk = ["/", "/dat-tu-van"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -153,9 +152,11 @@ function PublicHeader() {
               ))}
             </ul>
             <div className="flex flex-col gap-3 py-8">
-              <Button asChild variant="lacquer" size="lg" fullWidth>
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
+              {location.pathname === "/dat-tu-van" ? null : (
+                <Button asChild variant="lacquer" size="lg" fullWidth>
+                  <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+                </Button>
+              )}
               <Button asChild variant="secondary" size="lg" fullWidth>
                 <Link to="/dang-nhap">Đăng nhập</Link>
               </Button>

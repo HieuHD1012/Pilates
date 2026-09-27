@@ -13,7 +13,13 @@ import { MOCKS_ENABLED } from "~/lib/mocks";
  * and stamping "dữ liệu mẫu" across it is the same failure in the other
  * direction. Production builds drop it either way.
  */
-export function DemoDataNotice({ className }: { className?: string }) {
+export function DemoDataNotice({
+  className,
+  message = "Dữ liệu mẫu dùng cho phát triển — không phải lịch thật của studio.",
+}: {
+  className?: string;
+  message?: string;
+}) {
   if (!MOCKS_ENABLED) return null;
 
   return (
@@ -24,7 +30,7 @@ export function DemoDataNotice({ className }: { className?: string }) {
         className,
       )}
     >
-      Dữ liệu mẫu dùng cho phát triển — không phải lịch thật của studio.
+      {message}
     </p>
   );
 }

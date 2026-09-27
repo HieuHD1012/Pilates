@@ -1,0 +1,447 @@
+/* Action, class paths and guidance as separate stages. Scoped to public UI. */
+.th-site .wordmark {
+  font-size: 1.55rem;
+  font-weight: 520;
+  letter-spacing: 0.09em;
+}
+.th-overline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  line-height: 1.5;
+}
+.th-section {
+  max-width: 100rem;
+  margin-inline: auto;
+}
+.th-opening {
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+}
+.th-stage {
+  height: min(66vw, 47rem);
+  min-height: 29rem;
+  overflow: hidden;
+}
+.th-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 55%;
+}
+.th-intro {
+  position: relative;
+  max-width: 100rem;
+  margin: -7rem auto 0;
+  background: var(--color-ink-deep);
+  display: grid;
+  grid-template-columns: 1fr 0.42fr;
+  align-items: end;
+  gap: 4rem;
+  padding-top: 2.5rem;
+  padding-bottom: 4.5rem;
+}
+.th-intro h1 {
+  font-family: var(--font-display);
+  font-size: clamp(4.3rem, 7.6vw, 9rem);
+  font-weight: 350;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  margin-top: 1rem;
+}
+.th-intro-action p {
+  max-width: 27rem;
+  color: #dfddd7;
+  line-height: 1.75;
+  margin-bottom: 1.6rem;
+}
+.th-section-head {
+  display: grid;
+  grid-template-columns: 0.34fr 1fr auto;
+  gap: 2rem;
+  align-items: start;
+}
+.th-section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5.2vw, 6.5rem);
+  font-weight: 350;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  max-width: 13ch;
+}
+.th-section-head > a,
+.th-path a,
+.th-guidance-copy a,
+.th-place-copy a {
+  color: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-bottom: 1px solid currentColor;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.65rem;
+  padding-bottom: 0.35rem;
+  text-decoration: none;
+}
+.th-paths {
+  padding-top: 7rem;
+  padding-bottom: 8rem;
+}
+.th-path-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 4.5rem;
+  border-top: 1px solid var(--color-rule-2);
+}
+.th-path {
+  padding: 2rem 4rem 0 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 22rem;
+}
+.th-path + .th-path {
+  border-left: 1px solid var(--color-rule-2);
+  padding-left: 4rem;
+}
+.th-path > span {
+  font-size: 0.8rem;
+  color: var(--color-lacquer);
+  font-weight: 600;
+}
+.th-path h3 {
+  font-family: var(--font-display);
+  font-size: clamp(3.8rem, 5.5vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 350;
+  margin-top: 2rem;
+}
+.th-path p {
+  color: var(--color-ink-2);
+  line-height: 1.75;
+  max-width: 34rem;
+  margin: 1.4rem 0 2rem;
+}
+.th-path a {
+  margin-top: auto;
+}
+.th-guidance {
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  min-height: 42rem;
+}
+.th-guidance-image {
+  position: relative;
+  overflow: hidden;
+}
+.th-concept-note {
+  position: absolute;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  color: var(--color-ink);
+  background: var(--color-sand);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.th-guidance-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.th-guidance-copy {
+  align-self: center;
+  padding: clamp(2rem, 5.5vw, 7rem);
+}
+.th-guidance-copy h2 {
+  max-width: 12ch;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 5vw, 6.3rem);
+  font-weight: 350;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  margin: 2.5rem 0;
+}
+.th-guidance-copy p {
+  max-width: 33rem;
+  line-height: 1.75;
+  color: #dfddd7;
+  margin-bottom: 2rem;
+}
+.th-place {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  align-items: center;
+  gap: 5rem;
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+}
+.th-place-copy h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5vw, 6.2rem);
+  font-weight: 350;
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  max-width: 11ch;
+  margin: 2rem 0;
+}
+.th-place-copy p {
+  color: var(--color-ink-2);
+  line-height: 1.75;
+  max-width: 30rem;
+  margin-bottom: 2rem;
+}
+.th-place-image {
+  height: min(51vw, 38rem);
+  overflow: hidden;
+}
+.th-place-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 44%;
+}
+.th-schedule {
+  border-top: 1px solid var(--color-rule);
+  padding-top: 5rem;
+  padding-bottom: 7rem;
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  gap: 4rem;
+}
+.th-schedule .th-section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1.5rem;
+}
+.th-schedule .th-section-head h2 {
+  font-size: clamp(3.1rem, 4vw, 5rem);
+}
+.th-schedule-list ul {
+  border-top: 1px solid var(--color-rule);
+}
+.th-schedule-list li {
+  border-bottom: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: 6rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.5rem;
+  font-size: 0.84rem;
+}
+.th-schedule-list li span:first-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-2);
+}
+.th-schedule-list li strong {
+  font-weight: 500;
+}
+.th-first {
+  background: var(--color-sand-deep);
+  max-width: none;
+  padding-top: 5rem;
+  padding-bottom: 7rem;
+}
+.th-first > * {
+  max-width: 92rem;
+  margin-inline: auto;
+}
+.th-first ol {
+  margin-top: 4rem;
+  border-top: 1px solid var(--color-rule-2);
+}
+.th-first li {
+  display: grid;
+  grid-template-columns: 0.15fr 0.35fr 1fr;
+  gap: 2rem;
+  border-bottom: 1px solid var(--color-rule);
+  padding: 1.5rem 0;
+}
+.th-first li span {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-ink-2);
+}
+.th-first li h3 {
+  font-weight: 600;
+}
+.th-first li p {
+  max-width: 34rem;
+  color: var(--color-ink-2);
+  line-height: 1.65;
+}
+.th-final {
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+}
+.th-final .th-section {
+  padding-top: 6rem;
+  padding-bottom: 7rem;
+}
+.th-final h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3.8rem, 6vw, 7rem);
+  font-weight: 350;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  max-width: 12ch;
+  margin: 2rem 0;
+}
+.th-final p {
+  max-width: 29rem;
+  color: #dfddd7;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.th-trainers-lead {
+  padding-top: clamp(4rem, 7vw, 8rem);
+  padding-bottom: clamp(4rem, 7vw, 8rem);
+}
+.th-trainers-lead h1 {
+  max-width: 13ch;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 8vw, 9rem);
+  font-weight: 350;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  margin: 1.5rem 0 2rem;
+}
+.th-trainers-lead p {
+  max-width: 36rem;
+  color: var(--color-ink-2);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.th-trainers-lead a {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.35rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .th-intro {
+    gap: 2rem;
+    grid-template-columns: 1fr 0.55fr;
+  }
+  .th-intro h1 {
+    font-size: clamp(3.8rem, 8vw, 6rem);
+  }
+  .th-guidance {
+    min-height: 31rem;
+  }
+  .th-guidance-copy {
+    padding: 2rem;
+  }
+  .th-place {
+    gap: 2.5rem;
+  }
+}
+@media (max-width: 767px) {
+  .th-stage {
+    height: 75vw;
+    min-height: 0;
+  }
+  .th-stage img {
+    object-position: center 53%;
+  }
+  .th-intro {
+    margin-top: -1.4rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1.7rem;
+    padding-bottom: 2.5rem;
+  }
+  .th-intro h1 {
+    font-size: clamp(3.1rem, 11.5vw, 5rem);
+  }
+  .th-intro-action p {
+    margin-bottom: 1.3rem;
+  }
+  .th-section-head {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .th-paths {
+    padding-top: 4.5rem;
+    padding-bottom: 5rem;
+  }
+  .th-path-grid {
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+  .th-path {
+    min-height: 0;
+    padding: 1.5rem 0 2.5rem;
+  }
+  .th-path + .th-path {
+    border-left: 0;
+    border-top: 1px solid var(--color-rule-2);
+    padding: 1.5rem 0 2rem;
+  }
+  .th-path h3 {
+    margin-top: 1rem;
+  }
+  .th-guidance {
+    grid-template-columns: 1fr;
+  }
+  .th-guidance-image {
+    height: 73vw;
+  }
+  .th-guidance-copy {
+    padding: 3rem 1.25rem 4rem;
+  }
+  .th-guidance-copy h2 {
+    margin: 1.5rem 0;
+  }
+  .th-place {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+  .th-place-image {
+    height: 22rem;
+    order: -1;
+  }
+  .th-place-copy h2 {
+    margin: 1.5rem 0;
+  }
+  .th-schedule {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 4rem;
+    padding-bottom: 5rem;
+  }
+  .th-schedule-list li {
+    grid-template-columns: 5rem 1fr auto;
+    gap: 0.4rem;
+    font-size: 0.76rem;
+  }
+  .th-first {
+    padding-top: 4rem;
+    padding-bottom: 5rem;
+  }
+  .th-first ol {
+    margin-top: 2.5rem;
+  }
+  .th-first li {
+    grid-template-columns: 3rem 1fr;
+    gap: 0.6rem;
+  }
+  .th-first li p {
+    grid-column: 2;
+  }
+  .th-final .th-section {
+    padding-top: 4rem;
+    padding-bottom: 5rem;
+  }
+}
