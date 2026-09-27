@@ -25,6 +25,35 @@ The first seven came from the cross-category shortlist in `codex/ui-screen-audit
 
 This is a comparison set, not a recommendation to publish 12 brands. Every candidate must preserve Soul's service truth and be rejected when its source grammar depends on facilities or imagery Soul does not have.
 
+## Final comparison (2026-09-27)
+
+All 12 hypotheses were implemented as separate branches from the clean `main` ancestor, not as successive CSS skins. Each branch contains `src_FE/docs/reference-variant.md` with its structural brief, image roles, rejected source claims and candid post-implementation review, plus full-page captures at 1440/1024/768/390 and desktop/mobile first folds. The branch screenshots, rather than the source sites' marketing, are the evidence for these judgments. `npm run verify` and route/viewport browser checks passed for each branch. These results prove build and visual mechanics; they do **not** make the business facts or demo API data real.
+
+| Branch | What the structure contributed | Judgment for a small, premium Pilates studio |
+| --- | --- | --- |
+| `codex/ref-blok` | Immediate, full-stage movement; fast path to classes. | Keep the image/body integration; the gym-like intensity is too forceful for Soul's calm coaching promise. |
+| `codex/ref-surrenne` | A deliberate room reveal and sparse destination rhythm. | Keep the restraint; the actual room and missing address cannot sustain a luxury-property opening. |
+| `codex/ref-third-space` | Separate scenes for movement and coaching with direct class paths. | Useful hierarchy, but scale implies a larger club; its fictional coaching picture is labeled and blocks release. |
+| `codex/ref-othership` | One enveloping opening, then visit orientation and clear formats. | **Strongest complete visual candidate** for a warm, calm first impression. Temper the retreat-like plum/peach styling and verify the pictured location. |
+| `codex/ref-barrys` | Arrival and first-visit information made prominent. | Keep its practical information architecture; hard black energy and missing place facts make it a poor luxury visual lead. |
+| `codex/ref-pvolve` | Method explanation before session choice. | Keep concise coaching language; its principle chapter approaches the report-like feeling the owner rejected. |
+| `codex/ref-tracksmith` | Editorial movement sequence connected to a real room and actionable formats. | **Strongest practice-story candidate**. The chair frames do not prove reformer coaching and the room photo needs a better shoot. |
+| `codex/ref-remedy-place` | Room-to-choice path with unambiguous reservation actions. | Sound conversion structure; the honest functional room photograph is not currently premium enough to anchor the whole brand. |
+| `codex/ref-pillar` | Symmetrical statement, architectural room frame, then movement. | Best quiet proportion study, conditional on stronger approved room photography and verified place facts. |
+| `codex/ref-on` | Short navigable stories and a robust mobile action crop. | Keep the crop discipline; three image cards resemble an apparel editorial and delay the class decision. |
+| `codex/ref-1rebel` | Group and Private as large, quickly scannable destinations. | Strong format navigation; hard black and repeated action image make it a structure reference, not a luxury lead. |
+| `codex/ref-satisfy` | Wide body → apparatus detail → real room, each image with a teaching role. | Strongest image-scale experiment, but the detail is a labeled generated concept. Use the pattern only after a real apparatus-detail shoot. |
+
+### Recommendation for the next design decision
+
+Start with **Othership** and **Tracksmith** as the two owner-review candidates, with **Pillar** as a quieter alternative if a new room shoot is possible. Borrow the immediate Group/Private choice from **1Rebel** and the practical arrival content from **Barry's**. This is a recommendation about composition, not permission to merge every section into another inconsistent hybrid. Pick one page grid and one image language, then test a single integrated prototype against the same screenshot gate. Do not spend more time polishing a branch whose main image cannot truthfully carry its headline.
+
+Before a client-facing release, the studio must confirm address, phone, hours, Zalo and map URL; approve every old-mark cleanup and crop; provide a real trainer/lesson shoot and current operational data; and replace the labeled concept images on Third Space and SATISFY with approved studio photography. The concept-image release gate prevents accidental publishing of those two experiments. Captured demo schedules and trainer names are not proof of actual operations.
+
+### Where to inspect the evidence
+
+On each `codex/ref-*` branch, read `src_FE/docs/reference-variant.md` and open `src_FE/docs/reference-variant-captures/home-first-1440.png`, `home-first-390.png`, `home-1440.png`, and `home-390.png`, followed by the changed interior routes in the same folder. BLOK and Surrenne use `home-fold-*.png` for first folds; their docs link the exact files. Compare each full page to the baseline below. The captures reveal image roles, grid continuity, service choice position, mobile reflow and any visual debt much faster than CSS inspection.
+
 ## Shared evaluation protocol
 
 1. Before coding, save a branch-local brief: reference screenshots or live observations at 1440/390, composition map, page hierarchy, image roles, mobile changes, and prohibited source-specific claims. Explain why this is a materially different hypothesis from the other branches.
