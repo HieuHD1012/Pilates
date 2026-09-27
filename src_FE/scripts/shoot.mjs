@@ -16,6 +16,7 @@ const routes = process.argv.slice(4).length ? process.argv.slice(4) : ["/"];
 
 const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
+  { name: "1024", width: 1024, height: 768 },
   { name: "768", width: 768, height: 1024 },
   { name: "390", width: 390, height: 844 },
 ];
@@ -49,9 +50,19 @@ for (const viewport of VIEWPORTS) {
     await page.goto(url, { waitUntil: "networkidle" });
     await page.waitForTimeout(600);
     const slug = route === "/" ? "home" : route.replace(/^\//, "").replace(/\//g, "_");
+    for (const image of await page.locator('img[loading="lazy"]').all()) {
+      await image.scrollIntoViewIfNeeded();
+    }
+    await page.evaluate(() => globalThis.scrollTo(0, 0));
+    await page.waitForTimeout(300);
     const file = `${outDir}/${slug}-${viewport.name}.png`;
     await page.screenshot({ path: file, fullPage: true });
     console.log(`  ${file}`);
+    if (viewport.width === 1440 || viewport.width === 390) {
+      const fold = `${outDir}/${slug}-first-${viewport.name}.png`;
+      await page.screenshot({ path: fold });
+      console.log(`  ${fold}`);
+    }
   }
   await context.close();
 }

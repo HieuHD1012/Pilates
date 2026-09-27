@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -32,8 +31,8 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Formats />
       <Method />
+      <Formats />
       <ThisWeek />
       <FirstVisit />
       <Closing />
@@ -48,47 +47,9 @@ export default function Home() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
-      </div>
+    <section className="pillar-opening" aria-labelledby="pillar-title">
+      <div className="pillar-opening-type"><p className="pillar-kicker">Soul Pilates · Nha Trang</p><h1 id="pillar-title">Một không gian.<br /><em>Một cách tập có chủ đích.</em></h1><div className="pillar-opening-rail"><p>Lớp nhóm nhỏ và lớp riêng trên reformer, với huấn luyện viên theo sát từng chuyển động.</p><Link to="/gioi-thieu">Khám phá studio <span aria-hidden="true">↗</span></Link></div></div>
+      <div className="pillar-opening-photo"><ArtDirectedImage photo="room" priority sizes="100vw" /></div>
     </section>
   );
 }
@@ -99,7 +60,7 @@ function Hero() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
+    <Section index="02" label="Hai hình thức tập" className="pillar-formats">
       <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
         {CLASS_FORMATS.map((format, index) => (
           <article
@@ -122,6 +83,7 @@ function Formats() {
                 </li>
               ))}
             </ul>
+            <Link className="pillar-text-link" to="/dich-vu">Tìm hiểu {format.name.toLocaleLowerCase("vi-VN")} <span aria-hidden="true">↗</span></Link>
           </article>
         ))}
       </div>
@@ -151,33 +113,8 @@ const METHOD_NOTES = [
 
 function Method() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
+    <Section index="01" label="Phương pháp" tone="deep" className="pillar-method">
+      <div className="pillar-method-grid"><div className="pillar-method-copy"><h2>Không gian chỉ có ý nghĩa khi bạn được hướng dẫn đúng.</h2><p>Hơi thở, điểm tựa và biên độ được chú ý trong từng chuyển động. Lớp nhóm nhỏ và lớp riêng giúp huấn luyện viên theo được từng người.</p><dl>{METHOD_NOTES.map(({term,def}) => <div key={term}><dt>{term}</dt><dd>{def}</dd></div>)}</dl></div><div className="pillar-method-image"><ArtDirectedImage photo="hero" sizes="(min-width: 800px) 50vw, 100vw" /></div></div>
     </Section>
   );
 }

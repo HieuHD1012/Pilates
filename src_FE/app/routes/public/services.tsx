@@ -4,7 +4,6 @@ import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -22,11 +21,7 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
+      <header className="pillar-about-head"><p className="pillar-kicker">Hình thức tập</p><h1>Chọn nhịp tập của mình.</h1><p>Hai hình thức trên reformer, cùng một sự chú ý đến từng chuyển động.</p></header>
 
       {CLASS_FORMATS.map((format, index) => (
         <Section
@@ -57,6 +52,7 @@ export default function Services() {
                 Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ
                 bắt đầu để được hoàn lại buổi tập.
               </p>
+              <Link className="pillar-text-link" to={index === 0 ? "/lich-tap" : "/dat-tu-van"}>{index === 0 ? "Xem lịch lớp nhóm" : "Hỏi về lớp riêng"} ↗</Link>
             </div>
           </div>
         </Section>
