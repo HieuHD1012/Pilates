@@ -4,7 +4,6 @@ import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -13,8 +12,7 @@ export function meta(_: Route.MetaArgs) {
     { title: "Hình thức tập — Soul Pilates Nha Trang" },
     {
       name: "description",
-      content:
-        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại Soul Pilates Nha Trang.",
+      content: "Lớp nhóm nhỏ và lớp riêng trên máy reformer tại Soul Pilates Nha Trang.",
     },
   ];
 }
@@ -22,38 +20,40 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
-
+      <header className="ts-page-lead gutter mx-auto max-w-(--container-page)">
+        <p className="ts-kicker">Soul Pilates / Hình thức tập</p>
+        <h1>
+          Hai cách tập.
+          <br />
+          <em>Một sự chú ý.</em>
+        </h1>
+        <p>
+          Chọn nhịp phù hợp với bạn. Cả hai đều diễn ra trên reformer, với huấn luyện viên
+          theo sát trong suốt buổi tập.
+        </p>
+      </header>
       {CLASS_FORMATS.map((format, index) => (
         <Section
           key={format.id}
           index={`0${index + 1}`}
           label={format.name}
-          tone={index % 2 === 0 ? "sand" : "deep"}
+          tone={index === 0 ? "deep" : "sand"}
+          className="ts-service-section"
         >
-          <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-            <div className="md:col-span-6">
-              <p className="label-micro">{format.sub}</p>
-              <h2 className="font-display text-d2 text-ink mt-3 font-light">
-                {format.name}
-              </h2>
-              <p className="measure text-ink-2 mt-6 text-base">{format.body}</p>
+          <div className="ts-service-grid">
+            <div>
+              <span className="ts-format-index">{format.sub} / Reformer</span>
+              <h2>{format.name}</h2>
+              <p className="ts-service-body">{format.body}</p>
             </div>
-
-            <div className="md:col-span-5 md:col-start-8">
-              <p className="label-micro">Phù hợp với</p>
-              <ul className="mt-3">
+            <div className="ts-service-detail">
+              <h3>Phù hợp khi bạn</h3>
+              <ul>
                 {format.forWho.map((item) => (
-                  <li key={item} className="rule-b text-ink py-3 text-sm">
-                    {item}
-                  </li>
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
-              <p className="text-ink-2 mt-6 text-xs">
+              <p>
                 Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ
                 bắt đầu để được hoàn lại buổi tập.
               </p>
@@ -61,15 +61,19 @@ export default function Services() {
           </div>
         </Section>
       ))}
-
-      <Section tone="ink">
-        <div className="flex flex-wrap items-end justify-between gap-8 py-16 md:py-24">
-          <h2 className="measure font-display text-d3 text-sand font-light">
-            Chưa chắc nên bắt đầu bằng hình thức nào?
-          </h2>
-          <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
-            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-          </Button>
+      <Section tone="ink" className="ts-closing">
+        <div className="ts-closing-content">
+          <span className="ts-chapter">Bước tiếp theo</span>
+          <div>
+            <h2>Chưa chắc nên bắt đầu ở đâu?</h2>
+            <p>
+              Để lại thông tin. Studio sẽ trao đổi về nhu cầu của bạn trước khi gợi ý hình
+              thức tập.
+            </p>
+            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+            </Button>
+          </div>
         </div>
       </Section>
     </>

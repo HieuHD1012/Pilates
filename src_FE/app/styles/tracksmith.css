@@ -1,0 +1,456 @@
+/* A sporting editorial rhythm for the public reference branch. The studio's
+   existing tokens remain authoritative; only composition changes here. */
+.ts-site {
+  --ts-measure: min(92rem, 100%);
+}
+
+.ts-header {
+  background: var(--color-sand);
+}
+.ts-header-inner {
+  max-width: 100rem;
+}
+.ts-header .wordmark {
+  font-size: 1.65rem;
+  letter-spacing: 0.13em;
+  font-weight: 430;
+}
+.ts-header nav a {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.ts-kicker,
+.ts-chapter,
+.ts-format-index {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.ts-masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1rem;
+}
+.ts-masthead .ts-kicker {
+  grid-column: 1 / -1;
+  margin-bottom: 0.35rem;
+}
+.ts-display {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 8.8vw, 10rem);
+  font-weight: 350;
+  letter-spacing: -0.065em;
+  line-height: 0.84;
+  max-width: 12ch;
+}
+.ts-display em {
+  font-weight: 350;
+}
+.ts-masthead-aside {
+  max-width: 12rem;
+  padding-bottom: 0.4rem;
+  text-align: right;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--color-ink-2);
+}
+.ts-hero-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1.58fr) minmax(19rem, 0.9fr);
+  min-height: min(39rem, 70vw);
+  max-width: 112rem;
+  margin-inline: auto;
+}
+.ts-hero-photo {
+  min-width: 0;
+  overflow: hidden;
+}
+.ts-hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 47%;
+}
+.ts-hero-story {
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+  padding: clamp(2rem, 4vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3rem;
+}
+.ts-hero-story h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 4vw, 5.1rem);
+  font-weight: 350;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  max-width: 12ch;
+}
+.ts-hero-story p {
+  max-width: 27rem;
+  margin: 1.75rem 0 2rem;
+  line-height: 1.75;
+  color: #dedbd2;
+}
+.ts-text-link,
+.ts-dark-link,
+.ts-format-link {
+  width: fit-content;
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.ts-text-link {
+  margin: 1rem 0 0 1.2rem;
+}
+.ts-hero-story a:focus-visible,
+.ts-format a:focus-visible {
+  outline: 2px solid var(--color-lacquer);
+  outline-offset: 4px;
+}
+
+.ts-formats > .gutter,
+.ts-method > .gutter,
+.ts-schedule > .gutter,
+.ts-first-visit > .gutter,
+.ts-closing > .gutter {
+  max-width: 100rem;
+}
+.ts-section-intro {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  align-items: end;
+  gap: 3rem;
+  padding-bottom: 4rem;
+}
+.ts-section-intro h2,
+.ts-method-copy h2,
+.ts-closing h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 5vw, 6.8rem);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  font-weight: 350;
+}
+.ts-section-intro p {
+  max-width: 25rem;
+  line-height: 1.7;
+  color: var(--color-ink-2);
+}
+.ts-format-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-rule-2);
+  padding-bottom: 7rem;
+}
+.ts-format {
+  display: flex;
+  flex-direction: column;
+  min-height: 20rem;
+  padding: 2rem 3rem 0 0;
+}
+.ts-format + .ts-format {
+  border-left: 1px solid var(--color-rule-2);
+  padding-left: 3rem;
+}
+.ts-format-index {
+  color: var(--color-lacquer);
+}
+.ts-format h3 {
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 5vw, 5.8rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-top: 1.8rem;
+}
+.ts-format p {
+  max-width: 34rem;
+  line-height: 1.7;
+  color: var(--color-ink-2);
+  margin: 1.3rem 0 2rem;
+}
+.ts-format-link {
+  margin-top: auto;
+  color: var(--color-ink);
+}
+
+.ts-method-layout {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.65fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 6rem);
+  align-items: center;
+  padding-bottom: 7rem;
+}
+.ts-method-copy {
+  max-width: 27rem;
+}
+.ts-method-copy .ts-kicker {
+  color: var(--color-lacquer);
+  margin-bottom: 2rem;
+}
+.ts-method-copy p:not(.ts-kicker) {
+  color: var(--color-ink-2);
+  line-height: 1.75;
+  margin: 2rem 0;
+}
+.ts-sequence {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.ts-sequence > div {
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+}
+.ts-sequence img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+}
+.ts-first-visit ol {
+  border-bottom: 1px solid var(--color-rule);
+}
+.ts-closing-content {
+  display: grid;
+  grid-template-columns: 0.35fr 1fr;
+  gap: 3rem;
+  padding: 6rem 0 7rem;
+}
+.ts-closing h2 {
+  max-width: 15ch;
+}
+.ts-closing p {
+  max-width: 30rem;
+  line-height: 1.7;
+  color: #dedbd2;
+  margin: 1.5rem 0 2rem;
+}
+
+.ts-page-lead {
+  padding-top: clamp(3rem, 7vw, 8rem);
+  padding-bottom: clamp(3rem, 6vw, 7rem);
+}
+.ts-page-lead h1 {
+  font-family: var(--font-display);
+  font-size: clamp(4.4rem, 9.5vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.064em;
+  font-weight: 350;
+  margin: 1.5rem 0 2rem;
+}
+.ts-page-lead p:last-child {
+  max-width: 36rem;
+  line-height: 1.75;
+  color: var(--color-ink-2);
+}
+.ts-about-room-grid {
+  display: grid;
+  grid-template-columns: 0.78fr 1fr;
+  gap: clamp(2rem, 5vw, 7rem);
+  padding-bottom: 7rem;
+  align-items: center;
+}
+.ts-about-room-copy h2,
+.ts-about-principles h2,
+.ts-service-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  font-weight: 350;
+}
+.ts-about-room-copy p,
+.ts-about-principles p {
+  max-width: 31rem;
+  line-height: 1.75;
+  color: var(--color-ink-2);
+  margin: 1.5rem 0;
+}
+.ts-about-room-copy a {
+  margin-top: 1rem;
+}
+.ts-about-room-photo {
+  height: min(60vw, 45rem);
+  overflow: hidden;
+}
+.ts-about-room-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+.ts-about-principles-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: 5rem;
+  padding-bottom: 7rem;
+}
+.ts-about-principles-grid > div {
+  padding-top: 1rem;
+}
+.ts-about-principles-grid .bg-lacquer {
+  margin-top: 1.5rem;
+}
+.ts-service-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.65fr;
+  gap: 5rem;
+  padding-bottom: 7rem;
+}
+.ts-service-grid h2 {
+  margin: 1.5rem 0;
+}
+.ts-service-body {
+  max-width: 34rem;
+  line-height: 1.8;
+  color: var(--color-ink-2);
+}
+.ts-service-detail {
+  border-top: 1px solid var(--color-rule-2);
+  padding-top: 1.2rem;
+}
+.ts-service-detail h3 {
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+}
+.ts-service-detail li {
+  border-top: 1px solid var(--color-rule);
+  padding: 0.9rem 0;
+}
+.ts-service-detail li:last-child {
+  border-bottom: 1px solid var(--color-rule);
+}
+.ts-service-detail p {
+  margin-top: 2rem;
+  max-width: 25rem;
+  color: var(--color-ink-2);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .ts-hero-spread {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.75fr);
+  }
+  .ts-hero-story {
+    padding: 2rem;
+  }
+  .ts-hero-story h2 {
+    font-size: clamp(2.3rem, 4vw, 3.2rem);
+  }
+  .ts-method-layout {
+    grid-template-columns: 1fr;
+  }
+  .ts-method-copy {
+    max-width: 42rem;
+  }
+  .ts-about-room-grid {
+    gap: 2rem;
+  }
+}
+@media (max-width: 767px) {
+  .ts-masthead {
+    grid-template-columns: 1fr;
+  }
+  .ts-masthead .ts-kicker {
+    grid-column: 1;
+  }
+  .ts-display {
+    font-size: clamp(3.4rem, 13.1vw, 6rem);
+    line-height: 0.9;
+  }
+  .ts-masthead-aside {
+    display: none;
+  }
+  .ts-hero-spread {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .ts-hero-photo {
+    height: min(72vw, 23rem);
+  }
+  .ts-hero-photo img {
+    object-position: 49% 42%;
+  }
+  .ts-hero-story {
+    min-height: 0;
+    gap: 1rem;
+    padding: 1.3rem 1.25rem 2.5rem;
+  }
+  .ts-hero-story h2 {
+    font-size: clamp(2.55rem, 9vw, 4rem);
+  }
+  .ts-hero-story p {
+    margin: 0.9rem 0 1rem;
+  }
+  .ts-text-link {
+    margin: 1rem 0 0 0;
+    display: flex;
+  }
+  .ts-section-intro,
+  .ts-format-grid,
+  .ts-closing-content {
+    grid-template-columns: 1fr;
+  }
+  .ts-section-intro {
+    gap: 1rem;
+    padding-bottom: 2rem;
+  }
+  .ts-format-grid {
+    padding-bottom: 4rem;
+  }
+  .ts-format {
+    min-height: 0;
+    padding: 1.5rem 0 2.5rem;
+  }
+  .ts-format + .ts-format {
+    border-left: 0;
+    border-top: 1px solid var(--color-rule-2);
+    padding: 1.5rem 0 2rem;
+  }
+  .ts-format h3 {
+    margin-top: 1rem;
+  }
+  .ts-method-layout {
+    padding-bottom: 4rem;
+  }
+  .ts-sequence {
+    gap: 0.4rem;
+  }
+  .ts-sequence > div {
+    aspect-ratio: 1 / 1.6;
+  }
+  .ts-closing-content {
+    gap: 2rem;
+    padding: 4rem 0;
+  }
+  .ts-page-lead h1 {
+    font-size: clamp(3.8rem, 13vw, 6rem);
+  }
+  .ts-about-room-grid,
+  .ts-about-principles-grid,
+  .ts-service-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-bottom: 4rem;
+  }
+  .ts-about-room-photo {
+    height: 21rem;
+    order: -1;
+  }
+  .ts-service-grid h2 {
+    margin: 1rem 0;
+  }
+}

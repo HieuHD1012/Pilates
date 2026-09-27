@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -41,87 +40,70 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
-          </div>
+    <section className="ts-hero bg-sand">
+      <div className="gutter mx-auto max-w-(--container-page) pt-8 pb-7 md:pt-12 md:pb-10">
+        <div className="ts-masthead">
+          <p className="ts-kicker">Soul Pilates · Nha Trang</p>
+          <h1 className="ts-display">
+            Một cách tập
+            <br />
+            <em>có chủ đích.</em>
+          </h1>
+          <p className="ts-masthead-aside">
+            Pilates reformer
+            <br />
+            Lớp nhóm nhỏ &amp; lớp riêng
+          </p>
         </div>
       </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
+      <div className="ts-hero-spread">
+        <div className="ts-hero-photo">
+          <ArtDirectedImage photo="hero" priority sizes="(min-width: 800px) 62vw, 100vw" />
+        </div>
+        <div className="ts-hero-story">
+          <span className="ts-chapter">01 / Thực hành</span>
+          <div>
+            <h2>Tập có người theo sát.</h2>
+            <p>
+              Lớp nhóm nhỏ và lớp riêng trên reformer. Huấn luyện viên theo từng người trong
+              suốt buổi tập.
+            </p>
+            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+            </Button>
+            <Link to="/lich-tap" className="ts-text-link">
+              Xem lịch tập <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+    <Section index="02" label="Chọn cách tập" className="ts-formats">
+      <div className="ts-section-intro">
+        <h2>Đều đặn theo nhịp của bạn.</h2>
+        <p>
+          Hai hình thức tập trên reformer. Cùng một sự chú ý đến từng chuyển động; khác nhau
+          ở mức độ điều chỉnh riêng.
+        </p>
+      </div>
+      <div className="ts-format-grid">
         {CLASS_FORMATS.map((format, index) => (
-          <article
-            key={format.id}
-            className={
-              index === 0
-                ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
-            }
-          >
-            <p className="label-micro">{format.sub}</p>
-            <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
+          <article key={format.id} className="ts-format">
+            <div className="ts-format-index">
+              0{index + 1} / {format.sub}
+            </div>
+            <h3>{format.name}</h3>
+            <p>{format.body}</p>
+            <Link to="/dich-vu" className="ts-format-link">
+              Tìm hiểu hình thức tập <span aria-hidden="true">↗</span>
+            </Link>
           </article>
         ))}
       </div>
@@ -129,53 +111,32 @@ function Formats() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  {
-    term: "Hơi thở",
-    def: "Nhịp thở dẫn động tác, không phải ngược lại. Đây là phần khó nhất của buổi đầu tiên.",
-  },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm bất kỳ lực nào.",
-  },
-  {
-    term: "Kiểm soát",
-    def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào trong động tác.",
-  },
-];
-
 function Method() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
+    <Section index="03" label="Trong một động tác" tone="deep" className="ts-method">
+      <div className="ts-method-layout">
+        <div className="ts-method-copy">
+          <p className="ts-kicker">Tập đúng hơn</p>
+          <h2>
+            Từ thu lại
+            <br />
+            đến vươn ra.
           </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
+          <p>
+            Hai khoảnh khắc của cùng một chuyển động. Pilates không nằm ở tư thế cuối cùng,
+            mà ở cách bạn kiểm soát đoạn đường giữa chúng.
           </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
+          <Link to="/gioi-thieu" className="ts-dark-link">
+            Hiểu về studio <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+        <div className="ts-sequence">
+          <div>
+            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 25vw, 50vw" />
+          </div>
+          <div>
+            <ArtDirectedImage photo="practice" sizes="(min-width: 768px) 25vw, 50vw" />
+          </div>
         </div>
       </div>
     </Section>
@@ -191,7 +152,7 @@ function ThisWeek() {
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
+    <Section index="04" label="Bảy ngày tới" className="ts-schedule">
       <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
@@ -308,7 +269,7 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
    ──────────────────────────────────────────────────────────────────────────── */
 function FirstVisit() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
+    <Section index="05" label="Buổi đầu tiên" className="ts-first-visit">
       <div className="pb-20 md:pb-28">
         <h2 className="measure-wide font-display text-d2 text-ink font-light">
           Bạn không cần biết gì trước khi đến.
@@ -338,29 +299,20 @@ function FirstVisit() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Closing() {
   return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
-        <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
-            <h2 className="font-display text-d2 text-sand font-light">
-              Bắt đầu bằng một cuộc gọi, không phải một gói tập.
-            </h2>
-            <p className="measure text-sand/70 mt-6 text-base">
-              Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn
-              trước khi đề xuất bất cứ điều gì.
-            </p>
-          </div>
-          <div className="flex items-end md:col-span-4 md:col-start-9">
-            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-            </Button>
-          </div>
+    <Section tone="ink" className="ts-closing">
+      <div className="ts-closing-content">
+        <span className="ts-chapter">Bắt đầu tại Soul</span>
+        <div>
+          <h2>Hãy bắt đầu bằng một cuộc trò chuyện.</h2>
+          <p>
+            Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe nhu cầu của bạn trước khi
+            đề xuất hình thức tập.
+          </p>
+          <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+          </Button>
         </div>
-      </Section>
-    </>
+      </div>
+    </Section>
   );
 }

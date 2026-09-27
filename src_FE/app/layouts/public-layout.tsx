@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="ts-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -59,10 +59,10 @@ function PublicHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  // P2 — one ask, stated once. Home has its own consultation action, and the
+  // consultation route already is that action; neither needs a duplicate in
+  // the header. Other routes keep the shortcut.
+  const heroOwnsTheAsk = ["/", "/dat-tu-van"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -80,8 +80,8 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+    <header className="ts-header border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
+      <div className="ts-header-inner gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
         <Wordmark />
 
         <nav aria-label="Điều hướng chính" className="hidden lg:block">
@@ -153,9 +153,11 @@ function PublicHeader() {
               ))}
             </ul>
             <div className="flex flex-col gap-3 py-8">
-              <Button asChild variant="lacquer" size="lg" fullWidth>
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
+              {location.pathname === "/dat-tu-van" ? null : (
+                <Button asChild variant="lacquer" size="lg" fullWidth>
+                  <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+                </Button>
+              )}
               <Button asChild variant="secondary" size="lg" fullWidth>
                 <Link to="/dang-nhap">Đăng nhập</Link>
               </Button>
