@@ -177,6 +177,9 @@ function PublicFooter() {
             <p className="measure text-sand/70 mt-5 text-sm">
               Studio reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
             </p>
+            <p className="measure text-sand/50 mt-5 text-xs">
+              Ảnh hiện tại là minh họa phương án thiết kế, chưa phải ảnh cơ sở Nha Trang.
+            </p>
           </div>
 
           <div className="md:col-span-4">

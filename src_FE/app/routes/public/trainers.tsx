@@ -6,7 +6,7 @@ import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
+import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/trainers";
 
@@ -29,14 +29,39 @@ export function meta(_: Route.MetaArgs) {
  */
 export default function Trainers() {
   const query = usePublicTrainers();
+  // Development fixtures are deliberately prefixed DEMO. They are useful for
+  // staff flows, but a fictional person must not appear as a public instructor.
+  const publishedTrainers =
+    query.data?.filter((trainer) => !trainer.full_name.startsWith("DEMO ")) ?? [];
 
   return (
     <>
-      <PublicPageHeader
-        label="Huấn luyện viên"
-        title="Một người chịu trách nhiệm cho buổi tập của bạn."
-        lede="Mỗi lớp có đúng một huấn luyện viên phụ trách. Bạn biết trước ai sẽ dạy buổi mình đã đặt."
-      />
+      <header className="bg-sand">
+        <div className="gutter mx-auto max-w-(--container-page)">
+          <div className="grid items-center gap-x-10 gap-y-8 py-10 md:grid-cols-12 md:py-16">
+            <div className="md:col-span-6">
+              <p className="label-micro">Huấn luyện viên</p>
+              <h1 className="font-display text-d2 text-ink mt-5 font-light">
+                Một người chịu trách nhiệm cho buổi tập của bạn.
+              </h1>
+              <p className="measure text-lede text-ink-2 mt-6">
+                Mỗi lớp có đúng một huấn luyện viên phụ trách. Bạn biết trước ai sẽ dạy buổi
+                mình đã đặt.
+              </p>
+            </div>
+            <div className="md:col-span-6">
+              <div className="aspect-3/2 w-full">
+                <ArtDirectedImage
+                  photo="craft"
+                  priority
+                  sizes="(min-width: 768px) 45vw, 100vw"
+                />
+              </div>
+            </div>
+          </div>
+          <TickRule />
+        </div>
+      </header>
 
       <Section index="01" label="Đội ngũ">
         <div className="pb-20 md:pb-28">
@@ -65,7 +90,7 @@ export default function Trainers() {
             />
           ) : null}
 
-          {query.isSuccess && query.data.length === 0 ? (
+          {query.isSuccess && publishedTrainers.length === 0 ? (
             <EmptyState
               title="Hồ sơ huấn luyện viên đang được cập nhật"
               description="Studio sẽ công bố hồ sơ đội ngũ tại đây. Trong lúc đó, bạn có thể để lại thông tin để được tư vấn."
@@ -77,9 +102,9 @@ export default function Trainers() {
             />
           ) : null}
 
-          {query.isSuccess && query.data.length > 0 ? (
+          {query.isSuccess && publishedTrainers.length > 0 ? (
             <ul className="rule-t">
-              {query.data.map((trainer) => (
+              {publishedTrainers.map((trainer) => (
                 /**
                  * `GET /public/trainers` returns a name, a photo key and a bio
                  * — no id, and no specialties. The specialties column that used
@@ -101,7 +126,11 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        <div
+                          className="border-rule bg-sand-deep size-full border"
+                          role="img"
+                          aria-label={`Chưa có ảnh chân dung của ${trainer.full_name}`}
+                        />
                       )}
                     </div>
                   </div>

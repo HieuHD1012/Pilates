@@ -41,17 +41,13 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* One opening composition: a coaching moment beside the service promise. */
 function Hero() {
   return (
     <section className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
+        <div className="grid items-center gap-x-10 gap-y-9 pt-6 pb-16 md:grid-cols-12 md:pt-14 md:pb-24">
+          <div className="order-2 md:order-1 md:col-span-6 lg:col-span-6">
             <p className="label-micro">Pilates reformer · Nha Trang</p>
 
             <h1 className="font-display text-d1 text-ink mt-6 font-light">
@@ -75,12 +71,12 @@ function Hero() {
             </div>
           </div>
 
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
+          <div className="order-1 md:order-2 md:col-span-6 lg:col-start-7">
+            <div className="-mx-5 aspect-4/3 md:mx-0 md:aspect-4/5 lg:aspect-5/4">
               <ArtDirectedImage
                 photo="hero"
                 priority
-                sizes="(min-width: 768px) 45vw, 100vw"
+                sizes="(min-width: 768px) 48vw, 100vw"
               />
             </div>
           </div>
@@ -93,10 +89,7 @@ function Hero() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* A short choice on the homepage; the service page carries the detailed fit. */
 function Formats() {
   return (
     <Section index="01" label="Hai hình thức tập">
@@ -113,15 +106,12 @@ function Formats() {
             <p className="label-micro">{format.sub}</p>
             <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
             <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <Link
+              to="/dich-vu"
+              className="text-ink decoration-rule-2 hover:decoration-lacquer mt-8 inline-block text-sm underline underline-offset-[6px]"
+            >
+              Hiểu thêm về {format.name.toLowerCase()}
+            </Link>
           </article>
         ))}
       </div>
@@ -155,7 +145,7 @@ function Method() {
       <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-5">
           <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
+            <ArtDirectedImage photo="private" sizes="(min-width: 768px) 40vw, 100vw" />
           </div>
         </div>
 
@@ -333,34 +323,26 @@ function FirstVisit() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Closing — a dark field, one statement, one action.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* Closing keeps the action dominant; another large image would dilute it. */
 function Closing() {
   return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
-        <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
-            <h2 className="font-display text-d2 text-sand font-light">
-              Bắt đầu bằng một cuộc gọi, không phải một gói tập.
-            </h2>
-            <p className="measure text-sand/70 mt-6 text-base">
-              Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn
-              trước khi đề xuất bất cứ điều gì.
-            </p>
-          </div>
-          <div className="flex items-end md:col-span-4 md:col-start-9">
-            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-            </Button>
-          </div>
+    <Section tone="ink">
+      <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
+        <div className="md:col-span-7">
+          <h2 className="font-display text-d2 text-sand font-light">
+            Bắt đầu bằng một cuộc gọi, không phải một gói tập.
+          </h2>
+          <p className="measure text-sand/70 mt-6 text-base">
+            Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn trước
+            khi đề xuất bất cứ điều gì.
+          </p>
         </div>
-      </Section>
-    </>
+        <div className="flex items-end md:col-span-4 md:col-start-9">
+          <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+          </Button>
+        </div>
+      </div>
+    </Section>
   );
 }

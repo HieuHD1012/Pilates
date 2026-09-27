@@ -39,14 +39,19 @@ decorative shadow · English-first copy.
 
 ## Media strategy
 
-Authentic Nha Trang photography only: the studio's own room, equipment, trainers
-and students. Every slot is specified as a brief in `app/content/photography.ts`
-before a picture exists, and renders a quiet placeholder that reserves the exact
-frame. **The layout must look finished with the placeholders in place** — if a
-composition needs a photograph to work, the composition is wrong.
-
-Never: yoga stock, AI-generated people, transformation before/after, tropical
+Production requires authentic Nha Trang photography: the studio's own room,
+equipment, trainers and students. Every image has a semantic role in
+`app/content/photography.ts`. Never use transformation before/after, tropical
 tourism imagery, influencer fitness photography, or another branch's pictures.
+
+**Temporary exception, 2026-09-26:** the owner explicitly requested a fresh
+image pass from `main` and allowed generated interim photographs where studio
+assets are missing. The concept photographs are marked as illustrations in
+their alt text and disclosed once in the public footer. They are for layout
+review only and must be replaced with owner-approved photographs before launch.
+The composition must be rechecked after that replacement. The Soul colour
+tokens remain unchanged. The route-by-route comparison and rejection notes are
+in `docs/IMAGE_LANGUAGE.md`.
 
 ## Type strategy
 
