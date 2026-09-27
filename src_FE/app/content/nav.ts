@@ -17,11 +17,11 @@ export interface NavItem {
  * Every entry here must resolve to a real, pre-rendered route.
  */
 export const PUBLIC_NAV: NavItem[] = [
-  { to: "/gioi-thieu", label: "Studio" },
   { to: "/dich-vu", label: "Hình thức tập" },
+  { to: "/lich-tap", label: "Lịch tập" },
+  { to: "/gioi-thieu", label: "Studio" },
   { to: "/goi-tap", label: "Gói tập" },
   { to: "/huan-luyen-vien", label: "Huấn luyện viên" },
-  { to: "/lich-tap", label: "Lịch tập" },
   { to: "/lien-he", label: "Liên hệ" },
 ];
 

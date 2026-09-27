@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -32,6 +31,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Orientation />
       <Formats />
       <Method />
       <ThisWeek />
@@ -41,91 +41,64 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
+    <section className="blok-hero" aria-labelledby="blok-hero-title">
+      <div className="blok-hero-visual">
+        <ArtDirectedImage photo="hero" priority className="blok-hero-photo" sizes="100vw" />
+      </div>
+      <div className="blok-hero-panel">
+        <div className="blok-hero-panel-inner">
+          <p className="blok-kicker">Chuyển động có chủ đích</p>
+          <h1 id="blok-hero-title" className="blok-hero-title">
+            Tập đúng.<br />Tiến xa hơn.
+          </h1>
+          <div className="blok-hero-bottom">
+            <p>Lớp nhóm nhỏ và lớp riêng trên reformer, để mỗi chuyển động đều được theo sát.</p>
+            <Button asChild variant="lacquer" size="lg">
+              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+            </Button>
           </div>
         </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
       </div>
     </section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
-   ──────────────────────────────────────────────────────────────────────────── */
+function Orientation() {
+  return (
+    <section className="blok-orientation gutter">
+      <div className="blok-orientation-inner">
+        <p className="blok-kicker">Bắt đầu tại Soul</p>
+        <p>Không cần tập nhiều hơn. Cần một cách tập khiến bạn hiểu cơ thể mình hơn.</p>
+        <Link to="/dich-vu">Khám phá hình thức tập <span aria-hidden="true">↗</span></Link>
+      </div>
+    </section>
+  );
+}
+
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+    <section className="blok-formats" aria-labelledby="blok-formats-title">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <div className="blok-section-heading">
+          <p className="blok-kicker">Hình thức tập</p>
+          <h2 id="blok-formats-title">Chọn cách bạn bắt đầu.</h2>
+        </div>
+      </div>
+      <div className="blok-format-grid">
         {CLASS_FORMATS.map((format, index) => (
-          <article
-            key={format.id}
-            className={
-              index === 0
-                ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
-            }
-          >
-            <p className="label-micro">{format.sub}</p>
-            <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
+          <article key={format.id} className={`blok-format blok-format-${index}`}>
+            <div className="blok-format-top"><span>0{index + 1}</span><span>{format.sub}</span></div>
+            <div>
+              <h3>{format.name}</h3>
+              <p>{format.body}</p>
+              <Link to="/dich-vu">Tìm hiểu lớp {format.name.toLocaleLowerCase("vi-VN")} <span aria-hidden="true">↗</span></Link>
+            </div>
           </article>
         ))}
       </div>
-    </Section>
+    </section>
   );
 }
 
@@ -151,34 +124,24 @@ const METHOD_NOTES = [
 
 function Method() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
+    <section className="blok-method" aria-labelledby="blok-method-title">
+      <div className="blok-method-photo">
+        <ArtDirectedImage photo="method" sizes="(min-width: 768px) 50vw, 100vw" />
+      </div>
+      <div className="blok-method-content">
+        <p className="blok-kicker">Phương pháp</p>
+        <h2 id="blok-method-title">Sức mạnh đến từ kiểm soát.</h2>
+        <p className="blok-method-lede">Mỗi nhịp thở, điểm tựa và biên độ đều có mục đích. Huấn luyện viên theo sát để bạn biết mình đang làm gì, thay vì chỉ cố tập cho xong.</p>
+          <dl className="blok-method-notes">
             {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
+              <div key={term}>
+                <dt>{term}</dt>
+                <dd>{def}</dd>
               </div>
             ))}
           </dl>
-        </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
@@ -191,7 +154,7 @@ function ThisWeek() {
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
+    <Section index="03" label="Bảy ngày tới" className="blok-schedule">
       <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
@@ -308,23 +271,18 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
    ──────────────────────────────────────────────────────────────────────────── */
 function FirstVisit() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
+    <Section index="04" label="Buổi đầu tiên" className="blok-visit">
       <div className="pb-20 md:pb-28">
-        <h2 className="measure-wide font-display text-d2 text-ink font-light">
-          Bạn không cần biết gì trước khi đến.
-        </h2>
+        <h2 className="blok-visit-title">Bạn không cần biết gì trước khi đến.</h2>
 
-        <ol className="mt-12">
+        <ol className="blok-visit-grid">
           {FIRST_VISIT_STEPS.map((step) => (
-            <li
-              key={step.index}
-              className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12 md:py-8"
-            >
-              <span className="figures-display text-ink-3 text-2xl md:col-span-2 md:text-3xl">
-                {step.index}
-              </span>
-              <h3 className="text-ink text-lg md:col-span-4">{step.title}</h3>
-              <p className="measure text-ink-2 text-sm md:col-span-6">{step.body}</p>
+            <li key={step.index}>
+              <span className="blok-visit-index">{step.index}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
             </li>
           ))}
         </ol>
@@ -338,12 +296,7 @@ function FirstVisit() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Closing() {
   return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
+      <Section tone="ink" className="blok-closing">
         <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
           <div className="md:col-span-7">
             <h2 className="font-display text-d2 text-sand font-light">
@@ -361,6 +314,5 @@ function Closing() {
           </div>
         </div>
       </Section>
-    </>
   );
 }

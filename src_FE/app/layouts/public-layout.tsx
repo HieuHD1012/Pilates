@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="blok-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"

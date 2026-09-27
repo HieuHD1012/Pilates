@@ -1,5 +1,18 @@
 # Reference Lock
 
+## Experimental exception on `codex/ref-blok`
+
+The owner explicitly requested an independent branch for each website reference,
+starting fresh from `main`, to compare complete public design languages. This
+branch tests a movement-first, large-sans translation of BLOK's structure. The
+research, critique, composition and image decisions are recorded in
+`docs/reference-variant.md`. Three owner-supplied frames are registered in
+`app/content/photography.ts`; the public home, services, studio and shared
+shell carry this hypothesis. Staff and student reference screens remain in the
+accepted operational system because the requested comparison concerns the
+customer-facing site. This experiment is not an accepted replacement for the
+`main` Reference Lock until the variants are compared and the owner chooses.
+
 Accepted. Changing anything here requires the process in §"Reconsideration"
 below — not a preference.
 

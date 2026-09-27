@@ -1,0 +1,117 @@
+/* BLOK reference translation: movement, then immediate choice. Scoped to the
+   public layout so operational screens retain their established system. */
+.blok-site .wordmark { font-family: var(--font-sans); font-weight: 600; letter-spacing: .11em; }
+.blok-site > header { background: var(--color-sand); backdrop-filter: none; }
+.blok-site > header nav a { font-weight: 500; }
+.blok-site .font-display { font-family: var(--font-sans); }
+
+.blok-kicker { font-size: .75rem; font-weight: 600; line-height: 1.55; letter-spacing: .02em; }
+.blok-hero { position: relative; min-height: min(820px, calc(100svh - 64px)); overflow: hidden; background: var(--color-ink-deep); }
+.blok-hero-visual { position: absolute; inset: 0; }
+.blok-hero-photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 47%; }
+.blok-hero-panel { position: relative; display: flex; align-items: end; min-height: inherit; width: min(70%, 970px); }
+.blok-hero-panel-inner { width: 100%; padding: clamp(2rem, 4vw, 4.5rem) clamp(2rem, 4vw, 4.5rem) clamp(2rem, 3vw, 3.5rem); background: var(--color-ink-deep); color: var(--color-sand); }
+.blok-hero-title { margin-top: 1rem; max-width: 12ch; font-family: var(--font-sans); font-size: clamp(3.8rem, 6.7vw, 7.5rem); font-weight: 600; line-height: 1.02; letter-spacing: -.058em; }
+.blok-hero-bottom { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-top: clamp(2rem, 3vw, 3.5rem); }
+.blok-hero-bottom p { max-width: 22rem; font-size: .875rem; line-height: 1.65; color: var(--color-sand); }
+.blok-hero-bottom a { flex: none; }
+
+.blok-orientation { background: var(--color-sand); }
+.blok-orientation-inner { max-width: 1408px; margin-inline: auto; display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 2rem; align-items: start; padding-block: clamp(4.5rem, 8vw, 8rem); }
+.blok-orientation-inner > p:nth-child(2) { max-width: 25ch; font-size: clamp(1.8rem, 3vw, 3.3rem); font-weight: 500; line-height: 1.2; letter-spacing: -.04em; }
+.blok-orientation-inner a { justify-self: end; align-self: end; border-bottom: 1px solid currentColor; padding-bottom: .25rem; font-size: .875rem; font-weight: 600; }
+.blok-orientation-inner a span, .blok-format a span { margin-left: .5rem; }
+
+.blok-formats { background: var(--color-sand-deep); }
+.blok-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding-block: clamp(4rem, 7vw, 7rem) clamp(2rem, 4vw, 4rem); }
+.blok-section-heading h2 { max-width: 12ch; font-size: clamp(2.8rem, 5vw, 5.8rem); font-weight: 600; line-height: 1.07; letter-spacing: -.052em; }
+.blok-format-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.blok-format { min-height: clamp(390px, 42vw, 620px); display: flex; flex-direction: column; justify-content: space-between; padding: clamp(1.5rem, 4vw, 4rem); }
+.blok-format-0 { background: var(--color-lacquer); color: var(--color-sand); }
+.blok-format-1 { background: var(--color-ink-deep); color: var(--color-sand); }
+.blok-format-top { display: flex; justify-content: space-between; gap: 2rem; font-size: .8rem; font-weight: 600; }
+.blok-format h3 { font-size: clamp(3.4rem, 6vw, 7.5rem); font-weight: 600; line-height: 1.08; letter-spacing: -.06em; }
+.blok-format p { max-width: 32rem; margin-top: 1.25rem; font-size: 1rem; line-height: 1.65; }
+.blok-format a { display: inline-block; margin-top: 2.5rem; border-bottom: 1px solid currentColor; padding-bottom: .3rem; font-size: .9rem; font-weight: 600; }
+
+.blok-method { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: var(--color-sand); }
+.blok-method-photo { min-height: 730px; overflow: hidden; }
+.blok-method-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.blok-method-content { max-width: 790px; padding: clamp(3rem, 6vw, 7rem) clamp(2rem, 5vw, 6rem); }
+.blok-method-content h2 { max-width: 12ch; margin-top: 2rem; font-size: clamp(2.8rem, 4.3vw, 5.2rem); font-weight: 600; line-height: 1.12; letter-spacing: -.055em; }
+.blok-method-lede { max-width: 34rem; margin-top: 2rem; font-size: 1rem; line-height: 1.7; }
+.blok-method-notes { margin-top: clamp(3rem, 5vw, 5rem); }
+.blok-method-notes > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1.5rem; border-top: 1px solid var(--color-rule-2); padding-block: 1.3rem; }
+.blok-method-notes dt { font-size: .875rem; font-weight: 600; }
+.blok-method-notes dd { font-size: .875rem; line-height: 1.6; color: var(--color-ink-2); }
+
+.blok-site .blok-schedule h2, .blok-site .blok-visit h2, .blok-site .blok-closing h2 { font-weight: 600; letter-spacing: -.04em; }
+.blok-site .blok-schedule, .blok-site .blok-visit { padding-top: clamp(3rem, 6vw, 6rem); }
+.blok-site .blok-schedule .label-micro, .blok-site .blok-visit .label-micro { font-size: .75rem; letter-spacing: .02em; font-weight: 600; }
+.blok-site .blok-schedule { background: var(--color-sand-deep); }
+.blok-site .blok-schedule h2 { max-width: 10ch; font-size: clamp(2.6rem, 4vw, 4.5rem); line-height: 1.1; }
+.blok-site .blok-schedule ul li { padding-block: 1.3rem; }
+.blok-site .blok-schedule ul li .text-sm { font-size: .925rem; }
+.blok-visit-title { max-width: 18ch; font-size: clamp(2.8rem, 5vw, 5.5rem); line-height: 1.1; }
+.blok-visit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(2rem, 5vw, 5rem); margin-top: clamp(3rem, 5vw, 5rem); }
+.blok-visit-grid li { display: grid; grid-template-columns: 5rem 1fr; gap: 1rem; border-top: 1px solid var(--color-rule-2); padding-block: clamp(2rem, 3vw, 3rem); }
+.blok-visit-index { font-size: 2.5rem; font-weight: 500; line-height: 1; letter-spacing: -.06em; color: var(--color-lacquer); }
+.blok-visit-grid h3 { font-size: clamp(1.4rem, 2.2vw, 2rem); font-weight: 600; line-height: 1.25; letter-spacing: -.035em; }
+.blok-visit-grid p { max-width: 28rem; margin-top: 1rem; font-size: .9rem; line-height: 1.65; color: var(--color-ink-2); }
+.blok-site .blok-closing h2 { max-width: 16ch; font-size: clamp(2.8rem, 4.4vw, 5rem); line-height: 1.1; }
+
+/* Interior journeys retain the same mass and direct navigation as the home. */
+.blok-interior-hero { background: var(--color-ink-deep); color: var(--color-sand); padding: clamp(5rem, 9vw, 10rem) 0 clamp(4rem, 7vw, 7rem); }
+.blok-interior-hero .gutter { max-width: var(--container-page); margin-inline: auto; }
+.blok-interior-hero h1 { max-width: 12ch; margin-top: 1.4rem; font-size: clamp(3.5rem, 7vw, 8rem); font-weight: 600; line-height: 1.06; letter-spacing: -.06em; }
+.blok-interior-hero p:last-child { max-width: 35rem; margin-top: 2rem; font-size: 1rem; line-height: 1.7; }
+.blok-service-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 570px; }
+.blok-service-stage:nth-of-type(odd) { background: var(--color-sand-deep); }
+.blok-service-stage:nth-of-type(even) { background: var(--color-sand); }
+.blok-service-primary { display: flex; flex-direction: column; justify-content: space-between; padding: clamp(2rem, 5vw, 6rem); }
+.blok-service-primary h2 { max-width: 10ch; font-size: clamp(3.7rem, 6vw, 7rem); font-weight: 600; line-height: 1.05; letter-spacing: -.06em; }
+.blok-service-primary p { max-width: 36rem; font-size: 1rem; line-height: 1.65; }
+.blok-service-detail { display: flex; flex-direction: column; justify-content: end; border-left: 1px solid var(--color-rule-2); padding: clamp(2rem, 5vw, 6rem); }
+.blok-service-detail li { border-top: 1px solid var(--color-rule-2); padding: 1rem 0; font-size: .925rem; }
+.blok-service-detail a { display: inline-block; align-self: start; margin-top: 2rem; padding-bottom: .35rem; border-bottom: 1px solid currentColor; font-weight: 600; }
+.blok-room-frame { height: min(65vw, 680px); min-height: 340px; overflow: hidden; }
+.blok-room-frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 53%; }
+.blok-about-copy { display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; padding-block: clamp(4rem, 8vw, 8rem); }
+.blok-about-copy h2 { max-width: 14ch; font-size: clamp(2.6rem, 4.2vw, 5rem); font-weight: 600; line-height: 1.1; letter-spacing: -.05em; }
+.blok-about-copy p { max-width: 38rem; font-size: 1rem; line-height: 1.7; }
+
+@media (max-width: 1023px) {
+  .blok-hero-panel { width: min(77%, 760px); }
+  .blok-hero-bottom { align-items: start; flex-direction: column; }
+  .blok-orientation-inner { grid-template-columns: 1fr 2fr; }
+  .blok-orientation-inner a { grid-column: 2; justify-self: start; }
+}
+
+@media (max-width: 767px) {
+  .blok-hero { min-height: 0; overflow: visible; }
+  .blok-hero-visual { position: relative; height: min(50svh, 430px); min-height: 400px; }
+  .blok-hero-photo { object-position: 10% center; }
+  .blok-hero-panel { width: 100%; min-height: 0; }
+  .blok-hero-panel-inner { padding: 2.25rem 1.25rem 2.75rem; }
+  .blok-hero-title { font-size: clamp(3.5rem, 13vw, 5.5rem); }
+  .blok-hero-bottom { margin-top: 2rem; gap: 1.5rem; }
+  .blok-orientation-inner { display: block; padding-block: 4.5rem; }
+  .blok-orientation-inner > p:nth-child(2) { margin-top: 1.5rem; }
+  .blok-orientation-inner a { display: inline-block; margin-top: 2rem; }
+  .blok-section-heading { display: block; padding-block: 4.5rem 2.5rem; }
+  .blok-section-heading h2 { margin-top: 1rem; }
+  .blok-format-grid, .blok-method, .blok-service-stage, .blok-about-copy { grid-template-columns: 1fr; }
+  .blok-format { min-height: 410px; padding: 2rem 1.25rem; }
+  .blok-format h3 { font-size: clamp(3.4rem, 13vw, 5.6rem); }
+  .blok-method-photo { min-height: 0; height: min(110vw, 560px); }
+  .blok-method-content { padding: 4rem 1.25rem 5rem; }
+  .blok-method-notes > div { grid-template-columns: 1fr; gap: .5rem; }
+  .blok-service-stage { min-height: 0; }
+  .blok-service-primary { min-height: 360px; padding: 2.5rem 1.25rem; }
+  .blok-service-detail { border-left: 0; border-top: 1px solid var(--color-rule-2); padding: 2.5rem 1.25rem; }
+  .blok-room-frame { height: min(90vw, 440px); min-height: 280px; }
+  .blok-about-copy { gap: 2rem; padding-block: 4rem; }
+  .blok-visit-grid { grid-template-columns: 1fr; margin-top: 3rem; }
+  .blok-visit-grid li { grid-template-columns: 3.5rem 1fr; padding-block: 2rem; }
+  .blok-visit-index { font-size: 2rem; }
+}
