@@ -10,6 +10,7 @@ This directory is the current design investigation. Treat older design files as 
 | Design principles and three falsifiable hypotheses | [design-direction.md](design-direction.md) |
 | Rendered comparison and recommendation | [version-comparison.md](version-comparison.md) |
 | Revised public site composition and visual review | [public-composition-revision.md](public-composition-revision.md) |
+| Independent review of the two summaries, per-screen workflow and live references | [screen-workflow.md](screen-workflow.md) |
 
 ## Reproduce the screenshots
 
