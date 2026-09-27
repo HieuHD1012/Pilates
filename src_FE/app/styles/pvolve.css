@@ -1,0 +1,596 @@
+/* Pvolve reference experiment: method first, then a clear route into formats. */
+.pvolve-site {
+  --pvolve-gutter: clamp(1.25rem, 4.1vw, 5rem);
+  background: var(--color-sand);
+}
+
+.pvolve-site .pvolve-container {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding-inline: var(--pvolve-gutter);
+}
+
+.pvolve-header > div:first-child {
+  height: 5rem;
+  max-width: 1440px;
+}
+
+.pvolve-header {
+  background: var(--color-sand);
+  backdrop-filter: none;
+}
+
+.pvolve-header .wordmark {
+  font-size: 1.4rem;
+  letter-spacing: 0.11em;
+}
+
+.pvolve-header nav a {
+  font-weight: 500;
+}
+
+.pvolve-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+}
+
+.pvolve-ordinal {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvolve-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  min-height: min(720px, calc(100svh - 5rem));
+  background: var(--color-sand-deep);
+}
+
+.pvolve-hero__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2.5rem, 5vw, 5.5rem) clamp(2.5rem, 5vw, 5.5rem) clamp(2.5rem, 4vw, 4.5rem) max(var(--pvolve-gutter), calc((100vw - 1360px) / 2));
+}
+
+.pvolve-hero h1 {
+  max-width: 9em;
+  margin-block: 2rem;
+  font-family: var(--font-sans);
+  font-size: clamp(3.1rem, 5.75vw, 6.15rem);
+  font-weight: 500;
+  letter-spacing: -0.07em;
+  line-height: 1.08;
+}
+
+.pvolve-hero h1 span {
+  color: var(--color-lacquer);
+}
+
+.pvolve-hero__bottom {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.pvolve-hero__bottom p {
+  max-width: 26rem;
+  font-size: clamp(0.95rem, 1.25vw, 1.1rem);
+  line-height: 1.62;
+}
+
+.pvolve-hero__bottom a {
+  flex-shrink: 0;
+}
+
+.pvolve-hero__visual {
+  position: relative;
+  min-height: 32rem;
+  overflow: hidden;
+}
+
+.pvolve-hero__visual img {
+  object-position: 50% 47%;
+}
+
+.pvolve-hero__image-index {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-sand);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pvolve-principles {
+  padding-block: clamp(5rem, 9vw, 9rem);
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+}
+
+.pvolve-section-head h2,
+.pvolve-method-story h2,
+.pvolve-practice h2,
+.pvolve-schedule h2,
+.pvolve-close h2 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1.14;
+}
+
+.pvolve-section-head h2 {
+  max-width: 16em;
+  margin-top: 1rem;
+  font-size: clamp(2.5rem, 4vw, 4.5rem);
+}
+
+.pvolve-principles__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(2rem, 5vw, 5rem);
+  margin-top: clamp(3.5rem, 7vw, 6rem);
+}
+
+.pvolve-principles__grid article {
+  border-top: 1px solid var(--color-rule-dark);
+  padding-top: 1.5rem;
+}
+
+.pvolve-principles__grid h3 {
+  margin-top: 2.75rem;
+  font-size: clamp(1.9rem, 2.5vw, 2.8rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+}
+
+.pvolve-principles__grid article p {
+  max-width: 25rem;
+  margin-top: 1.25rem;
+  color: rgb(242 240 234 / 75%);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.pvolve-method-story,
+.pvolve-practice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 38rem;
+}
+
+.pvolve-method-story__visual,
+.pvolve-practice__visual {
+  min-height: 38rem;
+  overflow: hidden;
+}
+
+.pvolve-method-story__image {
+  object-position: center 55%;
+}
+
+.pvolve-method-story__copy,
+.pvolve-practice__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(3rem, 7vw, 8rem);
+}
+
+.pvolve-method-story__copy {
+  background: var(--color-chalk);
+}
+
+.pvolve-method-story h2,
+.pvolve-practice h2 {
+  max-width: 12em;
+  margin-top: 1.5rem;
+  font-size: clamp(2.65rem, 4vw, 4.75rem);
+}
+
+.pvolve-method-story__copy > p:not(.pvolve-kicker),
+.pvolve-practice__copy > p:not(.pvolve-kicker) {
+  max-width: 30rem;
+  margin-top: 2rem;
+  color: var(--color-ink-2);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.pvolve-text-link {
+  display: inline-flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-width: 12rem;
+  margin-top: 2.5rem;
+  border-bottom: 1px solid currentColor;
+  padding-block: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pvolve-text-link:hover {
+  color: var(--color-lacquer);
+}
+
+.pvolve-formats {
+  padding-block: clamp(5rem, 9vw, 9rem);
+}
+
+.pvolve-section-head--formats {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 2rem;
+  align-items: end;
+}
+
+.pvolve-section-head--formats h2 {
+  margin: 0;
+}
+
+.pvolve-section-head--formats > p:last-child {
+  color: var(--color-ink-2);
+  line-height: 1.65;
+}
+
+.pvolve-formats__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 3.5rem;
+}
+
+.pvolve-format {
+  position: relative;
+  display: flex;
+  min-height: 24rem;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.75rem, 3vw, 3rem);
+  background: var(--color-sand-deep);
+  transition: background 200ms var(--ease-measure);
+}
+
+.pvolve-format:nth-child(2) {
+  background: var(--color-chalk);
+}
+
+.pvolve-format:hover {
+  background: var(--color-lacquer-wash);
+}
+
+.pvolve-format h3 {
+  margin-top: auto;
+  font-size: clamp(2.6rem, 4vw, 4.5rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.pvolve-format p {
+  max-width: 31rem;
+  margin-top: 1rem;
+  padding-right: 2rem;
+  color: var(--color-ink-2);
+  line-height: 1.65;
+}
+
+.pvolve-format__arrow {
+  position: absolute;
+  right: clamp(1.75rem, 3vw, 3rem);
+  bottom: clamp(1.75rem, 3vw, 3rem);
+  font-size: 1.5rem;
+}
+
+.pvolve-practice__copy {
+  background: var(--color-sand-deep);
+}
+
+.pvolve-practice__image {
+  object-position: center top;
+}
+
+.pvolve-schedule {
+  padding-block: clamp(5rem, 9vw, 9rem);
+}
+
+.pvolve-schedule__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(3rem, 8vw, 8rem);
+}
+
+.pvolve-schedule h2 {
+  margin-top: 1rem;
+  font-size: clamp(2.75rem, 4vw, 4.5rem);
+}
+
+.pvolve-schedule__grid > div:first-child > p:not(.pvolve-kicker) {
+  max-width: 26rem;
+  margin-top: 1.5rem;
+  color: var(--color-ink-2);
+}
+
+.pvolve-schedule__list {
+  border-top: 1px solid var(--color-rule-2);
+}
+
+.pvolve-schedule__list li {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-height: 4.25rem;
+  border-bottom: 1px solid var(--color-rule);
+  font-size: 0.875rem;
+}
+
+.pvolve-schedule__list li strong {
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+.pvolve-schedule__list li small {
+  display: block;
+  color: var(--color-ink-2);
+  font-size: 0.75rem;
+}
+
+.pvolve-first {
+  padding-block: clamp(5rem, 9vw, 9rem);
+  background: var(--color-chalk);
+}
+
+.pvolve-first ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+
+.pvolve-first li {
+  border-top: 1px solid var(--color-rule-2);
+  padding-top: 1.5rem;
+}
+
+.pvolve-first li h3 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.pvolve-first li p {
+  margin-top: 1rem;
+  color: var(--color-ink-2);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.pvolve-close {
+  padding-block: clamp(5rem, 9vw, 9rem);
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+}
+
+.pvolve-close h2 {
+  max-width: 16em;
+  margin-block: 1.25rem 2.5rem;
+  font-size: clamp(2.8rem, 5vw, 5.25rem);
+}
+
+/* Shared interior language: a decisive sans title and wider page opening. */
+.pvolve-site main > section:first-child:not(.pvolve-hero) h1 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.pvolve-services-hero {
+  padding-block: clamp(5rem, 10vw, 10rem) clamp(4rem, 7vw, 7rem);
+  background: var(--color-sand-deep);
+}
+
+.pvolve-services-hero h1 {
+  max-width: 16em;
+  margin-top: 2rem;
+  font-size: clamp(3.25rem, 6vw, 6.5rem);
+  line-height: 1.1;
+}
+
+.pvolve-services-hero__bottom {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 4rem;
+  margin-top: clamp(4rem, 7vw, 8rem);
+}
+
+.pvolve-services-hero__bottom p {
+  max-width: 36rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.pvolve-services-compare {
+  padding-block: clamp(5rem, 9vw, 9rem);
+}
+
+.pvolve-services-compare__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 3.5rem;
+}
+
+.pvolve-services-compare__grid article {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-chalk);
+}
+
+.pvolve-services-compare__grid article:nth-child(2) {
+  background: var(--color-sand-deep);
+}
+
+.pvolve-services-compare__head,
+.pvolve-services-compare__fit,
+.pvolve-services-compare__policy {
+  padding-inline: clamp(1.75rem, 3vw, 3rem);
+}
+
+.pvolve-services-compare__head {
+  min-height: 22rem;
+  padding-block: clamp(2rem, 3vw, 3rem);
+}
+
+.pvolve-services-compare__head h3 {
+  margin-top: 3rem;
+  font-size: clamp(3rem, 5vw, 5.5rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.pvolve-services-compare__head p {
+  max-width: 31rem;
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+.pvolve-services-compare__fit {
+  flex: 1;
+  padding-block: 2rem;
+  border-top: 1px solid var(--color-rule-2);
+}
+
+.pvolve-services-compare__fit h4 {
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pvolve-services-compare__fit li {
+  border-top: 1px solid var(--color-rule);
+  padding-block: 0.9rem;
+  font-size: 0.95rem;
+}
+
+.pvolve-services-compare__policy {
+  min-height: 5rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--color-rule-2);
+  color: var(--color-ink-2);
+  font-size: 0.8rem;
+}
+
+.pvolve-services-next {
+  padding-block: clamp(5rem, 8vw, 8rem);
+  background: var(--color-ink-deep);
+  color: var(--color-sand);
+}
+
+.pvolve-services-next > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 2rem 5rem;
+  align-items: end;
+}
+
+.pvolve-services-next h2 {
+  max-width: 12em;
+  margin-top: 1rem;
+  font-size: clamp(2.75rem, 4.5vw, 5rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1.12;
+}
+
+.pvolve-services-next > div > p {
+  max-width: 30rem;
+  color: rgb(242 240 234 / 75%);
+  line-height: 1.7;
+}
+
+.pvolve-services-next__actions {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.pvolve-services-next__actions .pvolve-text-link {
+  margin-top: 0;
+}
+
+@media (max-width: 1100px) {
+  .pvolve-hero__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pvolve-section-head--formats {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .pvolve-section-head--formats > p:last-child {
+    grid-column: 2;
+  }
+
+  .pvolve-first ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .pvolve-header > div:first-child { height: 4rem; }
+  .pvolve-hero { grid-template-columns: 1fr; }
+  .pvolve-hero__copy { min-height: 30rem; padding: 2.5rem var(--pvolve-gutter); }
+  .pvolve-hero h1 { font-size: clamp(3.4rem, 9vw, 5rem); }
+  .pvolve-hero__visual { height: 24rem; min-height: 0; }
+  .pvolve-hero__visual img { object-position: 50% 48%; }
+  .pvolve-principles__grid { gap: 1.75rem; }
+  .pvolve-method-story, .pvolve-practice { grid-template-columns: 1fr; }
+  .pvolve-method-story__visual, .pvolve-practice__visual { height: 30rem; min-height: 0; }
+  .pvolve-method-story__copy, .pvolve-practice__copy { padding: 4rem var(--pvolve-gutter); }
+  .pvolve-practice__copy { order: 1; }
+  .pvolve-practice__visual { order: 2; }
+  .pvolve-schedule__grid { grid-template-columns: 1fr; }
+  .pvolve-services-next > div { grid-template-columns: 1fr; }
+  .pvolve-services-next__actions { grid-column: 1; }
+}
+
+@media (max-width: 600px) {
+  .pvolve-hero__copy { min-height: 29rem; padding-block: 2rem; }
+  .pvolve-hero h1 { margin-block: 2rem; font-size: clamp(3rem, 12vw, 4rem); }
+  .pvolve-hero__bottom { gap: 1.5rem; }
+  .pvolve-hero__visual { height: 25rem; }
+  .pvolve-principles__grid { grid-template-columns: 1fr; margin-top: 2.5rem; }
+  .pvolve-principles__grid article { padding-top: 1rem; }
+  .pvolve-principles__grid h3 { margin-top: 1.25rem; }
+  .pvolve-method-story__visual { height: 30rem; }
+  .pvolve-practice__visual { height: 20rem; }
+  .pvolve-section-head--formats { display: block; }
+  .pvolve-section-head--formats h2 { margin-top: 1rem; }
+  .pvolve-section-head--formats > p:last-child { margin-top: 1rem; }
+  .pvolve-formats__grid { grid-template-columns: 1fr; margin-top: 2rem; }
+  .pvolve-format { min-height: 20rem; }
+  .pvolve-first ol { grid-template-columns: 1fr; gap: 2rem; margin-top: 2.5rem; }
+  .pvolve-first li h3 { margin-top: 1rem; }
+  .pvolve-schedule__list li { grid-template-columns: 6rem minmax(0, 1fr); gap: 0.5rem; padding-block: 0.75rem; }
+  .pvolve-schedule__list li > :last-child { grid-column: 2; justify-self: start; }
+  .pvolve-services-hero h1 { font-size: clamp(2.8rem, 11vw, 4rem); }
+  .pvolve-services-hero__bottom { display: block; margin-top: 3rem; }
+  .pvolve-services-compare__grid { grid-template-columns: 1fr; margin-top: 2rem; }
+  .pvolve-services-compare__head { min-height: 0; }
+  .pvolve-services-next__actions { flex-direction: column; align-items: flex-start; }
+}

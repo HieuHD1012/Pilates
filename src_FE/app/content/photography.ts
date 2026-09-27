@@ -51,8 +51,8 @@ function brief(b: PhotoBrief): PhotoBrief {
 export const PHOTOGRAPHY = {
   hero: brief({
     id: "hero",
-    src: null,
-    alt: "Phòng tập Soul Pilates Nha Trang vào buổi sáng sớm, ánh sáng tự nhiên đổ dài trên sàn gỗ và các máy reformer.",
+    src: "/images/studio/pvolve-chair-rise.jpg",
+    alt: "Một người tập Pilates giữ tư thế trên ghế tập trong ánh sáng cửa sổ.",
     aspect: "3 / 4 on mobile, 16 / 9 from md",
     typeRegion:
       "Left third, full height. Continuous surface (wall or floor in shade), no " +
@@ -71,9 +71,9 @@ export const PHOTOGRAPHY = {
 
   method: brief({
     id: "method",
-    src: null,
+    src: "/images/studio/pvolve-cadillac-control.jpg",
     typeRegion: null,
-    alt: "Bàn tay huấn luyện viên chỉnh vị trí vai của học viên trên máy reformer.",
+    alt: "Người tập giữ tư thế đảo ngược trên thiết bị Cadillac.",
     aspect: "4 / 5",
     subject:
       "A trainer's hand correcting a shoulder or rib position. Two people, one adjustment.",
@@ -98,9 +98,9 @@ export const PHOTOGRAPHY = {
 
   practice: brief({
     id: "practice",
-    src: null,
+    src: "/images/studio/pvolve-reformer-action-clean.png",
     typeRegion: null,
-    alt: "Học viên đang giữ một tư thế trên máy reformer, tập trung vào hơi thở.",
+    alt: "Người tập giữ tư thế kéo dài chân trên máy reformer.",
     aspect: "16 / 10",
     subject: "One student mid-repetition, holding. Trainer visible but not centred.",
     lighting: "Backlit against the window. Silhouette edge, face in shade is fine.",
