@@ -34,7 +34,7 @@ const REPORTS = [
     to: "/studio/bao-cao/huan-luyen-vien",
     name: "Huấn luyện viên",
     question:
-      "Mỗi huấn luyện viên dạy bao nhiêu lớp, và lớp của họ lấp đầy tới đâu so với người khác.",
+      "Mỗi huấn luyện viên được xếp bao nhiêu lớp và có bao nhiêu lượt đăng ký trong khoảng ngày.",
   },
 ];
 

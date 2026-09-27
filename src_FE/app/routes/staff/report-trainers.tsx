@@ -70,7 +70,7 @@ export default function StaffReportTrainers() {
     <div className="gutter py-6">
       <PageHeader
         title="Báo cáo huấn luyện viên"
-        description="Mỗi huấn luyện viên dạy bao nhiêu lớp trong khoảng ngày, và lớp của họ được lấp đầy tới đâu."
+        description="Số lớp đã xếp, lớp đã hủy và lượt đăng ký của từng huấn luyện viên trong khoảng ngày."
         actions={
           <>
             <Button asChild size="sm" variant="secondary">
@@ -190,7 +190,7 @@ export default function StaffReportTrainers() {
       >
         {(report) => (
           <DataTable
-            caption="Số lớp và tỉ lệ lấp đầy theo huấn luyện viên"
+            caption="Số lớp và lượt đăng ký theo huấn luyện viên"
             minWidth="44rem"
           >
             <thead>

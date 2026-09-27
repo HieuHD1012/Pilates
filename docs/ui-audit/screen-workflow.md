@@ -12,8 +12,12 @@ Ngày 26/09/2026. Tài liệu này dùng cho người thiết kế, lập trình
 | Pipeline AVIF/WebP, PSNR và giới hạn 1088px là chuẩn chất lượng thị giác cho mọi ảnh. | Đây là đo kỹ thuật cho các crop của `photos/g3-*`; ảnh gốc #15 rộng 1280px, và cảm nhận thương hiệu không được suy ra từ PSNR. | Tối ưu file sau khi chốt composition; ảnh rõ và tải nhanh đều cần, nhưng không dùng số nén để duyệt mỹ thuật. |
 | Soul-1 hơn Soul-2 vì ít card; Soul-2 có 103 lỗi accessibility. | `soul-1/` và `soul-2/` **có source** trong repo lân cận `soul-pillate`, dù không nằm trong Git refs của repo này. Soul-2 thật có avatar ở danh sách, card/bo góc ở trang public. Con số 103 của HTML report là phép đo trên build cũ, chưa phải audit màn hình hiện tại. | Giữ tính trung thực, contrast và dòng đọc ngắn. Không dùng số card hoặc con số lỗi lịch sử như tiêu chí thắng. |
 | C/B chắc chắn cải thiện chuyển đổi hoặc tốc độ thao tác. | Không có analytics hay thử nghiệm khách/học viên/nhân viên thật; `version-comparison.md` cũng nói rõ giới hạn này. | Chỉ gọi là giả thuyết. Đo nhiệm vụ trước khi chốt. |
+| Cứ có ảnh studio thật ở hero là chứng minh được dịch vụ. | `composition-after/home-1440.png` và `app/routes/public/home.tsx` nói rõ **reformer** trong lời bán hàng nhưng ảnh hero là **Cadillac**; caption lại phải giải thích sự lệch đó. Nhánh `photos/composition-v2` chọn ảnh reformer khác nhưng tách từ `main`, chưa tích hợp với B/C. | Trượt cổng hình ảnh nếu máy/người/không gian trong ảnh không xác nhận đúng lời hứa ngay cạnh. Ưu tiên xét ảnh reformer của nhánh ảnh rồi review cả trang, không bê nguyên branch. |
+| Bộ 21 ảnh là một buổi chụp, chỉ cần giảm số ảnh. | `app/content/photography.ts` phân biệt ảnh 01–09,17 thiên về ghi thiết bị và ảnh 11–15,19–21 thiên về người trước rèm. Hai ngôn ngữ ảnh khác nhau. | Chọn theo cảnh và nhiệm vụ từng trang; không coi mọi crop từ cùng nguồn là cùng chất lượng hoặc cùng vai trò. |
 
 **Chỗ thiếu lớn nhất của cả hai báo cáo:** trang bán dịch vụ vẫn chưa có địa chỉ, số liên hệ, giờ mở cửa, giá/gói xác nhận và chân dung HLV. `studio-18.jpg` có dữ kiện của J Pilates; chủ đã nói cùng nơi/cùng chủ, nhưng tên giao dịch và việc dùng nguyên thông tin trên site Soul vẫn cần xác nhận rõ khi chuẩn bị phát hành. Đây không phải đầu việc của vòng nghiên cứu UI/UX hiện tại. Mô tả phòng tập cũ nói “không có gương phủ kín tường” trong khi ảnh phòng có gương; cần loại câu đó khi biên tập nội dung ở vòng sau.
+
+**Phán đoán thị giác hiện tại:** bản `ui/composition` đã chữa bố cục ảnh mồ côi, nhưng [ảnh chụp trang chủ 1440px](screenshots/composition-after/home-1440.png) vẫn giống một bài trình bày về phương pháp hơn một nơi khách mới có thể tin và đặt buổi: ảnh Cadillac cạnh lời hứa reformer; caption làm khách phải đọc để hiểu ảnh; khối lịch demo và nhiều hàng chữ nhỏ tạo nhịp “bảng thông tin”; bằng chứng về nơi, người dạy và cách đến studio còn thiếu. Đây là vấn đề của nội dung và thứ bậc toàn trang, không thể giải bằng thêm ảnh hoặc siết spacing.
 
 ## 2. Cổng duyệt bắt buộc cho **mỗi** màn hình
 
@@ -25,15 +29,27 @@ Ngày 26/09/2026. Tài liệu này dùng cho người thiết kế, lập trình
 6. **Cổng chấp nhận:** đề nghị/việc chính rõ trong 5 giây; thứ bậc nhất quán; không ảnh mồ côi; không lặp CTA cạnh nhau; không tràn 390px; chữ Việt không cắt dấu; điều kiện/hậu quả giao dịch đọc được; API quyết định trạng thái; không bịa dữ kiện. Tự reject khi một mục sai và chụp lại sau sửa.
 7. **Bàn giao:** lưu screenshot, ghi thay đổi và giới hạn, chạy `npm run verify`. Màn hình bán hàng còn thiếu dữ kiện thực thì **chưa đạt phát hành**, dù layout đã đạt.
 
+### Cổng thị giác cho trang bán dịch vụ
+
+Trước khi code, vẽ wireframe trắng đen ở 1440 và 390px. Điền đúng câu chữ, giá trị và hành động; để ảnh là ô xám ghi vai trò. Chỉ đưa ảnh vào khi wireframe đã giải thích được đường đi **hiểu studio → chọn hình thức → tin bằng chứng → xem lịch/giá → liên hệ**. Với mỗi phương án, chụp **first viewport và toàn trang** rồi trả lời:
+
+- Ảnh đang chứng minh dịch vụ nào? Nếu nói reformer mà ảnh là Cadillac/chair, phương án trượt, dù ảnh đẹp.
+- Ở mobile, mặt người, động tác và máy còn đọc được không? Crop có chặt đầu/tay, che chữ hoặc đẩy hành động ra quá xa không?
+- Ảnh có cùng trục bố cục và cùng nhịp với lời giới thiệu? Nếu bỏ ảnh đi, câu chuyện còn mạch lạc; nếu thay ảnh, ý nghĩa section có thay đổi thật?
+- Có quá nhiều hàng kẻ, caption, nhãn đánh số hoặc bảng khiến studio giống tài liệu kỹ thuật? Một chi tiết chỉ được giữ khi giúp khách quyết định.
+- Khách mở trang 5 giây có nói đúng tên dịch vụ, địa điểm, khác biệt, hành động tiếp theo? Chủ studio có thể xác nhận từng hình ảnh/câu chữ là cơ sở của mình?
+
+Một câu trả lời “không” ở 1–2 hoặc ảnh mồ côi là **trượt**. Các câu còn lại phải được ghi nhận và sửa trước khi gọi bản thiết kế là đạt. Chiều cao trang hay PSNR không thay cho đánh giá này.
+
 ## 3. Website tham khảo đã mở và bài học có thể chuyển giao
 
-R1–R7 và R15–R17 là website studio để **người thiết kế tự xem bố cục, ảnh, chữ và hành trình** trên desktop/mobile. R18–R20 có ảnh minh họa giao diện nghiệp vụ để tham khảo thứ bậc và mật độ thông tin. R8–R14 là tài liệu chính thức về **luồng thao tác**; không lấy chúng làm chuẩn thẩm mỹ. Những nhận xét dưới đây dựa trên nội dung và cấu trúc trang đã kiểm tra; chưa chấm điểm chất lượng thị giác của site ngoài bằng screenshot cùng viewport.
+R1–R7, R15–R17 và R21 là website studio để **xem bố cục, ảnh, chữ và hành trình** trên desktop/mobile. Tôi đã mở 10 site ở 1440/390px, nên bảng cũng ghi điều **không nên học**: Red Spring cắt chữ ở 390px, Silo và Luma để lớp consent che hero; Pilates by Ang đặt chữ lên ảnh tối. R18–R20 có ảnh minh họa giao diện nghiệp vụ để tham khảo thứ bậc và mật độ thông tin. R8–R14 là tài liệu chính thức về **luồng thao tác**, không phải chuẩn thẩm mỹ. Website tham khảo có thể đổi theo thời gian; kiểm lại trước khi vẽ.
 
 | Mã | Nguồn chính thức | Chỉ học điểm này |
 | --- | --- | --- |
-| R1 | [Red Spring Pilates](https://www.redspringpilates.com/) | Nói rõ phương pháp, cho ai và bước đặt buổi đầu trong cùng luồng đọc. |
-| R2 | [Pilates by Ang](https://www.pilatesbyang.com/) | Người dạy, không gian thật và FAQ giúp chứng minh lời giới thiệu. |
-| R3 | [Reformed Body](https://reformedbody.co.uk/) | Phân loại lớp/gói, thời hạn và địa điểm theo câu hỏi khách cần quyết định. |
+| R1 | [Red Spring Pilates](https://www.redspringpilates.com/) | Desktop: lời hứa Reformer + Tower nằm **cạnh ảnh đúng hai loại máy** và CTA buổi đầu. **Không học mobile:** ở 390px chữ bị cắt ngang. |
+| R2 | [Pilates by Ang](https://www.pilatesbyang.com/) | Hồ sơ người dạy, lớp, giá và FAQ mang dữ kiện cụ thể. **Không học** overlay tối/chữ đè lên người hoặc banner consent che nội dung. |
+| R3 | [Silo Studios — gói và lớp](https://www.silostudios.london/) | Nêu hình thức tập và mức cam kết cạnh hành động mua/đặt; xem cách người mới tìm lại giá. **Không học** CTA dày và popup che hero. |
 | R4 | [Thirty Eleven Pilates](https://thirtyelevenlondon.com/) | Danh mục lớp và gói có khác biệt rõ, điều kiện offer đọc được. |
 | R5 | [Club Pilates](https://www.clubpilates.com/) | Đường vào buổi giới thiệu cho người mới và giải thích thiết bị. |
 | R6 | [Pilates by Ang — appointments](https://www.pilatesbyang.com/appointments) | Gói và lớp riêng có đơn vị, thời hạn, mức cam kết rõ; Soul phải chờ giá thật. |
@@ -45,12 +61,13 @@ R1–R7 và R15–R17 là website studio để **người thiết kế tự xem 
 | R12 | [Momence — lead dashboard](https://help.momence.com/en/articles/8475375-leads-a-tour-of-the-dashboard) | Nguồn, giai đoạn và hành động tiếp theo của lead, không chỉ tổng số. |
 | R13 | [Momence — subscriptions](https://help.momence.com/en/articles/12030160-subscription-general-faq-s) | Quyền sử dụng gói phải rõ ở đúng lớp, không suy từ số dư trên frontend. |
 | R14 | [Momence — funnels](https://help.momence.com/en/articles/9764461-funnels) | Báo cáo theo hành trình lead → buổi đầu → học viên; chỉ làm khi backend có dữ liệu. |
-| R15 | [RÉME HOUSE](https://www.remehouse.club/) | Tự xem cách giới thiệu ba hình thức trải nghiệm và vai trò của ảnh trong từng đoạn; kiểm tra xem nhịp này có phù hợp một studio nhỏ ở Nha Trang. |
-| R16 | [Nouva Pilates](https://nouvapilates.com/) | Tự xem giọng thương hiệu boutique, ảnh người/không gian và đường vào đặt lớp; tránh bê lời hứa kết quả từ họ. |
-| R17 | [Silo Studios](https://www.silostudios.london/) | Tự xem cách studio quy mô nhỏ giải thích sự chú ý cá nhân và lớp học; chỉ dùng số liệu khi Soul có số liệu thật. |
+| R15 | [Pilates Studio South](https://pilatesstudiosouth.com/) | Hero dựa vào chữ rõ ràng; ảnh phòng xuất hiện sau lời hứa và CTA trên mobile. Đây là phương án đáng thử khi ảnh không đủ mạnh để làm hero. **Không sao chép** số lượng máy/điểm bán của họ. |
+| R16 | [Aloe Pilates](https://www.aloepilates.com/) | Phân biệt phòng, lớp, giá, HLV và lịch bằng dữ kiện; ảnh lớp có ngữ cảnh bổ sung chứng cứ sau lời giới thiệu. **Không sao chép** lượng chữ dài, chỉ số và chứng chỉ của họ. |
+| R17 | [Silo Studios](https://www.silostudios.london/) | Ảnh người/không gian tạo không khí và lời giới thiệu nêu lợi ích của lớp nhỏ; [trang đội ngũ](https://www.silostudios.london/team/) cho người dạy một chỗ riêng. **Không học** popup che trang hoặc quảng cáo lặp. |
 | R18 | [Mindbody — Pilates software](https://www.mindbodyonline.com/en-au/business/fitness/pilates-software) | Xem ảnh minh họa màn hình đặt lớp, lịch HLV và quản lý; phân biệt ảnh marketing của phần mềm với giao diện vận hành thực. |
 | R19 | [Mindbody — Business App](https://www.mindbodyonline.com/business/business-app) | Xem mô hình lịch, khách, thanh toán và phân quyền trên mobile; kiểm tra việc quan trọng có nằm trước thống kê. |
 | R20 | [Teamup — gym staff scheduling](https://www.teamup.com/learn/manage-availability/gym-staff-scheduling-software/) | Xem lịch nhân sự đặt cạnh nhau và cách biểu diễn người sẵn sàng; chỉ áp dụng nếu lịch studio có bài toán phân ca tương tự. |
+| R21 | [Luma Pilates](https://www.lumaclt.com/) | Một phương án không khí phòng ấm, hình máy cùng lời hứa và nút buổi đầu; **chỉ lấy bố cục/ánh sáng**, không mặc định ảnh hay claim của họ là bằng chứng cho Soul. Mobile cần kiểm lại độ đọc khi có banner consent. |
 
 **Bài tập tham khảo nhanh:** với mỗi website studio, xem trang đầu trong 5 giây rồi cuộn hết ở desktop và 390px. Ghi lại (1) ảnh đầu giúp hiểu điều gì, (2) ảnh sau có bổ sung chứng cứ mới không, (3) các mép lề có thống nhất không, (4) hành động đặt lớp/liên hệ có tìm lại được sau mỗi đoạn lớn không. Chỉ chọn một quy luật hữu ích cho Soul; không sao chép toàn bộ bố cục của bất kỳ nguồn nào.
 
@@ -60,15 +77,15 @@ R1–R7 và R15–R17 là website studio để **người thiết kế tự xem 
 
 | URL | Câu hỏi phải trả lời khi review | Tham khảo |
 | --- | --- | --- |
-| `/` | Trong 5 giây có biết đây là reformer tại Nha Trang, hai hình thức tập và bước kế tiếp? Ảnh có thể hiện **đúng reformer** và còn rõ người/máy ở 390px? Lịch demo có bị hiểu là lịch thật? | R15, R17 |
-| `/gioi-thieu` | Ảnh có chứng minh **phòng thật** mà không che các điểm chưa đẹp? Câu chữ nào nói quá những gì ảnh/nguồn xác nhận? Địa chỉ thật có thể tìm? | R2, R17 |
-| `/dich-vu` | Khách mới có phân biệt lớp nhóm/lớp riêng trong một lần nhìn? “Phù hợp với” có tránh hứa hẹn phục hồi y khoa? Thời hạn hủy có dễ thấy? | R1, R16 |
-| `/goi-tap` | Chưa có giá thì có giải thích cách gói hoạt động và dẫn đến hỏi đúng chỗ, không tạo cảm giác giấu giá? Khi có giá, số buổi/thời hạn/điều kiện phải cùng một khối. | R3, R6 |
-| `/huan-luyen-vien` | Chưa có chân dung/tiểu sử thì có tránh avatar giả và lời khen vô nguồn? Khi có hồ sơ, năng lực nào được xác minh? | R2, R1 |
-| `/lich-tap` | Ngày/giờ/loại lớp/trạng thái có quét được trên điện thoại? Lớp hết chỗ, lỗi mạng và lịch chưa mở có câu trả lời riêng? | R7, R8 |
-| `/khuyen-mai` | Offer có điều kiện, hạn, đối tượng và CTA thật? Nếu chưa có, trang có nói thẳng thay vì bán một khuyến mãi không tồn tại? | R4, R3 |
-| `/lien-he` | Có cách liên hệ **đang hoạt động** và vị trí thật? Nếu dữ kiện còn thiếu, một lời báo trung thực có tốt hơn sáu dòng “đang cập nhật”? | R2, R3 |
-| `/dat-tu-van` | Form hỏi tối thiểu, xác nhận rõ đã gửi/chưa gửi, không hứa thời gian gọi lại chưa xác nhận? Có thể hoàn thành bằng một tay ở 390px? | R5, R2 |
+| `/` | Trong 5 giây có biết đây là reformer tại Nha Trang, hai hình thức tập và bước kế tiếp? **Hiện ảnh Cadillac không đạt câu hỏi này.** Crop 390px còn rõ người/máy? Lịch demo có bị hiểu là lịch thật? | R1 (ảnh đúng lời hứa), R15 (hero không cần ảnh), R21 (không khí) |
+| `/gioi-thieu` | Ảnh có chứng minh **phòng thật** mà không che các điểm chưa đẹp? Câu chữ nào nói quá những gì ảnh/nguồn xác nhận? Địa chỉ thật có thể tìm? | R16 (phòng/ảnh thật), R17 (bản sắc studio nhỏ) |
+| `/dich-vu` | Khách mới có phân biệt lớp nhóm/lớp riêng trong một lần nhìn? Máy trong ảnh có khớp cả hai format? “Phù hợp với” có tránh hứa hẹn phục hồi y khoa? | R1 (dịch vụ cạnh ảnh), R16 (so sánh format), R17 (mô tả lớp) |
+| `/goi-tap` | Chưa có giá thì có giải thích cách gói hoạt động và dẫn đến hỏi đúng chỗ, không tạo cảm giác giấu giá? Khi có giá, số buổi/thời hạn/điều kiện phải cùng một khối. | R3 (phân cấp gói), R6 (đơn vị và hạn), R16 (gói/điều khoản) |
+| `/huan-luyen-vien` | Chưa có chân dung/tiểu sử thì có tránh avatar giả và lời khen vô nguồn? Khi có hồ sơ, năng lực nào được xác minh? | R2 (hồ sơ thật), R16 (chuyên môn theo người), R17 (trang đội ngũ) |
+| `/lich-tap` | Ngày/giờ/loại lớp/trạng thái có quét được trên điện thoại? Lớp hết chỗ, lỗi mạng và lịch chưa mở có câu trả lời riêng? | R7 (lịch→đặt), R8 (tìm lớp), R16 (lịch lặp vs chỗ thật) |
+| `/khuyen-mai` | Offer có điều kiện, hạn, đối tượng và CTA thật? Nếu chưa có, trang có nói thẳng thay vì bán một khuyến mãi không tồn tại? | R4 (offer), R16 (điều kiện), R15 (CTA tiết chế) |
+| `/lien-he` | Có cách liên hệ **đang hoạt động** và vị trí thật? Nếu dữ kiện còn thiếu, một lời báo trung thực có tốt hơn sáu dòng “đang cập nhật”? | R16 (địa chỉ/đường liên hệ), R17 (địa điểm), R15 (footer) |
+| `/dat-tu-van` | Form hỏi tối thiểu, xác nhận rõ đã gửi/chưa gửi, không hứa thời gian gọi lại chưa xác nhận? Có thể hoàn thành bằng một tay ở 390px? | R5 (người mới), R16 (chuyển sang đặt), R2 (câu hỏi thường gặp) |
 
 **Tài khoản và học viên — mục tiêu là đặt đúng lớp, hiểu hậu quả.** Hai nguồn mỗi hàng là tham khảo luồng, không phải mỹ thuật marketing.
 
@@ -99,17 +116,24 @@ R1–R7 và R15–R17 là website studio để **người thiết kế tự xem 
 
 | URL | Câu hỏi phải trả lời khi review | Tham khảo |
 | --- | --- | --- |
-| `/studio`, `/studio/tong-quan` | Việc chờ điểm danh/gia hạn/thanh toán và đường vào bản ghi có trước bốn số liệu? | R10, R12 |
+| `/studio` | Chuyển thẳng sang tổng quan đúng quyền, không nhấp nháy trang rỗng hoặc lộ dữ liệu? | R10, R19 |
+| `/studio/tong-quan` | Việc chờ điểm danh/gia hạn/thanh toán và đường vào bản ghi có trước bốn số liệu? | R10, R12 |
 | `/studio/lich` | 390px không tràn; desktop thử B (lưới hai ca) và C (agenda), đo việc tìm/đổi/tạo lớp cùng người trực lịch. | R20, R18 |
 | `/studio/lich/:classId` | Trạng thái, người đặt, sửa/hủy và hậu quả hoàn buổi có ngay trước xác nhận? | R11, R10 |
-| `/studio/khach-quan-tam`, `/:leadId` | Lead chưa xử lý nổi lên; nguồn, nhu cầu, liên hệ và bước sau rõ? | R12, R14 |
-| `/studio/hoc-vien`, `/:studentId` | Tìm nhanh tên/số, phân biệt người trùng tên; hồ sơ không biến thành năm tab khó dò? | R10, R13 |
-| `/studio/huan-luyen-vien`, `/:trainerId` | Lịch, lớp và quyền của HLV rõ; không dùng chân dung mặc định như hồ sơ thật. | R20, R19 |
+| `/studio/khach-quan-tam` | Lead mới/chưa trả lời nổi lên; bộ lọc và thời điểm liên hệ cuối có quét được? | R12, R14 |
+| `/studio/khach-quan-tam/:leadId` | Nhu cầu, nguồn, số liên hệ, lịch sử và hành động tiếp theo cùng một luồng đọc? | R12, R10 |
+| `/studio/hoc-vien` | Tìm nhanh tên/số và phân biệt người trùng tên; danh sách dài còn quét được ở 390px? | R10, R19 |
+| `/studio/hoc-vien/:studentId` | Gói, lịch, thanh toán và lịch sử của một người dễ tìm; `null` khác `0`; tab không giấu tác vụ? | R10, R13 |
+| `/studio/huan-luyen-vien` | Tìm đúng người, lịch/phân công và trạng thái tài khoản rõ; không dùng chân dung mặc định như hồ sơ thật. | R20, R19 |
+| `/studio/huan-luyen-vien/:trainerId` | Lịch dạy, lớp đã xếp, thông tin liên hệ và quyền sửa nằm đúng thứ tự công việc? | R20, R10 |
 | `/studio/goi-tap` | Gói, thời hạn, số buổi, giá xác nhận và trạng thái bán/ẩn dễ so sánh? | R13, R6 |
 | `/studio/thanh-toan` | Khoản chờ xác nhận nổi rõ, gắn đúng học viên/gói, lỗi nhập tiền không âm thầm bỏ qua? | R10, R13 |
 | `/studio/so-buoi` | Lần cộng/trừ nào, do ai, vì sao, số dư trước/sau; `null` không thành `0`? | R13, R10 |
 | `/studio/gia-han` | Ai cần liên hệ trước, vì sao, lần liên hệ gần nhất và kết quả ở cùng vùng nhìn? | R12, R10 |
-| `/studio/bao-cao`, `/doanh-thu`, `/lop-hoc`, `/huan-luyen-vien` | Khoảng thời gian, định nghĩa số, nguồn dữ liệu, xuất file; không vẽ KPI backend không có. | R14, R11 |
+| `/studio/bao-cao` | Mỗi báo cáo trả lời một câu hỏi có thật; nhãn liên kết có hứa đúng số liệu trang đích? | R14, R18 |
+| `/studio/bao-cao/doanh-thu` | Ngày, phương thức thu, khoản chờ/đã xác nhận và đơn vị tiền tách bạch; export khớp bộ lọc? | R14, R19 |
+| `/studio/bao-cao/lop-hoc` | Tỉ lệ lấp đầy dùng mẫu số backend có thật; trường hợp chưa có lớp không thành 0% gây hiểu sai? | R11, R18 |
+| `/studio/bao-cao/huan-luyen-vien` | Chỉ báo số lớp và lượt đăng ký mà API có; **không gọi đó là tỉ lệ lấp đầy**; xuất file cùng khoảng ngày? | R11, R18 |
 | `/studio/tai-khoan` | Chỉ admin thấy; tạo/sửa/vô hiệu hóa và quyền hậu quả được xác nhận? | R10, R13 |
 
 `*` (404): phải có đường về site và không tiết lộ khu vực được bảo vệ. Tham chiếu gần nhất là điều hướng công khai R1/R2.
@@ -123,6 +147,12 @@ R1–R7 và R15–R17 là website studio để **người thiết kế tự xem 
 5. **Để giai đoạn chuẩn bị phát hành:** xác nhận tên giao dịch, địa chỉ, liên hệ, giờ mở cửa, map, gói/giá và hồ sơ HLV. Chủ đã ưu tiên nghiên cứu UI/UX lúc này, vì vậy không lấy các dữ kiện còn thiếu làm lý do dừng audit.
 6. **Đo sau phát hành:** lượt xem trang → bắt đầu form → gửi thành công; khách mở lịch → tạo tài khoản/đặt lớp; tỉ lệ lỗi form; người học tìm được lớp; nhân viên xử lý lead. Không tuyên bố “tăng chuyển đổi” dựa trên screenshot.
 
+### Buổi duyệt với chủ studio và người dùng
+
+Đừng chỉ hỏi “đẹp chưa?”. Đưa bản mobile trước, không thuyết minh, và cho mỗi người làm một việc thật: khách mới tìm lớp nhóm phù hợp rồi gửi tư vấn; học viên tìm buổi đặt được rồi kiểm hậu quả hủy; lễ tân tìm lead mới rồi xác nhận khoản chờ; HLV mở roster lớp sắp dạy. Hỏi chủ studio ba câu riêng: “Cảnh nào đúng là cơ sở của mình?”, “Điều gì khách sẽ hiểu sai?”, “Nếu ngày mai gửi link cho khách, chỗ nào làm anh/chị ngại nhất?”. Ghi nguyên câu trả lời và vị trí dừng; sửa theo lỗi lặp lại thay vì biện hộ bằng intent của designer. Một bản chụp đẹp chỉ là ứng viên; bản được chọn phải giúp khách hiểu đúng và hoàn thành việc.
+
+**Bằng chứng bàn giao mỗi màn hình:** ảnh 1440/390 đầu trang và toàn trang; ảnh trạng thái rỗng/lỗi/đang tải cần thiết; một phiếu review đã điền; danh sách blocker còn mở; link commit. Với public site, chủ xác nhận ảnh và sự thật kinh doanh trước phát hành. Với cổng vận hành, người trực nghiệp vụ xác nhận trạng thái và hậu quả thao tác. Gọi bản thiết kế “đạt thị giác” và “đạt phát hành” là hai quyết định khác nhau.
+
 ## 6. Phiếu review một màn hình
 
 ```text
@@ -131,6 +161,7 @@ Việc chính và bằng chứng nó hiện trong 5 giây:
 Số bước đến hành động:
 Ảnh (nếu có): vai trò / bằng chứng / vị trí / crop / alt:
 Hai tham chiếu và điều áp dụng / không sao chép:
+Ảnh/sự thật nào chủ studio đã xác nhận:
 Điểm thất bại về hierarchy, layout, nội dung, tương tác, API:
 Ảnh chụp trước / sau:
 Kết quả 3 người thử nhiệm vụ (thời gian, lỗi hiểu sai):
