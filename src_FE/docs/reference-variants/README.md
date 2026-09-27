@@ -1,5 +1,23 @@
 # Reference variants: independent branches
 
+## Brand correction and beige-first review (2026-09-27)
+
+The linked [Soul Pilates website](https://soulpilates.com.vn/) identifies itself as the **Đà Nẵng** studio. Its current opening is a darkened room photograph with warm apricot type and actions; it is brand ancestry, not a beige template. The repository's owner-supplied [Nha Trang photo archive](../../../docs/thiet-ke/anh-studio/README.md) is labeled **J Pilates**. The earlier code brief nevertheless names `Soul Pilates Nha Trang`, so all 12 implemented screenshots show the wrong wordmark for the target studio. Preserve them as composition evidence, **not** as J Pilates brand-ready pages. Do not silently transfer Soul's name, Da Nang contact facts or class claims. The archive also mentions an address, while the app's studio-facts model calls the Nha Trang address unconfirmed; that conflict needs owner confirmation before public copy changes.
+
+The owner favors beige. Reordering the **actual screenshots** by how well their composition lets warm beige, wood and skin tones carry a premium Pilates story gives:
+
+| Order | Variant | Beige fit in the current implementation | Decision |
+| --- | --- | --- | --- |
+| 1 | Tracksmith | Large warm cream fields, ink type and controlled movement; the wood photograph belongs in the same palette. | Lead J Pilates composition candidate. |
+| 2 | Pillar | Quiet cream architecture and deliberate proportion. | Strong beige study if the room can be photographed better. |
+| 3 | Pvolve | Beige ground and restrained brown-red contrast. | Useful method clarity; simplify its report-like principle chapter. |
+| 4 | Surrenne | Beige frame and calm spacing. | The utilitarian room image currently dominates; needs stronger real place proof. |
+| 5 | Othership | Warm, inviting sequence. | Previous overall favorite falls here under the owner's beige preference because plum currently dominates; a palette change would be a new iteration, not what the screenshot already proves. |
+| 6 | Remedy Place | Clear place-to-choice journey. | Dark panel and room image push beige to the edge. |
+| 7–12 | On, SATISFY, Third Space, BLOK, 1Rebel, Barry's | Dark split fields or large black overlays dominate the first fold. | Keep their crop, image-scale, format-choice or arrival patterns as structure references, not the beige visual lead. |
+
+Open the [beige-ranked visual gallery](gallery.html) or [two overview PNGs](GALLERY.md) to compare desktop and phone screenshots in that order. Beige should carry **space and warmth**, with enough dark ink to keep hierarchy legible; washing every surface into the same pale tone would lose the deliberate grid and the real photographs. Before a selected composition can become a J Pilates deliverable, update the global brand name, wordmark, metadata and copy, then recapture every public route. That rebrand has not been performed in the 12 reference branches.
+
 The owner requested one branch per reference website. The earlier `codex/image-language-from-main` commit is a mixed image pass and **does not count as a reference variant**. These experiments branch independently from `main` (`9d64fb3`); none inherits another variant's layout or generated pictures.
 
 The reference's color, words, photographs, trademarks, offers and amenities are never copied. Soul keeps its existing palette, Vietnamese content rules, API contracts and business facts. A branch translates a reference's **page composition, type hierarchy, visual rhythm, image role, navigation and mobile recomposition**. A changed photograph or a few CSS values cannot pass as a completed variant.
@@ -48,7 +66,7 @@ Open the [visual gallery](gallery.html), its [two PNG overview boards](GALLERY.m
 
 ### Recommendation for the next design decision
 
-Start with **Othership** and **Tracksmith** as the two owner-review candidates, with **Pillar** as a quieter alternative if a new room shoot is possible. Borrow the immediate Group/Private choice from **1Rebel** and the practical arrival content from **Barry's**. This is a recommendation about composition, not permission to merge every section into another inconsistent hybrid. Pick one page grid and one image language, then test a single integrated prototype against the same screenshot gate. Do not spend more time polishing a branch whose main image cannot truthfully carry its headline.
+Under the owner's beige preference, start with **Tracksmith** and **Pillar** for the owner review; keep **Pvolve** as the more instructional option. Othership remains a useful warm sequence, but its current plum field is not a beige-led execution. Borrow the immediate Group/Private choice from **1Rebel** and the practical arrival content from **Barry's** only after selecting one page grid and image language. Test a single J Pilates prototype against the same screenshot gate. Do not spend more time polishing a branch whose main image cannot truthfully carry its headline.
 
 Before a client-facing release, the studio must confirm address, phone, hours, Zalo and map URL; approve every old-mark cleanup and crop; provide a real trainer/lesson shoot and current operational data; and replace the labeled concept images on Third Space and SATISFY with approved studio photography. The concept-image release gate prevents accidental publishing of those two experiments. Captured demo schedules and trainer names are not proof of actual operations.
 

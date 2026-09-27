@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>12 hướng hình ảnh · Soul Pilates</title>
+    <title>12 hướng hình ảnh theo gu màu be · J Pilates</title>
     <style>
       :root { color-scheme: light; font-family: Arial, sans-serif; color: #20211e; background: #e9e7e0; }
       * { box-sizing: border-box; }
@@ -12,7 +12,8 @@
       .intro { padding: 20px 12px 32px; }
       .eyebrow { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
       h1 { font-family: Georgia, serif; font-size: clamp(36px, 4vw, 64px); font-weight: 400; letter-spacing: -.045em; line-height: 1.02; margin: 0 0 16px; }
-      .intro p:last-child { max-width: 760px; font-size: 16px; line-height: 1.55; margin: 0; }
+      .intro p { max-width: 1020px; font-size: 16px; line-height: 1.55; margin: 0 0 12px; }
+      .identity { border-left: 3px solid #9d7252; padding: 10px 14px; background: #f5eee4; color: #544338; }
       .board { background: #f5f3ed; padding: 24px; margin-bottom: 32px; }
       .board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; border-bottom: 1px solid #bdbbb3; padding: 4px 0 20px; margin-bottom: 22px; }
       .board-head h2 { font-family: Georgia, serif; font-size: 31px; font-weight: 400; margin: 0; }
@@ -42,34 +43,35 @@
   <body>
     <main>
       <header class="intro">
-        <p class="eyebrow">Soul Pilates · nghiên cứu hình ảnh</p>
-        <h1>12 hướng thiết kế, đặt cạnh nhau.</h1>
-        <p>Ảnh bên dưới là screenshot thật của các nhánh Soul, không phải ảnh của website tham khảo. Bấm vào từng khung để xem nguyên kích thước. Mỗi cặp cho thấy first fold ở 1440 px và 390 px.</p>
+        <p class="eyebrow">J Pilates · Nha Trang · lọc theo gu màu be</p>
+        <h1>Ưu tiên những bố cục làm màu be đẹp hơn.</h1>
+        <p>Xếp theo mức độ hợp với nền be ấm, ảnh studio tông gỗ và cảm giác cao cấp; đây là đánh giá của bản đã dựng, không phải bảng màu của website tham khảo. Bấm từng khung để xem ảnh nguyên kích thước.</p>
+        <p class="identity">Lưu ý thương hiệu: website Soul bạn cung cấp là cơ sở Đà Nẵng. Tư liệu ảnh cơ sở Nha Trang trong repo ghi J Pilates. Các screenshot nghiên cứu cũ vẫn còn chữ “Soul Pilates Nha Trang”; hãy đọc chúng như bằng chứng bố cục, chưa phải bản giao khách mang đúng tên J Pilates.</p>
       </header>
       <section class="board" id="board-1" aria-label="Sáu hướng đầu">
-        <div class="board-head"><h2>01 / Đón khách và giải thích cách tập</h2><span>6 phương án · desktop + mobile</span></div>
+        <div class="board-head"><h2>01 / Hợp màu be hơn</h2><span>Ảnh thử nghiệm còn tên Soul · chưa phải bản J Pilates</span></div>
         <div class="cards" id="cards-1"></div>
       </section>
       <section class="board" id="board-2" aria-label="Sáu hướng tiếp theo">
-        <div class="board-head"><h2>02 / Không gian, lựa chọn và nhịp hình ảnh</h2><span>6 phương án · desktop + mobile</span></div>
+        <div class="board-head"><h2>02 / Cần đổi bảng màu đáng kể</h2><span>Ảnh thử nghiệm còn tên Soul · chưa phải bản J Pilates</span></div>
         <div class="cards" id="cards-2"></div>
       </section>
-      <p class="note">Mọi bản đều là nghiên cứu bố cục. Địa chỉ, điện thoại, giờ mở cửa, Zalo, bản đồ và dữ liệu vận hành còn chờ xác nhận. Third Space và SATISFY có ảnh minh họa được đánh dấu trong trang và chặn release.</p>
+      <p class="note">Mọi bản đều là nghiên cứu bố cục. Tên thương hiệu trong code, địa chỉ, điện thoại, giờ mở cửa, Zalo, bản đồ và dữ liệu vận hành phải được xác nhận trước bản J Pilates cuối. Third Space và SATISFY có ảnh minh họa được đánh dấu trong trang và chặn release.</p>
     </main>
     <script>
       const variants = [
-        ["blok", "BLOK", "Giữ ảnh vận động liền với lời mở đầu; sắc độ quá mạnh cho Soul.", "Tham khảo cấu trúc"],
-        ["surrenne", "Surrenne", "Mở bằng không gian thật; ảnh phòng hiện chưa đủ sức gánh định vị luxury.", "Cần ảnh mới"],
-        ["third-space", "Third Space", "Các cảnh vận động và coaching rõ vai; ảnh coaching là minh họa.", "Chặn release"],
-        ["othership", "Othership", "Ấm, liền mạch, dễ ở lại; cần tiết chế chất retreat.", "Ứng viên chính"],
-        ["barrys", "Barry’s", "Thông tin buổi đầu và ba lối đi rõ; sắc đen hơi giống gym.", "Tham khảo cấu trúc"],
-        ["pvolve", "Pvolve", "Giải thích phương pháp tốt; phần nguyên lý hơi giống báo cáo.", "Tham khảo nội dung"],
-        ["tracksmith", "Tracksmith", "Câu chuyện thực hành rõ, ảnh và lời đặt cùng vai trò.", "Ứng viên chính"],
-        ["remedy-place", "Remedy Place", "Từ không gian đến lựa chọn lớp nhanh; ảnh phòng còn bình thường.", "Cần ảnh mới"],
-        ["pillar", "Pillar", "Tỷ lệ yên tĩnh và có chủ ý; cần ảnh không gian xứng tầm.", "Ứng viên điều kiện"],
-        ["on", "On Culture", "Ảnh giữ trọn động tác khi xuống mobile; card làm chậm việc chọn lớp.", "Tham khảo crop"],
-        ["1rebel", "1Rebel", "Lớp nhóm và lớp riêng dễ quét; ảnh vận động bị lặp.", "Tham khảo cấu trúc"],
-        ["satisfy", "SATISFY", "Đổi tỷ lệ toàn thân → chi tiết → phòng; chi tiết là ảnh minh họa.", "Chặn release"],
+        ["tracksmith", "Tracksmith", "Nền kem rộng, chữ mực, tông gỗ; câu chuyện vận động không bị ảnh nuốt.", "Be · ưu tiên 1"],
+        ["pillar", "Pillar", "Kem và khoảng thở rất hợp gu; cần ảnh phòng tốt hơn để xứng với lời hứa.", "Be · ưu tiên 2"],
+        ["pvolve", "Pvolve", "Kem ấm và nhấn nâu đỏ; dễ hiểu nhưng phần nguyên lý hơi giống báo cáo.", "Be · ưu tiên 3"],
+        ["surrenne", "Surrenne", "Khung kem tiết chế; ảnh phòng hiện chiếm lớn mà chưa đủ sang.", "Be · có điều kiện"],
+        ["othership", "Othership", "Bố cục ấm và mời gọi, nhưng tím đậm hiện đang lấn át be.", "Cần đổi palette"],
+        ["remedy-place", "Remedy Place", "Đường đi đến chọn lớp rõ; mảng than và ảnh phòng làm be lùi về nền.", "Cần đổi palette"],
+        ["on", "On Culture", "Ảnh động tác tốt; khối đen đang chia đôi first fold.", "Tham khảo crop"],
+        ["satisfy", "SATISFY", "Nhịp ảnh hay nhưng khối đen mạnh và chi tiết là ảnh minh họa.", "Chặn release"],
+        ["third-space", "Third Space", "Ảnh vận động rõ; chương tối và ảnh coaching minh họa không hợp gu be.", "Chặn release"],
+        ["blok", "BLOK", "Ảnh thật sáng nhưng bảng đen lớn kéo cảm giác sang hướng gym.", "Tham khảo cấu trúc"],
+        ["1rebel", "1Rebel", "Chọn lớp nhanh; nửa trang đen và ảnh lặp làm be mất vai trò.", "Tham khảo cấu trúc"],
+        ["barrys", "Barry’s", "Thông tin buổi đầu hữu ích; bản đang dựng đen mạnh, xa gu be.", "Tham khảo cấu trúc"],
       ];
       for (const [index, [id, name, description, tag]] of variants.entries()) {
         const card = document.createElement("article");
