@@ -4,7 +4,7 @@ import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 
 import type { Route } from "./+types/services";
 
@@ -22,51 +22,35 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
+      <header className="rebel-service-head">
+        <p className="rebel-eyebrow">Hình thức tập</p>
+        <h1>Chọn buổi tập<br />của bạn.</h1>
+        <p>Cả hai cách tập đều bắt đầu từ chuyển động có kiểm soát. Chọn không gian bạn muốn chia sẻ và mức độ điều chỉnh dành riêng cho mình.</p>
+      </header>
 
       {CLASS_FORMATS.map((format, index) => (
-        <Section
-          key={format.id}
-          index={`0${index + 1}`}
-          label={format.name}
-          tone={index % 2 === 0 ? "sand" : "deep"}
-        >
-          <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-            <div className="md:col-span-6">
-              <p className="label-micro">{format.sub}</p>
-              <h2 className="font-display text-d2 text-ink mt-3 font-light">
-                {format.name}
-              </h2>
-              <p className="measure text-ink-2 mt-6 text-base">{format.body}</p>
-            </div>
-
-            <div className="md:col-span-5 md:col-start-8">
-              <p className="label-micro">Phù hợp với</p>
-              <ul className="mt-3">
-                {format.forWho.map((item) => (
-                  <li key={item} className="rule-b text-ink py-3 text-sm">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-ink-2 mt-6 text-xs">
-                Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ
-                bắt đầu để được hoàn lại buổi tập.
-              </p>
-            </div>
+        <section key={format.id} className="rebel-service-stage" aria-labelledby={`format-${format.id}`}>
+          <div className="rebel-service-photo">
+            <ArtDirectedImage photo={index === 0 ? "room" : "hero"} sizes="(min-width: 800px) 55vw, 100vw" />
           </div>
-        </Section>
+          <div className="rebel-service-copy">
+            <p className="rebel-eyebrow">0{index + 1} / {format.sub}</p>
+            <h2 id={`format-${format.id}`}>{format.name}</h2>
+            <p>{format.body}</p>
+            <ul>
+              {format.forWho.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+            <p className="text-ink-2 my-5 text-xs">
+              Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ bắt đầu để được hoàn lại buổi tập.
+            </p>
+            <Link to="/lich-tap">Xem lịch tập <span aria-hidden="true">↗</span></Link>
+          </div>
+        </section>
       ))}
 
-      <Section tone="ink">
+      <Section tone="ink" className="rebel-base-closing">
         <div className="flex flex-wrap items-end justify-between gap-8 py-16 md:py-24">
-          <h2 className="measure font-display text-d3 text-sand font-light">
-            Chưa chắc nên bắt đầu bằng hình thức nào?
-          </h2>
+          <h2 className="measure text-d3 text-sand">Chưa chắc nên bắt đầu bằng hình thức nào?</h2>
           <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
             <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
           </Button>

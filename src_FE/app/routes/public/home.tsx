@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -33,7 +32,8 @@ export default function Home() {
     <>
       <Hero />
       <Formats />
-      <Method />
+      <Comparison />
+      <Place />
       <ThisWeek />
       <FirstVisit />
       <Closing />
@@ -41,145 +41,66 @@ export default function Home() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
-          </div>
-        </div>
+    <section className="rebel-hero" aria-labelledby="rebel-hero-title">
+      <div className="rebel-hero-copy">
+        <p className="rebel-eyebrow">Soul Pilates · Nha Trang</p>
+        <h1 id="rebel-hero-title">Chọn cách tập.<br /><em>Rồi bắt đầu.</em></h1>
+        <p>Hai cách tập trên reformer, một điểm chung: chuyển động có kiểm soát và sự theo sát của huấn luyện viên.</p>
+        <Link className="rebel-main-action" to="/dich-vu">Tìm hình thức phù hợp <span aria-hidden="true">↗</span></Link>
       </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
+      <div className="rebel-hero-image">
+        <ArtDirectedImage photo="hero" priority sizes="(min-width: 800px) 54vw, 100vw" />
       </div>
     </section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
-   ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+    <section className="rebel-formats" aria-labelledby="rebel-formats-title">
+      <div className="rebel-section-head">
+        <p className="rebel-eyebrow">Hai hình thức tập</p>
+        <h2 id="rebel-formats-title">Buổi tập nào<br />dành cho bạn?</h2>
+        <p>Chọn cách được đồng hành phù hợp với nhịp sống và mục tiêu của mình. Bạn có thể hỏi studio trước khi quyết định.</p>
+      </div>
+      <div className="rebel-format-grid">
         {CLASS_FORMATS.map((format, index) => (
-          <article
-            key={format.id}
-            className={
-              index === 0
-                ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
-            }
-          >
-            <p className="label-micro">{format.sub}</p>
-            <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
+          <article key={format.id} className="rebel-format-card">
+            <div className="rebel-format-image">
+              <ArtDirectedImage photo={index === 0 ? "room" : "hero"} sizes="(min-width: 800px) 50vw, 100vw" />
+            </div>
+            <div className="rebel-format-content">
+              <span className="rebel-card-index">0{index + 1} / {format.sub}</span>
+              <h3>{format.name}</h3>
+              <p>{format.body}</p>
+              <Link to="/dich-vu">Tìm hiểu {format.name.toLocaleLowerCase("vi-VN")} <span aria-hidden="true">↗</span></Link>
+            </div>
           </article>
         ))}
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  {
-    term: "Hơi thở",
-    def: "Nhịp thở dẫn động tác, không phải ngược lại. Đây là phần khó nhất của buổi đầu tiên.",
-  },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm bất kỳ lực nào.",
-  },
-  {
-    term: "Kiểm soát",
-    def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào trong động tác.",
-  },
-];
-
-function Method() {
+function Comparison() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+    <section className="rebel-comparison" aria-labelledby="rebel-comparison-title">
+      <div className="rebel-comparison-lead">
+        <p className="rebel-eyebrow">Để chọn dễ hơn</p>
+        <h2 id="rebel-comparison-title">Cùng một phương pháp.<br />Khác cách đồng hành.</h2>
       </div>
-    </Section>
+      <div className="rebel-comparison-columns">
+        <div><h3>Lớp nhóm</h3><p>Tập cùng một nhóm nhỏ, với huấn luyện viên quan sát và điều chỉnh động tác trong suốt buổi.</p><Link to="/lich-tap">Xem lịch lớp nhóm ↗</Link></div>
+        <div><h3>Lớp riêng</h3><p>Một học viên, một huấn luyện viên. Bài tập được điều chỉnh theo cơ thể bạn qua từng buổi.</p><Link to="/dat-tu-van">Hỏi về lớp riêng ↗</Link></div>
+      </div>
+    </section>
   );
+}
+
+function Place() {
+  return <section className="rebel-place"><p className="rebel-eyebrow">Tại studio</p><p>Không cần đoán trước buổi đầu sẽ như thế nào.</p><Link to="/gioi-thieu">Xem không gian và cách studio đón bạn <span aria-hidden="true">↗</span></Link></section>;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -191,7 +112,7 @@ function ThisWeek() {
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
+    <Section index="03" label="Bảy ngày tới" className="rebel-base-schedule">
       <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
@@ -308,23 +229,18 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
    ──────────────────────────────────────────────────────────────────────────── */
 function FirstVisit() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
+    <Section index="04" label="Buổi đầu tiên" className="rebel-base-visit">
       <div className="pb-20 md:pb-28">
-        <h2 className="measure-wide font-display text-d2 text-ink font-light">
-          Bạn không cần biết gì trước khi đến.
-        </h2>
+        <h2 className="rebel-base-visit-title">Bạn không cần biết gì trước khi đến.</h2>
 
-        <ol className="mt-12">
+        <ol className="rebel-base-visit-grid">
           {FIRST_VISIT_STEPS.map((step) => (
-            <li
-              key={step.index}
-              className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12 md:py-8"
-            >
-              <span className="figures-display text-ink-3 text-2xl md:col-span-2 md:text-3xl">
-                {step.index}
-              </span>
-              <h3 className="text-ink text-lg md:col-span-4">{step.title}</h3>
-              <p className="measure text-ink-2 text-sm md:col-span-6">{step.body}</p>
+            <li key={step.index}>
+              <span className="rebel-base-visit-index">{step.index}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
             </li>
           ))}
         </ol>
@@ -338,12 +254,7 @@ function FirstVisit() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Closing() {
   return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
+      <Section tone="ink" className="rebel-base-closing">
         <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
           <div className="md:col-span-7">
             <h2 className="font-display text-d2 text-sand font-light">
@@ -361,6 +272,5 @@ function Closing() {
           </div>
         </div>
       </Section>
-    </>
   );
 }
