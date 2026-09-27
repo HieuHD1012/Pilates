@@ -1,5 +1,11 @@
 # First-fold comparison gallery
 
+Open [the visual HTML gallery](gallery.html) to see all 12 desktop/mobile pairs at readable size and click any image for its original screenshot. For a quick scan, the two overview images are embedded below.
+
+![BLOK, Surrenne, Third Space, Othership, Barry's and Pvolve — desktop and mobile](overview-1.png)
+
+![Tracksmith, Remedy Place, Pillar, On Culture, 1Rebel and SATISFY — desktop and mobile](overview-2.png)
+
 These are **unmodified screenshots of the implemented Soul variants**, copied from each named Git branch by `build-gallery.mjs`. Each image links to its full-size capture. Compare the desktop and phone composition together; a convincing desktop frame can fail at 390 px. Full-page and interior-route captures, plus the candid review, remain on each branch under `src_FE/docs/reference-variant-captures/` and `src_FE/docs/reference-variant.md`.
 
 Ask of each frame: Does the photograph prove the adjacent sentence? Are the first action and Group/Private choice easy to find? Does the phone crop preserve the subject? Would the physical studio and current business facts fulfill the expectation this frame creates? The [final evaluation](README.md#final-comparison-2026-09-27) records the keep/reject decision.

@@ -29,7 +29,7 @@ This is a comparison set, not a recommendation to publish 12 brands. Every candi
 
 All 12 hypotheses were implemented as separate branches from the clean `main` ancestor, not as successive CSS skins. Each branch contains `src_FE/docs/reference-variant.md` with its structural brief, image roles, rejected source claims and candid post-implementation review, plus full-page captures at 1440/1024/768/390 and desktop/mobile first folds. The branch screenshots, rather than the source sites' marketing, are the evidence for these judgments. `npm run verify` and route/viewport browser checks passed for each branch. These results prove build and visual mechanics; they do **not** make the business facts or demo API data real.
 
-Open the [12-variant desktop/mobile first-fold gallery](GALLERY.md) before reading the verdicts below.
+Open the [visual gallery](gallery.html), its [two PNG overview boards](GALLERY.md), or individual screenshots before reading the verdicts below.
 
 | Branch | What the structure contributed | Judgment for a small, premium Pilates studio |
 | --- | --- | --- |
