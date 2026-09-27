@@ -1,6 +1,6 @@
 import { ArtDirectedImage } from "~/ui/art-directed-image";
+import { Link } from "react-router";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/about";
 
@@ -18,20 +18,15 @@ export function meta(_: Route.MetaArgs) {
 export default function About() {
   return (
     <>
-      <PublicPageHeader
-        label="Studio"
-        title="Một phòng tập được giữ nhỏ, có chủ đích."
-        lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
-      />
+      <header className="sat-interior-head"><p className="sat-kicker">Studio</p><h1>Chú ý đến những điều nhỏ.</h1><p>Nhìn cách một động tác được tập, rồi nhìn không gian đã dành cho việc tập đó.</p></header>
+      <section className="sat-about-detail"><div><ArtDirectedImage photo="practice" priority sizes="(min-width: 800px) 50vw, 100vw" /></div><div><p className="sat-kicker">Chuyển động</p><h2>Một tư thế không kể hết câu chuyện.</h2><p>Hơi thở, điểm tựa và cách chuyển từ tư thế này sang tư thế khác đều cần sự chú ý.</p><Link className="sat-text-link" to="/dich-vu">Xem cách tập ↗</Link></div></section>
 
       <Section index="01" label="Không gian">
         <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
           <div className="md:col-span-6">
             <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
+              Máy Pilates, ánh sáng và khoảng trống cho chuyển động tạo nên bối cảnh để tập.
+              Lớp nhóm nhỏ và lớp riêng đều bắt đầu từ việc hiểu cách cơ thể bạn đang chuyển động.
             </p>
           </div>
           <div className="md:col-span-5 md:col-start-8">

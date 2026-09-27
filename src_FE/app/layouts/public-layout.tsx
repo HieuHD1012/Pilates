@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="sat-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -80,7 +80,7 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
+    <header className="border-rule bg-sand sticky top-0 z-(--z-nav) border-b">
       <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
         <Wordmark />
 

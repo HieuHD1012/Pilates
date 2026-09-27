@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -32,8 +31,9 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Detail />
+      <Place />
       <Formats />
-      <Method />
       <ThisWeek />
       <FirstVisit />
       <Closing />
@@ -48,48 +48,7 @@ export default function Home() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
-      </div>
-    </section>
+    <section className="sat-opening" aria-labelledby="sat-title"><div className="sat-opening-copy"><p className="sat-kicker">Soul Pilates · Nha Trang</p><h1 id="sat-title">Tập đúng<br />trong từng<br /><em>chi tiết.</em></h1><p>Một điểm tựa, một nhịp thở, một chuyển động được kiểm soát. Bắt đầu với lớp nhóm nhỏ hoặc lớp riêng trên reformer.</p><Link to="/dich-vu">Chọn hình thức tập ↗</Link></div><div className="sat-opening-wide"><ArtDirectedImage photo="hero" priority sizes="(min-width: 800px) 54vw, 100vw" /></div><div className="sat-opening-close"><ArtDirectedImage photo="method" sizes="(min-width: 800px) 18vw, 100vw" /></div></section>
   );
 }
 
@@ -99,7 +58,7 @@ function Hero() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
+    <Section index="03" label="Hai hình thức tập" className="sat-formats">
       <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
         {CLASS_FORMATS.map((format, index) => (
           <article
@@ -122,6 +81,7 @@ function Formats() {
                 </li>
               ))}
             </ul>
+            <Link className="sat-text-link" to={index === 0 ? "/lich-tap" : "/dat-tu-van"}>{index === 0 ? "Xem lịch lớp" : "Hỏi về lớp riêng"} ↗</Link>
           </article>
         ))}
       </div>
@@ -129,57 +89,12 @@ function Formats() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  {
-    term: "Hơi thở",
-    def: "Nhịp thở dẫn động tác, không phải ngược lại. Đây là phần khó nhất của buổi đầu tiên.",
-  },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm bất kỳ lực nào.",
-  },
-  {
-    term: "Kiểm soát",
-    def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào trong động tác.",
-  },
-];
+function Detail() {
+  return <section className="sat-detail"><div className="sat-detail-frame"><ArtDirectedImage photo="detail" sizes="(min-width: 800px) 45vw, 100vw" /><span className="sat-concept-badge">Hình minh họa</span></div><div className="sat-detail-copy"><p className="sat-kicker">01 / Chuẩn bị</p><h2>Ít hơn một chút.<br />Rõ hơn rất nhiều.</h2><p>Điều chỉnh điểm tựa và lực của máy trước khi bắt đầu giúp buổi tập phù hợp hơn với cơ thể bạn. Huấn luyện viên theo sát khi bạn đi vào từng chuyển động.</p><Link to="/gioi-thieu">Cách chúng tôi tập ↗</Link></div></section>;
+}
 
-function Method() {
-  return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </Section>
-  );
+function Place() {
+  return <section className="sat-place"><div><p className="sat-kicker">02 / Không gian</p><h2>Đưa chi tiết trở lại toàn cảnh.</h2><p>Máy Pilates, khoảng trống giữa các máy và ánh sáng tạo nên bối cảnh cho việc tập trung vào cơ thể.</p><Link to="/gioi-thieu">Xem studio ↗</Link></div><div><ArtDirectedImage photo="room" sizes="(min-width: 800px) 55vw, 100vw" /></div></section>;
 }
 
 /* ────────────────────────────────────────────────────────────────────────────

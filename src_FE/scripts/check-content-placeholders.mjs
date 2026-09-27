@@ -86,13 +86,25 @@ for (const pattern of PUBLIC_SOURCES) {
 /* ── Report ─────────────────────────────────────────────────────────────── */
 const photosMissing = Object.values(PHOTOGRAPHY).filter((b) => b.src === null).length;
 const photosTotal = Object.keys(PHOTOGRAPHY).length;
+const conceptPhotos = Object.values(PHOTOGRAPHY).filter((b) =>
+  b.src?.startsWith("/images/concept/"),
+);
 
 if (notes.length) {
   console.log("Nội dung đang chờ:");
   for (const note of notes) console.log(`  · ${note}`);
   console.log("");
 }
-console.log(`Ảnh studio: ${photosTotal - photosMissing}/${photosTotal} slot đã có.\n`);
+console.log(
+  `Ảnh thật: ${photosTotal - photosMissing - conceptPhotos.length}/${photosTotal} slot; ` +
+    `ảnh minh họa: ${conceptPhotos.length}.\n`,
+);
+
+if (conceptPhotos.length > 0) {
+  console.error("Ảnh minh họa đang dùng cho bản nghiên cứu:");
+  for (const photo of conceptPhotos) console.error(`  · ${photo.id}: ${photo.src}`);
+  console.error("  → Thay bằng ảnh studio được duyệt trước khi release.\n");
+}
 
 if (untracked.length > 0) {
   console.error("Dữ kiện bắt buộc còn thiếu và chưa ai nhận:\n");
@@ -110,8 +122,8 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-if (releaseMode && untracked.length > 0) {
-  console.error("Không release được khi tồn đọng nội dung chưa có người phụ trách.\n");
+if (releaseMode && (untracked.length > 0 || conceptPhotos.length > 0)) {
+  console.error("Không release được khi còn dữ kiện bắt buộc hoặc ảnh minh họa.\n");
   process.exit(1);
 }
 
