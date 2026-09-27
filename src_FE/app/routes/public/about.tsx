@@ -1,6 +1,5 @@
 import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/about";
 
@@ -18,31 +17,27 @@ export function meta(_: Route.MetaArgs) {
 export default function About() {
   return (
     <>
-      <PublicPageHeader
-        label="Studio"
-        title="Một phòng tập được giữ nhỏ, có chủ đích."
-        lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
-      />
+      <header className="sur-interior-intro gutter">
+        <p className="label-micro">Studio</p>
+        <h1>Một nơi dành cho sự tập trung.</h1>
+        <p>Không gian tập được nhìn từ chính căn phòng bạn sẽ bước vào. Điều quan trọng nhất vẫn là buổi tập và cách cơ thể bạn chuyển động trong đó.</p>
+      </header>
 
-      <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
-            <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
-            </p>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-            </div>
+      <div className="sur-room-frame">
+        <ArtDirectedImage photo="room" sizes="100vw" />
+      </div>
+
+      <section className="gutter">
+        <div className="sur-about-copy">
+          <p className="label-micro">Không gian</p>
+          <div>
+            <h2>Đủ chỗ cho sự chú ý.</h2>
+            <p>Các máy Pilates được bố trí trong ánh sáng tự nhiên. Ở đây, phòng tập là nơi cho bạn thực hành từng chuyển động và để người hướng dẫn quan sát, điều chỉnh khi cần.</p>
           </div>
         </div>
-      </Section>
+      </section>
 
-      <Section index="02" label="Nguyên tắc" tone="deep">
+      <Section index="02" label="Nguyên tắc" tone="deep" className="sur-first-visit">
         <dl className="pb-20 md:pb-28">
           {[
             {

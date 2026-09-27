@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="surrenne-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -59,11 +59,6 @@ function PublicHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
-
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
   const [lastPath, setLastPath] = useState(location.pathname);
@@ -80,11 +75,11 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+    <header className="sur-header border-rule bg-sand relative z-(--z-nav) border-b">
+      <div className="sur-header-inner gutter mx-auto max-w-(--container-page)">
         <Wordmark />
 
-        <nav aria-label="Điều hướng chính" className="hidden lg:block">
+        <nav aria-label="Điều hướng chính" className="sur-nav hidden lg:block">
           <ul className="flex items-center gap-7">
             {PUBLIC_NAV.map((item) => (
               <li key={item.to}>
@@ -106,12 +101,12 @@ function PublicHeader() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="sur-actions flex items-center gap-2">
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link to="/dang-nhap">Đăng nhập</Link>
           </Button>
-          {heroOwnsTheAsk ? null : (
-            <Button asChild variant="lacquer" size="sm" className="hidden sm:inline-flex">
+          {location.pathname === "/dat-tu-van" || open ? null : (
+            <Button asChild variant="lacquer" size="sm" className="sur-header-cta inline-flex">
               <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
             </Button>
           )}
@@ -120,7 +115,7 @@ function PublicHeader() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            className="sur-menu text-ink -mr-2 p-2 lg:hidden"
           >
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (

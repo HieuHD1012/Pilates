@@ -1,5 +1,17 @@
 # Reference Lock
 
+## Experimental exception on `codex/ref-surrenne`
+
+The owner requested independent website-reference branches from `main` to
+compare full public design languages. This branch tests Surrenne's place-first
+arrival, centered formal masthead and quiet editorial sequence using Soul's
+actual studio photographs and existing brand palette. Research, composition,
+image roles and critique are documented in `docs/reference-variant.md`. The
+public home, services, studio and shared shell carry the test. Operational
+screens retain the accepted system. This branch is a comparison experiment,
+not a replacement for the `main` Reference Lock until the owner selects a
+direction.
+
 Accepted. Changing anything here requires the process in §"Reconsideration"
 below — not a preference.
 
