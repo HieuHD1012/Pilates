@@ -29,6 +29,8 @@ This is a comparison set, not a recommendation to publish 12 brands. Every candi
 
 All 12 hypotheses were implemented as separate branches from the clean `main` ancestor, not as successive CSS skins. Each branch contains `src_FE/docs/reference-variant.md` with its structural brief, image roles, rejected source claims and candid post-implementation review, plus full-page captures at 1440/1024/768/390 and desktop/mobile first folds. The branch screenshots, rather than the source sites' marketing, are the evidence for these judgments. `npm run verify` and route/viewport browser checks passed for each branch. These results prove build and visual mechanics; they do **not** make the business facts or demo API data real.
 
+Open the [12-variant desktop/mobile first-fold gallery](GALLERY.md) before reading the verdicts below.
+
 | Branch | What the structure contributed | Judgment for a small, premium Pilates studio |
 | --- | --- | --- |
 | `codex/ref-blok` | Immediate, full-stage movement; fast path to classes. | Keep the image/body integration; the gym-like intensity is too forceful for Soul's calm coaching promise. |
@@ -52,7 +54,7 @@ Before a client-facing release, the studio must confirm address, phone, hours, Z
 
 ### Where to inspect the evidence
 
-On each `codex/ref-*` branch, read `src_FE/docs/reference-variant.md` and open `src_FE/docs/reference-variant-captures/home-first-1440.png`, `home-first-390.png`, `home-1440.png`, and `home-390.png`, followed by the changed interior routes in the same folder. BLOK and Surrenne use `home-fold-*.png` for first folds; their docs link the exact files. Compare each full page to the baseline below. The captures reveal image roles, grid continuity, service choice position, mobile reflow and any visual debt much faster than CSS inspection.
+On each `codex/ref-*` branch, read `src_FE/docs/reference-variant.md` and open `src_FE/docs/reference-variant-captures/home-first-1440.png`, `home-first-390.png`, `home-1440.png`, and `home-390.png`, followed by the changed interior routes in the same folder. BLOK, Surrenne and Barry's use `home-fold-*.png` for first folds; their docs link the exact files. Compare each full page to the baseline below. The captures reveal image roles, grid continuity, service choice position, mobile reflow and any visual debt much faster than CSS inspection.
 
 ## Shared evaluation protocol
 
