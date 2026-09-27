@@ -41,6 +41,24 @@ Trước khi code, vẽ wireframe trắng đen ở 1440 và 390px. Điền đún
 
 Một câu trả lời “không” ở 1–2 hoặc ảnh mồ côi là **trượt**. Các câu còn lại phải được ghi nhận và sửa trước khi gọi bản thiết kế là đạt. Chiều cao trang hay PSNR không thay cho đánh giá này.
 
+### Lượt soi đầu tiên trên chín trang công khai
+
+Đây là **triage từ screenshot của `ui/composition` với MSW demo**, không phải kết quả nghiên cứu khách thật hay đánh giá production. P0 = cản lòng tin/chuyển đổi hoặc cản phát hành; P1 = cần sửa bố cục/nội dung trước khi chốt visual. Mỗi hàng là việc đầu tiên phải kiểm lại trên bản chạy được.
+
+| Màn hình | Ảnh đã xem | Phát hiện và việc đầu tiên |
+| --- | --- | --- |
+| `/` · P0 | [1440](screenshots/composition-after/home-1440.png) · [390](screenshots/composition-after/home-390.png) | Hero bán reformer nhưng ảnh Cadillac; caption cố giải thích. Đổi bằng chứng hình ảnh đúng dịch vụ hoặc thử hero chữ; giảm cảm giác bảng ở phần lịch demo. |
+| `/gioi-thieu` · P1 | [1440](screenshots/composition-after/about-1440.png) · [390](screenshots/composition-after/about-390.png) | Ảnh chỉ thấy một máy ladder barrel, chưa chứng minh bố trí **cả phòng** như lời kể. Cần ảnh góc rộng thật hoặc thu hẹp claim; kiểm lại câu về gương với phòng thực tế. |
+| `/dich-vu` · P1 | [1440](screenshots/composition-after/services-1440.png) · [390](screenshots/composition-after/services-390.png) | Ảnh một người trên reformer xác nhận loại máy nhưng chưa cho thấy khác biệt nhóm/riêng. Thử khối so sánh hai lựa chọn và hành động ngay sau mỗi quyết định; chỉ dùng ảnh thêm nếu nó chứng minh khác biệt. |
+| `/goi-tap` · P0 | [1440](screenshots/composition-after/packages-1440.png) · [390](screenshots/composition-after/packages-390.png) | Fixture hiển thị gói **DEMO 3.000.000 đ** cạnh gói “Đang cập nhật”; dễ bị chụp gửi cho khách như bảng giá thật. Không dùng ảnh demo làm bản bàn giao; chỉ phát hành sau khi có bảng giá/điều kiện đã xác nhận. |
+| `/huan-luyen-vien` · P0 | [1440](screenshots/composition-after/trainers-1440.png) | Chỉ có “DEMO Huấn luyện viên” và mô tả mẫu. Cần tên, chân dung và năng lực được studio xác nhận; nếu chưa có, cân nhắc bỏ đường vào trang khỏi điều hướng công khai cho tới khi có nội dung. |
+| `/lich-tap` · P0 | [1440](screenshots/composition-after/schedule-1440.png) · [390](screenshots/composition-after/schedule-390.png) | Fixture mở ra tuần có sáu ngày “Không có lớp”, một buổi DEMO; trông như studio không hoạt động. Với dữ liệu thật, ưu tiên các buổi sắp tới có thể tham gia và giải thích rõ khi lịch chưa mở. |
+| `/khuyen-mai` · P1 | [1440](screenshots/composition-after/promotions-1440.png) | Trang chỉ có thông báo DEMO. Không giữ link “Khuyến mãi” trong nav khi chưa có offer thật; nếu cần thông báo lịch nghỉ, đặt đúng nơi người học cần thấy. |
+| `/lien-he` · P0 | [1440](screenshots/composition-after/contact-1440.png) | Sáu dòng “Đang cập nhật” làm trang liên hệ không thực hiện được việc của nó. Cần ít nhất một kênh đang hoạt động, địa chỉ và giờ thực; sau đó biên tập lại theo cách khách muốn đến/gọi/nhắn. |
+| `/dat-tu-van` · P1 | [1440](screenshots/composition-after/consultation-1440.png) | Form đã có đường gửi rõ, nhưng câu “gọi lại trong giờ làm việc” cần giờ và quy trình thật. Thử mobile, lỗi nhập, lỗi mạng, trạng thái gửi thành công và lead tới quầy. |
+
+**Kết luận triage:** không nên trình chín screenshot demo này như một website đã sẵn sàng cho khách mua. Những trang P0 cần nội dung thật và một vòng composition mới; việc “xong CSS” không xử lý được chúng.
+
 ## 3. Website tham khảo đã mở và bài học có thể chuyển giao
 
 R1–R7, R15–R17 và R21 là website studio để **xem bố cục, ảnh, chữ và hành trình** trên desktop/mobile. Tôi đã mở 10 site ở 1440/390px, nên bảng cũng ghi điều **không nên học**: Red Spring cắt chữ ở 390px, Silo và Luma để lớp consent che hero; Pilates by Ang đặt chữ lên ảnh tối. R18–R20 có ảnh minh họa giao diện nghiệp vụ để tham khảo thứ bậc và mật độ thông tin. R8–R14 là tài liệu chính thức về **luồng thao tác**, không phải chuẩn thẩm mỹ. Website tham khảo có thể đổi theo thời gian; kiểm lại trước khi vẽ.
