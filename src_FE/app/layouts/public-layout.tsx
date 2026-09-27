@@ -4,21 +4,16 @@ import { Link, NavLink, Outlet, useLocation } from "react-router";
 
 import { PUBLIC_FOOTER_NAV, PUBLIC_NAV } from "~/content/nav";
 import { STUDIO } from "~/content/studio";
-import { cn } from "~/lib/cn";
-import { Button } from "~/ui/button";
 import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
-      <a
-        href="#noi-dung"
-        className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
-      >
+    <div className="os-site">
+      <a className="sr-only-focusable os-skip" href="#noi-dung">
         Bỏ qua điều hướng
       </a>
       <PublicHeader />
-      <main id="noi-dung" className="flex-1">
+      <main id="noi-dung">
         <Outlet />
       </main>
       <PublicFooter />
@@ -26,46 +21,18 @@ export default function PublicLayout() {
   );
 }
 
-function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
+function Wordmark() {
   return (
-    <Link
-      to="/"
-      className="group flex items-baseline gap-2.5"
-      aria-label="Soul Pilates Nha Trang — trang chủ"
-    >
-      <span className={cn("wordmark text-lg", tone === "ink" ? "text-ink" : "text-sand")}>
-        SOUL
-      </span>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "hidden h-px w-5 sm:block",
-          tone === "ink" ? "bg-rule-2" : "bg-rule-dark",
-        )}
-      />
-      <span
-        className={cn(
-          "wordmark-sub hidden sm:block",
-          tone === "ink" ? "text-ink-2" : "text-sand/70",
-        )}
-      >
-        Nha Trang
-      </span>
+    <Link className="os-wordmark" to="/" aria-label="Soul Pilates Nha Trang — trang chủ">
+      <span>SOUL</span>
+      <small>Pilates · Nha Trang</small>
     </Link>
   );
 }
 
 function PublicHeader() {
-  const [open, setOpen] = useState(false);
   const location = useLocation();
-
-  // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
-
-  // Reset during render rather than in an effect: navigating away must close
-  // the menu in the same commit, not one cascading render later.
+  const [open, setOpen] = useState(false);
   const [lastPath, setLastPath] = useState(location.pathname);
   if (lastPath !== location.pathname) {
     setLastPath(location.pathname);
@@ -80,88 +47,60 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+    <header className="os-header">
+      <div className="os-container os-header-inner">
         <Wordmark />
-
-        <nav aria-label="Điều hướng chính" className="hidden lg:block">
-          <ul className="flex items-center gap-7">
-            {PUBLIC_NAV.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      "relative py-2 text-sm transition-colors duration-200",
-                      "after:bg-lacquer after:ease-measure after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:transition-transform after:duration-200",
-                      "hover:text-ink hover:after:scale-x-100",
-                      isActive ? "text-ink after:scale-x-100" : "text-ink-2",
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        <nav aria-label="Điều hướng chính" className="os-desktop-nav">
+          {PUBLIC_NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => (isActive ? "is-active" : "")}
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
-
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link to="/dang-nhap">Đăng nhập</Link>
-          </Button>
-          {heroOwnsTheAsk ? null : (
-            <Button asChild variant="lacquer" size="sm" className="hidden sm:inline-flex">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-            </Button>
+        <div className="os-header-actions">
+          <Link className="os-login" to="/dang-nhap">
+            Đăng nhập
+          </Link>
+          {["/", "/dat-tu-van"].includes(location.pathname) ? null : (
+            <Link className="os-pill os-pill-accent os-header-cta" to="/dat-tu-van">
+              Đặt lịch tư vấn <span aria-hidden="true">↗</span>
+            </Link>
           )}
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
+            className="os-menu-button"
             aria-expanded={open}
-            aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            aria-controls="os-menu"
+            aria-label={open ? "Đóng menu" : "Mở menu"}
+            onClick={() => setOpen((value) => !value)}
           >
-            <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (
-              <X aria-hidden="true" className="size-5" />
+              <X size={24} aria-hidden="true" />
             ) : (
-              <Menu aria-hidden="true" className="size-5" />
+              <Menu size={24} aria-hidden="true" />
             )}
           </button>
         </div>
       </div>
-
       {open ? (
-        <div
-          id="menu-di-dong"
-          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
-        >
-          <nav aria-label="Điều hướng chính (di động)" className="gutter">
-            <ul>
-              {PUBLIC_NAV.map((item, index) => (
-                <li key={item.to} className="border-rule border-b">
-                  <NavLink to={item.to} className="flex items-baseline gap-4 py-5">
-                    <span className="figures text-2xs text-ink-2">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="font-display text-ink text-2xl font-light">
-                      {item.label}
-                    </span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-col gap-3 py-8">
-              <Button asChild variant="lacquer" size="lg" fullWidth>
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="secondary" size="lg" fullWidth>
-                <Link to="/dang-nhap">Đăng nhập</Link>
-              </Button>
-            </div>
-          </nav>
-        </div>
+        <nav id="os-menu" className="os-mobile-nav" aria-label="Điều hướng chính (di động)">
+          {PUBLIC_NAV.map((item, index) => (
+            <NavLink key={item.to} to={item.to}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              {item.label}
+            </NavLink>
+          ))}
+          <Link className="os-pill os-pill-accent" to="/dat-tu-van">
+            Đặt lịch tư vấn <span aria-hidden="true">↗</span>
+          </Link>
+          <Link className="os-mobile-login" to="/dang-nhap">
+            Đăng nhập
+          </Link>
+        </nav>
       ) : null}
     </header>
   );
@@ -169,28 +108,27 @@ function PublicHeader() {
 
 function PublicFooter() {
   return (
-    <footer data-field="dark" className="bg-ink-deep text-sand">
-      <div className="gutter mx-auto max-w-(--container-page) py-14 md:py-20">
-        <div className="border-rule-dark grid gap-10 border-t pt-8 md:grid-cols-12 md:gap-8">
-          <div className="md:col-span-4">
-            <Wordmark tone="sand" />
-            <p className="measure text-sand/70 mt-5 text-sm">
-              Studio reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
+    <footer className="os-footer" data-field="dark">
+      <div className="os-container">
+        <div className="os-footer-top">
+          <div>
+            <p className="os-footer-mark">SOUL</p>
+            <p>
+              Chuyển động có chủ đích.
+              <br />
+              Pilates tại Nha Trang.
             </p>
           </div>
-
-          <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Liên hệ</p>
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Địa chỉ</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}
-                </dd>
+          <div className="os-footer-contact">
+            <h2>Liên hệ</h2>
+            <dl>
+              <div>
+                <dt>Địa chỉ</dt>
+                <dd>{STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}</dd>
               </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Điện thoại</dt>
-                <dd className="text-sand/85">
+              <div>
+                <dt>Điện thoại</dt>
+                <dd>
                   {STUDIO.phone ? (
                     <a href={`tel:${STUDIO.phone.replace(/\s/g, "")}`}>{STUDIO.phone}</a>
                   ) : (
@@ -198,39 +136,28 @@ function PublicFooter() {
                   )}
                 </dd>
               </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Giờ mở cửa</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}
-                </dd>
+              <div>
+                <dt>Giờ mở cửa</dt>
+                <dd>{STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}</dd>
               </div>
             </dl>
           </div>
-
-          <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Trang</p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <nav aria-label="Điều hướng chân trang" className="os-footer-nav">
+            <h2>Khám phá</h2>
+            <div>
               {PUBLIC_FOOTER_NAV.map((item) => (
-                <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    className="text-sand/85 hover:decoration-sand/50 underline decoration-transparent underline-offset-[6px] transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
+                <Link key={item.to} to={item.to}>
+                  {item.label}
+                </Link>
               ))}
-            </ul>
-          </div>
+            </div>
+          </nav>
         </div>
-
-        <div className="border-rule-dark text-2xs text-sand/50 mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
-          <p>© {new Date().getFullYear()} Soul Pilates Nha Trang</p>
-          <p>
-            <Link to="/dang-nhap" className="hover:text-sand/80">
-              Dành cho học viên, huấn luyện viên và nhân viên studio
-            </Link>
-          </p>
+        <div className="os-footer-bottom">
+          <span>© {new Date().getFullYear()} Soul Pilates Nha Trang</span>
+          <Link to="/dang-nhap">
+            Dành cho học viên, huấn luyện viên và nhân viên studio
+          </Link>
         </div>
       </div>
     </footer>

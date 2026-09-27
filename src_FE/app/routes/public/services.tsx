@@ -1,10 +1,8 @@
 import { Link } from "react-router";
 
 import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
-import { Button } from "~/ui/button";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Figures } from "~/ui/figure";
-import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -13,8 +11,7 @@ export function meta(_: Route.MetaArgs) {
     { title: "Hình thức tập — Soul Pilates Nha Trang" },
     {
       name: "description",
-      content:
-        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại Soul Pilates Nha Trang.",
+      content: "Lớp nhóm nhỏ và lớp riêng trên máy reformer tại Soul Pilates Nha Trang.",
     },
   ];
 }
@@ -22,56 +19,66 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
-
-      {CLASS_FORMATS.map((format, index) => (
-        <Section
-          key={format.id}
-          index={`0${index + 1}`}
-          label={format.name}
-          tone={index % 2 === 0 ? "sand" : "deep"}
-        >
-          <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-            <div className="md:col-span-6">
-              <p className="label-micro">{format.sub}</p>
-              <h2 className="font-display text-d2 text-ink mt-3 font-light">
-                {format.name}
-              </h2>
-              <p className="measure text-ink-2 mt-6 text-base">{format.body}</p>
+      <header className="os-interior-hero os-services-hero">
+        <div className="os-container os-interior-hero-grid">
+          <div>
+            <p className="os-eyebrow">Hình thức tập</p>
+            <h1>Hai cách để tìm nhịp tập của riêng bạn.</h1>
+          </div>
+          <p>
+            Nhóm nhỏ hoặc một kèm một. Cùng tập trên reformer, khác ở mức độ điều chỉnh cho
+            từng cơ thể.
+          </p>
+        </div>
+      </header>
+      <div className="os-container os-service-paths">
+        {CLASS_FORMATS.map((format, index) => (
+          <section
+            className={`os-service-stage os-service-${format.id}`}
+            id={format.id}
+            key={format.id}
+          >
+            <div className="os-service-image">
+              <ArtDirectedImage
+                photo={format.id === "group" ? "room" : "practice"}
+                sizes="(min-width: 900px) 50vw, 100vw"
+              />
             </div>
-
-            <div className="md:col-span-5 md:col-start-8">
-              <p className="label-micro">Phù hợp với</p>
-              <ul className="mt-3">
+            <div className="os-service-copy">
+              <p className="os-section-kicker">
+                0{index + 1} / {format.sub}
+              </p>
+              <h2>{format.name}</h2>
+              <p className="os-service-lede">{format.body}</p>
+              <h3>Phù hợp khi bạn</h3>
+              <ul>
                 {format.forWho.map((item) => (
-                  <li key={item} className="rule-b text-ink py-3 text-sm">
-                    {item}
-                  </li>
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
-              <p className="text-ink-2 mt-6 text-xs">
+              <p className="os-policy">
                 Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ so với giờ
                 bắt đầu để được hoàn lại buổi tập.
               </p>
+              <Link className="os-text-link" to="/dat-tu-van">
+                Trao đổi với studio <span aria-hidden="true">↗</span>
+              </Link>
             </div>
-          </div>
-        </Section>
-      ))}
-
-      <Section tone="ink">
-        <div className="flex flex-wrap items-end justify-between gap-8 py-16 md:py-24">
-          <h2 className="measure font-display text-d3 text-sand font-light">
-            Chưa chắc nên bắt đầu bằng hình thức nào?
-          </h2>
-          <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
-            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-          </Button>
+          </section>
+        ))}
+      </div>
+      <section className="os-service-end">
+        <div className="os-container os-service-end-grid">
+          <h2>Chưa chắc nên chọn lớp nào?</h2>
+          <p>
+            Để lại thông tin và điều bạn muốn cải thiện. Studio sẽ liên hệ để cùng bạn chọn
+            hình thức phù hợp.
+          </p>
+          <Link className="os-pill os-pill-accent" to="/dat-tu-van">
+            Đặt lịch tư vấn <span aria-hidden="true">↗</span>
+          </Link>
         </div>
-      </Section>
+      </section>
     </>
   );
 }

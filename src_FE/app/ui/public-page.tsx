@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 
-import { TickRule } from "./tick-rule";
-
 /**
  * The opening of every public page other than the homepage. One label, one
  * title, one paragraph, then the measuring edge. Repetition is the point:
@@ -31,7 +29,6 @@ export function PublicPageHeader({
             <div className="md:col-span-4 md:col-start-9 md:self-end">{aside}</div>
           ) : null}
         </div>
-        <TickRule />
       </div>
     </header>
   );

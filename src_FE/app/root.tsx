@@ -15,6 +15,7 @@ import { createQueryClient } from "./lib/query-client";
 import { useUnauthorizedRedirect } from "./features/auth/use-unauthorized-redirect";
 import { Button } from "./ui/button";
 import "./styles/app.css";
+import "./styles/othership.css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
