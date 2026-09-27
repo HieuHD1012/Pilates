@@ -1,13 +1,10 @@
 /**
  * ART DIRECTION BRIEFS
  *
- * Soul Pilates Nha Trang has not supplied photography yet, and the Đà Nẵng
- * studio's images are a different room, a different team and a different city —
- * using them here would be a lie about this branch. So every image slot in the
- * product is declared as a brief first. `src` stays null until the studio
- * delivers the frame; `<ArtDirectedImage>` renders a designed placeholder that
- * reserves the exact aspect ratio, so no layout shifts when the real photograph
- * lands and no design decision was ever made to flatter a stock image.
+ * Reference variant: the owner provided photographs of their existing studio.
+ * They are used as documentary images of the same owner's practice, not proof
+ * of the future Soul Nha Trang room or a specific trainer. Two derivatives only
+ * remove the former equipment mark; see docs/reference-variant.md.
  *
  * Shared direction for every frame (docs/REFERENCE_LOCK.md):
  *   Light      Hard equatorial daylight, shaped by the room. Windows are the
@@ -51,8 +48,8 @@ function brief(b: PhotoBrief): PhotoBrief {
 export const PHOTOGRAPHY = {
   hero: brief({
     id: "hero",
-    src: null,
-    alt: "Phòng tập Soul Pilates Nha Trang vào buổi sáng sớm, ánh sáng tự nhiên đổ dài trên sàn gỗ và các máy reformer.",
+    src: "/images/studio/chair-extension.jpg",
+    alt: "Một người đang tập động tác duỗi người trên thiết bị Pilates chair cạnh cửa sổ.",
     aspect: "3 / 4 on mobile, 16 / 9 from md",
     typeRegion:
       "Left third, full height. Continuous surface (wall or floor in shade), no " +
@@ -71,9 +68,9 @@ export const PHOTOGRAPHY = {
 
   method: brief({
     id: "method",
-    src: null,
+    src: "/images/studio/reformer-action-clean.png",
     typeRegion: null,
-    alt: "Bàn tay huấn luyện viên chỉnh vị trí vai của học viên trên máy reformer.",
+    alt: "Một người đang giữ tư thế duỗi chân trên máy reformer trong phòng tập.",
     aspect: "4 / 5",
     subject:
       "A trainer's hand correcting a shoulder or rib position. Two people, one adjustment.",
@@ -85,9 +82,9 @@ export const PHOTOGRAPHY = {
 
   room: brief({
     id: "room",
-    src: null,
+    src: "/images/studio/room-clean.png",
     typeRegion: null,
-    alt: "Chi tiết máy reformer: dây, lò xo và khung gỗ trong ánh sáng ban ngày.",
+    alt: "Hàng máy reformer trong phòng tập sáng, với cửa sổ và thiết bị hỗ trợ phía sau.",
     aspect: "1 / 1",
     subject: "Reformer detail — springs, strap, carriage edge, worn leather or wood.",
     lighting: "Flat daylight, no flash. Texture over drama.",
@@ -98,9 +95,9 @@ export const PHOTOGRAPHY = {
 
   practice: brief({
     id: "practice",
-    src: null,
+    src: "/images/studio/reformer-action-clean.png",
     typeRegion: null,
-    alt: "Học viên đang giữ một tư thế trên máy reformer, tập trung vào hơi thở.",
+    alt: "Một người đang tập trên máy reformer, duỗi người và giữ thăng bằng.",
     aspect: "16 / 10",
     subject: "One student mid-repetition, holding. Trainer visible but not centred.",
     lighting: "Backlit against the window. Silhouette edge, face in shade is fine.",
