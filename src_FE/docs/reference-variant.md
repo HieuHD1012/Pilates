@@ -114,3 +114,7 @@ opening hours, Zalo and map URL are still unknown; demo schedule/trainer data
 is still labelled. The two unused photograph slots remain pending rather than
 being filled with unrelated imagery. A final release needs confirmed studio
 facts and an owner review of the photograph crops and consent.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
