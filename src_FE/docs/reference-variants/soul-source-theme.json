@@ -1,0 +1,291 @@
+{
+  "title": "Soul Pilates — Da Nang Boutique Pilates Studio",
+  "stylesheets": [
+    "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap",
+    "https://soulpilates.com.vn/_astro/customer.BS7ZVHj4.css",
+    "https://soulpilates.com.vn/_astro/index@_@astro.fWbPrCn6.css"
+  ],
+  "variables": {
+    "--sp-surface": "#FFFFFF",
+    "--sp-brand-dark": "#CC551A",
+    "--sp-shadow-sm": "0 1px 3px rgba(0, 0, 0, .04)",
+    "--sp-success-soft": "rgba(61, 140, 92, .1)",
+    "--sp-space-xl": "20px",
+    "--sp-space-3xl": "32px",
+    "--hp-copper-dark": "#b06835",
+    "--sp-space-lg": "16px",
+    "--sp-border": "#E8E5E0",
+    "--sp-radius-sm": "6px",
+    "--hp-text": "#2c2c2c",
+    "--hp-amber": "#d4a574",
+    "--sp-shadow-lg": "0 8px 24px rgba(0, 0, 0, .08)",
+    "--sp-beginner": "#6B7B3A",
+    "--sp-warning": "#D4930D",
+    "--sp-warning-soft": "rgba(212, 147, 13, .1)",
+    "--sp-text-inverse": "#FFFFFF",
+    "--sp-space-xs": "4px",
+    "--hp-peach": "#fce5d1",
+    "--sp-transition-base": ".2s ease",
+    "--hp-white": "#ffffff",
+    "--sp-bg": "#FAFAF8",
+    "--sp-advanced-soft": "rgba(196, 75, 75, .1)",
+    "--sp-offcanvas-width": "700px",
+    "--sp-transition-smooth": ".3s cubic-bezier(.4, 0, .2, 1)",
+    "--sp-space-2xl": "24px",
+    "--sp-radius-full": "999px",
+    "--sp-content-max-width": "960px",
+    "--sp-dark-hover": "#1A1A1A",
+    "--hp-dark": "#2c2319",
+    "--sp-text-primary": "#1A1A1A",
+    "--hp-bg": "#fafaf8",
+    "--hp-text2": "#5c5c5c",
+    "--sp-advanced": "#C44B4B",
+    "--sp-radius-xl": "20px",
+    "--sp-intermediate-soft": "rgba(201, 123, 75, .1)",
+    "--sp-success": "#3D8C5C",
+    "--sp-all-levels": "#5C5C5C",
+    "--sp-surface-raised": "#F5F4F0",
+    "--sp-danger": "#C44B4B",
+    "--sp-space-sm": "8px",
+    "--hp-copper": "#c97b4b",
+    "--sp-shadow-md": "0 4px 12px rgba(0, 0, 0, .06)",
+    "--sp-bottomnav-height": "60px",
+    "--hp-cream": "#fff5ec",
+    "--sp-brand-glow": "rgba(234, 106, 36, .18)",
+    "--sp-all-levels-soft": "rgba(92, 92, 92, .08)",
+    "--sp-brand": "#EA6A24",
+    "--sp-beginner-soft": "rgba(107, 123, 58, .1)",
+    "--sp-dark": "#2C2C2C",
+    "--sp-topnav-height": "64px",
+    "--sp-transition-fast": ".12s ease",
+    "--sp-text-secondary": "#5C5C5C",
+    "--sp-shadow-card": "0 1px 3px rgba(0, 0, 0, .04), 0 0 0 1px rgba(0, 0, 0, .02)",
+    "--sp-border-strong": "#D4D0CA",
+    "--sp-danger-soft": "rgba(196, 75, 75, .1)",
+    "--sp-radius-lg": "14px",
+    "--sp-shadow-offcanvas": "-8px 0 32px rgba(0, 0, 0, .12)",
+    "--sp-space-md": "12px",
+    "--sp-white": "#FFFFFF",
+    "--hp-dark-deep": "#1a1410",
+    "--sp-shadow-card-hover": "0 4px 16px rgba(0, 0, 0, .08), 0 0 0 1px rgba(0, 0, 0, .03)",
+    "--hp-border": "#e8e5e0",
+    "--sp-space-4xl": "48px",
+    "--sp-brand-soft": "rgba(234, 106, 36, .08)",
+    "--sp-text-muted": "#9B9B9B",
+    "--sp-radius-md": "10px",
+    "--sp-intermediate": "#C97B4B",
+    "--hp-text3": "#9b9b9b"
+  },
+  "samples": {
+    "body": {
+      "text": "Why Pilates Journey Classes Pricing Gallery Book Now Why Pilates Journey Classes Pricing G",
+      "color": "rgb(26, 26, 26)",
+      "background": "rgb(250, 250, 248)",
+      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "borderRadius": "0px"
+    },
+    "header": null,
+    "nav": {
+      "text": "Why Pilates Journey Classes Pricing Gallery Book Now",
+      "color": "rgb(26, 26, 26)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "borderRadius": "0px"
+    },
+    "main": null,
+    "h1": {
+      "text": "Soul Pilates · Da Nang",
+      "color": "rgba(255, 255, 255, 0.6)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontFamily": "Inter, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "borderRadius": "0px"
+    },
+    "h1 em": null,
+    "h2": {
+      "text": "Why Pilates?",
+      "color": "rgb(44, 44, 44)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontFamily": "Syne, sans-serif",
+      "fontSize": "56px",
+      "fontWeight": "600",
+      "borderRadius": "0px"
+    },
+    "button": {
+      "text": "",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontFamily": "Arial",
+      "fontSize": "13.3333px",
+      "fontWeight": "400",
+      "borderRadius": "0px"
+    },
+    "a[href*='booking']": {
+      "text": "Book Now",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(201, 123, 75)",
+      "fontFamily": "Inter, sans-serif",
+      "fontSize": "11px",
+      "fontWeight": "700",
+      "borderRadius": "999px"
+    },
+    "footer": {
+      "text": "Let's Talk Open Monday – Saturday7:30 am – 7:30 pm Da Nang,Vietnam Privacy Policy · Terms ",
+      "color": "rgb(44, 44, 44)",
+      "background": "rgb(252, 229, 209)",
+      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "borderRadius": "0px"
+    }
+  },
+  "commonBackgrounds": [
+    [
+      "rgb(255, 245, 236)",
+      8
+    ],
+    [
+      "rgb(255, 255, 255)",
+      7
+    ],
+    [
+      "rgb(201, 123, 75)",
+      5
+    ],
+    [
+      "rgba(255, 255, 255, 0.35)",
+      4
+    ],
+    [
+      "rgb(250, 250, 248)",
+      3
+    ],
+    [
+      "rgb(252, 229, 209)",
+      2
+    ],
+    [
+      "rgba(26, 24, 21, 0.98)",
+      1
+    ],
+    [
+      "rgba(22, 18, 14, 0.96)",
+      1
+    ],
+    [
+      "rgb(248, 211, 166)",
+      1
+    ],
+    [
+      "rgb(242, 188, 124)",
+      1
+    ],
+    [
+      "rgb(233, 165, 95)",
+      1
+    ],
+    [
+      "rgb(255, 240, 226)",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0.15)",
+      1
+    ],
+    [
+      "rgba(255, 255, 255, 0.05)",
+      1
+    ],
+    [
+      "rgb(95, 66, 55)",
+      1
+    ],
+    [
+      "rgba(255, 255, 255, 0.08)",
+      1
+    ],
+    [
+      "rgba(255, 255, 255, 0.07)",
+      1
+    ]
+  ],
+  "commonForegrounds": [
+    [
+      "rgb(26, 26, 26)",
+      86
+    ],
+    [
+      "rgb(255, 255, 255)",
+      45
+    ],
+    [
+      "rgb(44, 44, 44)",
+      26
+    ],
+    [
+      "rgb(42, 42, 42)",
+      16
+    ],
+    [
+      "rgb(92, 92, 92)",
+      9
+    ],
+    [
+      "rgba(255, 255, 255, 0.9)",
+      8
+    ],
+    [
+      "rgb(201, 123, 75)",
+      5
+    ],
+    [
+      "rgba(42, 42, 42, 0.75)",
+      4
+    ],
+    [
+      "rgba(44, 35, 25, 0.8)",
+      3
+    ],
+    [
+      "rgba(255, 255, 255, 0.75)",
+      3
+    ],
+    [
+      "rgb(44, 35, 25)",
+      2
+    ],
+    [
+      "rgb(192, 73, 42)",
+      2
+    ],
+    [
+      "rgb(155, 155, 155)",
+      2
+    ],
+    [
+      "rgb(212, 165, 116)",
+      1
+    ],
+    [
+      "rgba(201, 123, 75, 0.22)",
+      1
+    ],
+    [
+      "rgba(180, 100, 20, 0.28)",
+      1
+    ],
+    [
+      "rgba(201, 123, 75, 0.32)",
+      1
+    ],
+    [
+      "rgba(255, 255, 255, 0.6)",
+      1
+    ]
+  ]
+}
