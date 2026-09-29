@@ -31,7 +31,7 @@
   letter-spacing: 0.01em;
 }
 
-.barrys-eyebrow--light { color: #eebcb3; }
+.barrys-eyebrow--light { color: #d4a574; }
 
 .barrys-header {
   background: var(--barrys-black);
@@ -41,9 +41,9 @@
 
 .barrys-header .barrys-wordmark { gap: 0.55rem; }
 .barrys-header .barrys-wordmark .wordmark { color: var(--color-sand); font-weight: 600; }
-.barrys-header .barrys-wordmark .wordmark-sub { color: #bbbdb6; }
-.barrys-header .barrys-wordmark > span:nth-child(2) { background: #777a73; }
-.barrys-header__nav a { color: #d7d6d0; font-size: 0.75rem; font-weight: 500; }
+.barrys-header .barrys-wordmark .wordmark-sub { color: #d4bda9; }
+.barrys-header .barrys-wordmark > span:nth-child(2) { background: #aa917d; }
+.barrys-header__nav a { color: #ead9c9; font-size: 0.75rem; font-weight: 500; }
 .barrys-header__nav a:hover,
 .barrys-header__nav a[aria-current="page"] { color: white; }
 .barrys-header__login { color: var(--color-sand) !important; }
@@ -78,7 +78,7 @@
 .barrys-hero__copy > p:not(.barrys-eyebrow) {
   max-width: 26rem;
   margin-top: 2rem;
-  color: #c6c6c0;
+  color: #dfcbb9;
   font-size: 1rem;
   line-height: 1.7;
 }
@@ -99,10 +99,10 @@
   margin-top: 2rem;
   color: white;
   padding-bottom: 0.65rem;
-  border-bottom: 2px solid #eebcb3;
+  border-bottom: 2px solid #d4a574;
 }
-.barrys-light-link:hover { color: #eebcb3; }
-.barrys-hero__scroll { position: absolute; bottom: 2rem; left: max(2rem, calc((100vw - 1344px) / 2)); color: #a2a49e; }
+.barrys-light-link:hover { color: #d4a574; }
+.barrys-hero__scroll { position: absolute; bottom: 2rem; left: max(2rem, calc((100vw - 1344px) / 2)); color: #c1a993; }
 .barrys-hero__image { min-width: 0; overflow: hidden; }
 .barrys-hero__image img { object-position: 44% center; }
 
@@ -167,7 +167,7 @@
 .barrys-text-link { margin-top: 1.55rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--barrys-red); color: var(--color-ink); font-size: 0.87rem; }
 .barrys-text-link:hover { color: var(--barrys-red); }
 
-.barrys-formats { padding-block: clamp(5rem, 8vw, 8rem); background: #e9e6dd; }
+.barrys-formats { padding-block: clamp(5rem, 8vw, 8rem); background: #fce5d1; }
 .barrys-section-heading { max-width: 45rem; }
 .barrys-formats__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); margin-top: clamp(3rem, 6vw, 6rem); }
 .barrys-format { min-height: 21rem; border-top: 3px solid var(--color-ink); padding-top: 1.35rem; display: flex; flex-direction: column; align-items: flex-start; }
