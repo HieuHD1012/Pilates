@@ -66,3 +66,7 @@ Screenshots: [`reference-variant-captures/`](reference-variant-captures/). There
 - **Customer/owner judgment:** The branch is a credible visual direction for comparison and stronger than `main` for an initial prospective-customer impression. It is **not ready to send as a finished commercial site** until the studio supplies address, phone, hours, Zalo/map links and approves the old-mark cleanup. The visible demo schedule also needs a live backend before launch.
 
 `npm run verify` passed: 66 tests, production build and nine pre-rendered public routes. A 16-combination Playwright check (four routes × four widths) found no horizontal overflow or broken images; the 390px mobile menu opened. The content gate still identifies five unresolved launch facts, which code cannot invent.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
