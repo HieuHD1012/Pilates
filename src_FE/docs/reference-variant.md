@@ -50,3 +50,7 @@ Captures in [`reference-variant-captures/`](reference-variant-captures/) cover H
 - Release is also blocked by unconfirmed address, phone, opening hours, Zalo and map link, and by the demo schedule/roster seen in local development. Do not export these screenshots as evidence of real business operations.
 
 `npm run verify` passed (66 tests, production build, nine pre-rendered public routes). A Playwright matrix of four routes × four widths found no horizontal overflow or broken images, and the 390px menu opened. The consultation route no longer repeats its own CTA in the header or mobile menu. `npm run check:release` remains red on five missing business facts and independently on the generated coaching asset.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
