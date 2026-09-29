@@ -66,3 +66,7 @@ The capture set covers Home, Services, Studio and Consultation at 1440/1024/768/
 After a script-only ESLint repair, `npm run verify` passed: 66 tests and the static build contract. The branch-local Playwright check passed all 16 route/viewport combinations with no overflow, broken images or duplicate H1, and exercised mobile menu navigation and empty consultation validation.
 
 **Fit decision:** The experience-first structure is a strong candidate for Soul's calm premium direction. The very warm plum/peach color can make the studio seem more like a general wellness retreat than a precise reformer practice, and the copy cannot yet answer location, hours or phone questions. Keep it for comparison, not release. The room and chair are real same-owner archive photographs but have not been confirmed as the exact new branch environment.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.

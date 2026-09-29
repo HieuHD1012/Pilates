@@ -1,13 +1,13 @@
 /* Othership-inspired reference experiment: arrival, participation and guided choice.
    Scoped to public routes. No operational surface inherits these colours or scale. */
 .os-site {
-  --os-plum: #30212f;
-  --os-plum-deep: #241823;
-  --os-cream: #f5f1ea;
-  --os-peach: #eac3ac;
-  --os-rose: #bb806d;
-  --os-line: #d6ccc0;
-  --os-light-line: #685964;
+  --os-plum: #2c2319;
+  --os-plum-deep: #1a1410;
+  --os-cream: #fff5ec;
+  --os-peach: #fce5d1;
+  --os-rose: #c97b4b;
+  --os-line: #d4c5b6;
+  --os-light-line: #6b4b39;
   background: var(--os-cream);
   color: var(--os-plum);
   min-height: 100dvh;
@@ -63,7 +63,7 @@
 .os-wordmark small {
   font-size: 0.65rem;
   letter-spacing: 0.05em;
-  color: #6c5d64;
+  color: #6b4b39;
 }
 .os-desktop-nav {
   display: flex;
@@ -118,7 +118,7 @@
   color: var(--os-plum-deep);
 }
 .os-pill-accent:hover {
-  background: #f2d5c3;
+  background: #fce5d1;
 }
 .os-header-cta {
   min-height: 40px;
@@ -191,7 +191,7 @@
 }
 .os-arrival-lede {
   max-width: 425px;
-  color: #e4d8dd;
+  color: #f2dfd1;
   font-size: 1.05rem;
   line-height: 1.7;
 }
@@ -205,7 +205,7 @@
 .os-arrival-note {
   margin-top: auto;
   padding-top: 35px;
-  color: #beafb8;
+  color: #d4bda9;
   font-size: 0.72rem;
 }
 .os-arrival-image {
@@ -290,7 +290,7 @@
   color: var(--os-cream);
 }
 .os-format-private {
-  background: #e7d8ce;
+  background: #f2dfd1;
   color: var(--os-plum);
 }
 .os-format-top {
@@ -388,7 +388,7 @@
 .os-schedule-intro > p:not(.os-section-kicker) {
   max-width: 325px;
   margin: 25px 0 30px;
-  color: #dbcfd7;
+  color: #e9cdb9;
   font-size: 0.88rem;
   line-height: 1.7;
 }
@@ -405,14 +405,14 @@
   font-size: 0.8rem;
 }
 .os-schedule-date {
-  color: #c7b7c2;
+  color: #d4bda9;
 }
 .os-schedule-time {
   font-variant-numeric: tabular-nums;
 }
 .os-schedule-class small {
   display: block;
-  color: #c7b7c2;
+  color: #d4bda9;
   font-size: 0.69rem;
   margin-top: 2px;
 }
@@ -448,7 +448,7 @@
 .os-step-grid p {
   max-width: 250px;
   margin-top: 14px;
-  color: #5e5159;
+  color: #5a4b40;
   font-size: 0.8rem;
   line-height: 1.7;
 }
@@ -500,7 +500,7 @@
 }
 .os-interior-hero-grid > p {
   max-width: 320px;
-  color: #dfd2d9;
+  color: #ead4c4;
   font-size: 0.9rem;
   line-height: 1.75;
 }
@@ -515,10 +515,10 @@
   margin-bottom: 28px;
   border-radius: 24px;
   overflow: hidden;
-  background: #e9d9cc;
+  background: #f3dfcf;
 }
 .os-service-private {
-  background: #e8dfd8;
+  background: #f1e4d7;
 }
 .os-service-private .os-service-image {
   order: 2;
@@ -567,13 +567,13 @@
 }
 .os-service-copy li {
   padding: 9px 0;
-  border-bottom: 1px solid #bfb1a9;
+  border-bottom: 1px solid #d1bba8;
   font-size: 0.75rem;
   line-height: 1.5;
 }
 .os-policy {
   margin-top: 15px;
-  color: #675b62;
+  color: #6b4b39;
   font-size: 0.7rem;
   line-height: 1.5;
 }
@@ -598,7 +598,7 @@
   font-weight: 400;
 }
 .os-service-end p {
-  color: #dfd2d9;
+  color: #ead4c4;
   font-size: 0.82rem;
   line-height: 1.7;
 }
@@ -627,7 +627,7 @@
 .os-about-copy > p:last-child {
   max-width: 390px;
   margin-top: 27px;
-  color: #dfd2d9;
+  color: #ead4c4;
   font-size: 0.94rem;
   line-height: 1.75;
 }
@@ -676,7 +676,7 @@
 .os-about-principle-grid p {
   max-width: 340px;
   margin-top: 18px;
-  color: #5e5159;
+  color: #5a4b40;
   font-size: 0.82rem;
   line-height: 1.7;
 }
@@ -694,7 +694,7 @@
   background: var(--os-cream);
 }
 .os-site main > section.bg-sand-deep {
-  background: #ebe2d9;
+  background: #f7e7d8;
 }
 .os-site main > section.bg-ink-deep {
   background: var(--os-plum);
@@ -725,7 +725,7 @@
 }
 .os-footer-top > div:first-child p:last-child {
   margin-top: 22px;
-  color: #c3b5c0;
+  color: #d4bda9;
   font-size: 0.8rem;
   line-height: 1.7;
 }
@@ -742,7 +742,7 @@
   font-size: 0.75rem;
 }
 .os-footer-contact dt {
-  color: #bdaeba;
+  color: #cfb39e;
 }
 .os-footer-nav > div {
   display: grid;
@@ -760,7 +760,7 @@
   gap: 25px;
   border-top: 1px solid var(--os-light-line);
   padding-top: 25px;
-  color: #bdaeba;
+  color: #cfb39e;
   font-size: 0.69rem;
 }
 
