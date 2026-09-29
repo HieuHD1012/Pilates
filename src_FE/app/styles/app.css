@@ -9,7 +9,7 @@
 @import "./surrenne.css";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   SOUL PILATES NHA TRANG — design tokens
+   PILATES REFERENCE VARIANT — design tokens
    Direction: "Measure" (docs/DESIGN_DIRECTION.md, docs/REFERENCE_LOCK.md)
 
    Namespaces below are reset with `initial` on purpose. Clearing Tailwind's
@@ -31,32 +31,35 @@
   --font-*: initial;
 
   /* ── Colour ─────────────────────────────────────────────────────────────
-     Ground is bleached plaster, not cream. Ink is a green-black shadow.
-     One chromatic mark: lacquer, an oxidised red drawn from Vietnamese
-     sơn mài — warm continuity with Soul without tan/terracotta wellness.
-     Contrast ratios verified against --color-sand; see DESIGN_SYSTEM.md. */
+     The public canvas is Soul-inspired warm cream. Peach creates depth; chocolate ink anchors type. Copper is used for accent, with a deeper copper for small text and actions. The 2026-09-30 source audit and accessibility adaptation are documented in the comparison branch. */
   --color-transparent: transparent;
   --color-current: currentColor;
   --color-white: #ffffff;
   --color-black: #000000;
 
-  --color-sand: #f2f0ea; /* public canvas */
-  --color-sand-deep: #e9e6dd; /* recessed public field */
-  --color-chalk: #fbfaf7; /* app canvas */
+  --color-sand: #fff5ec; /* public canvas */
+  --color-sand-deep: #fce5d1; /* recessed public field */
+  --color-chalk: #fafaf8; /* app canvas */
   --color-paper: #ffffff; /* app surface: tables, panels, sheets */
 
-  --color-ink: #1b1e19; /* 14.79:1 on sand */
-  --color-ink-deep: #101210; /* dark full-bleed field */
-  --color-ink-2: #5c6057; /*  5.64:1 on sand — secondary text */
-  --color-ink-3: #767a6e; /*  3.86:1 on sand — NON-TEXT / disabled only */
+  --color-ink: #2c2319; /* primary text */
+  --color-ink-deep: #1a1410; /* dark full-bleed field */
+  --color-ink-2: #5a4b40; /* secondary text */
+  --color-ink-3: #806f61; /* muted text; check each use */
 
-  --color-rule: #dedace; /* hairline: the structural unit of this system */
-  --color-rule-2: #c3bfb1; /* emphasised hairline */
-  --color-rule-dark: #33362e; /* hairline on dark fields */
+  --color-rule: #e8e5e0; /* hairline: the structural unit of this system */
+  --color-rule-2: #d4c5b6; /* emphasised hairline */
+  --color-rule-dark: #6b4b39; /* hairline on dark fields */
 
-  --color-lacquer: #8a3324; /*  7.14:1 on sand */
-  --color-lacquer-2: #6d2718; /* hover / pressed */
-  --color-lacquer-wash: #f4e7e2;
+  --color-lacquer: #9a4e2d; /* accessible action copper */
+  --color-lacquer-2: #7c391f; /* hover / pressed */
+  --color-lacquer-wash: #fce5d1;
+
+  --color-cream: #fff5ec;
+  --color-peach: #fce5d1;
+  --color-copper: #c97b4b;
+  --color-amber: #d4a574;
+  --color-walnut: #2c2319;
 
   --color-success: #2f6a4f;
   --color-success-wash: #e6efe9;

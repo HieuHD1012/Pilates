@@ -103,3 +103,7 @@ Built-in `image_gen` was used in precise-object-edit mode on the real
 of its PNG output; the original source remains untouched. Final prompt:
 
 > Use case: precise-object-edit. Input image: the supplied real vertical Pilates studio photograph is the edit target. Remove only the small circular 'J' logo printed on the wooden front reformer near the lower center-right of the photograph, and any other tiny visible 'J Pilates' marks on equipment. Reconstruct matching plain wood grain and natural lighting in those tiny areas. Preserve the same actual room, every machine, placement, camera angle, framing, color, window light, floor, curtains, and photographic texture. Do not redesign, beautify, add amenities, insert people, add text, or replace any equipment. This is a minimal old-brand removal for an authentic studio website photograph.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
