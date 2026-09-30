@@ -25,3 +25,7 @@ The same-owner archive supplies the real room and reformer movement frames. The 
 `npm run verify` passed before final visual fixes. The 16-combination Playwright sweep found no overflow or broken images. Its mobile-menu action initially failed because the baseline sticky header's `backdrop-filter` constrained its fixed menu to zero height. Removing that filter corrected the interaction; the sweep then passed. Five required business facts still block release.
 
 **Fit decision:** This is a credible visual direction when the actual room can carry the luxury expectation. The current room photograph is modest and utilitarian, so the composition has more polish than the physical proof can support. Preserve the proportion and restraint, but do not promise Raffles-like amenities or publish until Soul's own place facts and approved photography are confirmed.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
