@@ -24,3 +24,7 @@ Source assets are owner-supplied studio photographs with a minimally cleaned for
 `npm run verify` passed, and the 16-combination Playwright sweep found no overflow or broken image. Its mobile menu click initially exposed the baseline header's `backdrop-filter` trapping the fixed menu in a zero-height containing block. Removing the filter fixed navigation; the sweep passed on rerun. The five required business facts still block release.
 
 **Fit decision:** On's story navigation makes the pages inviting, but three image cards begin to resemble an apparel editorial grid and delay the actual Group/Private decision. The repeated subject and demo trainer data further reduce trust for a local studio. Keep the crop discipline and short navigable stories; do not select this as the lead conversion layout without a real Soul shoot and confirmed trainer roster.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
