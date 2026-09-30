@@ -24,3 +24,7 @@ Home, Services, Studio and Consultation were captured at 1440/1024/768/390, with
 The real room image now acts as one half of the opening rather than as an isolated insert; Group and Private follow immediately with distinct links. The real reformer action is paired with a statement about coached movement, not a claim that a specific trainer or group is pictured. The room and action derivatives come from the same owner's studio archive; the tiny former marks were removed from `studio-17.jpg` and `studio-15.jpg` in the earlier Othership experiment, with original files preserved. No imagined room, amenity, customer or coach is used.
 
 **Fit decision:** The place-to-choice journey is usable and more direct than Surrenne, but the visible room has functional fluorescent fittings and equipment storage. This honest photograph limits the luxury impression. Missing verified address, hours, phone, map and Zalo also weaken a destination-led page. Keep the reservation pattern for comparison, not as a launch recommendation.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
