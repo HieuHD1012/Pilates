@@ -21,3 +21,7 @@ Image roles: real reformer action = practice evidence; real chair sequence = bod
 ## Review after implementation
 
 Captured the Home, Services, Studio and Booking routes at 1440, 1024, 768 and 390 px, including first folds at desktop and mobile (24 files in `reference-variant-captures`). A scripted pass through all 16 route/viewport combinations found no horizontal overflow, broken visible images or hidden mobile menu. The body → detail → room sequence is the clearest distinction from the other editorial candidates; at 390 px it reads as a vertical sequence without turning the detail into a narrow decorative strip. The generated detail remains a material release limitation. Keep this pattern only if the owner can photograph a real reformer detail with equal clarity. Otherwise use the real practice/room frames and shorten the sequence.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
