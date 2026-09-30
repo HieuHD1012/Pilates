@@ -57,3 +57,7 @@ Home, Services, Schedule and Consultation were captured at 1440/1024/768/390, pl
 After a script-only ESLint repair, `npm run verify` passed (66 tests, static build contract). Playwright checked all 16 route/viewport combinations: no horizontal overflow, broken image or missing image placeholder. It also exercised mobile menu navigation and consultation validation.
 
 **Fit decision:** This is the clearest method explanation among the experiments so far, but the three-principle chapter is close to the clinical/report tone the owner dislikes. The first action still takes the visitor to consultation before they know how Group differs from Private. Keep it as a reference for concise coaching explanations, not as the leading visual direction. Five required business facts still block release; all source photos come from the same owner's related studio archive, not a verified new-branch shoot.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
