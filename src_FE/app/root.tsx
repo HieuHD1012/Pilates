@@ -24,7 +24,7 @@ export const links: Route.LinksFunction = () => [
 
 export const meta: Route.MetaFunction = () => [
   { title: "Soul Pilates Nha Trang" },
-  { name: "theme-color", content: "#f2f0ea" },
+  { name: "theme-color", content: "#fff5ec" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -45,3 +45,7 @@ The first Services capture exposed a severe contrast bug: a broad `header` CSS s
 ### Asset provenance
 
 The room and Pilates chair frames copy the same owner's source archive (`docs/thiet-ke/anh-studio/studio-17.jpg` and `studio-12.jpg`); the reformer action is a minimally cleaned derivative of `studio-15.jpg` from the BLOK experiment. Its edit removed only the previous tiny J mark on the reformer carriage and reconstructed the wood grain; pose, equipment, room and light stayed intact. The original photograph remains untouched. The group card uses the room frame, while the private card and opening reuse the real reformer action at different crops. No generated picture is used in this variant.
+
+## Soul palette transfer · 2026-09-30
+
+This variant now uses the observed [Soul Đà Nẵng homepage](https://soulpilates.com.vn/) colour roles: cream #fff5ec, peach #fce5d1, copper #c97b4b, amber #d4a574 and chocolate #2c2319. Small action text uses #9a4e2d for legibility. The reference-specific layout and image sequence remain this variant's own experiment. This is a palette study for the owner's beige preference, not a brand/name transfer from the Đà Nẵng studio.
