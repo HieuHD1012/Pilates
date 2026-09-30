@@ -13,7 +13,7 @@ const references = [
 ];
 
 for (const name of references) {
-  const branch = `codex/ref-${name}`;
+  const branch = `ref/${name}`;
   const prefix = ["blok", "surrenne", "barrys"].includes(name) ? "home-fold" : "home-first";
   for (const width of [1440, 390]) {
     const source = `src_FE/docs/reference-variant-captures/${prefix}-${width}.png`;

@@ -21,14 +21,15 @@ for (const [key, value] of Object.entries(tokens)) {
   if (!pattern.test(css)) throw new Error(`Missing token ${key} in ${variant}`);
   css = css.replace(pattern, `$1${value}`);
 }
+css = css.replace("SOUL PILATES NHA TRANG — design tokens", "PILATES REFERENCE VARIANT — design tokens");
 css = css.replace(
-  /\/\* ── Colour ─+[^]*?\*\/\n  --color-transparent:/,
-  `/* ── Colour ─────────────────────────────────────────────────────────────
-     Soul Đà Nẵng homepage palette, adapted for J Pilates reference variants.
-     Copper #c97b4b is decorative; darker #9a4e2d carries small text/actions.
-     See docs/reference-variant.md and the comparison theme transfer notes. */
-  --color-transparent:`,
+  /Ground is bleached plaster, not cream\.[\s\S]*?Contrast ratios verified against --color-sand; see DESIGN_SYSTEM\.md\./,
+  "The public canvas is Soul-inspired warm cream. Peach creates depth; chocolate ink anchors type. Copper is used for accent, with a deeper copper for small text and actions. The 2026-09-30 source audit and accessibility adaptation are documented in the comparison branch.",
 );
+css = css.replace(/\/\* 14\.79:1 on sand \*\//, "/* primary text */")
+  .replace(/\/\*  5\.64:1 on sand — secondary text \*\//, "/* secondary text */")
+  .replace(/\/\*  3\.86:1 on sand — NON-TEXT \/ disabled only \*\//, "/* muted text; check each use */")
+  .replace(/\/\*  7\.14:1 on sand \*\//, "/* accessible action copper */");
 css = css.replace(/(  --color-lacquer-wash:[^\n]*\n)/, `$1\n  --color-cream: #fff5ec;\n  --color-peach: #fce5d1;\n  --color-copper: #c97b4b;\n  --color-amber: #d4a574;\n  --color-walnut: #2c2319;\n`);
 writeFileSync(cssPath, css);
 
