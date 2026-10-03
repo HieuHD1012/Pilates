@@ -36,7 +36,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
     <Link
       to="/"
       className="group flex items-center gap-3"
-      aria-label="Soul Pilates Nha Trang — trang chủ"
+      aria-label="J Pilates Nha Trang — trang chủ"
     >
       <span
         className={cn(
@@ -44,7 +44,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
           tone === "ink" ? "text-ink" : "text-sand",
         )}
       >
-        SOUL
+        J PILATES
       </span>
       <span
         aria-hidden="true"
@@ -248,7 +248,7 @@ function PublicFooter() {
         </div>
 
         <div className="border-rule-dark text-sand/55 mt-12 flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t pt-6 text-xs">
-          <p>© {new Date().getFullYear()} Soul Pilates Nha Trang</p>
+          <p>© {new Date().getFullYear()} J Pilates Nha Trang</p>
           {/* One disclosure for the whole site instead of a caption under every
               frame. Remove with the last file in public/images/concept/. */}
           <p>

@@ -7,7 +7,7 @@ import { Figures } from "~/ui/figure";
 import type { Route } from "./+types/today";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Hôm nay — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Hôm nay — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 export default function TrainerToday() {

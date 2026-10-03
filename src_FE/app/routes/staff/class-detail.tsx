@@ -54,7 +54,7 @@ import {
 import type { Route } from "./+types/class-detail";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Chi tiết lớp — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Chi tiết lớp — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 const CLASS_TYPE: Record<ClassType, string> = {

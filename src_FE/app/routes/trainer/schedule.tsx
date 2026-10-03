@@ -14,7 +14,7 @@ import { QueryBoundary } from "~/ui/query-boundary";
 import type { Route } from "./+types/schedule";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Lịch dạy — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Lịch dạy — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

@@ -55,7 +55,7 @@ import {
 import type { Route } from "./+types/session-ledger";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Sổ buổi — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Sổ buổi — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

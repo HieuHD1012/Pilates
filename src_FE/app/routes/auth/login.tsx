@@ -17,7 +17,7 @@ import type { Route } from "./+types/login";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Đăng nhập — Soul Pilates Nha Trang" },
+    { title: "Đăng nhập — J Pilates Nha Trang" },
     { name: "robots", content: "noindex" },
   ];
 }

@@ -11,7 +11,7 @@ import type { StudentPackageStatus } from "~/lib/api/schema";
 import type { Route } from "./+types/packages";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Gói tập — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Gói tập — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

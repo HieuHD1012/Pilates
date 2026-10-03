@@ -13,7 +13,7 @@ import { StatusBadge, type StatusTone } from "~/ui/status";
 import type { Route } from "./+types/class-detail";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Lớp của tôi — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Lớp của tôi — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 const STATUS: Record<BookingStatus, { tone: StatusTone; label: string }> = {

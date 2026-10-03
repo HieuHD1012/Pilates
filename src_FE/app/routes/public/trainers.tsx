@@ -11,11 +11,11 @@ import type { Route } from "./+types/trainers";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Huấn luyện viên — Soul Pilates Nha Trang" },
+    { title: "Huấn luyện viên — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Đội ngũ huấn luyện viên của Soul Pilates Nha Trang. Mỗi buổi tập do một huấn luyện viên phụ trách từ đầu đến cuối.",
+        "Đội ngũ huấn luyện viên của J Pilates Nha Trang. Mỗi buổi tập do một huấn luyện viên phụ trách từ đầu đến cuối.",
     },
   ];
 }
@@ -38,7 +38,7 @@ export default function Trainers() {
             Người sẽ <em>đứng cạnh máy</em> của bạn.
           </>
         }
-        lede="Mỗi buổi có một huấn luyện viên phụ trách từ đầu đến cuối. Trang này chỉ hiện những người đã đồng ý công khai hồ sơ."
+        lede="Mỗi buổi tập có một huấn luyện viên đồng hành từ đầu đến cuối, quan sát và điều chỉnh động tác cho bạn."
       />
 
       <Section index="01" label="Đội ngũ">

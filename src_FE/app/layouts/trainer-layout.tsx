@@ -20,7 +20,7 @@ export default function TrainerLayout() {
       <div className="bg-chalk flex min-h-dvh flex-col">
         <header className="rule-b bg-sand/95 sticky top-0 z-(--z-nav) backdrop-blur-[2px]">
           <div className="gutter mx-auto flex max-w-(--container-page) flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 md:min-h-14 md:flex-nowrap">
-            <span className="wordmark text-ink text-base">SOUL</span>
+            <span className="wordmark text-ink text-base">J PILATES</span>
             <nav
               aria-label="Điều hướng huấn luyện viên"
               className="order-3 w-full md:order-none md:w-auto"

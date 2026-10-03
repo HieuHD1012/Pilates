@@ -24,7 +24,7 @@ import type { Route } from "./+types/leads";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Khách quan tâm — Soul Pilates" },
+    { title: "Khách quan tâm — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

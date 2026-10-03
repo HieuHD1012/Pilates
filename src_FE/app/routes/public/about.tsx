@@ -10,11 +10,11 @@ import type { Route } from "./+types/about";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Studio — Soul Pilates Nha Trang" },
+    { title: "Studio — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Soul Pilates Nha Trang: studio reformer với lớp nhóm nhỏ và lớp riêng, tập trung vào căn chỉnh và kiểm soát chuyển động.",
+        "J Pilates Nha Trang: studio reformer với lớp nhóm nhỏ và lớp riêng, tập trung vào căn chỉnh và kiểm soát chuyển động.",
     },
   ];
 }
@@ -67,17 +67,17 @@ export default function About() {
                 <em className="text-copper font-light">có chủ đích</em>.
               </h1>
               <p className="measure text-lede text-ink-2 mt-6">
-                Studio chọn số người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác,
-                để huấn luyện viên luôn nhìn thấy từng người.
+                Lớp học được giữ ở quy mô nhỏ để huấn luyện viên có thể quan sát và hướng
+                dẫn từng người trong suốt buổi tập.
               </p>
             </div>
             {/* The sticky header already carries the ask in this viewport (P2),
                 so the page offers it as a question instead of a second button. */}
             <div className="lg:col-span-4 lg:col-start-9 lg:self-end">
               <p className="measure text-ink-2 text-sm">
-                Muốn hỏi về phòng tập hay giờ tập? Để lại số, studio gọi lại.
+                Bạn muốn tìm hiểu không gian hoặc lịch tập? J Pilates sẵn sàng tư vấn.
               </p>
-              <ArrowLink to="/dat-tu-van">Hỏi studio</ArrowLink>
+              <ArrowLink to="/dat-tu-van">Liên hệ tư vấn</ArrowLink>
             </div>
           </div>
         </div>

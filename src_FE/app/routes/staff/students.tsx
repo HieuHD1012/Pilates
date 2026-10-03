@@ -33,7 +33,7 @@ import {
 import type { Route } from "./+types/students";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Học viên — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Học viên — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

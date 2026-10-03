@@ -35,7 +35,7 @@ import {
 import type { Route } from "./+types/packages";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Gói tập — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Gói tập — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 const CLASS_TYPE_LABEL: Record<ClassType, string> = {

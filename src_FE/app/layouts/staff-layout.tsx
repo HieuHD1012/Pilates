@@ -206,10 +206,10 @@ function StudioMark({ subtitle = false }: { subtitle?: boolean }) {
         aria-hidden="true"
         className="bg-copper text-sand font-display grid size-9 shrink-0 place-items-center rounded-md text-lg"
       >
-        S
+        J
       </span>
       <span className="flex flex-col">
-        <span className="wordmark text-base">SOUL</span>
+        <span className="wordmark text-base">J PILATES</span>
         {subtitle ? (
           <span className="text-sand/60 mt-1 text-xs">Nha Trang · Vận hành</span>
         ) : null}

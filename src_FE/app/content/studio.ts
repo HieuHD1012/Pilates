@@ -26,7 +26,7 @@ export interface StudioFacts {
 }
 
 export const STUDIO: StudioFacts = {
-  name: "Soul Pilates",
+  name: "J Pilates",
   city: "Nha Trang",
   address: null,
   mapUrl: null,
@@ -96,7 +96,7 @@ export const CLASS_FORMATS = [
     ratio: "1:3",
     size: "Tối đa 3 học viên mỗi lớp",
     /** Capacity is configured per class by the studio; it is not a brand claim. */
-    body: "Một nhóm nhỏ trên reformer, cùng một bài, nhưng mỗi người được chỉnh riêng. Huấn luyện viên vẫn nhìn thấy từng người trong suốt buổi tập.",
+    body: "Tập cùng một nhóm nhỏ trên máy reformer, với hướng dẫn và điều chỉnh riêng cho từng người trong suốt buổi tập.",
     forWho: [
       "Muốn duy trì lịch tập đều đặn",
       "Thích có nhịp chung và người tập cùng",
@@ -109,7 +109,7 @@ export const CLASS_FORMATS = [
     sub: "Private",
     ratio: "1:1",
     size: "Một học viên, một huấn luyện viên",
-    body: "Bài tập được dựng theo cơ thể bạn — chấn thương cũ, thói quen tư thế, mục tiêu cụ thể.",
+    body: "Buổi tập được thiết kế theo thể trạng, thói quen vận động và mục tiêu của bạn, với một huấn luyện viên hướng dẫn riêng.",
     forWho: [
       "Đang phục hồi sau chấn thương",
       "Buổi tập đầu tiên với reformer",
@@ -141,7 +141,7 @@ export const FIRST_VISIT_STEPS = [
   {
     index: "02",
     title: "Studio liên hệ lại",
-    body: "Nhân viên gọi để nghe rõ tình trạng của bạn và tư vấn hình thức lớp phù hợp.",
+    body: "J Pilates liên hệ để tìm hiểu nhu cầu và tư vấn hình thức tập phù hợp.",
   },
   {
     index: "03",

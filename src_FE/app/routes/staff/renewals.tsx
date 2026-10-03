@@ -22,7 +22,7 @@ import { InlineNote, Panel, PersonCell, WorkspacePage } from "~/ui/workspace";
 import type { Route } from "./+types/renewals";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Gia hạn — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Gia hạn — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

@@ -27,7 +27,7 @@ import { StatusBadge } from "~/ui/status";
 import type { Route } from "./+types/my-schedule";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Lịch của tôi — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Lịch của tôi — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 export default function MySchedule() {

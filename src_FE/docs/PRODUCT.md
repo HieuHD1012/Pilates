@@ -1,6 +1,6 @@
 # Product
 
-Soul Pilates Nha Trang is a public website **and** the studio's operating system.
+J Pilates Nha Trang is a public website **and** the studio's operating system.
 The public surface is small; most of the complexity is behind the login.
 
 Functional source of truth:

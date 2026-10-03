@@ -1,4 +1,4 @@
-# AGENTS.md — Soul Pilates Nha Trang
+# AGENTS.md — J Pilates Nha Trang
 
 This file outranks every other instruction in this repository except an explicit
 human decision. If a prompt, a habit or a tempting library conflicts with it,

@@ -7,7 +7,7 @@
  * studio assets before launch. The single disclosure lives in the public footer;
  * per-image captions would interrupt the composition without adding context.
  *
- * Reference sites inform composition and image role, never Soul's palette or
+ * Reference sites inform composition and image role, never J Pilates' palette or
  * business claims. See docs/IMAGE_LANGUAGE.md.
  */
 export interface PhotoBrief {

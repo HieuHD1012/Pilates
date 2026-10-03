@@ -32,7 +32,7 @@ export default function AuthLayout() {
     <div className="bg-sand min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <section
         data-field="dark"
-        aria-label="Soul Pilates Nha Trang"
+        aria-label="J Pilates Nha Trang"
         className="bg-ink-deep text-sand relative flex flex-col justify-between gap-6 overflow-hidden px-5 py-6 lg:min-h-dvh lg:px-14 lg:py-12"
       >
         <Link
@@ -44,18 +44,16 @@ export default function AuthLayout() {
             aria-hidden="true"
             className="bg-copper text-sand font-display grid size-9 place-items-center rounded-md text-lg"
           >
-            S
+            J
           </span>
           <span className="flex flex-col">
-            <span className="wordmark text-lg">SOUL</span>
+            <span className="wordmark text-lg">J PILATES</span>
             <span className="text-sand/60 mt-1 text-xs">Pilates · Nha Trang</span>
           </span>
         </Link>
 
         <div className="relative z-1">
-          <p className="text-amber hidden text-sm lg:block">
-            Không gian làm việc của studio
-          </p>
+          <p className="text-amber hidden text-sm lg:block">Không gian của J Pilates</p>
           <p className="font-display mt-0 max-w-[13em] text-[1.75rem] leading-tight font-light lg:mt-4 lg:text-[2.75rem]">
             Lịch lớp, học viên và gói tập{" "}
             <em className="text-amber font-light">ở cùng một nơi.</em>
@@ -74,7 +72,7 @@ export default function AuthLayout() {
         </div>
 
         <p className="text-sand/60 hidden text-xs lg:block">
-          © {new Date().getFullYear()} Soul Pilates Nha Trang
+          © {new Date().getFullYear()} J Pilates Nha Trang
         </p>
 
         {/* One hairline circle: the reformer's spring, drawn once. */}

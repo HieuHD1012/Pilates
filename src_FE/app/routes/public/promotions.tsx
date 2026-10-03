@@ -13,11 +13,11 @@ import type { Route } from "./+types/promotions";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Khuyến mãi & thông báo — Soul Pilates Nha Trang" },
+    { title: "Khuyến mãi & thông báo — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Ưu đãi, thay đổi lịch tập và thông báo từ Soul Pilates Nha Trang, kèm ngày công bố.",
+        "Ưu đãi, thay đổi lịch tập và thông báo từ J Pilates Nha Trang, kèm ngày công bố.",
     },
   ];
 }
@@ -44,7 +44,7 @@ export default function Promotions() {
             Tin từ <em>studio</em>
           </>
         }
-        lede="Ưu đãi, lịch nghỉ lễ và thay đổi lịch tập. Chỉ những thông báo studio đã đăng mới xuất hiện ở đây, kèm ngày công bố."
+        lede="Cập nhật ưu đãi, lịch nghỉ lễ và những thay đổi lịch tập tại J Pilates."
       />
 
       <Section index="01" label="Thông báo">

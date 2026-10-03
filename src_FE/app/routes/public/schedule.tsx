@@ -30,11 +30,11 @@ import type { Route } from "./+types/schedule";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Lịch tập — Soul Pilates Nha Trang" },
+    { title: "Lịch tập — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Lịch lớp Pilates reformer 14 ngày tới tại Soul Pilates Nha Trang. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
+        "Lịch lớp Pilates reformer 14 ngày tới tại J Pilates Nha Trang. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
     },
   ];
 }
@@ -104,7 +104,7 @@ export default function PublicSchedule() {
             Chọn một buổi <em>hợp với bạn</em>.
           </>
         }
-        lede="Chọn ngày, rồi chọn giờ. Học viên có gói đăng nhập để đặt; khách mới để studio xếp buổi đầu tiên."
+        lede="Chọn ngày và giờ phù hợp. Học viên đã có gói đăng nhập để đặt chỗ; nếu mới bắt đầu, hãy liên hệ J Pilates để được tư vấn."
       />
 
       <Section className={selected ? "pb-28 lg:pb-0" : undefined}>

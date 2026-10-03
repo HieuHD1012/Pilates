@@ -40,7 +40,7 @@ import type { Route } from "./+types/trainer-detail";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Hồ sơ huấn luyện viên — Soul Pilates" },
+    { title: "Hồ sơ huấn luyện viên — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

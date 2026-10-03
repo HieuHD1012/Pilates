@@ -50,7 +50,7 @@ import {
 import type { Route } from "./+types/accounts";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Tài khoản — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Tài khoản — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

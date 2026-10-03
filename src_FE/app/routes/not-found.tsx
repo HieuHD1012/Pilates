@@ -6,7 +6,7 @@ import type { Route } from "./+types/not-found";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Không tìm thấy trang — Soul Pilates Nha Trang" },
+    { title: "Không tìm thấy trang — J Pilates Nha Trang" },
     { name: "robots", content: "noindex" },
   ];
 }

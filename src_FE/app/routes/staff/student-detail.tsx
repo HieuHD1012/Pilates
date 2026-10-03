@@ -79,7 +79,7 @@ import type { Route } from "./+types/student-detail";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Chi tiết học viên — Soul Pilates" },
+    { title: "Chi tiết học viên — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

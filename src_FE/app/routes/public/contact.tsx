@@ -12,11 +12,11 @@ import type { Route } from "./+types/contact";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Liên hệ — Soul Pilates Nha Trang" },
+    { title: "Liên hệ — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Liên hệ Soul Pilates Nha Trang qua điện thoại, Zalo hoặc để lại thông tin tư vấn.",
+        "Liên hệ J Pilates Nha Trang qua điện thoại, Zalo hoặc để lại thông tin tư vấn.",
     },
   ];
 }
@@ -72,8 +72,8 @@ export default function Contact() {
               <em className="text-copper font-light">studio gọi bạn</em>.
             </h1>
             <p className="measure text-lede text-ink-2 mt-6">
-              Cách nhanh nhất là để lại số điện thoại. Các kênh trực tiếp sẽ hiện ở đây khi
-              studio xác nhận.
+              Bạn muốn tìm hiểu studio hoặc chọn buổi tập đầu tiên? Để lại thông tin, J
+              Pilates sẽ liên hệ tư vấn.
             </p>
 
             {/* Two groups by intent — getting there, and getting in touch —

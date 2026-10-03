@@ -21,7 +21,7 @@ import { QueryBoundary } from "~/ui/query-boundary";
 import type { Route } from "./+types/account";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Tài khoản — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Tài khoản — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /** One line of orientation per secondary destination, keyed by route. */

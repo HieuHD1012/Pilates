@@ -20,11 +20,11 @@ import type { Route } from "./+types/consultation";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Nhận tư vấn — Soul Pilates Nha Trang" },
+    { title: "Nhận tư vấn — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Để lại tên và số điện thoại, Soul Pilates Nha Trang sẽ liên hệ tư vấn hình thức tập và gói phù hợp.",
+        "Để lại tên và số điện thoại, J Pilates Nha Trang sẽ liên hệ tư vấn hình thức tập và gói phù hợp.",
     },
   ];
 }
@@ -81,8 +81,8 @@ export default function Consultation() {
               <em className="text-copper font-light">Studio sẽ gọi lại.</em>
             </h1>
             <p className="measure text-lede text-ink-2 mt-6">
-              Không cần tạo tài khoản. Chỉ cần tên và số điện thoại; phần còn lại nói qua
-              điện thoại sẽ nhanh hơn.
+              Để lại tên, số điện thoại và nhu cầu của bạn. J Pilates sẽ liên hệ để tư vấn
+              hình thức tập phù hợp. Không cần tạo tài khoản.
             </p>
 
             <p className="label-micro text-copper mt-12">Sau khi bạn gửi</p>

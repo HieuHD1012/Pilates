@@ -20,7 +20,7 @@ import { QueryBoundary } from "~/ui/query-boundary";
 import type { Route } from "./+types/profile";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Hồ sơ — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Hồ sơ — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**
