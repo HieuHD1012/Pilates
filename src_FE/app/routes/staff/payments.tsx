@@ -1,4 +1,14 @@
-import { useState } from "react";
+import {
+  Banknote,
+  ChartColumn,
+  Check,
+  Info,
+  Landmark,
+  Plus,
+  TriangleAlert,
+  X,
+} from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router";
 
 import { PaymentForm } from "~/features/commerce/payment-form";
@@ -11,17 +21,43 @@ import {
 } from "~/features/commerce/queries";
 import { useStudents } from "~/features/people/queries";
 import { errorMessage } from "~/lib/api/client";
-import type { PaymentMethod, PaymentResponse, PaymentStatus } from "~/lib/api/schema";
-import { decimalToNumber, formatDate, formatTime, formatVnd } from "~/lib/format";
+import type {
+  PaymentMethod,
+  PaymentResponse,
+  PaymentStatus,
+  StudentResponse,
+} from "~/lib/api/schema";
+import { cn } from "~/lib/cn";
+import {
+  decimalToNumber,
+  formatDate,
+  formatNumber,
+  formatPhone,
+  formatTime,
+  formatVnd,
+} from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
+import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
 import { Field, FormActions, Select, Textarea } from "~/ui/field";
 import { Figures } from "~/ui/figure";
-import { FilterBar, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge, type StatusTone } from "~/ui/status";
+import {
+  Avatar,
+  InlineNote,
+  Panel,
+  PersonCell,
+  RowMenu,
+  RowMenuItem,
+  SegmentFilter,
+  Toolbar,
+  WorkspacePage,
+  type SegmentOption,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/payments";
 
@@ -34,13 +70,16 @@ export function meta(_: Route.MetaArgs) {
  *
  * The winning subject is the transaction (P1): the amount is the only figure
  * compared down the page, and the package, the note and the method are its
- * attributes.
+ * attributes. Money that is waiting on someone — recorded, not yet confirmed —
+ * is lifted out above the log, because it is the only part of this screen that
+ * asks staff to do something.
  *
  * Two facts shape this screen and both come from the contract:
  *
  *  - **A payment belongs to a package, not to a person.** `student_package_id`
  *    is required, and the credits were added when the package was sold — this
- *    record only says the money arrived.
+ *    record only says the money arrived. `GET /payments` returns no student, so
+ *    a row can name its person only when the list is filtered to one student.
  *  - **`GET /payments` filters by student, package and status, not by date.**
  *    So there is no date range here. Money over a period is the revenue report,
  *    which the backend computes from `confirmed_at`; a second total assembled
@@ -57,12 +96,16 @@ const STATUS: Record<PaymentStatus, { label: string; tone: StatusTone }> = {
   VOID: { label: "Đã hủy", tone: "neutral" },
 };
 
-const STATUS_ORDER: PaymentStatus[] = ["CONFIRMED", "PENDING", "VOID"];
+/** Waiting work first: the segment staff most often need after "all". */
+const STATUS_ORDER: PaymentStatus[] = ["PENDING", "CONFIRMED", "VOID"];
 
-/** The method is written in words: a cash icon says nothing a word does not. */
-const METHOD: Record<PaymentMethod, string> = {
-  CASH: "Tiền mặt",
-  TRANSFER: "Chuyển khoản",
+/** The method in words, with an icon that lets a column be scanned for it. */
+const METHOD: Record<PaymentMethod, { label: string; icon: ReactNode }> = {
+  CASH: { label: "Tiền mặt", icon: <Banknote className="size-4" aria-hidden="true" /> },
+  TRANSFER: {
+    label: "Chuyển khoản",
+    icon: <Landmark className="size-4" aria-hidden="true" />,
+  },
 };
 
 export default function StaffPayments() {
@@ -96,168 +139,186 @@ export default function StaffPayments() {
       item.name_snapshot,
     ]),
   );
+  // The person every row belongs to, when the list is narrowed to one. A
+  // payment carries no student of its own, so this is the only honest source.
+  const student =
+    studentId === null
+      ? null
+      : ((roster.data ?? []).find((entry) => entry.id === studentId) ?? null);
 
-  // The confirmed subset, and nothing else, is what the header reports.
+  // The confirmed subset, and nothing else, is what the footer totals.
   const confirmed = (items ?? []).filter((item) => item.status === "CONFIRMED");
   const confirmedTotal = confirmed.reduce(
     (sum, item) => sum + (decimalToNumber(item.amount) ?? 0),
     0,
   );
 
+  // Waiting money is lifted above the log only while the log is unfiltered by
+  // status: under "Chờ xác nhận" the log itself is that list, and repeating it
+  // would put two confirm buttons on one payment.
+  const pending = (items ?? []).filter((item) => item.status === "PENDING");
+  const showAttention = status === "all" && pending.length > 0;
+
+  // Counts are only known for what was fetched. Unfiltered, every segment can
+  // be counted; filtered, only the one on screen can.
+  const segments: SegmentOption<PaymentStatus | "all">[] = [
+    { value: "all", label: "Tất cả", count: status === "all" ? items?.length : undefined },
+    ...STATUS_ORDER.map((value) => ({
+      value,
+      label: STATUS[value].label,
+      count:
+        status === "all"
+          ? items?.filter((item) => item.status === value).length
+          : status === value
+            ? items?.length
+            : undefined,
+    })),
+  ];
+
   const narrowed = status !== "all" || studentId !== null;
+  const rows: RowsProps = {
+    payments: [],
+    packageNames,
+    student,
+    confirmInline: !showAttention,
+  };
 
   return (
-    <div className="gutter py-6">
+    <WorkspacePage>
       <PageHeader
         title="Thanh toán"
-        description="Các khoản thu đã ghi nhận. Tổng tiền chỉ cộng những giao dịch đã xác nhận đang hiển thị."
+        description="Số tiền studio đã nhận, gắn với gói học viên đã mua. Ghi sai thì hủy phiếu kèm lý do, không sửa phiếu cũ."
         actions={
           <>
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/studio/bao-cao/doanh-thu">Báo cáo doanh thu</Link>
+            <Button asChild variant="secondary">
+              <Link to="/studio/bao-cao/doanh-thu">
+                <ChartColumn className="size-4" aria-hidden="true" />
+                Báo cáo doanh thu
+              </Link>
             </Button>
-            <Button size="sm" onClick={() => setRecording(true)}>
+            <Button
+              onClick={() => setRecording(true)}
+              icon={<Plus className="size-4" aria-hidden="true" />}
+            >
               Ghi nhận khoản thu
             </Button>
           </>
         }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Tổng tiền (đã xác nhận)</dt>
-              <dd>
-                {items ? (
-                  <Figures className="text-ink whitespace-nowrap">
-                    {formatVnd(confirmedTotal)}
-                  </Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Giao dịch đã xác nhận</dt>
-              <dd>
-                {items ? (
-                  <Figures className="text-ink">{confirmed.length}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Đang hiển thị</dt>
-              <dd>
-                {items ? (
-                  <Figures className="text-ink">{items.length}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Học viên" className="w-full sm:w-64">
-          {({ id }) => (
+      {showAttention ? (
+        <PendingPanel
+          payments={sortNewestFirst(pending)}
+          packageNames={packageNames}
+          student={student}
+          onConfirmed={setNotice}
+        />
+      ) : null}
+
+      <Panel aria-label="Các khoản thanh toán">
+        <Toolbar
+          trailing={
+            <>
+              {query.isFetching && !query.isPending ? (
+                <span className="text-ink-2 text-xs">Đang cập nhật</span>
+              ) : null}
+              <DemoDataNotice />
+            </>
+          }
+        >
+          <SegmentFilter
+            label="Trạng thái"
+            options={segments}
+            value={status}
+            onChange={setStatus}
+          />
+          <div className="w-full sm:w-60">
             <Select
-              id={id}
+              aria-label="Học viên"
               value={studentId === null ? "" : String(studentId)}
               onChange={(event) =>
                 setStudentId(event.target.value === "" ? null : Number(event.target.value))
               }
             >
               <option value="">Tất cả học viên</option>
-              {(roster.data ?? []).map((student) => (
-                <option key={student.id} value={String(student.id)}>
-                  {student.full_name}
+              {(roster.data ?? []).map((entry) => (
+                <option key={entry.id} value={String(entry.id)}>
+                  {entry.full_name}
                 </option>
               ))}
             </Select>
-          )}
-        </Field>
+          </div>
+        </Toolbar>
 
-        <Field label="Trạng thái" className="w-full sm:w-48">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={status}
-              onChange={(event) => setStatus(event.target.value as PaymentStatus | "all")}
-            >
-              <option value="all">Tất cả</option>
-              {STATUS_ORDER.map((value) => (
-                <option key={value} value={value}>
-                  {STATUS[value].label}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
+        {/* The boundary's own states (skeleton, empty, error) need the panel's
+            inset; the table and list cancel it to run edge to edge. */}
+        <div className="px-4 md:px-5">
+          <QueryBoundary
+            query={query}
+            skeletonRows={8}
+            showErrorDetail
+            errorDescription="Không tải được danh sách thanh toán."
+            emptyTitle={
+              narrowed ? "Không có giao dịch nào khớp bộ lọc" : "Chưa có giao dịch nào"
+            }
+            emptyDescription={
+              narrowed
+                ? "Bộ lọc đang thu hẹp kết quả. Bỏ lọc để xem toàn bộ."
+                : "Các khoản thu do nhân viên ghi nhận sẽ xuất hiện ở đây, mới nhất trước."
+            }
+            emptyAction={
+              narrowed ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setStatus("all");
+                    setStudentId(null);
+                  }}
+                >
+                  Bỏ bộ lọc
+                </Button>
+              ) : undefined
+            }
+          >
+            {(payments) => {
+              // Newest first: a payments log is read from the most recent receipt.
+              const sorted = sortNewestFirst(payments);
+              const total = (
+                <TotalLine
+                  shown={payments.length}
+                  confirmedCount={confirmed.length}
+                  confirmedTotal={confirmedTotal}
+                />
+              );
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={8}
-        showErrorDetail
-        errorDescription="Không tải được danh sách thanh toán."
-        emptyTitle={
-          narrowed ? "Không có giao dịch nào khớp bộ lọc" : "Chưa có giao dịch nào"
-        }
-        emptyDescription={
-          narrowed
-            ? "Bộ lọc đang thu hẹp kết quả. Bỏ lọc để xem toàn bộ."
-            : "Các khoản thu do nhân viên ghi nhận sẽ xuất hiện ở đây, mới nhất trước."
-        }
-        emptyAction={
-          narrowed ? (
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setStatus("all");
-                setStudentId(null);
-              }}
-            >
-              Bỏ bộ lọc
-            </Button>
-          ) : undefined
-        }
-      >
-        {(payments) => {
-          // Newest first: a payments log is read from the most recent receipt.
-          const sorted = [...payments].sort(
-            (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime(),
-          );
+              return (
+                <div className="-mx-4 md:-mx-5">
+                  <div className="hidden lg:block">
+                    <PaymentTable {...rows} payments={sorted} footer={total} />
+                  </div>
+                  <div className="lg:hidden">
+                    <PaymentList {...rows} payments={sorted} />
+                    <div className="rule-t px-4 py-3">{total}</div>
+                  </div>
+                </div>
+              );
+            }}
+          </QueryBoundary>
+        </div>
+      </Panel>
 
-          return (
-            <>
-              <div className="hidden lg:block">
-                <PaymentTable payments={sorted} packageNames={packageNames} />
-              </div>
-              <div className="lg:hidden">
-                <PaymentList payments={sorted} packageNames={packageNames} />
-              </div>
-            </>
-          );
-        }}
-      </QueryBoundary>
-
-      <div className="rule-t mt-6 pt-3">
-        <p className="measure-wide text-ink-2 text-xs">
+      <InlineNote icon={<Info aria-hidden="true" />}>
+        <p>
           Giao dịch chờ xác nhận và đã hủy vẫn hiển thị trong bảng nhưng không vào tổng
           tiền. Số liệu doanh thu chính thức lấy từ báo cáo, không từ tổng của bảng này.
         </p>
-        <p className="measure-wide text-ink-2 mt-1.5 text-xs">
+        <p className="mt-1.5">
           Buổi tập đã được cộng vào gói từ lúc bán gói, không đợi bước ghi nhận tiền này.
+          {studentId === null
+            ? " Danh sách thanh toán không kèm tên học viên: chọn một học viên để thấy tên người và tên gói trên từng dòng."
+            : null}
         </p>
-      </div>
+      </InlineNote>
 
       <LiveRegion message={notice} />
 
@@ -288,214 +349,475 @@ export default function StaffPayments() {
           />
         </DialogContent>
       </Dialog>
+    </WorkspacePage>
+  );
+}
+
+function sortNewestFirst(payments: PaymentResponse[]): PaymentResponse[] {
+  return [...payments].sort(
+    (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime(),
+  );
+}
+
+function packageLabel(payment: PaymentResponse, packageNames: Map<number, string>) {
+  return (
+    packageNames.get(payment.student_package_id) ?? `Gói #${payment.student_package_id}`
+  );
+}
+
+/** The student as a row's first cell: a link to their record, phone under it. */
+function StudentCell({ student }: { student: StudentResponse }) {
+  return (
+    <PersonCell
+      avatarName={student.full_name}
+      name={
+        <Link
+          to={`/studio/hoc-vien/${student.id}`}
+          className="decoration-rule-2 hover:decoration-copper underline-offset-[6px] hover:underline"
+        >
+          {student.full_name}
+        </Link>
+      }
+      detail={formatPhone(student.phone)}
+    />
+  );
+}
+
+/* ── Waiting money ──────────────────────────────────────────────────────── */
+
+/**
+ * Recorded, not yet confirmed. Confirming is the money action on this screen,
+ * so it is copper (ADR 0006, 9) and it lives here, at the top, rather than in
+ * the log below.
+ */
+function PendingPanel({
+  payments,
+  packageNames,
+  student,
+  onConfirmed,
+}: {
+  payments: PaymentResponse[];
+  packageNames: Map<number, string>;
+  student: StudentResponse | null;
+  onConfirmed: (message: string) => void;
+}) {
+  return (
+    <Panel
+      tone="attention"
+      aria-labelledby="pending-title"
+      className="flex flex-col gap-4 px-4 py-4 md:px-5"
+    >
+      <div className="flex items-start gap-3.5">
+        <span
+          aria-hidden="true"
+          className="bg-warning-wash text-warning grid size-10 shrink-0 place-items-center rounded-md"
+        >
+          <TriangleAlert className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <h2 id="pending-title" className="text-ink text-base font-semibold">
+            <Figures>{formatNumber(payments.length)}</Figures> khoản thu đang chờ xác nhận
+          </h2>
+          <p className="text-ink-2 mt-0.5 text-sm">
+            Xác nhận khi tiền đã thực sự vào quỹ hoặc tài khoản studio. Chỉ khoản đã xác
+            nhận mới được cộng vào doanh thu.
+          </p>
+        </div>
+      </div>
+
+      <ul className="flex flex-col gap-2.5">
+        {payments.map((payment) => (
+          <PendingItem
+            key={payment.id}
+            payment={payment}
+            packageName={packageLabel(payment, packageNames)}
+            student={student}
+            onConfirmed={onConfirmed}
+          />
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+function PendingItem({
+  payment,
+  packageName,
+  student,
+  onConfirmed,
+}: {
+  payment: PaymentResponse;
+  packageName: string;
+  student: StudentResponse | null;
+  onConfirmed: (message: string) => void;
+}) {
+  const confirm = useConfirmPayment();
+  const facts = (
+    <>
+      {student ? `${packageName} · ` : null}
+      {METHOD[payment.method].label.toLowerCase()} · ghi{" "}
+      <Figures>{formatDate(payment.recorded_at)}</Figures> lúc{" "}
+      <Figures>{formatTime(payment.recorded_at)}</Figures>
+    </>
+  );
+
+  return (
+    <li className="bg-paper border-rule flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border px-4 py-3.5">
+      {/* Written out rather than a PersonCell: the line under the name is
+          long, and a Vietnamese line is wrapped, never truncated (AGENTS P5). */}
+      <div className="flex min-w-0 flex-1 basis-60 items-start gap-3">
+        {student ? <Avatar name={student.full_name} /> : null}
+        <div className="min-w-0">
+          <p className="text-ink text-sm font-medium">
+            {student ? student.full_name : packageName}
+          </p>
+          <p className="text-ink-2 text-xs">{facts}</p>
+          {payment.note ? <p className="text-ink-2 mt-1 text-xs">{payment.note}</p> : null}
+        </div>
+      </div>
+
+      <Figures display className="text-ink text-2xl whitespace-nowrap">
+        {formatVnd(payment.amount)}
+      </Figures>
+
+      <div className="flex flex-col items-start gap-1">
+        <Button
+          variant="copper"
+          size="sm"
+          className="max-sm:min-h-11"
+          pending={confirm.isPending}
+          icon={<Check className="size-4" aria-hidden="true" />}
+          onClick={() =>
+            confirm.mutate(payment.id, {
+              onSuccess: () => onConfirmed(`Đã xác nhận ${formatVnd(payment.amount)}.`),
+            })
+          }
+        >
+          Xác nhận đã nhận tiền
+        </Button>
+        {confirm.isError ? (
+          <p role="alert" className="text-danger text-xs">
+            {errorMessage(confirm.error, "Chưa xác nhận được.")}
+          </p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+/* ── The log ────────────────────────────────────────────────────────────── */
+
+interface RowsProps {
+  payments: PaymentResponse[];
+  packageNames: Map<number, string>;
+  /** The one student the list is narrowed to, or null when it is not. */
+  student: StudentResponse | null;
+  /** Whether a pending row carries its own confirm button (see PendingPanel). */
+  confirmInline: boolean;
+}
+
+/**
+ * The actions a row offers. A row shows a button only when it needs handling
+ * (ADR 0006, 7): confirming waiting money, when the panel above is not already
+ * offering it. Voiding reverses a money record, so it sits in the overflow menu
+ * and asks for a reason in its own dialog. A voided row has nothing left to do
+ * and shows no controls at all — a disabled control invites a second click.
+ */
+function RowActions({
+  payment,
+  confirmInline,
+}: {
+  payment: PaymentResponse;
+  confirmInline: boolean;
+}) {
+  const [voiding, setVoiding] = useState(false);
+  const confirm = useConfirmPayment();
+
+  if (payment.status === "VOID") return null;
+
+  return (
+    <span className="flex items-center justify-end gap-1.5">
+      {payment.status === "PENDING" && confirmInline ? (
+        <Button
+          variant="copper"
+          size="sm"
+          className="max-sm:min-h-11"
+          pending={confirm.isPending}
+          icon={<Check className="size-4" aria-hidden="true" />}
+          onClick={() => confirm.mutate(payment.id)}
+        >
+          Xác nhận
+        </Button>
+      ) : null}
+
+      <RowMenu label={`Thao tác cho phiếu ${formatVnd(payment.amount)}`}>
+        <RowMenuItem
+          danger
+          icon={<X aria-hidden="true" />}
+          note="Phiếu vẫn nằm trong sổ, kèm lý do hủy."
+          onClick={() => setVoiding(true)}
+        >
+          Hủy phiếu
+        </RowMenuItem>
+      </RowMenu>
+
+      <VoidDialog payment={payment} open={voiding} onOpenChange={setVoiding} />
+    </span>
+  );
+}
+
+function VoidDialog({
+  payment,
+  open,
+  onOpenChange,
+}: {
+  payment: PaymentResponse;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const voidPayment = useVoidPayment();
+  const tooShort = reason.trim().length < 6;
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          voidPayment.reset();
+          onOpenChange(false);
+        }
+      }}
+    >
+      <DialogContent
+        title="Hủy phiếu thu"
+        description={`${formatVnd(payment.amount)}. Phiếu vẫn nằm trong sổ, được đánh dấu đã hủy kèm lý do — số tiền này sẽ không còn vào doanh thu.`}
+      >
+        <div className="flex flex-col gap-4">
+          <Field label="Lý do hủy" required>
+            {({ id }) => (
+              <Textarea
+                id={id}
+                rows={3}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
+            )}
+          </Field>
+
+          {voidPayment.error ? (
+            <p role="alert" className="text-danger text-sm">
+              {/* The usual refusal is a package that has already spent
+                  credits; the backend names how many, in words. */}
+              {errorMessage(voidPayment.error, "Chưa hủy được phiếu.")}
+            </p>
+          ) : null}
+
+          <FormActions>
+            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+              Không hủy
+            </Button>
+            <Button
+              size="sm"
+              pending={voidPayment.isPending}
+              disabled={tooShort}
+              onClick={() => {
+                voidPayment.mutate(
+                  { paymentId: payment.id, reason: reason.trim() },
+                  { onSuccess: () => onOpenChange(false) },
+                );
+              }}
+            >
+              Hủy phiếu này
+            </Button>
+          </FormActions>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StatusCell({ payment }: { payment: PaymentResponse }) {
+  return (
+    <>
+      <StatusBadge tone={STATUS[payment.status].tone}>
+        {STATUS[payment.status].label}
+      </StatusBadge>
+      {payment.status === "VOID" && payment.void_reason ? (
+        <span className="text-ink-2 mt-1 block max-w-[16rem] text-xs">
+          {payment.void_reason}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+function Amount({ payment, className }: { payment: PaymentResponse; className?: string }) {
+  // A voided amount stays legible but struck: it was recorded, and it no
+  // longer counts.
+  return (
+    <Figures
+      className={cn(
+        "whitespace-nowrap",
+        payment.status === "VOID" ? "text-ink-2 line-through" : "text-ink",
+        className,
+      )}
+    >
+      {formatVnd(payment.amount)}
+    </Figures>
+  );
+}
+
+function MethodLabel({ method }: { method: PaymentMethod }) {
+  return (
+    <span className="text-ink [&>svg]:text-ink-2 inline-flex items-center gap-1.5 whitespace-nowrap">
+      {METHOD[method].icon}
+      {METHOD[method].label}
+    </span>
+  );
+}
+
+/** The figure the footer totals: confirmed money among the rows on screen. */
+function TotalLine({
+  shown,
+  confirmedCount,
+  confirmedTotal,
+}: {
+  shown: number;
+  confirmedCount: number;
+  confirmedTotal: number;
+}) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <span className="text-ink-2 text-sm">
+        Tổng đã xác nhận trong danh sách đang hiển thị ·{" "}
+        <Figures className="text-ink">{formatNumber(confirmedCount)}</Figures> trên{" "}
+        <Figures className="text-ink">{formatNumber(shown)}</Figures> giao dịch
+      </span>
+      <Figures display className="text-ink text-2xl whitespace-nowrap">
+        {formatVnd(confirmedTotal)}
+      </Figures>
     </div>
   );
 }
 
 /**
- * Confirm and void, on one row.
- *
- * Void asks for a reason in its own dialog because it reverses a money record;
- * confirm does not, because it changes nothing about what happened — it records
- * that someone checked. Both are absent on a row that is already settled, rather
- * than present and disabled: a disabled control invites a second click.
- */
-function RowActions({ payment }: { payment: PaymentResponse }) {
-  const [voiding, setVoiding] = useState(false);
-  const [reason, setReason] = useState("");
-  const confirm = useConfirmPayment();
-  const voidPayment = useVoidPayment();
-  const tooShort = reason.trim().length < 6;
-
-  if (payment.status === "VOID") {
-    return payment.void_reason ? (
-      <span className="text-ink-2 block max-w-[16rem] text-xs">{payment.void_reason}</span>
-    ) : null;
-  }
-
-  return (
-    <span className="flex flex-col items-start gap-1 lg:gap-0.5">
-      {payment.status === "PENDING" ? (
-        <button
-          type="button"
-          disabled={confirm.isPending}
-          onClick={() => confirm.mutate(payment.id)}
-          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px] disabled:opacity-60"
-        >
-          Xác nhận
-        </button>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={() => setVoiding(true)}
-        className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px]"
-      >
-        Hủy phiếu
-      </button>
-
-      <Dialog
-        open={voiding}
-        onOpenChange={(next) => {
-          if (!next) {
-            voidPayment.reset();
-            setVoiding(false);
-          }
-        }}
-      >
-        <DialogContent
-          title="Hủy phiếu thu"
-          description={`${formatVnd(payment.amount)}. Phiếu vẫn nằm trong sổ, được đánh dấu đã hủy kèm lý do — số tiền này sẽ không còn vào doanh thu.`}
-        >
-          <div className="flex flex-col gap-4">
-            <Field label="Lý do hủy" required>
-              {({ id }) => (
-                <Textarea
-                  id={id}
-                  rows={3}
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                />
-              )}
-            </Field>
-
-            {voidPayment.error ? (
-              <p role="alert" className="text-danger text-sm">
-                {/* The usual refusal is a package that has already spent
-                    credits; the backend names how many, in words. */}
-                {errorMessage(voidPayment.error, "Chưa hủy được phiếu.")}
-              </p>
-            ) : null}
-
-            <FormActions>
-              <Button variant="secondary" size="sm" onClick={() => setVoiding(false)}>
-                Không hủy
-              </Button>
-              <Button
-                size="sm"
-                pending={voidPayment.isPending}
-                disabled={tooShort}
-                onClick={() => {
-                  voidPayment.mutate(
-                    { paymentId: payment.id, reason: reason.trim() },
-                    { onSuccess: () => setVoiding(false) },
-                  );
-                }}
-              >
-                Hủy phiếu này
-              </Button>
-            </FormActions>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </span>
-  );
-}
-
-interface RowsProps {
-  payments: PaymentResponse[];
-  packageNames: Map<number, string>;
-}
-
-/**
- * 1440 / 1024: the audit trail. The amount is the only right-aligned column, so
+ * 1024 and up: the audit trail. The amount is the only right-aligned column, so
  * the eye compares money down one edge and nothing else competes.
  */
-function PaymentTable({ payments, packageNames }: RowsProps) {
+function PaymentTable({
+  payments,
+  packageNames,
+  student,
+  confirmInline,
+  footer,
+}: RowsProps & { footer: ReactNode }) {
   return (
     <DataTable caption="Các khoản thanh toán đã ghi nhận, mới nhất trước" minWidth="60rem">
       <thead>
         <tr>
-          <Th>Ngày ghi</Th>
+          {student ? <Th>Học viên</Th> : null}
           <Th>Gói tập</Th>
-          <Th>Ghi chú</Th>
           <Th>Phương thức</Th>
-          <Th numeric>Số tiền</Th>
+          <Th>Ngày ghi</Th>
           <Th>Trạng thái</Th>
+          <Th numeric>Số tiền</Th>
+          <Th>
+            <span className="sr-only">Thao tác</span>
+          </Th>
         </tr>
       </thead>
       <tbody>
         {payments.map((payment) => (
-          <Tr key={payment.id}>
-            <Td className="align-top whitespace-nowrap">
+          <Tr
+            key={payment.id}
+            className={cn(payment.status === "PENDING" && "bg-warning-wash/30")}
+          >
+            {student ? (
+              <Td>
+                <StudentCell student={student} />
+              </Td>
+            ) : null}
+            <Td>
+              <span className="block">{packageLabel(payment, packageNames)}</span>
+              {payment.note ? (
+                <span className="text-ink-2 mt-0.5 block max-w-[22rem] text-xs">
+                  {payment.note}
+                </span>
+              ) : null}
+            </Td>
+            <Td>
+              <MethodLabel method={payment.method} />
+            </Td>
+            <Td className="whitespace-nowrap">
               <Figures>{formatDate(payment.recorded_at)}</Figures>
               <Figures className="text-ink-2 mt-0.5 block text-xs">
                 {formatTime(payment.recorded_at)}
               </Figures>
             </Td>
-            <Td className="align-top">
-              {packageNames.get(payment.student_package_id) ??
-                `Gói #${payment.student_package_id}`}
+            <Td>
+              <StatusCell payment={payment} />
             </Td>
-            <Td className="align-top">
-              <span className="block max-w-[22rem]">{payment.note ?? ""}</span>
+            <Td numeric>
+              <Amount payment={payment} className="text-lg" />
             </Td>
-            <Td className="text-ink-2 align-top">{METHOD[payment.method]}</Td>
-            <Td numeric className="align-top">
-              <Figures className="whitespace-nowrap">{formatVnd(payment.amount)}</Figures>
-            </Td>
-            {/* The action lives on the status it changes, rather than in a
-                column of its own that pushed the table past its space. */}
-            <Td className="align-top">
-              <StatusBadge tone={STATUS[payment.status].tone}>
-                {STATUS[payment.status].label}
-              </StatusBadge>
-              <span className="mt-1.5 block">
-                <RowActions payment={payment} />
-              </span>
+            <Td className="w-px">
+              <RowActions payment={payment} confirmInline={confirmInline} />
             </Td>
           </Tr>
         ))}
       </tbody>
+      <tfoot>
+        <tr>
+          <td colSpan={student ? 7 : 6} className="rule-t px-4 py-3.5">
+            {footer}
+          </td>
+        </tr>
+      </tfoot>
     </DataTable>
   );
 }
 
-/** Below lg the table becomes ruled rows: a studio phone gets the same facts. */
-function PaymentList({ payments, packageNames }: RowsProps) {
+/** Below 1024 the table becomes rows: a studio phone gets the same facts. */
+function PaymentList({ payments, packageNames, student, confirmInline }: RowsProps) {
   return (
-    <ul className="rule-t">
+    <ul className="divide-rule divide-y">
       {payments.map((payment) => (
-        <li key={payment.id} className="rule-b py-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
-            <span className="text-ink text-sm">
-              {packageNames.get(payment.student_package_id) ??
-                `Gói #${payment.student_package_id}`}
-            </span>
-            <StatusBadge tone={STATUS[payment.status].tone}>
-              {STATUS[payment.status].label}
-            </StatusBadge>
+        <li
+          key={payment.id}
+          className={cn(
+            "flex flex-col gap-2 px-4 py-4",
+            payment.status === "PENDING" && "bg-warning-wash/30",
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              {student ? <StudentCell student={student} /> : null}
+              <p className={cn("text-ink text-sm", student && "mt-2")}>
+                {packageLabel(payment, packageNames)}
+              </p>
+            </div>
+            <StatusCell payment={payment} />
           </div>
 
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
-            <Figures className="text-ink text-lg">{formatVnd(payment.amount)}</Figures>
-            <span className="text-ink-2 text-xs">{METHOD[payment.method]}</span>
+          <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <Amount payment={payment} className="text-xl" />
+            <span className="text-sm">
+              <MethodLabel method={payment.method} />
+            </span>
           </p>
 
-          {payment.note ? <p className="text-ink mt-1 text-sm">{payment.note}</p> : null}
+          {payment.note ? <p className="text-ink text-sm">{payment.note}</p> : null}
 
-          <p className="text-ink-2 mt-1.5 text-xs">
-            <Figures className="text-ink">{formatDate(payment.recorded_at)}</Figures>{" "}
-            <Figures className="text-ink">{formatTime(payment.recorded_at)}</Figures>
-          </p>
-
-          <p className="mt-2">
-            <RowActions payment={payment} />
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-ink-2 text-xs">
+              Ghi <Figures className="text-ink">{formatDate(payment.recorded_at)}</Figures>{" "}
+              <Figures className="text-ink">{formatTime(payment.recorded_at)}</Figures>
+            </p>
+            <RowActions payment={payment} confirmInline={confirmInline} />
+          </div>
         </li>
       ))}
     </ul>
-  );
-}
-
-/** A figure that is not known yet. The dash is decoration, so it is announced. */
-function Placeholder() {
-  return (
-    <>
-      <span aria-hidden="true" className="text-ink-2">
-        —
-      </span>
-      <span className="sr-only">đang tải</span>
-    </>
   );
 }

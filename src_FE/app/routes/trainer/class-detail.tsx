@@ -112,8 +112,8 @@ export default function TrainerClassDetail() {
                 <ul className="rule-t">
                   {entries.map((entry) => (
                     <li key={entry.id} className="rule-b py-3">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-                        <span className="text-ink min-w-0 flex-1 text-sm">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
+                        <span className="text-ink min-w-0 text-sm">
                           {entry.student_name}
                         </span>
                         <StatusBadge tone={STATUS[entry.status].tone}>

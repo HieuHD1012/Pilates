@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { CLASS_FORMATS } from "~/content/studio";
+import { useSearchParam } from "~/features/public/schedule-ui";
 import {
   EMPTY_LEAD,
   LEAD_CONTEXTS,
@@ -53,6 +54,9 @@ const FORMAT_CHOICES = [
  */
 export default function Consultation() {
   const context = useLeadContext();
+  const rawPackage = useSearchParam("goi");
+  const packageName =
+    context === "goi-tap" && rawPackage && rawPackage.length <= 120 ? rawPackage : null;
   const {
     register,
     handleSubmit,
@@ -63,7 +67,7 @@ export default function Consultation() {
     resolver: zodResolver(leadSchema),
     defaultValues: EMPTY_LEAD,
   });
-  const mutation = useLeadMutation({ context, setError });
+  const mutation = useLeadMutation({ context, packageName, setError });
   const submitted = mutation.isSuccess;
 
   return (
@@ -115,7 +119,7 @@ export default function Consultation() {
               />
 
               {submitted ? (
-                <div>
+                <div className="animate-[fade-in_200ms_var(--ease-measure)]">
                   <h2 className="font-display text-d3 text-ink font-light">
                     Đã nhận được thông tin của bạn.
                   </h2>
@@ -145,7 +149,7 @@ export default function Consultation() {
                 >
                   {context ? (
                     <p className="bg-copper-wash text-copper-2 self-start rounded-sm px-3 py-2 text-sm">
-                      Bạn đang hỏi về: {LEAD_CONTEXTS[context]}
+                      Bạn đang hỏi về: {packageName ?? LEAD_CONTEXTS[context]}
                     </p>
                   ) : null}
 
@@ -191,8 +195,8 @@ export default function Consultation() {
                   {/* Three answers, all visible: a select hid "Chưa chắc", which
                       is the most common and most useful answer for staff. */}
                   <fieldset>
-                    <legend className="text-ink text-xs font-medium">
-                      Hình thức quan tâm
+                    <legend className="text-ink text-sm font-medium">
+                      Hình thức quan tâm (không bắt buộc)
                     </legend>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {FORMAT_CHOICES.map((choice) => (
@@ -213,7 +217,7 @@ export default function Consultation() {
                   </fieldset>
 
                   <Field
-                    label="Bạn đang muốn cải thiện điều gì?"
+                    label="Bạn đang muốn cải thiện điều gì? (không bắt buộc)"
                     size="lg"
                     hint="Ví dụ: đau lưng dưới khi ngồi lâu, mới sinh, muốn tập lại sau chấn thương."
                     error={errors.need?.message}

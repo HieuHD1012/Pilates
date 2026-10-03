@@ -44,14 +44,12 @@ export default function Trainers() {
       <Section index="01" label="Đội ngũ">
         <div className="pb-20 md:pb-28">
           {query.isPending ? (
-            <ul className="rule-t">
-              {Array.from({ length: 3 }, (_, index) => (
-                <li key={index} className="rule-b flex items-center gap-6 py-6">
-                  <Skeleton className="size-16 shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-40" />
-                    <Skeleton className="h-3 w-64" />
-                  </div>
+            <ul className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 4 }, (_, index) => (
+                <li key={index}>
+                  <Skeleton className="aspect-4/5 w-full" />
+                  <Skeleton className="mt-4 h-5 w-32" />
+                  <Skeleton className="mt-2 h-3 w-full" />
                 </li>
               ))}
             </ul>
@@ -81,7 +79,10 @@ export default function Trainers() {
           ) : null}
 
           {query.isSuccess && query.data.length > 0 ? (
-            <ul className="rule-t">
+            /* A portrait card: face, name and words in one column, read top
+               to bottom. The old row put the name four columns away from the
+               face it belongs to. */
+            <ul className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {query.data.map((trainer) => (
                 /**
                  * `GET /public/trainers` returns a name, a photo key and a bio
@@ -89,36 +90,29 @@ export default function Trainers() {
                  * to sit here had nothing behind it: the field exists on the
                  * staff-facing trainer record and is deliberately not published.
                  */
-                <li
-                  key={trainer.full_name}
-                  className="rule-b grid gap-x-8 gap-y-4 py-7 md:grid-cols-12"
-                >
-                  <div className="md:col-span-3">
-                    <div className="aspect-4/5 w-28 md:w-full md:max-w-40">
-                      {trainer.photo_key ? (
-                        <img
-                          src={publicApi.trainerPhotoUrl(trainer.photo_key)}
-                          alt={`Chân dung ${trainer.full_name}`}
-                          loading="lazy"
-                          decoding="async"
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        // No concept photograph here: a stranger's face beside a
-                        // real name would read as that trainer (P3, identity is
-                        // absolute). The frame waits, quietly, for the portrait.
-                        <div className="border-rule bg-sand-deep size-full border" />
-                      )}
-                    </div>
+                <li key={trainer.full_name}>
+                  <div className="aspect-4/5 w-full">
+                    {trainer.photo_key ? (
+                      <img
+                        src={publicApi.trainerPhotoUrl(trainer.photo_key)}
+                        alt={`Chân dung ${trainer.full_name}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      // No concept photograph here: a stranger's face beside a
+                      // real name would read as that trainer (P3, identity is
+                      // absolute). The frame waits, quietly, for the portrait.
+                      <div className="border-rule bg-sand-deep size-full border" />
+                    )}
                   </div>
-                  <div className="md:col-span-8 md:col-start-5">
-                    <h2 className="font-display text-ink text-xl font-light">
-                      {trainer.full_name}
-                    </h2>
-                    {trainer.bio ? (
-                      <p className="measure text-ink-2 mt-2 text-sm">{trainer.bio}</p>
-                    ) : null}
-                  </div>
+                  <h2 className="font-display text-ink mt-4 text-2xl font-light">
+                    {trainer.full_name}
+                  </h2>
+                  {trainer.bio ? (
+                    <p className="text-ink-2 mt-1.5 text-base">{trainer.bio}</p>
+                  ) : null}
                 </li>
               ))}
             </ul>

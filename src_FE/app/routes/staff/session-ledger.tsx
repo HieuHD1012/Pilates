@@ -1,4 +1,13 @@
-import { useState } from "react";
+import {
+  ArrowRight,
+  Ban,
+  CalendarCheck,
+  Package,
+  PencilLine,
+  RefreshCw,
+  Undo2,
+} from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router";
 
 import {
@@ -12,8 +21,18 @@ import type {
   LedgerEntryResponse,
   LedgerReasonCode,
   PackageLedgerResponse,
+  StudentPackageResponse,
+  StudentPackageStatus,
 } from "~/lib/api/schema";
-import { formatDate, formatNumber, formatSigned, formatTime } from "~/lib/format";
+import { cn } from "~/lib/cn";
+import {
+  formatDate,
+  formatNumber,
+  formatPhone,
+  formatSigned,
+  formatTime,
+} from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { Dialog, DialogContent } from "~/ui/dialog";
@@ -22,6 +41,16 @@ import { EmptyState, LiveRegion } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
+import { StatusBadge, type StatusTone } from "~/ui/status";
+import {
+  Meter,
+  Panel,
+  PanelBody,
+  PanelFooter,
+  PanelHeader,
+  PersonCell,
+  WorkspacePage,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/session-ledger";
 
@@ -53,12 +82,73 @@ const REASON_LABEL: Record<LedgerReasonCode, string> = {
   PAYMENT_VOID: "Hủy thanh toán",
 };
 
+/**
+ * The kind of entry, as a tinted tag. The tint only groups the kinds (money in,
+ * a class, a correction); the word is the information. A manual adjustment is
+ * warning-toned rather than copper because the legend sets it beside the
+ * danger-toned voided payment, and copper never shares a context with danger.
+ */
+const REASON_STYLE: Record<LedgerReasonCode, { className: string; icon: ReactNode }> = {
+  PACKAGE_SOLD: {
+    className: "bg-success-wash text-success",
+    icon: <Package aria-hidden="true" />,
+  },
+  PACKAGE_RENEWED: {
+    className: "bg-success-wash text-success",
+    icon: <RefreshCw aria-hidden="true" />,
+  },
+  BOOKING_DEDUCT: {
+    className: "bg-sand-deep text-ink-2",
+    icon: <CalendarCheck aria-hidden="true" />,
+  },
+  CANCEL_REFUND: {
+    className: "bg-info-wash text-info",
+    icon: <Undo2 aria-hidden="true" />,
+  },
+  ADMIN_ADJUST: {
+    className: "bg-warning-wash text-warning",
+    icon: <PencilLine aria-hidden="true" />,
+  },
+  PAYMENT_VOID: {
+    className: "bg-danger-wash text-danger",
+    icon: <Ban aria-hidden="true" />,
+  },
+};
+
+/**
+ * What each kind of entry does to the balance, in the order a package lives
+ * through them. Written as what the entry records, not as the rule that
+ * produced it — whether a cancellation is refunded is the backend's decision.
+ */
+const REASON_MEANING: [LedgerReasonCode, string][] = [
+  ["PACKAGE_SOLD", "cộng số buổi của gói"],
+  ["PACKAGE_RENEWED", "ghi lần gia hạn của gói"],
+  ["BOOKING_DEDUCT", "trừ buổi khi đặt lớp"],
+  ["CANCEL_REFUND", "hoàn lại buổi đã trừ"],
+  ["ADMIN_ADJUST", "cộng hoặc trừ, luôn kèm lý do"],
+  ["PAYMENT_VOID", "thu hồi buổi của phiếu bị hủy"],
+];
+
+const PACKAGE_STATUS: Record<StudentPackageStatus, { label: string; tone: StatusTone }> = {
+  ACTIVE: { label: "Đang dùng", tone: "positive" },
+  EXPIRED: { label: "Hết hạn", tone: "critical" },
+  CANCELLED: { label: "Đã hủy", tone: "neutral" },
+};
+
 /** Oldest first, so the balance column reads downward like a paper ledger. */
 function chronological(entries: LedgerEntryResponse[]): LedgerEntryResponse[] {
   return [...entries].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
 }
+
+/** A date-only calendar date, as the studio's own start of that day. */
+function dateKeyToIso(dateKey: string): string {
+  return `${dateKey}T00:00:00+07:00`;
+}
+
+const PAGE_DESCRIPTION =
+  "Mỗi gói tập có một sổ riêng. Mọi lần cộng hoặc trừ buổi đều ghi một dòng, kèm lý do và người thực hiện. Số dư luôn bằng tổng các dòng.";
 
 export default function StaffSessionLedger() {
   const [searchParams] = useSearchParams();
@@ -72,25 +162,14 @@ export default function StaffSessionLedger() {
    * A ledger belongs to a package, so there is no such thing as "the" ledger.
    * This screen used to default to one hard-coded package id, which meant the nav
    * item opened one arbitrary student's sessions and looked authoritative doing it.
+   * Without a package it says how to reach one, rather than opening empty.
    */
   if (!studentPackageId) {
     return (
-      <div className="gutter py-6">
-        <PageHeader
-          title="Sổ buổi"
-          description="Mỗi gói tập có một sổ buổi riêng. Chọn gói để mở sổ của gói đó."
-        />
-        <EmptyState
-          className="mt-4"
-          title="Chưa chọn gói nào"
-          description="Sổ buổi mở theo từng gói tập, không phải theo toàn studio. Vào hồ sơ học viên, tab Gói & thanh toán, rồi mở sổ của gói cần xem."
-          action={
-            <Button asChild variant="secondary">
-              <Link to="/studio/hoc-vien">Danh sách học viên</Link>
-            </Button>
-          }
-        />
-      </div>
+      <WorkspacePage>
+        <PageHeader title="Sổ buổi" description={PAGE_DESCRIPTION} />
+        <NoPackageChosen />
+      </WorkspacePage>
     );
   }
 
@@ -99,6 +178,54 @@ export default function StaffSessionLedger() {
       studentPackageId={Number(studentPackageId)}
       studentId={studentId === null ? null : Number(studentId)}
     />
+  );
+}
+
+/**
+ * The nav item lands here. There is no endpoint that lists every package in the
+ * studio, so the screen cannot offer a picker; it gives the route to a package
+ * instead, and the one link that starts it.
+ */
+function NoPackageChosen() {
+  return (
+    <div className="grid gap-5 md:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+      <Panel>
+        <PanelHeader
+          title="Chưa chọn gói nào"
+          description="Sổ buổi mở theo từng gói tập, không phải theo toàn studio."
+        />
+        <PanelBody>
+          <ol className="flex flex-col gap-3">
+            {[
+              "Mở danh sách học viên và chọn người cần xem.",
+              "Trong hồ sơ, chuyển sang tab “Gói & thanh toán”.",
+              "Bấm “Sổ buổi” ở gói cần đối chiếu.",
+            ].map((step, index) => (
+              <li key={step} className="flex items-start gap-3 text-sm">
+                <span
+                  aria-hidden="true"
+                  className="bg-sand-deep text-copper-2 figures grid size-7 shrink-0 place-items-center rounded-full text-xs"
+                >
+                  {index + 1}
+                </span>
+                <span className="text-ink pt-1">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </PanelBody>
+        <PanelFooter>
+          <span>Sổ mở ra sẽ ghi tên học viên và gói ở đầu trang.</span>
+          <Button asChild variant="secondary" size="sm" className="max-md:min-h-11">
+            <Link to="/studio/hoc-vien">
+              Danh sách học viên
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        </PanelFooter>
+      </Panel>
+
+      <ReasonLegend />
+    </div>
   );
 }
 
@@ -112,18 +239,22 @@ function LedgerScreen({
   const query = usePackageLedger(studentPackageId);
 
   return (
-    <div className="gutter py-6">
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        showErrorDetail
-        errorDescription="Không tải được sổ buổi của gói này. Mã gói có thể không còn đúng."
-        emptyTitle="Không tìm thấy gói này"
-        emptyDescription="Mở sổ buổi từ hồ sơ học viên để chắc chắn đúng gói."
-      >
-        {(ledger) => <LedgerBody ledger={ledger} studentId={studentId} />}
-      </QueryBoundary>
-    </div>
+    <WorkspacePage>
+      {/* One block, so the boundary's refresh hairline sits on the content
+          rather than taking a gap of the page's own. */}
+      <div>
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          showErrorDetail
+          errorDescription="Không tải được sổ buổi của gói này. Mã gói có thể không còn đúng."
+          emptyTitle="Không tìm thấy gói này"
+          emptyDescription="Mở sổ buổi từ hồ sơ học viên để chắc chắn đúng gói."
+        >
+          {(ledger) => <LedgerBody ledger={ledger} studentId={studentId} />}
+        </QueryBoundary>
+      </div>
+    </WorkspacePage>
   );
 }
 
@@ -156,82 +287,124 @@ function LedgerBody({
    * so rather than quietly showing whichever number it happened to render.
    */
   const reconciles = summed === ledger.closing_balance;
+  const studentName = student.data?.full_name ?? `Học viên #${studentId}`;
 
   return (
-    <>
+    <div className="flex flex-col gap-5 md:gap-6">
       <PageHeader
         title="Sổ buổi"
-        description="Toàn bộ lần cộng và trừ buổi của một gói, cũ nhất trước. Số dư của gói luôn bằng tổng các thay đổi trong sổ này."
+        description={PAGE_DESCRIPTION}
         actions={
-          <Button size="sm" variant="secondary" onClick={() => setAdjusting(true)}>
+          <Button
+            variant="secondary"
+            className="max-md:min-h-11"
+            icon={<PencilLine className="size-4" aria-hidden="true" />}
+            onClick={() => setAdjusting(true)}
+          >
             Điều chỉnh buổi
           </Button>
         }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            {studentId !== null ? (
-              <div className="flex items-baseline gap-2">
-                <dt>Học viên</dt>
-                <dd>
-                  <Link
-                    to={`/studio/hoc-vien/${studentId}`}
-                    className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
-                  >
-                    {student.data?.full_name ?? `Học viên #${studentId}`}
-                  </Link>
-                </dd>
-              </div>
-            ) : null}
-            <div className="flex items-baseline gap-2">
-              <dt>Gói</dt>
-              <dd className="text-ink">{packageName}</dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Số bút toán</dt>
-              <dd>
-                <Figures className="text-ink">
-                  {formatNumber(ledger.entries.length)}
-                </Figures>
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Số dư</dt>
-              <dd>
-                <Figures className="text-ink">
-                  {formatNumber(ledger.closing_balance)}
-                </Figures>
-                <span className="ml-1">buổi</span>
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
+      {/* Whose ledger this is, before any number. The canvas drew two pickers
+          here; with no endpoint that lists packages studio-wide, the screen
+          names the student and package it was opened for instead. */}
+      <Panel aria-label="Gói đang xem">
+        <dl className="grid gap-x-8 gap-y-4 px-4 py-4 md:grid-cols-2 md:px-5">
+          {studentId !== null ? (
+            <div className="min-w-0">
+              <dt className="text-ink text-sm font-medium">Học viên</dt>
+              <dd className="mt-2">
+                <PersonCell
+                  avatarName={student.data?.full_name}
+                  name={
+                    <Link
+                      to={`/studio/hoc-vien/${studentId}`}
+                      className="decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
+                    >
+                      {studentName}
+                    </Link>
+                  }
+                  detail={
+                    student.data ? (
+                      <Figures>{formatPhone(student.data.phone)}</Figures>
+                    ) : undefined
+                  }
+                />
+              </dd>
+            </div>
+          ) : null}
+          <div className="min-w-0">
+            <dt className="text-ink text-sm font-medium">Gói</dt>
+            <dd className="mt-2 flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-ink text-sm font-medium">{packageName}</span>
+              {thisPackage ? (
+                <>
+                  <span className="text-ink-2 text-xs">
+                    <Figures>{formatDate(dateKeyToIso(thisPackage.start_date))}</Figures>
+                    <span className="mx-1">–</span>
+                    <Figures>{formatDate(dateKeyToIso(thisPackage.end_date))}</Figures>
+                  </span>
+                  <StatusBadge tone={PACKAGE_STATUS[thisPackage.status].tone}>
+                    {PACKAGE_STATUS[thisPackage.status].label}
+                  </StatusBadge>
+                </>
+              ) : null}
+            </dd>
+          </div>
+        </dl>
+      </Panel>
+
       {reconciles ? null : (
-        <p role="alert" className="rule-t border-t-danger/40 text-danger mt-4 pt-3 text-sm">
+        <p
+          role="alert"
+          className="border-danger/40 bg-danger-wash text-danger rounded-lg border px-4 py-3 text-sm"
+        >
           Số dư của gói ({formatNumber(ledger.closing_balance)}) không bằng tổng các bút
           toán ({formatNumber(summed)}). Đừng điều chỉnh thêm trước khi đối chiếu lại — một
           trong hai con số đang sai.
         </p>
       )}
 
-      <DemoDataNotice className="mt-3 mb-3" />
+      <div className="grid gap-5 md:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        <Panel>
+          <PanelHeader
+            title="Các thay đổi của gói"
+            description={
+              <>
+                Cũ nhất trước · <Figures>{formatNumber(ledger.entries.length)}</Figures>{" "}
+                dòng
+              </>
+            }
+            actions={<DemoDataNotice />}
+          />
+          {ledger.entries.length === 0 ? (
+            <EmptyState
+              className="px-4 py-8 md:px-5"
+              title="Sổ buổi của gói này chưa có bút toán nào"
+              description="Mỗi lần mua gói, đặt lớp, hủy lớp hoặc điều chỉnh buổi đều tạo một bút toán ở đây, kèm lý do và người thực hiện."
+            />
+          ) : (
+            <>
+              <div className="hidden md:block">
+                <LedgerTable entries={lines} balance={ledger.closing_balance} />
+              </div>
+              <div className="md:hidden">
+                <LedgerList entries={lines} balance={ledger.closing_balance} />
+              </div>
+            </>
+          )}
+        </Panel>
 
-      {ledger.entries.length === 0 ? (
-        <EmptyState
-          title="Sổ buổi của gói này chưa có bút toán nào"
-          description="Mỗi lần mua gói, đặt lớp, hủy lớp hoặc điều chỉnh buổi đều tạo một bút toán ở đây, kèm lý do và người thực hiện."
-        />
-      ) : (
-        <>
-          <div className="hidden lg:block">
-            <LedgerTable entries={lines} balance={ledger.closing_balance} />
-          </div>
-          <div className="lg:hidden">
-            <LedgerList entries={lines} balance={ledger.closing_balance} />
-          </div>
-        </>
-      )}
+        <div className="flex flex-col gap-5 md:gap-6">
+          <BalancePanel
+            balance={ledger.closing_balance}
+            thisPackage={thisPackage}
+            studentId={studentId}
+          />
+          <ReasonLegend />
+        </div>
+      </div>
 
       <LiveRegion message={saved} />
 
@@ -264,14 +437,144 @@ function LedgerBody({
           />
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
 
 /**
- * 1440 / 1024. Two right-aligned numeric columns sit side by side on purpose:
- * the change and the balance it produces. Reading them as a pair is the
- * verification this screen is for.
+ * The balance as the panel's one figure. "Trên N" and the meter need the
+ * package's own session count, so they appear only once the package is known
+ * (the link from the student profile carries it); the expiry is the package's
+ * stored date, not a countdown this screen works out.
+ */
+function BalancePanel({
+  balance,
+  thisPackage,
+  studentId,
+}: {
+  balance: number;
+  thisPackage: StudentPackageResponse | undefined;
+  studentId: number | null;
+}) {
+  return (
+    <Panel>
+      <PanelHeader title="Số dư gói" />
+      <PanelBody>
+        <p className="flex items-baseline gap-2.5">
+          {/* The size sits on its own span: tailwind-merge reads `text-d2` as a
+              colour and would drop one of the two inside <Figures>. */}
+          <span className="text-d2 leading-none">
+            <Figures display className="text-ink">
+              {formatNumber(balance)}
+            </Figures>
+          </span>
+          <span className="text-ink-2 text-sm">
+            buổi còn lại
+            {thisPackage ? (
+              <>
+                {" "}
+                trên <Figures>{formatNumber(thisPackage.credits_snapshot)}</Figures>
+              </>
+            ) : null}
+          </span>
+        </p>
+        {thisPackage ? (
+          <>
+            <Meter value={balance} max={thisPackage.credits_snapshot} className="mt-3" />
+            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              <div>
+                <dt className="text-ink-2 text-xs">Bắt đầu</dt>
+                <dd className="mt-0.5">
+                  <Figures className="text-ink">
+                    {formatDate(dateKeyToIso(thisPackage.start_date))}
+                  </Figures>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-ink-2 text-xs">Hạn dùng</dt>
+                <dd className="mt-0.5">
+                  <Figures className="text-ink">
+                    {formatDate(dateKeyToIso(thisPackage.end_date))}
+                  </Figures>
+                </dd>
+              </div>
+            </dl>
+          </>
+        ) : null}
+      </PanelBody>
+      {studentId !== null ? (
+        <PanelFooter>
+          <Link
+            to={`/studio/hoc-vien/${studentId}`}
+            className="text-copper hover:text-copper-2 inline-flex min-h-11 items-center gap-1.5 md:min-h-0"
+          >
+            Mở hồ sơ học viên
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </PanelFooter>
+      ) : null}
+    </Panel>
+  );
+}
+
+function ReasonTag({ reason }: { reason: LedgerReasonCode }) {
+  const style = REASON_STYLE[reason];
+  return (
+    <span
+      className={cn(
+        "inline-flex min-h-6 items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        "[&>svg]:size-3.5 [&>svg]:shrink-0",
+        style.className,
+      )}
+    >
+      {style.icon}
+      {REASON_LABEL[reason]}
+    </span>
+  );
+}
+
+function ReasonLegend() {
+  return (
+    <Panel>
+      <PanelHeader title="Các loại thay đổi" />
+      <PanelBody>
+        <dl className="flex flex-col gap-3">
+          {REASON_MEANING.map(([reason, meaning]) => (
+            <div
+              key={reason}
+              className="grid grid-cols-[8.75rem_minmax(0,1fr)] items-center gap-3"
+            >
+              <dt>
+                <ReasonTag reason={reason} />
+              </dt>
+              <dd className="text-ink-2 text-sm">{meaning}</dd>
+            </div>
+          ))}
+        </dl>
+      </PanelBody>
+    </Panel>
+  );
+}
+
+/** A signed change. Credit in the success ink; a deduction stays secondary. */
+function Delta({ value, className }: { value: number; className?: string }) {
+  return (
+    <Figures
+      className={cn(
+        "whitespace-nowrap",
+        value > 0 ? "text-success" : "text-ink-2",
+        className,
+      )}
+    >
+      {formatSigned(value)}
+    </Figures>
+  );
+}
+
+/**
+ * md and up. Two right-aligned numeric columns sit side by side at the row's
+ * edge on purpose: the change and the balance it produces. Reading them as a
+ * pair is the verification this screen is for.
  */
 function LedgerTable({
   entries,
@@ -281,67 +584,78 @@ function LedgerTable({
   balance: number;
 }) {
   return (
-    <DataTable caption="Sổ buổi của gói, cũ nhất trước" minWidth="58rem">
+    <DataTable caption="Sổ buổi của gói, cũ nhất trước" minWidth="42rem">
       <thead>
         <tr>
           <Th>Thời điểm</Th>
-          <Th>Lý do</Th>
           <Th>Loại</Th>
+          <Th>Lý do</Th>
+          <Th>Người thực hiện</Th>
           <Th numeric>Thay đổi</Th>
           <Th numeric>Số dư</Th>
-          <Th>Người thực hiện</Th>
         </tr>
       </thead>
       <tbody>
         {entries.map((entry) => (
           <Tr key={entry.id}>
-            <Td className="align-top whitespace-nowrap">
+            <Td className="whitespace-nowrap">
               <Figures>{formatDate(entry.created_at)}</Figures>
               <Figures className="text-ink-2 mt-0.5 block text-xs">
                 {formatTime(entry.created_at)}
               </Figures>
             </Td>
-            <Td className="align-top">
-              <span className="block max-w-[24rem]">
-                {entry.note ?? REASON_LABEL[entry.reason_code]}
+            <Td>
+              <ReasonTag reason={entry.reason_code} />
+            </Td>
+            <Td className="text-ink-2">
+              {/* The kind has its own column; repeating it here when there is
+                  no note would read as a reason someone wrote. */}
+              <span className="block max-w-[22rem]">
+                {entry.note ?? <Absent>Không ghi chú</Absent>}
               </span>
             </Td>
-            <Td className="text-ink-2 align-top">{REASON_LABEL[entry.reason_code]}</Td>
-            <Td numeric className="align-top">
-              <Figures className="whitespace-nowrap">{formatSigned(entry.delta)}</Figures>
+            <Td className="text-ink-2 whitespace-nowrap">
+              Tài khoản #{entry.actor_user_id}
             </Td>
-            <Td numeric className="align-top">
-              <Figures>{formatNumber(entry.balance_after)}</Figures>
+            <Td numeric>
+              <Delta value={entry.delta} className="text-base" />
             </Td>
-            <Td className="text-ink-2 align-top">Tài khoản #{entry.actor_user_id}</Td>
+            <Td numeric>
+              <Figures className="text-ink text-base">
+                {formatNumber(entry.balance_after)}
+              </Figures>
+            </Td>
           </Tr>
         ))}
       </tbody>
       {/* The total row closes the ledger. It carries the same figure twice —
           sum of the changes, and the balance — because that identity is the
-          point of the screen. The hairline above it is the last row's rule. */}
+          point of the screen. Its own rule sits above it (the last body row
+          drops its rule), and the panel's edge closes it below. */}
       <tfoot>
-        <Tr>
-          <Td colSpan={3} className="text-ink-2 text-xs">
-            Số dư bằng tổng các thay đổi
+        <tr className="bg-sand">
+          <Td colSpan={4} className="rule-t border-b-0!">
+            <span className="text-ink font-medium">Số dư hiện tại</span>{" "}
+            <span className="text-ink-2">= tổng các thay đổi</span>
           </Td>
-          <Td numeric>
-            <Figures className="text-ink font-medium whitespace-nowrap">
+          <Td numeric className="rule-t border-b-0!">
+            <Figures className="text-ink text-base whitespace-nowrap">
               {formatSigned(balance)}
             </Figures>
           </Td>
-          <Td numeric>
-            <Figures className="text-ink font-medium">{formatNumber(balance)}</Figures>
+          <Td numeric className="rule-t border-b-0!">
+            <Figures className="text-ink text-2xl leading-none">
+              {formatNumber(balance)}
+            </Figures>
           </Td>
-          <Td />
-        </Tr>
+        </tr>
       </tfoot>
     </DataTable>
   );
 }
 
 /**
- * Below lg the ledger becomes ruled rows, each carrying its own resulting
+ * Below md the ledger becomes ruled rows, each carrying its own resulting
  * balance, and closes with the same total the table's foot shows.
  */
 function LedgerList({
@@ -353,16 +667,17 @@ function LedgerList({
 }) {
   return (
     <>
-      <ul className="rule-t">
+      <ul>
         {entries.map((entry) => (
-          <li key={entry.id} className="rule-b py-3.5">
-            <div className="flex items-baseline justify-between gap-x-4">
-              <span className="text-ink text-sm">
-                {entry.note ?? REASON_LABEL[entry.reason_code]}
-              </span>
-              <Figures className="text-ink shrink-0 text-sm">
-                {formatSigned(entry.delta)}
-              </Figures>
+          <li key={entry.id} className="rule-b px-4 py-3.5">
+            <div className="flex items-start justify-between gap-x-4">
+              <div className="min-w-0">
+                <ReasonTag reason={entry.reason_code} />
+                {entry.note ? (
+                  <p className="text-ink mt-1.5 text-sm">{entry.note}</p>
+                ) : null}
+              </div>
+              <Delta value={entry.delta} className="shrink-0 text-lg" />
             </div>
 
             <p className="text-ink-2 mt-1.5 text-xs">
@@ -371,7 +686,7 @@ function LedgerList({
               <span className="mx-1.5" aria-hidden="true">
                 ·
               </span>
-              {REASON_LABEL[entry.reason_code]}
+              Tài khoản #{entry.actor_user_id}
             </p>
 
             <p className="text-ink-2 mt-1 text-xs">
@@ -383,10 +698,13 @@ function LedgerList({
         ))}
       </ul>
 
-      <div className="rule-t flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 pt-3">
-        <span className="text-ink-2 text-xs">Số dư bằng tổng các thay đổi</span>
+      <div className="bg-sand flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 rounded-b-lg px-4 py-3">
+        <span className="text-sm">
+          <span className="text-ink font-medium">Số dư hiện tại</span>{" "}
+          <span className="text-ink-2">= tổng các thay đổi</span>
+        </span>
         <span className="text-ink text-sm">
-          <Figures className="font-medium">{formatNumber(balance)}</Figures> buổi
+          <Figures className="text-2xl leading-none">{formatNumber(balance)}</Figures> buổi
         </span>
       </div>
     </>

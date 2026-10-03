@@ -85,12 +85,12 @@
     "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Newsreader Variable", "Newsreader", Georgia, "Times New Roman", serif;
 
-  --text-2xs: 0.6875rem;
+  --text-2xs: 0.75rem;
   --text-2xs--line-height: 1.45;
-  --text-2xs--letter-spacing: 0.06em;
-  --text-xs: 0.75rem;
+  --text-2xs--letter-spacing: 0.02em;
+  --text-xs: 0.8125rem;
   --text-xs--line-height: 1.5;
-  --text-sm: 0.8125rem;
+  --text-sm: 0.875rem;
   --text-sm--line-height: 1.55;
   --text-base: 0.9375rem;
   --text-base--line-height: 1.62;
@@ -134,6 +134,8 @@
   --radius-xs: 2px;
   --radius-sm: 3px;
   --radius-md: 5px;
+  /* Operational panels only (docs/adr/0006-operational-workspace.md). */
+  --radius-lg: 8px;
   --radius-full: 9999px;
 
   /* ── Elevation ──────────────────────────────────────────────────────────
@@ -157,6 +159,10 @@
      One curve. Things settle; nothing overshoots. */
   --ease-measure: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-exit: cubic-bezier(0.5, 0, 0.9, 0.4);
+  /* Scroll reveals only. --ease-measure spends 70% of its travel in the first
+     quarter, which over a long decorative reveal reads as a pop, not a draw.
+     This one starts slowly, moves evenly, and settles. */
+  --ease-draw: cubic-bezier(0.45, 0.05, 0.25, 1);
   /* Tailwind's stock `animate-pulse` ships its own cubic-bezier, which is how a
      second curve entered a system documenting one. This is the skeleton's
      animation, on our curve. Use `animate-skeleton`, never `animate-pulse`. */
@@ -463,6 +469,75 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* Content that replaces content in place: a new day's classes, a form's
+   thank-you. Opacity only — the thing did not move, it changed. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A bar arriving at the bottom edge of a phone. It moves because it is new
+   and the eye has to be told where it came from. */
+@keyframes rise-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCROLL REVEALS — narrative pages, desktop, secondary elements only.
+   Armed by app/features/public/motion.tsx, which sets <html data-motion> only
+   after marking what is already on screen. Without that attribute every
+   [data-reveal] element is simply visible. The decision table is
+   docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CHUYEN_DONG.md.
+   ══════════════════════════════════════════════════════════════════════════ */
+html[data-motion] {
+  --reveal-rule: 900ms;
+  --reveal-image: 800ms;
+}
+
+/* Transitions live on the revealed state only: going into hiding is
+   instant, so nothing is caught half-hidden if the reader scrolls fast.
+   The hairline draws in copper-bright, so the eye can follow the stroke, then
+   settles to its own rule colour once the draw is complete. */
+html[data-motion] [data-reveal="rule"] {
+  transform-origin: left;
+}
+html[data-motion] [data-reveal="rule"][data-revealed] {
+  transition:
+    transform var(--reveal-rule) var(--ease-draw),
+    background-color 600ms var(--ease-measure) var(--reveal-rule);
+}
+html[data-motion] [data-reveal="rule"]:not([data-revealed]) {
+  transform: scaleX(0);
+  background-color: var(--color-copper-bright);
+}
+
+/* The frame stays put; the photograph fades in and settles from 104% to 100%
+   inside it. No slide, no bounce. */
+html[data-motion] [data-reveal="image"] {
+  overflow: hidden;
+}
+html[data-motion] [data-reveal="image"][data-revealed] {
+  transition: opacity var(--reveal-image) var(--ease-draw);
+}
+html[data-motion] [data-reveal="image"][data-revealed] > * {
+  transition: transform var(--reveal-image) var(--ease-draw);
+}
+html[data-motion] [data-reveal="image"]:not([data-revealed]) {
+  opacity: 0;
+}
+html[data-motion] [data-reveal="image"]:not([data-revealed]) > * {
+  transform: scale(1.04);
 }
 
 /** Accessible visually-hidden text. */

@@ -62,7 +62,7 @@ export function EmptyState({
      * layout the rest of the app never uses — it reads as a different product.
      * An empty state is a row that happens to have no rows in it.
      */
-    <div className={cn("rule-t py-10", className)}>
+    <div className={cn("py-10", className)}>
       <p className="text-ink text-base">{title}</p>
       <p className="measure text-ink-2 mt-1.5 text-sm">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}

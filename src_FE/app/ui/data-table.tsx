@@ -23,7 +23,15 @@ export function DataTable({
   className?: string;
 }) {
   return (
-    <div className={cn("rule-t overflow-x-auto", className)}>
+    <div
+      className={cn("overflow-x-auto", className)}
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
+    >
+      <p className="text-ink-2 px-4 py-2 text-xs lg:hidden">
+        Vuốt ngang để xem các cột còn lại.
+      </p>
       <table className="w-full border-collapse text-left" style={{ minWidth }}>
         <caption className="sr-only">{caption}</caption>
         {children}
@@ -42,8 +50,8 @@ export function Th({
     <th
       scope="col"
       className={cn(
-        "rule-b text-ink-2 bg-chalk text-2xs sticky top-0 py-2 pr-4 font-medium whitespace-nowrap",
-        numeric && "pr-3 text-right",
+        "rule-b text-ink-2 bg-chalk sticky top-0 px-4 py-2.5 text-xs font-medium whitespace-nowrap",
+        numeric && "text-right",
         className,
       )}
       {...props}
@@ -62,8 +70,8 @@ export function Td({
   return (
     <td
       className={cn(
-        "rule-b text-ink py-2.5 pr-4 align-baseline text-sm",
-        numeric && "pr-3 text-right",
+        "rule-b text-ink px-4 py-3 align-middle text-sm",
+        numeric && "text-right",
         className,
       )}
       {...props}
@@ -82,7 +90,8 @@ export function Tr({
   return (
     <tr
       className={cn(
-        props.onClick && "hover:bg-sand-deep/50 active:bg-sand-deep cursor-pointer",
+        "[&:last-child>td]:border-b-0",
+        props.onClick && "hover:bg-sand/70 active:bg-sand-deep cursor-pointer",
         className,
       )}
       {...props}

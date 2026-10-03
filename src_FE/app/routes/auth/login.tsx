@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
@@ -63,12 +65,15 @@ export default function Login() {
   // 429 is its own answer: the credentials may well be right, and telling
   // someone to check them while the lockout is what stopped them is a lie.
   const isRateLimited = mutation.error instanceof ApiError && mutation.error.isRateLimited;
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div>
-      <h1 className="font-display text-d2 text-ink font-light">Đăng nhập</h1>
-      <p className="text-ink-2 mt-3 text-sm">
-        Dành cho học viên, huấn luyện viên và nhân viên studio. Tài khoản do studio cấp.
+      <h1 className="font-display text-ink text-[1.875rem] leading-tight font-normal md:text-4xl">
+        Đăng nhập
+      </h1>
+      <p className="text-ink-2 mt-2 text-base">
+        Chào mừng trở lại. Dùng email studio đã cấp cho bạn.
       </p>
 
       <form
@@ -78,30 +83,69 @@ export default function Login() {
       >
         <Field label="Email" required size="lg" error={errors.email?.message}>
           {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="email"
-              className="h-12 text-base"
-              autoComplete="username"
-              inputMode="email"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("email")}
-            />
+            <span className="relative block">
+              <Mail
+                aria-hidden="true"
+                className="text-ink-2 pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
+              />
+              <Input
+                id={id}
+                type="email"
+                className="h-12 pl-10 text-base"
+                autoComplete="username"
+                inputMode="email"
+                placeholder="ten@email.com"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("email")}
+              />
+            </span>
           )}
         </Field>
 
-        <Field label="Mật khẩu" required size="lg" error={errors.password?.message}>
+        <Field
+          label="Mật khẩu"
+          required
+          size="lg"
+          error={errors.password?.message}
+          labelAside={
+            <Link
+              to="/quen-mat-khau"
+              className="text-copper hover:text-copper-2 text-sm font-medium"
+            >
+              Quên mật khẩu?
+            </Link>
+          }
+        >
           {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="password"
-              className="h-12 text-base"
-              autoComplete="current-password"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("password")}
-            />
+            <span className="relative block">
+              <LockKeyhole
+                aria-hidden="true"
+                className="text-ink-2 pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
+              />
+              <Input
+                id={id}
+                type={showPassword ? "text" : "password"}
+                className="h-12 pr-12 pl-10 text-base"
+                autoComplete="current-password"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((shown) => !shown)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-pressed={showPassword}
+                className="text-ink-2 hover:text-ink hover:bg-sand absolute top-1/2 right-1 grid size-10 -translate-y-1/2 place-items-center rounded-sm"
+              >
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" className="size-4" />
+                ) : (
+                  <Eye aria-hidden="true" className="size-4" />
+                )}
+              </button>
+            </span>
           )}
         </Field>
 
@@ -120,31 +164,28 @@ export default function Login() {
         </Button>
       </form>
 
-      <p className="text-ink-2 mt-6 text-sm">
-        <Link
-          to="/quen-mat-khau"
-          className="decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
-        >
-          Quên mật khẩu?
-        </Link>
-      </p>
-
       {/* The dead end the audit found: a newcomer arrives here from the public
           timetable, but accounts are created by the studio after a package is
           sold. Say so, and point at the one door that works. */}
-      <div className="bg-sand-deep mt-10 rounded-sm px-5 py-4">
-        <p className="text-ink text-sm font-medium">Chưa có tài khoản?</p>
-        <p className="text-ink-2 mt-1 text-sm">
-          Tài khoản do studio tạo khi bạn bắt đầu gói tập. Để lại số điện thoại để được tư
-          vấn trước.
+      <div className="mt-9">
+        <p className="text-ink-2 before:bg-rule-2 after:bg-rule-2 flex items-center gap-3.5 text-sm before:h-px before:flex-1 after:h-px after:flex-1">
+          Chưa có tài khoản?
         </p>
-        <Link
-          to="/dat-tu-van"
-          className="text-copper decoration-rule-2 hover:decoration-copper mt-2 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-[6px]"
-        >
-          Nhận tư vấn
-        </Link>
+        <p className="text-ink-2 mt-4 text-sm">
+          Tài khoản do studio tạo khi bạn bắt đầu gói tập. Để lại số điện thoại, studio sẽ
+          gọi tư vấn.
+        </p>
+        <Button asChild variant="secondary" fullWidth className="mt-4">
+          <Link to="/dat-tu-van">
+            Nhận tư vấn
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </Button>
       </div>
+
+      <p className="text-ink-2 mt-8 text-center text-xs">
+        Cần hỗ trợ đăng nhập? Liên hệ quầy lễ tân của studio.
+      </p>
     </div>
   );
 }

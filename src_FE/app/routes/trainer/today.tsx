@@ -1,4 +1,5 @@
 import { useTrainerSchedule } from "~/features/schedule/use-staff-calendar";
+import { Link } from "react-router";
 import { formatDate, formatTimeRange, studioDateKey, weekdayLong } from "~/lib/format";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
@@ -13,7 +14,7 @@ export default function TrainerToday() {
   const today = studioDateKey(new Date());
   const query = useTrainerSchedule(today, today);
 
-  const items = query.data ?? [];
+  const items = [...(query.data ?? [])].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -44,9 +45,9 @@ export default function TrainerToday() {
             {items.map((item) => (
               <li
                 key={item.id}
-                className="rule-b flex items-start justify-between gap-4 py-4"
+                className="rule-b py-4"
               >
-                <div className="min-w-0">
+                <Link to={`/hlv/lop/${item.id}`} className="hover:bg-sand-deep/50 block min-w-0 py-1">
                   <Figures className="text-ink block text-base">
                     {formatTimeRange(item.starts_at, item.ends_at)}
                   </Figures>
@@ -56,14 +57,15 @@ export default function TrainerToday() {
                   {item.status === "CANCELLED" ? (
                     <p className="text-danger mt-0.5 text-xs">Lớp đã hủy</p>
                   ) : null}
-                </div>
                 {/* Capacity, not occupancy: `GET /classes/my-schedule` carries
                     the seats a class has, and a trainer cannot read the
                     bookings list that would say how many are taken. The roster
                     on the class itself answers that. */}
-                <Figures className="text-ink-2 shrink-0 text-sm">
+                <Figures className="text-ink-2 mt-1 block text-sm">
                   {item.capacity} chỗ
                 </Figures>
+                <span className="text-ink mt-3 inline-block text-sm underline underline-offset-4">Xem học viên và điểm danh</span>
+                </Link>
               </li>
             ))}
           </ul>

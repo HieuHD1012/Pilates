@@ -12,7 +12,7 @@ export function PendingFact({ label, className }: { label: string; className?: s
     <span
       // Inherits the parent's colour so it stays legible on both the sand
       // page and the ink footer; ink-3 fails AA for text on either.
-      className={cn("italic opacity-75", className)}
+      className={cn("italic", className)}
       title={`${label} sẽ được cập nhật khi studio cung cấp`}
     >
       Đang cập nhật

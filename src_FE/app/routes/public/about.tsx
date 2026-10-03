@@ -48,7 +48,6 @@ export default function About() {
           <ArtDirectedImage
             photo="room"
             priority
-            disclose="top-right"
             sizes="100vw"
             imgClassName="object-[50%_62%]"
           />
@@ -103,14 +102,18 @@ export default function About() {
       <Section index="02" label="Nguyên tắc" tone="deep">
         <div className="grid grid-cols-1 gap-y-8 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
           <SectionRail title="Ba điều studio giữ ở mọi buổi tập." />
-          <dl className="lg:col-span-8">
-            {PRINCIPLES.map(({ term, def }) => (
-              <div
-                key={term}
-                className="border-rule-2 grid gap-2 border-t py-5 last:border-b sm:grid-cols-[11rem_1fr] sm:gap-6"
-              >
-                <dt className="text-ink text-base font-medium">{term}</dt>
-                <dd className="measure text-ink-2 text-base">{def}</dd>
+          {/* Three short principles as three peers side by side, each read
+              top to bottom — not a two-column table. */}
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-3 lg:col-span-8">
+            {PRINCIPLES.map(({ term, def }, index) => (
+              <div key={term} className="border-rule-2 border-t pt-4">
+                <dt className="text-ink text-lg font-medium">
+                  <span className="figures text-copper block text-sm font-normal">
+                    0{index + 1}
+                  </span>
+                  <span className="mt-2 block">{term}</span>
+                </dt>
+                <dd className="text-ink-2 mt-1.5 text-base">{def}</dd>
               </div>
             ))}
           </dl>

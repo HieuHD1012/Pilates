@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, Plus, RefreshCw } from "lucide-react";
+import { useId, useState } from "react";
 import { Link } from "react-router";
 
 import { ClassForm } from "~/features/schedule/class-form";
@@ -31,6 +32,7 @@ import {
   weekdayLong,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
+import { DetailList, DetailRow as Row } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import {
   EmptyState,
@@ -39,10 +41,11 @@ import {
   RefreshingRule,
   SkeletonRows,
 } from "~/ui/feedback";
-import { Field, Select } from "~/ui/field";
+import { Select } from "~/ui/field";
 import { Figures } from "~/ui/figure";
-import { FilterBar, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { CapacityMeter, StatusBadge } from "~/ui/status";
+import { Panel, PanelBody, SegmentFilter, Toolbar, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/calendar";
 
@@ -56,10 +59,15 @@ export function meta(_: Route.MetaArgs) {
 /**
  * REFERENCE B — the canonical operational screen.
  *
- * What it establishes for every screen that follows: the workspace frame, the
- * filter row sitting on a rule above its data, the week grid, the status
- * vocabulary, and how brand translates into software that someone uses for
- * eight hours (quietly, and out of the way).
+ * What it establishes for every screen that follows (ADR 0006): one
+ * `WorkspacePage` per route; a serif page title whose one sentence is a
+ * reading of the data; week-stepping as a compact cluster beside the actions
+ * (navigation is not an ask, so it never competes with "Thêm lớp"); the data in
+ * a `Panel` with its filters in a `Toolbar` at the panel's top — a segmented
+ * filter for the primary dimension, a compact drop-down for the secondary one;
+ * a legend for any tint the data uses; the status vocabulary; and how brand
+ * translates into software that someone uses for eight hours (quietly, and out
+ * of the way).
  */
 export default function StaffCalendar() {
   const [weekStart, setWeekStart] = useState(() => startOfStudioWeek(new Date()));
@@ -94,7 +102,11 @@ export default function StaffCalendar() {
   const seatCounts = useCalendarSeatCounts(filters);
 
   const items = query.data ?? [];
-  const seats = seatCounts.data;
+  // While the next week's counts load, the previous week's map is still held
+  // as placeholder data. Its entries are other classes, so reading this week's
+  // ids out of it would print 0 for every class; treat it as not measured.
+  const seats = seatCounts.isPlaceholderData ? undefined : seatCounts.data;
+  const trainerFilterId = useId();
   const trainerNames = trainerNameMap(trainers.data);
   const fullCount = items.filter(
     (item) => (seats?.get(item.id) ?? 0) >= item.capacity,
@@ -102,107 +114,119 @@ export default function StaffCalendar() {
   const bookedTotal = [...(seats?.values() ?? [])].reduce((sum, n) => sum + n, 0);
   const capacityTotal = items.reduce((sum, item) => sum + item.capacity, 0);
 
+  const loaded = query.isSuccess && items.length > 0;
+
   return (
-    <div className="gutter py-6">
+    <WorkspacePage>
       <PageHeader
         title="Lịch & lớp học"
-        description="Toàn bộ lớp trong tuần, theo huấn luyện viên và hình thức lớp."
+        description={
+          loaded ? (
+            // The week, read as one sentence. Seats only when they were
+            // measured: a total built from a missing count is not a total.
+            <>
+              <Figures className="text-ink">{items.length}</Figures> lớp trong tuần
+              {seats !== undefined ? (
+                <>
+                  {" · "}
+                  <Figures className="text-ink">
+                    {bookedTotal}/{capacityTotal}
+                  </Figures>{" "}
+                  chỗ đã đặt{" · "}
+                  <Figures className={fullCount > 0 ? "text-copper" : "text-ink"}>
+                    {fullCount}
+                  </Figures>{" "}
+                  lớp đủ chỗ
+                </>
+              ) : null}
+            </>
+          ) : (
+            "Toàn bộ lớp trong tuần, theo huấn luyện viên và hình thức lớp."
+          )
+        }
         actions={
           <>
-            <Button size="sm" onClick={() => setCreating("single")}>
-              Thêm lớp
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setCreating("recurring")}>
+            {/* Week-stepping is navigation, not an ask: it sits as one quiet
+                cluster with the range it lands on, ahead of the two actions. */}
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                aria-label="Tuần trước"
+                className="w-11 px-0"
+                onClick={() => setWeekStart(addDays(weekStart, -7))}
+              >
+                <ChevronLeft className="size-4" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
+              >
+                Tuần này
+              </Button>
+              <Button
+                variant="secondary"
+                aria-label="Tuần sau"
+                className="w-11 px-0"
+                onClick={() => setWeekStart(addDays(weekStart, 7))}
+              >
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Button>
+              <Figures className="text-ink ml-2 text-base whitespace-nowrap">
+                {/* "28/09": the day-month part of the full date, so both ends
+                    of the range use one separator. */}
+                {formatDate(`${weekStart}T00:00:00+07:00`).slice(0, 5)}
+                {" – "}
+                {formatDate(`${addDays(weekStart, 6)}T00:00:00+07:00`)}
+              </Figures>
+            </div>
+            <Button
+              variant="secondary"
+              icon={<RefreshCw className="size-4" aria-hidden="true" />}
+              onClick={() => setCreating("recurring")}
+            >
               Lớp định kỳ
             </Button>
             <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, -7))}
+              icon={<Plus className="size-4" aria-hidden="true" />}
+              onClick={() => setCreating("single")}
             >
-              Tuần trước
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
-            >
-              Tuần này
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, 7))}
-            >
-              Tuần sau
+              Thêm lớp
             </Button>
           </>
         }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Tuần</dt>
-              <dd>
-                <Figures className="text-ink">
-                  {formatDate(`${weekStart}T00:00:00+07:00`)}
-                </Figures>
-                <span className="mx-1">–</span>
-                <Figures className="text-ink">
-                  {formatDate(`${addDays(weekStart, 6)}T00:00:00+07:00`)}
-                </Figures>
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Số lớp</dt>
-              <dd>
-                <Figures className="text-ink">{items.length}</Figures>
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Lượt đăng ký</dt>
-              <dd>
-                <Figures className="text-ink">
-                  {bookedTotal}/{capacityTotal}
-                </Figures>
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Lớp đủ chỗ</dt>
-              <dd>
-                <Figures className={fullCount > 0 ? "text-copper" : "text-ink"}>
-                  {fullCount}
-                </Figures>
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Hình thức lớp" className="w-44">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={classType}
-              onChange={(event) => setClassType(event.target.value as ClassType | "all")}
+      <Panel className="overflow-hidden">
+        <Toolbar
+          trailing={
+            <>
+              {query.isFetching && !query.isPending ? (
+                <span className="text-ink-2 text-xs">Đang cập nhật</span>
+              ) : null}
+              <Legend />
+            </>
+          }
+        >
+          <SegmentFilter
+            label="Hình thức lớp"
+            value={classType}
+            onChange={setClassType}
+            options={[
+              { value: "all", label: "Tất cả" },
+              { value: "GROUP", label: "Lớp nhóm" },
+              { value: "PRIVATE", label: "Lớp riêng" },
+            ]}
+          />
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor={trainerFilterId}
+              className="text-ink-2 text-sm whitespace-nowrap"
             >
-              <option value="all">Tất cả</option>
-              <option value="GROUP">Lớp nhóm</option>
-              <option value="PRIVATE">Lớp riêng</option>
-            </Select>
-          )}
-        </Field>
-
-        <Field label="Huấn luyện viên" className="w-56">
-          {({ id }) => (
+              Huấn luyện viên
+            </label>
             <Select
-              id={id}
+              id={trainerFilterId}
+              className="h-11 w-52 md:h-9"
               value={trainerId === "all" ? "all" : String(trainerId)}
               onChange={(event) =>
                 setTrainerId(
@@ -218,65 +242,75 @@ export default function StaffCalendar() {
                 </option>
               ))}
             </Select>
-          )}
-        </Field>
-      </FilterBar>
-
-      <RefreshingRule active={query.isFetching && !query.isPending} />
-
-      {query.isPending ? <SkeletonRows rows={6} /> : null}
-
-      {query.isError ? (
-        <ErrorState
-          description="Không tải được lịch lớp của tuần này."
-          detail={query.error instanceof Error ? query.error.message : undefined}
-          onRetry={() => void query.refetch()}
-        />
-      ) : null}
-
-      {query.isSuccess && items.length === 0 ? (
-        <EmptyState
-          title="Không có lớp nào khớp bộ lọc"
-          description="Tuần này chưa có lớp, hoặc bộ lọc đang thu hẹp kết quả. Thử bỏ bớt bộ lọc hoặc chuyển sang tuần khác."
-          action={
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setClassType("all");
-                setTrainerId("all");
-              }}
-            >
-              Bỏ bộ lọc
-            </Button>
-          }
-        />
-      ) : null}
-
-      {query.isSuccess && items.length > 0 ? (
-        <>
-          <div className="hidden lg:block">
-            <WeekGrid
-              days={days}
-              items={items}
-              today={today}
-              onSelect={setSelected}
-              selectedId={selected?.id ?? null}
-              trainerNames={trainerNames}
-              seats={seats}
-            />
           </div>
-          <div className="lg:hidden">
-            <WeekList
-              days={days}
-              items={items}
-              today={today}
-              onSelect={setSelected}
-              trainerNames={trainerNames}
-              seats={seats}
+        </Toolbar>
+
+        <RefreshingRule active={query.isFetching && !query.isPending} />
+
+        {query.isPending ? (
+          <PanelBody>
+            <SkeletonRows rows={6} />
+          </PanelBody>
+        ) : null}
+
+        {query.isError ? (
+          <PanelBody>
+            <ErrorState
+              description="Không tải được lịch lớp của tuần này."
+              detail={query.error instanceof Error ? query.error.message : undefined}
+              onRetry={() => void query.refetch()}
             />
-          </div>
-        </>
-      ) : null}
+          </PanelBody>
+        ) : null}
+
+        {query.isSuccess && items.length === 0 ? (
+          <PanelBody>
+            <EmptyState
+              title="Không có lớp nào khớp bộ lọc"
+              description="Tuần này chưa có lớp, hoặc bộ lọc đang thu hẹp kết quả. Thử bỏ bớt bộ lọc hoặc chuyển sang tuần khác."
+              action={
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setClassType("all");
+                    setTrainerId("all");
+                  }}
+                >
+                  Bỏ bộ lọc
+                </Button>
+              }
+            />
+          </PanelBody>
+        ) : null}
+
+        {loaded ? (
+          <>
+            {/* The grid needs about 900px of its own; below xl (with the rail
+                taking 256px) the week is a list instead of a scrolled grid. */}
+            <div className="hidden xl:block">
+              <WeekGrid
+                days={days}
+                items={items}
+                today={today}
+                onSelect={setSelected}
+                selectedId={selected?.id ?? null}
+                trainerNames={trainerNames}
+                seats={seats}
+              />
+            </div>
+            <div className="xl:hidden">
+              <WeekList
+                days={days}
+                items={items}
+                today={today}
+                onSelect={setSelected}
+                trainerNames={trainerNames}
+                seats={seats}
+              />
+            </div>
+          </>
+        ) : null}
+      </Panel>
 
       <ClassDetailDialog
         item={selected}
@@ -404,7 +438,39 @@ export default function StaffCalendar() {
           </ul>
         </DialogContent>
       </Dialog>
-    </div>
+    </WorkspacePage>
+  );
+}
+
+/**
+ * The key to the grid's tints. The type is also written in every block, so
+ * this explains the colour rather than carrying the meaning.
+ */
+function Legend() {
+  return (
+    <ul className="text-ink-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+      <li className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="bg-copper-wash border-copper-bright/40 size-3 rounded-xs border"
+        />
+        Lớp nhóm
+      </li>
+      <li className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="bg-info-wash border-info/25 size-3 rounded-xs border"
+        />
+        Lớp riêng
+      </li>
+      <li className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="bg-chalk border-rule-2 size-3 rounded-xs border"
+        />
+        Đã kết thúc
+      </li>
+    </ul>
   );
 }
 
@@ -438,7 +504,9 @@ function ClassDetailDialog({
   seats: Map<number, number> | undefined;
   onClose: () => void;
 }) {
-  const taken = item === null ? undefined : seats?.get(item.id);
+  // A loaded map with no entry for this class means nobody holds a seat.
+  const taken =
+    item === null || seats === undefined ? undefined : (seats.get(item.id) ?? 0);
 
   return (
     <Dialog open={item !== null} onOpenChange={(open) => (open ? null : onClose())}>
@@ -457,7 +525,7 @@ function ClassDetailDialog({
             </>
           }
         >
-          <dl className="text-sm">
+          <DetailList className="text-sm">
             <Row label="Giờ">
               <Figures>{formatTimeRange(item.starts_at, item.ends_at)}</Figures>
             </Row>
@@ -483,7 +551,7 @@ function ClassDetailDialog({
                 <StatusBadge tone="positive">Còn chỗ</StatusBadge>
               )}
             </Row>
-          </dl>
+          </DetailList>
 
           <p className="rule-t text-ink-2 mt-4 pt-3 text-xs">
             Danh sách học viên, đổi huấn luyện viên và hủy lớp nằm ở màn hình chi tiết lớp.
@@ -493,14 +561,5 @@ function ClassDetailDialog({
         </DialogContent>
       ) : null}
     </Dialog>
-  );
-}
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="rule-b grid grid-cols-[7.5rem_1fr] items-center gap-3 py-2.5 last:border-b-0">
-      <dt className="text-ink-2 text-xs">{label}</dt>
-      <dd className="text-ink">{children}</dd>
-    </div>
   );
 }

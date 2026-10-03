@@ -54,7 +54,13 @@ test.describe("payments", () => {
 
     const row = page.getByRole("row").filter({ hasText: "Chuyển khoản khách báo đã gửi" });
     await expect(row.getByText("Chờ xác nhận")).toBeVisible();
-    await row.getByRole("button", { name: "Xác nhận" }).click();
+    // Waiting money is lifted into the attention panel above the table, and is
+    // confirmed there (docs/adr/0006-operational-workspace.md).
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: "Chuyển khoản khách báo đã gửi" })
+      .getByRole("button", { name: "Xác nhận đã nhận tiền" })
+      .click();
     await expect(row.getByText("Đã xác nhận")).toBeVisible();
   });
 
@@ -72,7 +78,9 @@ test.describe("payments", () => {
     await expect(dialog).toBeHidden();
 
     const row = page.getByRole("row").filter({ hasText: "Phiếu ghi trùng cần hủy" });
-    await row.getByRole("button", { name: "Hủy phiếu" }).click();
+    // Voiding is not the row's one action, so it lives in the row menu.
+    await row.getByRole("button", { name: /^Thao tác/ }).click();
+    await page.getByRole("button", { name: "Hủy phiếu" }).click();
     dialog = page.getByRole("dialog");
 
     // The confirm button stays out of reach until a reason exists.

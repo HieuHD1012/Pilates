@@ -1,3 +1,15 @@
+import {
+  CalendarCheck,
+  CalendarPlus,
+  CalendarX,
+  ChartColumn,
+  ChevronRight,
+  Info,
+  LockKeyhole,
+  Phone,
+  Users,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { Link, useParams } from "react-router";
 
 import {
@@ -7,15 +19,22 @@ import {
 } from "~/features/people/queries";
 import type { TrainerResponse } from "~/lib/api/schema";
 import { formatDate, formatNumber, formatPhone, telHref } from "~/lib/format";
-import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { DetailList, DetailRow } from "~/ui/detail-list";
+import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Skeleton, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { Metric, PageHeader } from "~/ui/layout";
 import { PendingFact } from "~/ui/pending-fact";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge } from "~/ui/status";
+import {
+  Avatar,
+  InlineNote,
+  Kpi,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  WorkspacePage,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/trainer-detail";
 
@@ -29,8 +48,9 @@ export function meta(_: Route.MetaArgs) {
 /**
  * One trainer, as a record.
  *
- * A read screen: the ruled definition list carries the facts the studio has
- * supplied and `<PendingFact>` carries the ones it has not. The figures are
+ * A read screen: the profile panel says who this is and how to reach them, the
+ * month's figures sit under it, and the facts the studio has supplied — or has
+ * not, as `<PendingFact>` — sit in the record beside them. The figures are
  * `GET /classes/trainer-stats`, which is the **same function the trainer
  * report uses** — two screens saying "classes taught" must not run two
  * different queries, or one of them is wrong and nobody knows which.
@@ -43,14 +63,7 @@ export default function StaffTrainerDetail() {
   const query = useTrainer(Number(trainerId));
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
-      <Link
-        to="/studio/huan-luyen-vien"
-        className="text-ink-2 decoration-rule-2 hover:text-ink text-xs underline underline-offset-[6px]"
-      >
-        Huấn luyện viên
-      </Link>
-
+    <WorkspacePage>
       <QueryBoundary
         query={query}
         loading={<RecordSkeleton />}
@@ -59,124 +72,207 @@ export default function StaffTrainerDetail() {
       >
         {(trainer) => <TrainerRecord trainer={trainer} />}
       </QueryBoundary>
-    </div>
+    </WorkspacePage>
+  );
+}
+
+function Breadcrumb({ current }: { current?: string }) {
+  return (
+    <nav aria-label="Đường dẫn" className="text-ink-2 -mb-1 text-sm">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        <li>
+          <Link
+            to="/studio/huan-luyen-vien"
+            className="decoration-rule-2 hover:text-ink hover:decoration-copper underline underline-offset-[6px]"
+          >
+            Huấn luyện viên
+          </Link>
+        </li>
+        {current ? (
+          <li className="flex items-center gap-1.5">
+            <ChevronRight className="size-3.5" aria-hidden="true" />
+            <span aria-current="page" className="text-ink">
+              {current}
+            </span>
+          </li>
+        ) : null}
+      </ol>
+    </nav>
   );
 }
 
 function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
   return (
     <>
-      <PageHeader
-        className="mt-4"
-        title={trainer.full_name}
-        description="Hồ sơ huấn luyện viên và mức độ hoạt động trong 30 ngày gần nhất."
-        meta={
-          trainer.is_active ? (
-            <StatusBadge tone="positive">Đang dạy</StatusBadge>
-          ) : (
-            <StatusBadge tone="neutral">Tạm nghỉ</StatusBadge>
-          )
-        }
-      />
+      <Breadcrumb current={trainer.full_name} />
 
-      <Portrait trainer={trainer} />
+      {/* The profile header, as on a student's record: who, how to reach them,
+          and the two states the studio acts on. */}
+      <Panel aria-labelledby="trainer-name">
+        <div className="flex flex-wrap items-start gap-x-5 gap-y-4 px-4 py-5 md:px-6 md:py-6">
+          <Portrait trainer={trainer} />
 
-      <DetailList className="mt-5">
-        <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>
-
-        <DetailRow label="Giới thiệu ngắn">
-          {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
-        </DetailRow>
-
-        <DetailRow label="Chuyên môn">
-          {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
-        </DetailRow>
-
-        <DetailRow label="Điện thoại">
-          {trainer.phone ? (
-            <a
-              href={telHref(trainer.phone)}
-              className="decoration-rule-2 hover:decoration-copper underline underline-offset-[6px]"
+          <div className="min-w-0 flex-1 basis-64">
+            <h1
+              id="trainer-name"
+              className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em] md:text-[2rem]"
             >
-              {formatPhone(trainer.phone)}
-            </a>
-          ) : (
-            <PendingFact label="Số điện thoại huấn luyện viên" />
-          )}
-        </DetailRow>
+              {trainer.full_name}
+            </h1>
+            <p className="text-ink-2 mt-1 text-sm">
+              Hồ sơ huấn luyện viên và mức độ hoạt động trong tháng này.
+            </p>
 
-        {/* A trainer record has no email of its own: the email is the login,
-            and it lives on the account. `user_id` says whether there is one. */}
-        <DetailRow label="Tài khoản đăng nhập">
-          {trainer.user_id !== null ? (
-            "Đã có tài khoản"
-          ) : (
-            <Absent>Chưa có tài khoản</Absent>
-          )}
-        </DetailRow>
+            <ul className="text-ink-2 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+              <li className="inline-flex items-center gap-1.5">
+                <Phone className="size-4" aria-hidden="true" />
+                <span className="sr-only">Điện thoại: </span>
+                {trainer.phone ? (
+                  <span className="text-ink">{formatPhone(trainer.phone)}</span>
+                ) : (
+                  <PendingFact label="Số điện thoại huấn luyện viên" />
+                )}
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <CalendarPlus className="size-4" aria-hidden="true" />
+                Thêm vào studio <Figures>{formatDate(trainer.created_at)}</Figures>
+              </li>
+              {/* A trainer record has no email of its own: the email is the
+                  login, and it lives on the account. `user_id` says whether
+                  there is one. */}
+              <li className="inline-flex items-center gap-1.5">
+                <LockKeyhole className="size-4" aria-hidden="true" />
+                {trainer.user_id !== null ? "Đã có tài khoản" : "Chưa có tài khoản"}
+              </li>
+            </ul>
 
-        <DetailRow label="Thêm vào studio">
-          <Figures>{formatDate(trainer.created_at)}</Figures>
-        </DetailRow>
+            <div className="mt-3.5 flex flex-wrap items-center gap-2">
+              {trainer.is_active ? (
+                <StatusBadge tone="positive">Đang dạy</StatusBadge>
+              ) : (
+                <StatusBadge tone="neutral">Tạm nghỉ</StatusBadge>
+              )}
+              {trainer.is_public ? (
+                <StatusBadge tone="info">Đã công khai</StatusBadge>
+              ) : (
+                <StatusBadge tone="neutral">Chưa công khai</StatusBadge>
+              )}
+              <DemoDataNotice />
+            </div>
+          </div>
 
-        <DetailRow label="Trang công khai">
-          {trainer.is_public
-            ? "Đã hiện trên trang huấn luyện viên"
-            : "Chưa hiện trên trang huấn luyện viên"}
-        </DetailRow>
-      </DetailList>
-
-      <MonthStats trainerId={trainer.id} />
-
-      <section className="rule-t mt-10 pt-5">
-        <h2 className="text-ink text-sm font-medium">So sánh giữa các huấn luyện viên</h2>
-        <p className="measure-wide text-ink-2 mt-1 text-xs">
-          Báo cáo huấn luyện viên đặt số lớp và lượt đăng ký của cả studio trên cùng một
-          khoảng thời gian.
-        </p>
-        <div className="mt-4">
-          <Button asChild size="sm" variant="secondary">
-            <Link to="/studio/bao-cao/huan-luyen-vien">Mở báo cáo huấn luyện viên</Link>
-          </Button>
+          {/* Calling is the contact action, so it is copper (ADR 0006, 9).
+              With no number on file there is nothing to call. */}
+          {trainer.phone ? (
+            <Button asChild variant="copper">
+              <a href={telHref(trainer.phone)}>
+                <Phone className="size-4" aria-hidden="true" />
+                Gọi
+              </a>
+            </Button>
+          ) : null}
         </div>
-      </section>
+      </Panel>
 
-      <p className="rule-t text-ink-2 mt-8 pt-3 text-xs">
-        Màn hình này chỉ để xem hồ sơ. Việc xếp lớp cho huấn luyện viên nằm ở màn hình lịch
-        &amp; lớp học.
-      </p>
+      <div className="grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
+          <MonthStats trainerId={trainer.id} />
+
+          <Panel>
+            <PanelHeader
+              title="Giới thiệu và chuyên môn"
+              description="Trang huấn luyện viên hiện đúng những dòng này khi hồ sơ được công khai."
+            />
+            <PanelBody>
+              <dl className="divide-rule flex flex-col divide-y">
+                <Fact label="Giới thiệu ngắn">
+                  {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
+                </Fact>
+                <Fact label="Chuyên môn">
+                  {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
+                </Fact>
+                <Fact label="Trang công khai">
+                  {trainer.is_public
+                    ? "Đã hiện trên trang huấn luyện viên"
+                    : "Chưa hiện trên trang huấn luyện viên"}
+                </Fact>
+              </dl>
+            </PanelBody>
+          </Panel>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
+          <Panel>
+            <PanelHeader
+              title="So sánh giữa các huấn luyện viên"
+              description="Báo cáo huấn luyện viên đặt số lớp và lượt đăng ký của cả studio trên cùng một khoảng thời gian."
+            />
+            <PanelBody>
+              <Button asChild size="sm" variant="secondary">
+                <Link to="/studio/bao-cao/huan-luyen-vien">
+                  <ChartColumn className="size-4" aria-hidden="true" />
+                  Mở báo cáo huấn luyện viên
+                </Link>
+              </Button>
+            </PanelBody>
+          </Panel>
+
+          <InlineNote icon={<Info aria-hidden="true" />}>
+            Màn hình này chỉ để xem hồ sơ. Việc xếp lớp cho huấn luyện viên nằm ở màn hình
+            lịch &amp; lớp học.
+          </InlineNote>
+        </div>
+      </div>
     </>
   );
 }
 
-/** Shaped like the record it replaces: a title, a line of orientation, rows. */
+/** A label above its value, inside a panel. */
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0 py-3 first:pt-0 last:pb-0">
+      <dt className="text-ink-2 text-sm">{label}</dt>
+      <dd className="text-ink mt-1 text-sm wrap-anywhere">{children}</dd>
+    </div>
+  );
+}
+
+/** Shaped like the record it replaces: a crumb, the profile panel, rows. */
 function RecordSkeleton() {
   return (
-    <div className="mt-4">
-      <div className="rule-b pb-4">
-        <Skeleton className="h-5 w-52 max-w-full" />
-        <Skeleton className="mt-3 h-3 w-72 max-w-full" />
-      </div>
-      <SkeletonRows rows={7} className="mt-5" />
-    </div>
+    <>
+      <Skeleton className="h-3 w-40 max-w-full" />
+      <Panel className="flex items-start gap-5 px-4 py-5 md:px-6 md:py-6">
+        <Skeleton className="size-14 rounded-full" />
+        <div className="min-w-0 flex-1">
+          <Skeleton className="h-6 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-3 w-72 max-w-full" />
+          <Skeleton className="mt-4 h-5 w-48 max-w-full" />
+        </div>
+      </Panel>
+      <Panel className="px-4 py-4 md:px-5">
+        <SkeletonRows rows={5} />
+      </Panel>
+    </>
   );
 }
 
 /**
  * The portrait, fetched as bytes. `GET /trainers/{id}/photo` is behind the
  * token and re-authorised on every read, so there is no static URL to point an
- * `<img src>` at, and no photo means no frame.
+ * `<img src>` at. With no photo the initials stand in, as on every other
+ * person in the workspace.
  */
 function Portrait({ trainer }: { trainer: TrainerResponse }) {
   const photo = useTrainerPhoto(trainer.id, trainer.photo_key !== null);
-  if (!photo.data) return null;
+  if (!photo.data) return <Avatar name={trainer.full_name} size="xl" />;
 
   return (
     <img
       src={photo.data}
       alt={trainer.full_name}
       decoding="async"
-      className="border-rule mt-5 size-24 rounded-full border object-cover"
+      className="border-rule size-14 shrink-0 rounded-full border object-cover"
     />
   );
 }
@@ -188,43 +284,46 @@ function Portrait({ trainer }: { trainer: TrainerResponse }) {
  */
 function MonthStats({ trainerId }: { trainerId: number }) {
   const now = new Date();
-  const query = useTrainerMonthStats({
-    trainer_id: trainerId,
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
-  });
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const query = useTrainerMonthStats({ trainer_id: trainerId, year, month });
+
+  const figure = (value: number | undefined) =>
+    value === undefined ? "—" : formatNumber(value);
 
   return (
-    <section className="mt-10">
-      <h2 className="text-ink text-sm font-medium">Tháng này</h2>
-      <p className="measure-wide text-ink-2 mt-1 text-xs">
-        Tính theo tháng dương lịch, giờ studio. Cùng cách tính với báo cáo huấn luyện viên.
-      </p>
+    <section aria-labelledby="month-stats" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="month-stats" className="text-ink text-base font-semibold">
+          Tháng này
+        </h2>
+        <p className="text-ink-2 text-sm">
+          Tháng{" "}
+          <Figures>
+            {month}/{year}
+          </Figures>{" "}
+          · tính theo giờ studio, cùng cách tính với báo cáo huấn luyện viên
+        </p>
+      </div>
 
-      <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-3">
-        <Metric
+      <div className="grid gap-3 sm:grid-cols-3 md:gap-4">
+        <Kpi
           label="Lớp đã xếp"
-          value={
-            <Figures display>
-              {query.data ? formatNumber(query.data.scheduled_sessions) : "—"}
-            </Figures>
-          }
+          icon={<CalendarCheck />}
+          value={figure(query.data?.scheduled_sessions)}
+          unit="lớp"
         />
-        <Metric
-          label="Lớp đã hủy"
-          value={
-            <Figures display>
-              {query.data ? formatNumber(query.data.cancelled_sessions) : "—"}
-            </Figures>
-          }
-        />
-        <Metric
+        <Kpi
           label="Lượt đăng ký"
-          value={
-            <Figures display>
-              {query.data ? formatNumber(query.data.total_bookings) : "—"}
-            </Figures>
-          }
+          icon={<Users />}
+          value={figure(query.data?.total_bookings)}
+          unit="lượt"
+        />
+        <Kpi
+          label="Lớp đã hủy"
+          icon={<CalendarX />}
+          value={figure(query.data?.cancelled_sessions)}
+          unit="lớp"
         />
       </div>
     </section>

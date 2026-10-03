@@ -38,6 +38,9 @@ export default tseslint.config(
         "error",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
+      // A labelled, scrollable table region must be reachable by keyboard.
+      // Keep the rule for ordinary noninteractive elements.
+      "jsx-a11y/no-noninteractive-tabindex": ["error", { roles: ["region"] }],
 
       /**
        * ARCHITECTURAL GUARDRAILS — machine-enforced versions of AGENTS.md.

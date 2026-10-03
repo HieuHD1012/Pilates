@@ -1,15 +1,16 @@
+import { Armchair, CalendarCheck, Gauge, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
 import { useClassReport, useTrainerClassSizes } from "~/features/reports/queries";
-import { formatDate, formatNumber, studioDateKey } from "~/lib/format";
+import { ReportRangeToolbar, ReportSwitcher } from "~/features/reports/report-frame";
+import { formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Field, Input } from "~/ui/field";
 import { Figures } from "~/ui/figure";
-import { FilterBar, Metric, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
+import { Kpi, Meter, Panel, PanelHeader, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/report-classes";
 
@@ -30,10 +31,6 @@ function currentMonth(): { from: string; to: string } {
   return { from: `${key.slice(0, 7)}-01`, to: last };
 }
 
-function dayLabel(dateKey: string): string {
-  return formatDate(`${dateKey}T00:00:00+07:00`);
-}
-
 /**
  * Classes and how full they were, for a range the user chooses.
  *
@@ -49,197 +46,168 @@ export default function StaffReportClasses() {
   const query = useClassReport(params);
   const sizes = useTrainerClassSizes(params);
 
-  const rangeError =
-    range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
-
   return (
-    <div className="gutter py-6">
+    <WorkspacePage>
       <PageHeader
+        eyebrow={
+          <Link to="/studio/bao-cao" className="hover:text-copper">
+            Tất cả báo cáo
+          </Link>
+        }
         title="Báo cáo lớp học"
         description="Số lớp đã xếp, lượt đăng ký và mức lấp đầy trong khoảng ngày bạn chọn."
-        actions={
-          <Button asChild size="sm" variant="secondary">
-            <Link to="/studio/bao-cao">Tất cả báo cáo</Link>
-          </Button>
-        }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Khoảng ngày</dt>
-              <dd>
-                <Figures className="text-ink">{dayLabel(range.from)}</Figures>
-                <span className="mx-1">–</span>
-                <Figures className="text-ink">{dayLabel(range.to)}</Figures>
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Từ ngày" className="w-full sm:w-44">
-          {({ id }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.from}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, from: event.target.value }))
-              }
-            />
-          )}
-        </Field>
+      <ReportSwitcher />
 
-        <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.to}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, to: event.target.value }))
-              }
-            />
-          )}
-        </Field>
-      </FilterBar>
+      <ReportRangeToolbar
+        range={range}
+        onChange={setRange}
+        fetching={query.isFetching && !query.isPending}
+      />
 
-      <DemoDataNotice className="mb-3" />
+      {/* One block, so the boundary's refresh hairline sits on the content
+          rather than taking a gap of the page's own. */}
+      <div>
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          isEmpty={(report) => report.scheduled_sessions === 0}
+          emptyTitle="Không có lớp nào trong khoảng ngày này"
+          emptyDescription="Chưa có lớp nào được xếp trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem lớp đã xếp."
+          emptyAction={
+            <Button asChild variant="secondary">
+              <Link to="/studio/lich">Mở lịch tuần</Link>
+            </Button>
+          }
+          errorDescription="Không tải được báo cáo lớp học."
+          showErrorDetail
+        >
+          {(report) => {
+            // Percent, from the backend's ratio. `null` stays null all the way
+            // to the figure — see the note above.
+            const overall =
+              report.fill_rate === null ? null : Math.round(report.fill_rate * 100);
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        isEmpty={(report) => report.scheduled_sessions === 0}
-        emptyTitle="Không có lớp nào trong khoảng ngày này"
-        emptyDescription="Chưa có lớp nào được xếp trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem lớp đã xếp."
-        emptyAction={
-          <Button asChild variant="secondary">
-            <Link to="/studio/lich">Mở lịch tuần</Link>
-          </Button>
-        }
-        errorDescription="Không tải được báo cáo lớp học."
-        showErrorDetail
-      >
-        {(report) => {
-          // Percent, from the backend's ratio. `null` stays null all the way
-          // to the cell — see the note above.
-          const overall =
-            report.fill_rate === null ? null : Math.round(report.fill_rate * 100);
+            return (
+              <div className="flex flex-col gap-5 md:gap-6">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <Kpi
+                    label="Lớp đã xếp"
+                    icon={<CalendarCheck aria-hidden="true" />}
+                    value={formatNumber(report.scheduled_sessions)}
+                    unit="lớp"
+                    context={
+                      <>
+                        <Figures>{formatNumber(report.cancelled_sessions)}</Figures> lớp đã
+                        hủy
+                      </>
+                    }
+                  />
+                  <Kpi
+                    label="Lượt đăng ký"
+                    icon={<Users aria-hidden="true" />}
+                    value={formatNumber(report.total_bookings)}
+                    unit="lượt"
+                  />
+                  <Kpi
+                    label="Sức chứa"
+                    icon={<Armchair aria-hidden="true" />}
+                    value={formatNumber(report.total_capacity)}
+                    unit="chỗ"
+                  />
+                  <Kpi
+                    label="Tỉ lệ lấp đầy"
+                    icon={<Gauge aria-hidden="true" />}
+                    value={overall === null ? <Placeholder /> : overall}
+                    unit={overall === null ? undefined : "%"}
+                    context="Lượt đăng ký chia cho sức chứa."
+                  >
+                    {overall === null ? null : (
+                      <Meter value={overall} max={100} className="mt-1.5" />
+                    )}
+                  </Kpi>
+                </div>
 
-          return (
-            <>
-              <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                <Metric
-                  label="Lớp đã xếp"
-                  value={
-                    <Figures display>{formatNumber(report.scheduled_sessions)}</Figures>
-                  }
-                  unit="lớp"
-                  detail={`${formatNumber(report.cancelled_sessions)} lớp đã hủy`}
-                />
-                <Metric
-                  label="Lượt đăng ký"
-                  value={<Figures display>{formatNumber(report.total_bookings)}</Figures>}
-                  unit="lượt"
-                />
-                <Metric
-                  label="Sức chứa"
-                  value={<Figures display>{formatNumber(report.total_capacity)}</Figures>}
-                  unit="chỗ"
-                />
-                <Metric
-                  label="Tỉ lệ lấp đầy"
-                  value={
-                    overall === null ? (
-                      <Placeholder />
-                    ) : (
-                      <Figures display>{overall}</Figures>
-                    )
-                  }
-                  unit={overall === null ? undefined : "%"}
-                  detail="Lượt đăng ký chia cho sức chứa."
-                />
+                <Panel>
+                  <PanelHeader
+                    title="Sĩ số theo huấn luyện viên"
+                    description="Mỗi dòng là số lớp của một huấn luyện viên theo sĩ số. Cột “không ai đăng ký” là lớp đã xếp nhưng không diễn ra — không phải lớp bị hủy."
+                  />
+
+                  {sizes.isPending ? (
+                    <p className="text-ink-2 px-4 py-4 text-sm md:px-5">
+                      Đang tải bảng sĩ số.
+                    </p>
+                  ) : sizes.isError ? (
+                    <p className="text-ink-2 px-4 py-4 text-sm md:px-5">
+                      Không tải được bảng sĩ số.
+                    </p>
+                  ) : (sizes.data?.length ?? 0) === 0 ? (
+                    <p className="text-ink-2 px-4 py-4 text-sm md:px-5">
+                      Không có lớp nào trong khoảng này.
+                    </p>
+                  ) : (
+                    <DataTable caption="Số lớp theo sĩ số" minWidth="46rem">
+                      <thead>
+                        <tr>
+                          <Th className="left-0 z-10">Huấn luyện viên</Th>
+                          <Th numeric>1 học viên</Th>
+                          <Th numeric>2 học viên</Th>
+                          <Th numeric>3 học viên</Th>
+                          <Th numeric>4 học viên</Th>
+                          <Th numeric>5 học viên</Th>
+                          <Th numeric>Trên 5 học viên</Th>
+                          <Th numeric>Không ai đăng ký</Th>
+                          <Th numeric>Tổng</Th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(sizes.data ?? []).map((row) => (
+                          <Tr key={row.trainer_id}>
+                            {/* Sticky so the name stays beside its numbers when
+                              the table scrolls sideways on a phone. */}
+                            <Td className="bg-paper sticky left-0 min-w-40 font-medium">
+                              {row.trainer_name}
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.size_1)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.size_2)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.size_3)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.size_4)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.size_5)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.sessions_over_max)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures>{formatNumber(row.sessions_empty)}</Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures className="text-base font-medium">
+                                {formatNumber(row.total_sessions)}
+                              </Figures>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </tbody>
+                    </DataTable>
+                  )}
+                </Panel>
               </div>
-
-              <section className="mt-10">
-                <h2 className="text-ink text-sm font-medium">Sĩ số theo huấn luyện viên</h2>
-                <p className="measure-wide text-ink-2 mt-1 mb-4 text-xs">
-                  Mỗi dòng là số lớp của một huấn luyện viên theo sĩ số. Cột “không ai đăng
-                  ký” là lớp đã xếp nhưng không diễn ra — không phải lớp bị hủy.
-                </p>
-
-                {sizes.isPending ? (
-                  <p className="rule-t text-ink-2 pt-4 text-xs">Đang tải bảng sĩ số.</p>
-                ) : sizes.isError ? (
-                  <p className="rule-t text-ink-2 pt-4 text-xs">
-                    Không tải được bảng sĩ số.
-                  </p>
-                ) : (sizes.data?.length ?? 0) === 0 ? (
-                  <p className="rule-t text-ink-2 pt-4 text-xs">
-                    Không có lớp nào trong khoảng này.
-                  </p>
-                ) : (
-                  <DataTable caption="Số lớp theo sĩ số" minWidth="46rem">
-                    <thead>
-                      <tr>
-                        <Th>Huấn luyện viên</Th>
-                        <Th numeric>1</Th>
-                        <Th numeric>2</Th>
-                        <Th numeric>3</Th>
-                        <Th numeric>4</Th>
-                        <Th numeric>5</Th>
-                        <Th numeric>Trên 5</Th>
-                        <Th numeric>Không ai đăng ký</Th>
-                        <Th numeric>Tổng</Th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(sizes.data ?? []).map((row) => (
-                        <Tr key={row.trainer_id}>
-                          <Td>{row.trainer_name}</Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.size_1)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.size_2)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.size_3)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.size_4)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.size_5)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.sessions_over_max)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.sessions_empty)}</Figures>
-                          </Td>
-                          <Td numeric>
-                            <Figures>{formatNumber(row.total_sessions)}</Figures>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </tbody>
-                  </DataTable>
-                )}
-              </section>
-            </>
-          );
-        }}
-      </QueryBoundary>
-    </div>
+            );
+          }}
+        </QueryBoundary>
+      </div>
+    </WorkspacePage>
   );
 }
 

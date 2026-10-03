@@ -23,3 +23,5 @@ src_FE/coverage/
 src_FE/playwright-report/
 src_FE/test-results/
 src_FE/.reference-shots/
+src_FE/visual-qa/
+src_FE/*clusters*.log
