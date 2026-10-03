@@ -9,7 +9,6 @@ import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -34,6 +33,7 @@ export default function Home() {
       <Hero />
       <Formats />
       <Method />
+      <Room />
       <ThisWeek />
       <FirstVisit />
       <Closing />
@@ -48,46 +48,25 @@ export default function Home() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
+    <section className="pearl-hero">
+      <div className="pearl-hero-inner gutter mx-auto max-w-(--container-page)">
+        <div className="pearl-hero-copy">
+          <p className="label-micro">Pilates reformer · Nha Trang</p>
+          <h1 className="font-display text-ink font-light">
+            Một nhịp tập<br />
+            <em>dành cho cơ thể bạn.</em>
+          </h1>
+          <p className="text-ink-2">
+            Lớp nhóm nhỏ và lớp riêng trên reformer. Bắt đầu bằng một cuộc trò chuyện để chọn cách tập phù hợp với bạn.
+          </p>
+          <div className="pearl-hero-actions">
+            <Button asChild variant="lacquer" size="lg"><Link to="/dat-tu-van">Đặt lịch tư vấn</Link></Button>
+            <Link className="pearl-text-link" to="/dich-vu">Khám phá lớp tập <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
-      </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
+        <div className="pearl-hero-visual">
+          <div className="pearl-hero-image"><ArtDirectedImage photo="hero" priority sizes="(min-width: 900px) 46vw, 100vw" /></div>
+        </div>
       </div>
     </section>
   );
@@ -99,29 +78,22 @@ function Hero() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
+    <Section index="01" label="Chọn nhịp tập">
+      <div className="pearl-formats-head">
+        <h2 className="font-display text-ink font-light">Không có một cách tập cho tất cả.</h2>
+        <p className="text-ink-2">Hai hình thức tập đang có tại studio, cùng tập trung vào chuyển động có kiểm soát.</p>
+      </div>
+      <div className="pearl-formats">
         {CLASS_FORMATS.map((format, index) => (
           <article
             key={format.id}
-            className={
-              index === 0
-                ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
-            }
+            className={`pearl-format pearl-format-${index + 1}`}
           >
+            <span className="pearl-format-index">0{index + 1} / 02</span>
             <p className="label-micro">{format.sub}</p>
-            <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <h3 className="font-display text-ink font-light">{format.name}</h3>
+            <p className="text-ink-2">{format.body}</p>
+            <Link to="/dich-vu" className="pearl-text-link">Tìm hiểu hình thức tập <span aria-hidden="true">↗</span></Link>
           </article>
         ))}
       </div>
@@ -151,24 +123,13 @@ const METHOD_NOTES = [
 
 function Method() {
   return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
+    <Section index="02" label="Chuyển động" tone="deep" className="pearl-method-section">
+      <div className="pearl-method">
+        <div className="pearl-method-copy">
+          <p className="label-micro">Từng chuyển động có mục đích</p>
+          <h2 className="font-display text-ink font-light">Chậm lại để cảm nhận rõ hơn.</h2>
+          <p className="text-ink-2">Pilates chú ý đến hơi thở, vị trí cơ thể và khả năng kiểm soát trong từng động tác.</p>
+          <dl>
             {METHOD_NOTES.map(({ term, def }) => (
               <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
                 <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
@@ -177,8 +138,28 @@ function Method() {
             ))}
           </dl>
         </div>
+        <div className="pearl-method-visual">
+          <div className="pearl-method-photo pearl-method-photo-one"><ArtDirectedImage photo="method" sizes="(min-width: 900px) 24vw, 47vw" /></div>
+          <div className="pearl-method-photo pearl-method-photo-two"><ArtDirectedImage photo="practice" sizes="(min-width: 900px) 24vw, 47vw" /></div>
+        </div>
       </div>
     </Section>
+  );
+}
+
+function Room() {
+  return (
+    <section className="pearl-room-section">
+      <div className="pearl-room gutter mx-auto max-w-(--container-page)">
+        <div className="pearl-room-photo"><ArtDirectedImage photo="room" sizes="(min-width: 900px) 52vw, 100vw" /></div>
+        <div className="pearl-room-copy">
+          <p className="label-micro">03 / Không gian tập</p>
+          <h2 className="font-display text-ink font-light">Một nơi để tập trung vào chính mình.</h2>
+          <p className="text-ink-2">Cùng nhìn qua không gian reformer tại Nha Trang trước khi bạn ghé studio.</p>
+          <Link to="/gioi-thieu" className="pearl-text-link">Xem studio <span aria-hidden="true">↗</span></Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -191,7 +172,7 @@ function ThisWeek() {
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
+    <Section index="04" label="Bảy ngày tới">
       <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
         <div className="md:col-span-4">
           <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
@@ -308,7 +289,7 @@ function AvailabilityBadge({ isFull }: { isFull: boolean }) {
    ──────────────────────────────────────────────────────────────────────────── */
 function FirstVisit() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
+    <Section index="05" label="Buổi đầu tiên">
       <div className="pb-20 md:pb-28">
         <h2 className="measure-wide font-display text-d2 text-ink font-light">
           Bạn không cần biết gì trước khi đến.
@@ -339,10 +320,6 @@ function FirstVisit() {
 function Closing() {
   return (
     <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
       <Section tone="ink">
         <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
           <div className="md:col-span-7">

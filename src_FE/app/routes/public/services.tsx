@@ -3,8 +3,8 @@ import { Link } from "react-router";
 import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -22,11 +22,14 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
+      <section className="pearl-services-hero gutter mx-auto max-w-(--container-page)">
+        <div className="pearl-services-copy">
+          <p className="label-micro">Hình thức tập</p>
+          <h1 className="font-display text-ink font-light">Chọn cách tập phù hợp với bạn.</h1>
+          <p className="text-ink-2">Lớp nhóm nhỏ hoặc lớp riêng trên reformer. Cùng một sự chú ý đến cơ thể, với hai cách đồng hành khác nhau.</p>
+        </div>
+        <div className="pearl-services-photo"><ArtDirectedImage photo="hero" priority sizes="(min-width: 900px) 47vw, 100vw" /></div>
+      </section>
 
       {CLASS_FORMATS.map((format, index) => (
         <Section

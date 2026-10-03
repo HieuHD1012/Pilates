@@ -1,0 +1,95 @@
+/* Pearl reference: soft spatial rhythm and a practice-first opening, adapted to
+   the owner's real room and the Soul-inspired cream, peach and copper palette. */
+.pearl-site { background: #fff5ec; }
+.pearl-header { background: #fff9f3; border-color: #ead5c3; }
+.pearl-header .wordmark { letter-spacing: .19em; }
+.pearl-site .label-micro { color: #9a4e2d; }
+.pearl-site .font-display { letter-spacing: -.038em; }
+.pearl-text-link { display: inline-flex; align-items: center; gap: 1rem; border-bottom: 1px solid #9a4e2d; color: #2c2319; padding-bottom: .45rem; font-size: .83rem; font-weight: 500; text-decoration: none; }
+.pearl-text-link span { color: #9a4e2d; font-size: 1.15em; }
+.pearl-text-link:hover { color: #9a4e2d; }
+
+.pearl-hero { background: radial-gradient(circle at 88% 27%, #fce5d1 0, #fff5ec 42%, #fff9f3 100%); overflow: hidden; }
+.pearl-hero-inner { min-height: 690px; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: center; gap: clamp(2rem, 4.5vw, 5rem); padding-top: 3.5rem; padding-bottom: 4.5rem; }
+.pearl-hero-copy { position: relative; z-index: 1; max-width: 625px; padding-bottom: 1.5rem; }
+.pearl-hero-copy h1 { margin-top: 2.1rem; font-size: clamp(3.7rem, 5.5vw, 6.4rem); line-height: .96; }
+.pearl-hero-copy h1 em { font-weight: 300; }
+.pearl-hero-copy > p:not(.label-micro) { max-width: 460px; margin-top: 2rem; font-size: 1.04rem; line-height: 1.8; }
+.pearl-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1.5rem 2rem; margin-top: 2.2rem; }
+.pearl-hero-visual { align-self: stretch; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.pearl-hero-image { height: clamp(425px, 42vw, 575px); overflow: hidden; border-radius: 47% 47% 3px 3px / 38% 38% 3px 3px; background: #e8d0bb; }
+.pearl-hero-image img { object-position: 50% 51%; }
+
+.pearl-formats-head { display: flex; justify-content: space-between; align-items: end; gap: 3rem; padding: 1.2rem 0 3rem; }
+.pearl-formats-head h2 { max-width: 670px; font-size: clamp(2.6rem, 4vw, 4.7rem); line-height: 1.04; }
+.pearl-formats-head p { max-width: 310px; font-size: .95rem; line-height: 1.75; }
+.pearl-formats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1.4rem; padding-bottom: 7rem; }
+.pearl-format { min-height: 405px; padding: clamp(2rem, 3.8vw, 4rem); display: flex; flex-direction: column; background: #fce5d1; }
+.pearl-format-2 { background: #f3dfd0; }
+.pearl-format-index { margin-bottom: auto; color: #9a4e2d; font-family: Newsreader, Georgia, serif; font-size: 1.1rem; }
+.pearl-format h3 { margin-top: 1rem; font-size: clamp(3.4rem, 5vw, 5.2rem); line-height: 1; }
+.pearl-format > p:not(.label-micro) { max-width: 390px; margin: 1.25rem 0 2rem; font-size: .93rem; line-height: 1.7; }
+.pearl-format .pearl-text-link { align-self: start; }
+
+.pearl-method-section { background: #fff9f3; }
+.pearl-method { display: grid; grid-template-columns: minmax(0,.92fr) minmax(0,1.08fr); align-items: center; gap: clamp(3rem, 7vw, 8rem); padding: 2rem 0 7.5rem; }
+.pearl-method-copy h2 { margin-top: 1.25rem; max-width: 610px; font-size: clamp(3rem, 4.6vw, 5.2rem); line-height: 1.02; }
+.pearl-method-copy > p:not(.label-micro) { max-width: 460px; margin: 1.6rem 0 2.5rem; font-size: 1rem; line-height: 1.75; }
+.pearl-method-visual { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; align-items: end; }
+.pearl-method-photo { overflow: hidden; background: #fce5d1; }
+.pearl-method-photo-one { height: 425px; border-radius: 48% 48% 2px 2px / 27% 27% 2px 2px; }
+.pearl-method-photo-two { height: 350px; }
+.pearl-method-photo img { object-position: center center; }
+
+.pearl-room-section { background: #fce5d1; }
+.pearl-room { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); align-items: center; gap: clamp(3rem, 7vw, 8rem); padding-top: 7rem; padding-bottom: 7rem; }
+.pearl-room-photo { height: 505px; overflow: hidden; }
+.pearl-room-photo img { object-position: 50% 60%; }
+.pearl-room-copy h2 { max-width: 500px; margin-top: 1.4rem; font-size: clamp(3rem, 4vw, 4.7rem); line-height: 1.04; }
+.pearl-room-copy > p:not(.label-micro) { max-width: 390px; margin: 1.6rem 0 2.3rem; line-height: 1.75; }
+
+.pearl-about-hero, .pearl-services-hero { display: grid; grid-template-columns: minmax(0,.86fr) minmax(0,1.14fr); align-items: center; gap: clamp(2rem,5vw,6rem); padding-top: 4rem; padding-bottom: 7rem; }
+.pearl-about-copy h1, .pearl-services-copy h1 { max-width: 620px; margin-top: 1.7rem; font-size: clamp(3.5rem,5vw,5.8rem); line-height: 1; }
+.pearl-about-copy > p:not(.label-micro), .pearl-services-copy > p:not(.label-micro) { max-width: 440px; margin-top: 1.8rem; font-size: 1rem; line-height: 1.75; }
+.pearl-about-photo { height: 590px; overflow: hidden; border-radius: 46% 46% 2px 2px / 27% 27% 2px 2px; }
+.pearl-about-photo img { object-position: 50% 60%; }
+.pearl-services-photo { height: 570px; overflow: hidden; border-radius: 46% 46% 2px 2px / 35% 35% 2px 2px; }
+.pearl-services-photo img { object-position: 50% 54%; }
+.pearl-about-intro { display: flex; align-items: start; justify-content: space-between; gap: 4rem; padding: 1rem 0 7rem; }
+.pearl-about-intro h2 { max-width: 600px; font-size: clamp(2.8rem,4vw,4.6rem); line-height: 1.06; }
+.pearl-about-intro p { max-width: 390px; line-height: 1.75; }
+
+@media (max-width: 899px) {
+  .pearl-hero-inner { min-height: 0; grid-template-columns: 1fr; gap: 2.5rem; padding-top: 3.8rem; padding-bottom: 4rem; }
+  .pearl-hero-copy { padding-bottom: 0; }
+  .pearl-hero-copy h1 { font-size: clamp(3.55rem, 8vw, 5rem); }
+  .pearl-hero-image { height: clamp(350px, 66vw, 570px); }
+  .pearl-method, .pearl-room, .pearl-about-hero, .pearl-services-hero { grid-template-columns: 1fr; gap: 2.5rem; }
+  .pearl-method-visual { max-width: 680px; }
+  .pearl-room { padding-top: 5rem; padding-bottom: 5rem; }
+  .pearl-room-photo { height: 440px; }
+  .pearl-about-photo, .pearl-services-photo { height: 520px; }
+}
+@media (max-width: 599px) {
+  .pearl-hero-inner { padding-top: 2.7rem; gap: 2rem; }
+  .pearl-hero-copy h1 { margin-top: 1.35rem; font-size: clamp(3rem, 13vw, 4.3rem); }
+  .pearl-hero-copy > p:not(.label-micro) { margin-top: 1.35rem; font-size: .94rem; line-height: 1.65; }
+  .pearl-hero-actions { margin-top: 1.6rem; }
+  .pearl-hero-image { height: 315px; border-radius: 48% 48% 2px 2px / 36% 36% 2px 2px; }
+  .pearl-formats-head, .pearl-about-intro { display: block; }
+  .pearl-formats-head h2 { font-size: 3rem; }
+  .pearl-formats-head p { margin-top: 1.2rem; }
+  .pearl-formats { grid-template-columns: 1fr; gap: .8rem; padding-bottom: 5rem; }
+  .pearl-format { min-height: 360px; padding: 2rem; }
+  .pearl-format h3 { font-size: 3.8rem; }
+  .pearl-method { padding-bottom: 5rem; }
+  .pearl-method-copy h2, .pearl-room-copy h2 { font-size: 3.25rem; }
+  .pearl-method-photo-one { height: 300px; }
+  .pearl-method-photo-two { height: 255px; }
+  .pearl-room-photo { height: 300px; }
+  .pearl-about-hero, .pearl-services-hero { padding-top: 2.7rem; padding-bottom: 4rem; }
+  .pearl-about-copy h1, .pearl-services-copy h1 { font-size: 3.5rem; }
+  .pearl-about-photo, .pearl-services-photo { height: 365px; }
+  .pearl-about-intro h2 { font-size: 3rem; }
+  .pearl-about-intro p { margin-top: 1.5rem; }
+}
