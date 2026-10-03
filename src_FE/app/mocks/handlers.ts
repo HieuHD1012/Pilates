@@ -205,13 +205,21 @@ function str(request: Request, key: string): string | null {
 export const handlers: HttpHandler[] = [
   /* auth ---------------------------------------------------------------- */
 
-  http.post(url("/auth/login"), () =>
-    HttpResponse.json({
+  http.post(url("/auth/login"), async ({ request }) => {
+    // Development only: known demo emails select their fixture role so the
+    // owner can review admin through the real sign-in UI. No credential check
+    // is simulated; production authentication never imports these handlers.
+    const body = (await request.json()) as { email?: string };
+    const account = Object.values(DEMO_USERS).find((user) => user.email === body.email);
+    if (account && typeof localStorage !== "undefined") {
+      localStorage.setItem("soul:demo-role", account.role);
+    }
+    return HttpResponse.json({
       access_token: "demo-access",
       refresh_token: "demo-refresh",
       token_type: "bearer",
-    }),
-  ),
+    });
+  }),
   http.post(url("/auth/refresh"), () =>
     HttpResponse.json({
       access_token: "demo-access",

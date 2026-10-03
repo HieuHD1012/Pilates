@@ -1,191 +1,190 @@
 import { Link } from "react-router";
-
+import { ArrowUpRight, CalendarDays, CreditCard, RefreshCw, Users } from "lucide-react";
 import { useDashboard } from "~/features/reports/queries";
 import type { SessionRowResponse } from "~/lib/api/schema";
 import { formatDayMonth, formatNumber, formatTime, weekdayShort } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { Metric, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { CapacityMeter, StatusBadge } from "~/ui/status";
-
+import { Kpi, Panel, PanelBody, PanelHeader } from "~/ui/workspace";
 import type { Route } from "./+types/dashboard";
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: "Tổng quan — Soul Pilates" }, { name: "robots", content: "noindex" }];
 }
-
-/**
- * The dashboard answers one question: what needs attention today?
- *
- * The whole screen is `GET /reports/dashboard` — four numbers, today's classes,
- * and the classes that have ended without a trainer marking attendance. Two
- * properties of that endpoint are design decisions, not omissions:
- *
- *  - **There is no revenue figure.** This board is open all day at a counter
- *    customers can see. Money has its own screen, behind a sign-in and a click.
- *  - **A number may be `null`,** meaning not measured. The cell is then left
- *    empty; "0" would be a measurement, and a wrong one.
- *
- * `detail_path` on each number is an **API** path, not a route. The link below
- * is the studio screen that answers the same question, chosen by `key`; a
- * number whose screen does not exist yet is shown without a link rather than
- * pointing at a page that is not there.
- */
-
-/** Dashboard number keys → the studio screen that shows those rows. */
 const DETAIL_ROUTE: Record<string, string> = {
   sessions_today: "/studio/lich",
   bookings_today: "/studio/lich",
   renewals_due: "/studio/gia-han",
   unconfirmed_payments: "/studio/thanh-toan",
 };
+const ICONS = [CalendarDays, Users, RefreshCw, CreditCard];
+const UNITS: Record<string, string> = {
+  sessions_today: "lớp",
+  bookings_today: "lượt",
+  renewals_due: "gói",
+  unconfirmed_payments: "khoản",
+};
 
 export default function StaffDashboard() {
   const query = useDashboard();
-
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
-        title="Tổng quan"
-        description="Bốn con số của hôm nay, lịch trong ngày, và những lớp đã kết thúc còn chờ điểm danh."
+        title="Một ngày tại studio"
+        description="Lịch hôm nay và những việc cần theo dõi, trong cùng một không gian."
         actions={
-          <Button asChild size="sm" variant="secondary">
+          <Button asChild variant="secondary">
             <Link to="/studio/lich">Mở lịch tuần</Link>
           </Button>
         }
       />
-
-      {query.isPending ? <SkeletonRows rows={5} className="mt-6" /> : null}
-
+      {query.isPending ? <SkeletonRows rows={5} /> : null}
       {query.isError ? (
         <ErrorState
-          className="mt-6"
           description="Không tải được bảng tổng quan."
-          detail={query.error instanceof Error ? query.error.message : undefined}
           onRetry={() => void query.refetch()}
         />
       ) : null}
-
       {query.isSuccess ? (
         <>
-          <div className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            {query.data.numbers.map((number) => {
+          <div className="dashboard-kpis grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {query.data.numbers.map((number, index) => {
+              const Icon = ICONS[index] ?? CalendarDays;
               const route = DETAIL_ROUTE[number.key];
-              const value =
-                number.value === null ? (
-                  <Placeholder />
-                ) : (
-                  <Figures display>{formatNumber(number.value)}</Figures>
-                );
-
               return (
-                <Metric
+                <Kpi
+                  className="min-w-0 px-4"
                   key={number.key}
                   label={number.label}
-                  value={route ? <Link to={route}>{value}</Link> : value}
+                  icon={<Icon />}
+                  value={
+                    number.value === null ? (
+                      <>
+                        <span aria-hidden="true">—</span>
+                        <span className="sr-only">Chưa có số liệu</span>
+                      </>
+                    ) : (
+                      formatNumber(number.value)
+                    )
+                  }
+                  unit={UNITS[number.key]}
+                  context={
+                    route ? (
+                      <Link
+                        className="text-copper inline-flex min-h-9 items-center gap-1"
+                        aria-label={`Xem chi tiết: ${number.label}`}
+                        to={route}
+                      >
+                        Xem chi tiết
+                        <ArrowUpRight className="size-3" aria-hidden="true" />
+                      </Link>
+                    ) : null
+                  }
                 />
               );
             })}
           </div>
-
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Chờ điểm danh</h2>
-            <p className="measure-wide text-ink-2 mt-1 text-xs">
-              Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ
-              trách mới điểm danh được — nhắc họ mở lớp của mình.
-            </p>
-
-            {query.data.sessions_needing_attention.length === 0 ? (
-              <EmptyState
-                className="mt-4"
-                title="Không có lớp nào chờ điểm danh"
-                description="Mọi lớp đã kết thúc đều đã được điểm danh."
+          <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(18rem,1fr)]">
+            <Panel>
+              <PanelHeader title="Lớp hôm nay" description="Theo thứ tự giờ bắt đầu." />
+              <PanelBody>
+                {query.data.sessions_today.length ? (
+                  <ul>
+                    {[...query.data.sessions_today]
+                      .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+                      .map((session) => (
+                        <SessionRow key={session.class_session_id} session={session}>
+                          {session.status === "CANCELLED" ? (
+                            <StatusBadge tone="critical">Đã hủy</StatusBadge>
+                          ) : (
+                            <CapacityMeter
+                              booked={session.booked_count}
+                              capacity={session.capacity}
+                            />
+                          )}
+                        </SessionRow>
+                      ))}
+                  </ul>
+                ) : (
+                  <EmptyState
+                    title="Hôm nay không có lớp"
+                    description="Chuyển sang lịch tuần để xem những buổi tiếp theo."
+                  />
+                )}
+              </PanelBody>
+            </Panel>
+            <Panel>
+              <PanelHeader
+                title="Chờ điểm danh"
+                description="Lớp đã kết thúc, chưa hoàn tất điểm danh."
               />
-            ) : (
-              <ul className="rule-t mt-4">
-                {query.data.sessions_needing_attention.map((session) => (
-                  <SessionRow key={session.class_session_id} session={session} dated>
-                    <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
-                  </SessionRow>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <section className="mt-12">
-            <h2 className="text-ink text-sm font-medium">Lớp hôm nay</h2>
-            {query.data.sessions_today.length === 0 ? (
-              <EmptyState
-                className="mt-4"
-                title="Hôm nay không có lớp"
-                description="Không có buổi nào được xếp cho ngày hôm nay."
-              />
-            ) : (
-              <ul className="rule-t mt-4">
-                {query.data.sessions_today.map((session) => (
-                  <SessionRow key={session.class_session_id} session={session}>
-                    {session.status === "CANCELLED" ? (
-                      <StatusBadge tone="critical">Đã hủy</StatusBadge>
-                    ) : (
-                      <CapacityMeter
-                        booked={session.booked_count}
-                        capacity={session.capacity}
-                      />
-                    )}
-                  </SessionRow>
-                ))}
-              </ul>
-            )}
-          </section>
+              <PanelBody>
+                {query.data.sessions_needing_attention.length ? (
+                  <>
+                    <p className="text-ink-2 mb-4 text-sm">
+                      Nhắc huấn luyện viên phụ trách hoàn tất điểm danh.
+                    </p>
+                    <ul>
+                      {query.data.sessions_needing_attention.map((session) => (
+                        <SessionRow key={session.class_session_id} session={session} dated>
+                          <StatusBadge tone="attention">Chờ điểm danh</StatusBadge>
+                        </SessionRow>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <EmptyState
+                    title="Đã hoàn tất"
+                    description="Không có lớp nào đang chờ điểm danh."
+                  />
+                )}
+              </PanelBody>
+            </Panel>
+          </div>
         </>
       ) : null}
     </div>
   );
 }
-
 function SessionRow({
   session,
   dated,
   children,
 }: {
   session: SessionRowResponse;
-  /** Outside today's list a time alone is ambiguous, so the day comes with it. */
   dated?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <li className="rule-b flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
-      <span className="flex shrink-0 items-baseline gap-2">
-        {dated ? (
-          <span className="text-ink-2 w-13 text-xs">
-            {weekdayShort(session.starts_at)}{" "}
-            <Figures>{formatDayMonth(session.starts_at)}</Figures>
-          </span>
-        ) : null}
-        <Figures className="text-ink-2 text-xs">{formatTime(session.starts_at)}</Figures>
-      </span>
-      <span className="text-ink min-w-0 text-sm">
-        <Link
-          to={`/studio/lich/${session.class_session_id}`}
-          className="decoration-rule-2 underline-offset-[6px] hover:underline"
-        >
-          {session.trainer_name}
-        </Link>
-      </span>
-      <span className="flex items-center gap-3">{children}</span>
+    <li className="border-rule border-b py-4 first:pt-0 last:border-b-0 last:pb-0">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="bg-sand min-w-18 rounded-md px-3 py-2 text-center">
+          <Figures className="text-ink text-lg">{formatTime(session.starts_at)}</Figures>
+          {dated ? (
+            <p className="text-ink-2 text-xs">
+              {weekdayShort(session.starts_at)} {formatDayMonth(session.starts_at)}
+            </p>
+          ) : null}
+        </div>
+        <div className="min-w-0 flex-1">
+          <Link
+            to={`/studio/lich/${session.class_session_id}`}
+            className="text-ink hover:text-copper block text-base font-medium wrap-anywhere"
+          >
+            {session.trainer_name}
+          </Link>
+          <div className="mt-2 flex flex-wrap items-center gap-3">{children}</div>
+          <Link
+            to={`/studio/lich/${session.class_session_id}`}
+            className="text-copper mt-1 inline-flex min-h-9 items-center text-sm"
+          >
+            Xem lớp
+          </Link>
+        </div>
+      </div>
     </li>
-  );
-}
-
-/** A figure the backend did not measure. The dash is decoration, so it speaks. */
-function Placeholder() {
-  return (
-    <>
-      <span aria-hidden="true" className="text-ink-2">
-        —
-      </span>
-      <span className="sr-only">chưa có số liệu</span>
-    </>
   );
 }

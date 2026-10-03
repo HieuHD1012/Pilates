@@ -487,3 +487,169 @@
     white-space: normal;
   }
 }
+
+/* Admin composition: task groups on warm paper, not editorial ruled fields. */
+@layer components {
+  .workspace-page {
+    width: 100%;
+    max-width: var(--container-wide);
+    margin-inline: auto;
+    padding: 28px 32px 48px;
+  }
+  .workspace-page > header {
+    margin-bottom: 24px;
+  }
+  .workspace-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    color: var(--color-ink-2);
+    font-size: var(--text-sm);
+    padding-top: 16px;
+  }
+  .workspace-summary > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .workspace-summary dd {
+    color: var(--color-ink);
+    font-size: var(--text-base);
+  }
+  .workspace-collection > div:first-child:has(input, select),
+  .workspace-calendar > div:has(> label) {
+    padding: 16px 20px;
+  }
+  .workspace-collection > ul,
+  .workspace-collection > div > ul {
+    padding-inline: 20px;
+  }
+  .workspace-collection > p,
+  .workspace-collection > div > p {
+    padding-inline: 20px;
+  }
+  .workspace-collection table tbody tr:hover {
+    background: var(--color-sand);
+  }
+  .workspace-collection table th {
+    font-size: var(--text-sm);
+    padding-block: 14px;
+  }
+  .workspace-collection table td {
+    padding-block: 18px;
+  }
+  .admin-workspace [role="tablist"] {
+    background: var(--color-paper);
+    padding-inline: 20px;
+    gap: 24px;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-md);
+  }
+  .admin-workspace [role="tab"] {
+    min-height: 52px;
+  }
+  .admin-workspace [role="tabpanel"] {
+    padding-top: 24px;
+  }
+  .admin-workspace input,
+  .admin-workspace select,
+  .admin-workspace textarea {
+    background: var(--color-paper);
+  }
+  @media (max-width: 639px) {
+    .workspace-page {
+      padding: 24px 16px 40px;
+    }
+    .workspace-summary {
+      gap: 16px 24px;
+    }
+    .workspace-collection > ul,
+    .workspace-collection > div > ul {
+      padding-inline: 16px;
+    }
+  }
+}
+
+@layer components {
+  .admin-workspace .workspace-calendar > div:has(> div > label) {
+    padding: 16px 20px;
+  }
+  .admin-workspace .workspace-collection section {
+    padding-inline: 20px;
+  }
+  .admin-workspace .workspace-collection .grid > .rule-t:has(.figures-display),
+  .admin-workspace .workspace-page > section .grid > .rule-t:has(.figures-display) {
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-md);
+    padding: 20px;
+  }
+  .admin-workspace .label-micro {
+    font-size: var(--text-sm);
+    letter-spacing: normal;
+  }
+  .admin-workspace .workspace-calendar .lg\:hidden {
+    padding-inline: 16px;
+  }
+}
+
+@layer components {
+  .workspace-collection > div:first-child:has([aria-pressed]) {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .workspace-collection > div > .grid {
+    margin-inline: 20px;
+  }
+  .workspace-calendar > div:has(> div > label) {
+    padding: 16px 20px;
+  }
+  .workspace-calendar [role="region"] {
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+  }
+  .workspace-collection :is(input, select) {
+    max-width: 100%;
+  }
+}
+
+@layer components {
+  .calendar-agenda {
+    padding: 4px 20px 20px;
+  }
+  .calendar-agenda > div {
+    display: grid;
+    gap: 24px;
+    border-top: 0;
+  }
+  .calendar-agenda > div > section {
+    min-width: 0;
+    padding-bottom: 20px;
+  }
+  @media (min-width: 768px) {
+    .calendar-agenda > div {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1280px) {
+    .calendar-agenda > div {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+@layer components {
+  @media (max-width: 639px) {
+    .dashboard-kpis > div > span:first-child > span {
+      display: none;
+    }
+    .dashboard-kpis > div > span:first-child {
+      min-height: 44px;
+      align-items: flex-start;
+    }
+    .dashboard-kpis > div {
+      padding: 16px;
+    }
+  }
+}

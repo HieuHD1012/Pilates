@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function Login() {
   const [searchParams] = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -66,7 +68,9 @@ export default function Login() {
 
   return (
     <div>
-      <h1 className="font-display text-d2 text-ink font-light">Đăng nhập</h1>
+      <h1 className="font-display text-ink text-[2.25rem] leading-tight font-normal">
+        Đăng nhập
+      </h1>
       <p className="text-ink-2 mt-3 text-sm">
         Dành cho học viên, huấn luyện viên và nhân viên studio. Tài khoản do studio cấp.
       </p>
@@ -93,15 +97,27 @@ export default function Login() {
 
         <Field label="Mật khẩu" required size="lg" error={errors.password?.message}>
           {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="password"
-              className="h-12 text-base"
-              autoComplete="current-password"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("password")}
-            />
+            <div className="relative">
+              <Input
+                id={id}
+                type={showPassword ? "text" : "password"}
+                className="h-12 pr-18 text-base"
+                spellCheck={false}
+                autoComplete="current-password"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                aria-pressed={showPassword}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                onClick={() => setShowPassword((value) => !value)}
+                className="text-ink-2 hover:text-copper absolute inset-y-0 right-1 min-w-16 px-2 text-sm"
+              >
+                {showPassword ? "Ẩn" : "Hiện"}
+              </button>
+            </div>
           )}
         </Field>
 
@@ -132,7 +148,7 @@ export default function Login() {
       {/* The dead end the audit found: a newcomer arrives here from the public
           timetable, but accounts are created by the studio after a package is
           sold. Say so, and point at the one door that works. */}
-      <div className="bg-sand-deep mt-10 rounded-sm px-5 py-4">
+      <div className="border-rule mt-7 border-t pt-5">
         <p className="text-ink text-sm font-medium">Chưa có tài khoản?</p>
         <p className="text-ink-2 mt-1 text-sm">
           Tài khoản do studio tạo khi bạn bắt đầu gói tập. Để lại số điện thoại để được tư

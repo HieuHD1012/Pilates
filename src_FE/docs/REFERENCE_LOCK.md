@@ -126,7 +126,7 @@ repository root for sources, route coverage and verification evidence.
 ### Operational workspace — 2026-10-03
 
 The staff area groups work in bordered `paper` panels (radius 8px, no shadow),
-under a dark `ink-deep` rail with icons and queue counts; status is a filled
+under a warm cream rail with task icons and a paper account bar; status is a filled
 wash with a dot. Principles 6 and 7 above hold for the public site; the staff
 area follows `docs/adr/0006-operational-workspace.md`.
 
@@ -139,13 +139,13 @@ operational surface responds instantly and gets out of the way.
 
 ## Public → application translation
 
-|                | Public                                                                 | Application        |
-| -------------- | ---------------------------------------------------------------------- | ------------------ |
+|                | Public                                                                 | Application                                                  |
+| -------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Ground         | `sand`                                                                 | `sand` + `paper` panels (staff, ADR 0006); `chalk` elsewhere |
-| Display serif  | Headlines and editorial                                                | Figures and page titles |
-| Density        | Editorial, generous                                                    | Compact, scannable |
-| Primary action | `copper`                                                               | `ink`              |
-| Motion         | Reveals allowed                                                        | Feedback only      |
+| Display serif  | Headlines and editorial                                                | Figures and page titles                                      |
+| Density        | Editorial, generous                                                    | Compact, scannable                                           |
+| Primary action | `copper`                                                               | `ink`                                                        |
+| Motion         | Reveals allowed                                                        | Feedback only                                                |
 | Shared         | Rules, tokens, figures, micro-labels, status vocabulary, form language |
 
 ## Reconsideration

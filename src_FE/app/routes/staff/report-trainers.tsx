@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -67,7 +68,7 @@ export default function StaffReportTrainers() {
   const classTotal = (rows ?? []).reduce((sum, row) => sum + row.scheduled_sessions, 0);
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Báo cáo huấn luyện viên"
         description="Số lớp đã xếp, lớp đã hủy và lượt đăng ký của từng huấn luyện viên trong khoảng ngày."
@@ -98,7 +99,7 @@ export default function StaffReportTrainers() {
           </>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Khoảng ngày</dt>
               <dd>
@@ -131,118 +132,138 @@ export default function StaffReportTrainers() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Từ ngày" className="w-full sm:w-44">
-          {({ id }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.from}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, from: event.target.value }))
-              }
-            />
-          )}
-        </Field>
+      <Panel className="workspace-collection">
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
+          }
+        >
+          <Field label="Từ ngày" className="w-full sm:w-44">
+            {({ id }) => (
+              <Input
+                id={id}
+                type="date"
+                value={range.from}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, from: event.target.value }))
+                }
+              />
+            )}
+          </Field>
 
-        <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.to}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, to: event.target.value }))
-              }
-            />
-          )}
-        </Field>
-      </FilterBar>
+          <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                type="date"
+                value={range.to}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, to: event.target.value }))
+                }
+              />
+            )}
+          </Field>
+        </FilterBar>
 
-      <p className="measure-wide text-ink-2 mb-3 text-xs">
-        Sắp xếp theo số lớp đã xếp, nhiều nhất trước. Lớp đã hủy được đếm riêng, không trừ
-        vào cột số lớp.
-      </p>
+        <p className="measure-wide text-ink-2 mb-3 text-xs">
+          Sắp xếp theo số lớp đã xếp, nhiều nhất trước. Lớp đã hủy được đếm riêng, không trừ
+          vào cột số lớp.
+        </p>
 
-      <DemoDataNotice className="mb-3" />
+        <DemoDataNotice className="mb-3" />
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        isEmpty={(report) => report.length === 0}
-        emptyTitle="Không có huấn luyện viên nào dạy trong khoảng ngày này"
-        emptyDescription="Chưa có lớp nào được phân công trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem phân công."
-        emptyAction={
-          <Button asChild variant="secondary">
-            <Link to="/studio/lich">Mở lịch tuần</Link>
-          </Button>
-        }
-        errorDescription="Không tải được báo cáo huấn luyện viên."
-        showErrorDetail
-      >
-        {(report) => (<>
-          <ul className="rule-t sm:hidden">
-            {[...report].sort(byTeachingLoad).map(row => (
-              <li key={row.trainer_id} className="rule-b py-5">
-                <Link to={`/studio/huan-luyen-vien/${row.trainer_id}`} className="text-ink text-base underline underline-offset-4">{row.trainer_name}</Link>
-                <dl className="mt-4 grid grid-cols-3 gap-3">
-                  {[["Lớp đã xếp", row.scheduled_sessions], ["Lớp đã hủy", row.cancelled_sessions], ["Lượt đăng ký", row.total_bookings]].map(([label, value]) => (
-                    <div key={label}><dt className="text-ink-2 text-xs">{label}</dt><dd className="mt-1"><Figures className="text-ink text-xl">{formatNumber(Number(value))}</Figures></dd></div>
-                  ))}
-                </dl>
-              </li>
-            ))}
-          </ul>
-          <div className="hidden sm:block">
-          <DataTable
-            caption="Lớp đã xếp, lớp đã hủy và lượt đăng ký theo huấn luyện viên"
-            minWidth="44rem"
-          >
-            <thead>
-              <tr>
-                <Th>Huấn luyện viên</Th>
-                <Th numeric>Lớp đã xếp</Th>
-                <Th numeric>Lớp đã hủy</Th>
-                <Th numeric>Lượt đăng ký</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...report].sort(byTeachingLoad).map((row) => (
-                <Tr key={row.trainer_id}>
-                  <Td>
-                    {/* Names wrap; a Vietnamese name is never truncated and
-                        never hidden behind a hover title. */}
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          isEmpty={(report) => report.length === 0}
+          emptyTitle="Không có huấn luyện viên nào dạy trong khoảng ngày này"
+          emptyDescription="Chưa có lớp nào được phân công trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem phân công."
+          emptyAction={
+            <Button asChild variant="secondary">
+              <Link to="/studio/lich">Mở lịch tuần</Link>
+            </Button>
+          }
+          errorDescription="Không tải được báo cáo huấn luyện viên."
+          showErrorDetail
+        >
+          {(report) => (
+            <>
+              <ul className="rule-t sm:hidden">
+                {[...report].sort(byTeachingLoad).map((row) => (
+                  <li key={row.trainer_id} className="rule-b py-5">
                     <Link
                       to={`/studio/huan-luyen-vien/${row.trainer_id}`}
-                      className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+                      className="text-ink text-base underline underline-offset-4"
                     >
                       {row.trainer_name}
                     </Link>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.scheduled_sessions)}</Figures>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.cancelled_sessions)}</Figures>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.total_bookings)}</Figures>
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </DataTable>
-          </div>
-        </>)}
-      </QueryBoundary>
+                    <dl className="mt-4 grid grid-cols-3 gap-3">
+                      {[
+                        ["Lớp đã xếp", row.scheduled_sessions],
+                        ["Lớp đã hủy", row.cancelled_sessions],
+                        ["Lượt đăng ký", row.total_bookings],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <dt className="text-ink-2 text-xs">{label}</dt>
+                          <dd className="mt-1">
+                            <Figures className="text-ink text-xl">
+                              {formatNumber(Number(value))}
+                            </Figures>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden sm:block">
+                <DataTable
+                  caption="Lớp đã xếp, lớp đã hủy và lượt đăng ký theo huấn luyện viên"
+                  minWidth="44rem"
+                >
+                  <thead>
+                    <tr>
+                      <Th>Huấn luyện viên</Th>
+                      <Th numeric>Lớp đã xếp</Th>
+                      <Th numeric>Lớp đã hủy</Th>
+                      <Th numeric>Lượt đăng ký</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...report].sort(byTeachingLoad).map((row) => (
+                      <Tr key={row.trainer_id}>
+                        <Td>
+                          {/* Names wrap; a Vietnamese name is never truncated and
+                        never hidden behind a hover title. */}
+                          <Link
+                            to={`/studio/huan-luyen-vien/${row.trainer_id}`}
+                            className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+                          >
+                            {row.trainer_name}
+                          </Link>
+                        </Td>
+                        <Td numeric>
+                          <Figures>{formatNumber(row.scheduled_sessions)}</Figures>
+                        </Td>
+                        <Td numeric>
+                          <Figures>{formatNumber(row.cancelled_sessions)}</Figures>
+                        </Td>
+                        <Td numeric>
+                          <Figures>{formatNumber(row.total_bookings)}</Figures>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </div>
+            </>
+          )}
+        </QueryBoundary>
+      </Panel>
 
       <LiveRegion
         message={

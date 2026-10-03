@@ -1,0 +1,414 @@
+[
+  {
+    "label": "Đăng nhập",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/dang-nhap-390.png",
+      "1440": "before/dang-nhap-1440.png"
+    },
+    "after": {
+      "390": "after/dang-nhap-390.png",
+      "1440": "after/dang-nhap-1440.png"
+    }
+  },
+  {
+    "label": "Quên mật khẩu",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/quen-mat-khau-390.png",
+      "1440": "before/quen-mat-khau-1440.png"
+    },
+    "after": {
+      "390": "after/quen-mat-khau-390.png",
+      "1440": "after/quen-mat-khau-1440.png"
+    }
+  },
+  {
+    "label": "Đặt lại mật khẩu",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/dat-lai-mat-khau-390.png",
+      "1440": "before/dat-lai-mat-khau-1440.png"
+    },
+    "after": {
+      "390": "after/dat-lai-mat-khau-390.png",
+      "1440": "after/dat-lai-mat-khau-1440.png"
+    }
+  },
+  {
+    "label": "Tổng quan",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_tong-quan-390.png",
+      "1440": "before/studio_tong-quan-1440.png"
+    },
+    "after": {
+      "390": "after/studio_tong-quan-390.png",
+      "1440": "after/studio_tong-quan-1440.png"
+    }
+  },
+  {
+    "label": "Lịch & lớp học",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_lich-390.png",
+      "1440": "before/studio_lich-1440.png"
+    },
+    "after": {
+      "390": "after/studio_lich-390.png",
+      "1440": "after/studio_lich-1440.png"
+    }
+  },
+  {
+    "label": "Chi tiết lớp",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_lich_1-390.png",
+      "1440": "before/studio_lich_1-1440.png"
+    },
+    "after": {
+      "390": "after/studio_lich_1-390.png",
+      "1440": "after/studio_lich_1-1440.png"
+    }
+  },
+  {
+    "label": "Khách quan tâm",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_khach-quan-tam-390.png",
+      "1440": "before/studio_khach-quan-tam-1440.png"
+    },
+    "after": {
+      "390": "after/studio_khach-quan-tam-390.png",
+      "1440": "after/studio_khach-quan-tam-1440.png"
+    }
+  },
+  {
+    "label": "Chi tiết khách",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_khach-quan-tam_1-390.png",
+      "1440": "before/studio_khach-quan-tam_1-1440.png"
+    },
+    "after": {
+      "390": "after/studio_khach-quan-tam_1-390.png",
+      "1440": "after/studio_khach-quan-tam_1-1440.png"
+    }
+  },
+  {
+    "label": "Học viên",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_hoc-vien-390.png",
+      "1440": "before/studio_hoc-vien-1440.png"
+    },
+    "after": {
+      "390": "after/studio_hoc-vien-390.png",
+      "1440": "after/studio_hoc-vien-1440.png"
+    }
+  },
+  {
+    "label": "Hồ sơ học viên",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_hoc-vien_1-390.png",
+      "1440": "before/studio_hoc-vien_1-1440.png"
+    },
+    "after": {
+      "390": "after/studio_hoc-vien_1-390.png",
+      "1440": "after/studio_hoc-vien_1-1440.png"
+    }
+  },
+  {
+    "label": "Huấn luyện viên",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_huan-luyen-vien-390.png",
+      "1440": "before/studio_huan-luyen-vien-1440.png"
+    },
+    "after": {
+      "390": "after/studio_huan-luyen-vien-390.png",
+      "1440": "after/studio_huan-luyen-vien-1440.png"
+    }
+  },
+  {
+    "label": "Hồ sơ HLV",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_huan-luyen-vien_1-390.png",
+      "1440": "before/studio_huan-luyen-vien_1-1440.png"
+    },
+    "after": {
+      "390": "after/studio_huan-luyen-vien_1-390.png",
+      "1440": "after/studio_huan-luyen-vien_1-1440.png"
+    }
+  },
+  {
+    "label": "Gói tập admin",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_goi-tap-390.png",
+      "1440": "before/studio_goi-tap-1440.png"
+    },
+    "after": {
+      "390": "after/studio_goi-tap-390.png",
+      "1440": "after/studio_goi-tap-1440.png"
+    }
+  },
+  {
+    "label": "Thanh toán",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_thanh-toan-390.png",
+      "1440": "before/studio_thanh-toan-1440.png"
+    },
+    "after": {
+      "390": "after/studio_thanh-toan-390.png",
+      "1440": "after/studio_thanh-toan-1440.png"
+    }
+  },
+  {
+    "label": "Sổ buổi",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_so-buoi-390.png",
+      "1440": "before/studio_so-buoi-1440.png"
+    },
+    "after": {
+      "390": "after/studio_so-buoi-390.png",
+      "1440": "after/studio_so-buoi-1440.png"
+    }
+  },
+  {
+    "label": "Gia hạn",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_gia-han-390.png",
+      "1440": "before/studio_gia-han-1440.png"
+    },
+    "after": {
+      "390": "after/studio_gia-han-390.png",
+      "1440": "after/studio_gia-han-1440.png"
+    }
+  },
+  {
+    "label": "Chọn báo cáo",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_bao-cao-390.png",
+      "1440": "before/studio_bao-cao-1440.png"
+    },
+    "after": {
+      "390": "after/studio_bao-cao-390.png",
+      "1440": "after/studio_bao-cao-1440.png"
+    }
+  },
+  {
+    "label": "Báo cáo doanh thu",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_bao-cao_doanh-thu-390.png",
+      "1440": "before/studio_bao-cao_doanh-thu-1440.png"
+    },
+    "after": {
+      "390": "after/studio_bao-cao_doanh-thu-390.png",
+      "1440": "after/studio_bao-cao_doanh-thu-1440.png"
+    }
+  },
+  {
+    "label": "Báo cáo lớp",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_bao-cao_lop-hoc-390.png",
+      "1440": "before/studio_bao-cao_lop-hoc-1440.png"
+    },
+    "after": {
+      "390": "after/studio_bao-cao_lop-hoc-390.png",
+      "1440": "after/studio_bao-cao_lop-hoc-1440.png"
+    }
+  },
+  {
+    "label": "Báo cáo HLV",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_bao-cao_huan-luyen-vien-390.png",
+      "1440": "before/studio_bao-cao_huan-luyen-vien-1440.png"
+    },
+    "after": {
+      "390": "after/studio_bao-cao_huan-luyen-vien-390.png",
+      "1440": "after/studio_bao-cao_huan-luyen-vien-1440.png"
+    }
+  },
+  {
+    "label": "Tài khoản",
+    "group": "Màn hình",
+    "before": {
+      "390": "before/studio_tai-khoan-390.png",
+      "1440": "before/studio_tai-khoan-1440.png"
+    },
+    "after": {
+      "390": "after/studio_tai-khoan-390.png",
+      "1440": "after/studio_tai-khoan-1440.png"
+    }
+  },
+  {
+    "label": "Đăng nhập — nhập mật khẩu",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/login-filled-390.png",
+      "1440": "states/login-filled-1440.png"
+    }
+  },
+  {
+    "label": "Tạo học viên",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-create-390.png",
+      "1440": "states/student-create-1440.png"
+    }
+  },
+  {
+    "label": "Hồ sơ — nội dung dài",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-long-content-390.png",
+      "1440": "states/student-long-content-1440.png"
+    }
+  },
+  {
+    "label": "Danh sách — nội dung dài",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-long-list-390.png",
+      "1440": "states/student-long-list-1440.png"
+    }
+  },
+  {
+    "label": "Tab gói & thanh toán",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-commerce-390.png",
+      "1440": "states/student-commerce-1440.png"
+    }
+  },
+  {
+    "label": "Tab lịch sử lớp",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-history-390.png",
+      "1440": "states/student-history-1440.png"
+    }
+  },
+  {
+    "label": "Tab ảnh tiến trình",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/student-photos-390.png",
+      "1440": "states/student-photos-1440.png"
+    }
+  },
+  {
+    "label": "Tư vấn — đã lưu",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/lead-saved-390.png",
+      "1440": "states/lead-saved-1440.png"
+    }
+  },
+  {
+    "label": "Chuyển thành học viên",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/lead-convert-390.png",
+      "1440": "states/lead-convert-1440.png"
+    }
+  },
+  {
+    "label": "Ghi nhận liên hệ gia hạn",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/renewal-contact-390.png",
+      "1440": "states/renewal-contact-1440.png"
+    }
+  },
+  {
+    "label": "Sổ buổi — đã chọn gói",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/ledger-selected-390.png",
+      "1440": "states/ledger-selected-1440.png"
+    }
+  },
+  {
+    "label": "Điều chỉnh buổi — lỗi trường",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/ledger-adjustment-390.png",
+      "1440": "states/ledger-adjustment-1440.png"
+    }
+  },
+  {
+    "label": "Xác nhận khóa tài khoản",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/account-lock-390.png",
+      "1440": "states/account-lock-1440.png"
+    }
+  },
+  {
+    "label": "Quyền nhân viên",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/staff-permissions-390.png",
+      "1440": "states/staff-permissions-1440.png"
+    }
+  },
+  {
+    "label": "Lịch tuần theo giờ",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "1440": "states/calendar-week-1440.png"
+    }
+  },
+  {
+    "label": "Lịch điện thoại — chọn ngày",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/calendar-day-390.png"
+    }
+  },
+  {
+    "label": "Khôi phục — đã gửi hướng dẫn",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/recovery-sent-390.png",
+      "1440": "states/recovery-sent-1440.png"
+    }
+  },
+  {
+    "label": "Đặt lại mật khẩu — lỗi trường",
+    "group": "Tương tác",
+    "before": {},
+    "after": {
+      "390": "states/recovery-reset-errors-390.png",
+      "1440": "states/recovery-reset-errors-1440.png"
+    }
+  }
+]

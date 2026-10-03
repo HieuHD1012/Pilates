@@ -14,7 +14,7 @@ import { CapacityMeter, StatusBadge } from "~/ui/status";
 // Sized so a 50-minute class clears three lines of chip content without
 // truncating either the class name or the trainer's. P5: when a diacritic
 // string does not fit, the container changes — never the string.
-const PX_PER_MINUTE = 1.25;
+const PX_PER_MINUTE = 2;
 const DEFAULT_START_HOUR = 6;
 const DEFAULT_END_HOUR = 20;
 const MIN_VISIBLE_HOURS = 8;
@@ -60,7 +60,15 @@ export function WeekGrid({
 }: WeekViewProps & { selectedId: number | null }) {
   const bounds = computeBounds(items);
   const totalMinutes = (bounds.endHour - bounds.startHour) * 60;
-  const gridHeight = totalMinutes * PX_PER_MINUTE;
+  const pixelsPerMinute = Math.max(
+    PX_PER_MINUTE,
+    ...items.map(
+      (item) =>
+        (42 + Math.ceil((trainerNames.get(item.trainer_id)?.length ?? 12) / 16) * 16) /
+        Math.max(1, minutesBetween(item.starts_at, item.ends_at)),
+    ),
+  );
+  const gridHeight = totalMinutes * pixelsPerMinute;
 
   const byDay = groupByDay(items);
 
@@ -70,7 +78,15 @@ export function WeekGrid({
   );
 
   return (
-    <div className="rule-t overflow-x-auto">
+    <div
+      className="rule-t overflow-x-auto"
+      role="region"
+      aria-label="Lịch lớp theo giờ trong tuần"
+      tabIndex={0}
+    >
+      <p className="text-ink-2 px-4 py-3 text-sm">
+        Cuộn ngang để xem đủ các ngày. Chọn lớp để xem chi tiết.
+      </p>
       <div className="grid min-w-[78rem] grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]">
         {/* Day headers */}
         <div className="rule-b bg-chalk sticky left-0 z-(--z-sticky)" />
@@ -102,7 +118,7 @@ export function WeekGrid({
           style={{ height: gridHeight }}
         >
           {hours.map((hour) => (
-            <div key={hour} className="relative" style={{ height: 60 * PX_PER_MINUTE }}>
+            <div key={hour} className="relative" style={{ height: 60 * pixelsPerMinute }}>
               <Figures className="text-2xs text-ink-2 absolute top-0.5 right-2">
                 {String(hour).padStart(2, "0")}
               </Figures>
@@ -118,7 +134,7 @@ export function WeekGrid({
                 key={hour}
                 aria-hidden="true"
                 className="border-rule/60 absolute inset-x-0 border-t"
-                style={{ top: (hour - bounds.startHour) * 60 * PX_PER_MINUTE }}
+                style={{ top: (hour - bounds.startHour) * 60 * pixelsPerMinute }}
               />
             ))}
 
@@ -127,9 +143,9 @@ export function WeekGrid({
                 (hourOf(item.starts_at) * 60 +
                   minuteOf(item.starts_at) -
                   bounds.startHour * 60) *
-                PX_PER_MINUTE;
+                pixelsPerMinute;
               const height = Math.max(
-                minutesBetween(item.starts_at, item.ends_at) * PX_PER_MINUTE,
+                minutesBetween(item.starts_at, item.ends_at) * pixelsPerMinute,
                 64,
               );
               const taken = seats?.get(item.id);
@@ -142,7 +158,7 @@ export function WeekGrid({
                   onClick={() => onSelect(item)}
                   aria-pressed={selectedId === item.id}
                   className={cn(
-                    "border-rule bg-paper absolute inset-x-1 overflow-hidden border border-l-2 px-2 py-1 text-left",
+                    "border-rule bg-paper absolute inset-x-1 border border-l-2 px-2 py-1 text-left",
                     // Tight, explicit leading: three lines must fit a 50-minute block.
                     "leading-none",
                     "hover:border-ink-3 active:border-ink transition-colors duration-200",
@@ -166,7 +182,7 @@ export function WeekGrid({
                   <span className="text-ink mt-1 block text-xs leading-[1.15]">
                     {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
                   </span>
-                  <span className="text-2xs text-ink-2 mt-1 block leading-[1.15]">
+                  <span className="text-2xs text-ink-2 mt-1 block leading-[1.3] wrap-anywhere">
                     {trainerNames.get(item.trainer_id) ?? `HLV #${item.trainer_id}`}
                   </span>
                 </button>
@@ -196,7 +212,9 @@ export function WeekList({
   return (
     <div className="rule-t">
       {days.map((day) => {
-        const dayItems = [...(byDay.get(day) ?? [])].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+        const dayItems = [...(byDay.get(day) ?? [])].sort((a, b) =>
+          a.starts_at.localeCompare(b.starts_at),
+        );
         return (
           <section key={day} className="rule-b py-4">
             <h3 className="flex items-baseline gap-2">
@@ -245,7 +263,9 @@ export function WeekList({
                           ) : (
                             <CapacityMeter booked={taken} capacity={item.capacity} />
                           )}
-                          <span className="text-ink text-sm underline underline-offset-4">Xem lớp</span>
+                          <span className="text-ink text-sm underline underline-offset-4">
+                            Xem lớp
+                          </span>
                         </span>
                       </button>
                     </li>

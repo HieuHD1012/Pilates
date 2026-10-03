@@ -1,3 +1,4 @@
+import { Panel, SegmentFilter } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -29,6 +30,7 @@ import {
   startOfStudioWeek,
   studioDateKey,
   weekdayLong,
+  weekdayShort,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DetailList, DetailRow as Row } from "~/ui/detail-list";
@@ -69,6 +71,8 @@ export default function StaffCalendar() {
   const [selected, setSelected] = useState<ClassSessionResponse | null>(null);
   const [creating, setCreating] = useState<"single" | "recurring" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [view, setView] = useState<"agenda" | "week">("agenda");
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   /** The recurrence being previewed, held until staff accept or discard it. */
   const [pattern, setPattern] = useState<{
     request: RecurrenceRequest;
@@ -80,6 +84,12 @@ export default function StaffCalendar() {
 
   const today = studioDateKey(new Date());
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+  const visibleDay =
+    selectedDay && days.includes(selectedDay)
+      ? selectedDay
+      : days.includes(today)
+        ? today
+        : weekStart;
 
   const filters = {
     from: weekStart,
@@ -104,7 +114,7 @@ export default function StaffCalendar() {
   const capacityTotal = items.reduce((sum, item) => sum + item.capacity, 0);
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Lịch & lớp học"
         description="Toàn bộ lớp trong tuần, theo huấn luyện viên và hình thức lớp."
@@ -116,31 +126,10 @@ export default function StaffCalendar() {
             <Button size="sm" variant="secondary" onClick={() => setCreating("recurring")}>
               Lớp định kỳ
             </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, -7))}
-            >
-              Tuần trước
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
-            >
-              Tuần này
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setWeekStart(addDays(weekStart, 7))}
-            >
-              Tuần sau
-            </Button>
           </>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Tuần</dt>
               <dd>
@@ -179,113 +168,189 @@ export default function StaffCalendar() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Hình thức lớp" className="w-44">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={classType}
-              onChange={(event) => setClassType(event.target.value as ClassType | "all")}
-            >
-              <option value="all">Tất cả</option>
-              <option value="GROUP">Lớp nhóm</option>
-              <option value="PRIVATE">Lớp riêng</option>
-            </Select>
-          )}
-        </Field>
-
-        <Field label="Huấn luyện viên" className="w-56">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={trainerId === "all" ? "all" : String(trainerId)}
-              onChange={(event) =>
-                setTrainerId(
-                  event.target.value === "all" ? "all" : Number(event.target.value),
-                )
-              }
-              disabled={trainers.isPending}
-            >
-              <option value="all">Tất cả</option>
-              {(trainers.data ?? []).map((trainer) => (
-                <option key={trainer.id} value={String(trainer.id)}>
-                  {trainer.full_name}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
-
-      <RefreshingRule active={query.isFetching && !query.isPending} />
-
-      {query.isPending ? <SkeletonRows rows={6} /> : null}
-
-      {query.isError ? (
-        <ErrorState
-          description="Không tải được lịch lớp của tuần này."
-          detail={query.error instanceof Error ? query.error.message : undefined}
-          onRetry={() => void query.refetch()}
-        />
-      ) : null}
-
-      {query.isSuccess && items.length === 0 ? (
-        <EmptyState
-          title="Không có lớp nào khớp bộ lọc"
-          description="Tuần này chưa có lớp, hoặc bộ lọc đang thu hẹp kết quả. Thử bỏ bớt bộ lọc hoặc chuyển sang tuần khác."
-          action={
+      <Panel className="workspace-calendar mt-6">
+        <div className="border-rule flex flex-wrap items-center justify-between gap-3 border-b p-4">
+          <h2 className="text-ink text-base font-medium">Lịch trong tuần</h2>
+          <div role="group" aria-label="Chọn tuần" className="flex flex-wrap gap-2">
+            {" "}
             <Button
+              size="sm"
               variant="secondary"
-              onClick={() => {
-                setClassType("all");
-                setTrainerId("all");
-              }}
+              onClick={() => setWeekStart(addDays(weekStart, -7))}
             >
-              Bỏ bộ lọc
+              Tuần trước
             </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setWeekStart(startOfStudioWeek(new Date()))}
+            >
+              Tuần này
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setWeekStart(addDays(weekStart, 7))}
+            >
+              Tuần sau
+            </Button>
+          </div>
+        </div>
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
           }
+        >
+          <Field label="Hình thức lớp" className="w-44">
+            {({ id }) => (
+              <Select
+                id={id}
+                value={classType}
+                onChange={(event) => setClassType(event.target.value as ClassType | "all")}
+              >
+                <option value="all">Tất cả</option>
+                <option value="GROUP">Lớp nhóm</option>
+                <option value="PRIVATE">Lớp riêng</option>
+              </Select>
+            )}
+          </Field>
+
+          <Field label="Huấn luyện viên" className="w-56">
+            {({ id }) => (
+              <Select
+                id={id}
+                value={trainerId === "all" ? "all" : String(trainerId)}
+                onChange={(event) =>
+                  setTrainerId(
+                    event.target.value === "all" ? "all" : Number(event.target.value),
+                  )
+                }
+                disabled={trainers.isPending}
+              >
+                <option value="all">Tất cả</option>
+                {(trainers.data ?? []).map((trainer) => (
+                  <option key={trainer.id} value={String(trainer.id)}>
+                    {trainer.full_name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        </FilterBar>
+
+        <div className="border-rule hidden border-t px-5 py-3 lg:block">
+          <SegmentFilter
+            label="Cách xem lịch"
+            value={view}
+            onChange={setView}
+            options={[
+              { value: "agenda", label: "Danh sách theo ngày" },
+              { value: "week", label: "Lịch tuần" },
+            ]}
+          />
+        </div>
+        <RefreshingRule active={query.isFetching && !query.isPending} />
+
+        {query.isPending ? <SkeletonRows rows={6} /> : null}
+
+        {query.isError ? (
+          <ErrorState
+            description="Không tải được lịch lớp của tuần này."
+            detail={query.error instanceof Error ? query.error.message : undefined}
+            onRetry={() => void query.refetch()}
+          />
+        ) : null}
+
+        {query.isSuccess && items.length === 0 ? (
+          <EmptyState
+            title="Không có lớp nào khớp bộ lọc"
+            description="Tuần này chưa có lớp, hoặc bộ lọc đang thu hẹp kết quả. Thử bỏ bớt bộ lọc hoặc chuyển sang tuần khác."
+            action={
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setClassType("all");
+                  setTrainerId("all");
+                }}
+              >
+                Bỏ bộ lọc
+              </Button>
+            }
+          />
+        ) : null}
+
+        {query.isSuccess && items.length > 0 ? (
+          <>
+            {view === "week" ? (
+              <div className="hidden lg:block">
+                <WeekGrid
+                  days={days}
+                  items={items}
+                  today={today}
+                  onSelect={setSelected}
+                  selectedId={selected?.id ?? null}
+                  trainerNames={trainerNames}
+                  seats={seats}
+                />
+              </div>
+            ) : null}
+            <div className={view === "week" ? "hidden" : "calendar-agenda hidden lg:block"}>
+              <WeekList
+                days={days}
+                items={items}
+                today={today}
+                onSelect={setSelected}
+                trainerNames={trainerNames}
+                seats={seats}
+              />
+            </div>
+            <div className="lg:hidden">
+              <div
+                role="group"
+                aria-label="Chọn ngày trong tuần"
+                className="border-rule grid grid-cols-7 gap-1 border-b px-3 py-3"
+              >
+                {days.map((day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    aria-pressed={day === visibleDay}
+                    aria-label={`${weekdayLong(`${day}T00:00:00+07:00`)}, ${formatDate(`${day}T00:00:00+07:00`)}`}
+                    onClick={() => setSelectedDay(day)}
+                    className={
+                      day === visibleDay
+                        ? "bg-ink text-sand min-h-14 min-w-0 rounded-md px-1 py-2 text-xs"
+                        : "text-ink-2 hover:bg-sand min-h-14 min-w-0 rounded-md px-1 py-2 text-xs"
+                    }
+                  >
+                    <span className="block">{weekdayShort(`${day}T00:00:00+07:00`)}</span>
+                    <Figures className="mt-1 block text-base">{day.slice(-2)}</Figures>
+                  </button>
+                ))}
+              </div>
+              <div className="calendar-agenda">
+                <WeekList
+                  days={[visibleDay]}
+                  items={items}
+                  today={today}
+                  onSelect={setSelected}
+                  trainerNames={trainerNames}
+                  seats={seats}
+                />
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        <ClassDetailDialog
+          item={selected}
+          trainerNames={trainerNames}
+          seats={seats}
+          onClose={() => setSelected(null)}
         />
-      ) : null}
-
-      {query.isSuccess && items.length > 0 ? (
-        <>
-          <div className="hidden lg:block">
-            <WeekGrid
-              days={days}
-              items={items}
-              today={today}
-              onSelect={setSelected}
-              selectedId={selected?.id ?? null}
-              trainerNames={trainerNames}
-              seats={seats}
-            />
-          </div>
-          <div className="lg:hidden">
-            <WeekList
-              days={days}
-              items={items}
-              today={today}
-              onSelect={setSelected}
-              trainerNames={trainerNames}
-              seats={seats}
-            />
-          </div>
-        </>
-      ) : null}
-
-      <ClassDetailDialog
-        item={selected}
-        trainerNames={trainerNames}
-        seats={seats}
-        onClose={() => setSelected(null)}
-      />
-
+      </Panel>
       <LiveRegion message={notice} />
 
       <Dialog
@@ -496,4 +561,3 @@ function ClassDetailDialog({
     </Dialog>
   );
 }
-

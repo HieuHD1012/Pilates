@@ -1,3 +1,5 @@
+import { Dialog, DialogContent } from "~/ui/dialog";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -67,7 +69,7 @@ export default function StaffRenewals() {
   const [announcement, setAnnouncement] = useState<string | null>(null);
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       {/* One polite live region for the whole screen: every row's outcome is
           announced here rather than in a per-row region no one hears. */}
       <LiveRegion message={announcement} />
@@ -86,7 +88,7 @@ export default function StaffRenewals() {
               Ngưỡng đã xác nhận: còn <Figures className="text-ink">6</Figures> buổi hoặc{" "}
               <Figures className="text-ink">15</Figures> ngày.
             </p>
-            <dl className="text-ink-2 mt-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+            <dl className="workspace-summary mt-3">
               {/* Head-count only — this board sits where customers can see
                   the screen, so there is no money on it by design. */}
               <div className="flex items-baseline gap-2">
@@ -149,39 +151,41 @@ export default function StaffRenewals() {
         thêm, không sửa dòng cũ. Số buổi còn lại và hạn dùng của gói không thay đổi.
       </p>
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={4}
-        showErrorDetail
-        errorDescription="Không tải được danh sách cần gia hạn."
-        emptyTitle="Không có ai cần gia hạn"
-        emptyDescription="Chưa có học viên nào chạm ngưỡng 6 buổi hoặc 15 ngày còn lại. Danh sách sẽ tự xuất hiện khi có."
-        emptyAction={
-          <Button asChild variant="secondary">
-            <Link to="/studio/hoc-vien">Xem danh sách học viên</Link>
-          </Button>
-        }
-      >
-        {(candidates) => {
-          // A reading order for a call list — soonest expiry, then fewest
-          // sessions left. It re-orders rows; it does not re-decide the flag.
-          const sorted = [...candidates].sort(
-            (a, b) =>
-              a.end_date.localeCompare(b.end_date) ||
-              a.credits_remaining - b.credits_remaining,
-          );
+      <Panel className="workspace-collection">
+        <QueryBoundary
+          query={query}
+          skeletonRows={4}
+          showErrorDetail
+          errorDescription="Không tải được danh sách cần gia hạn."
+          emptyTitle="Không có ai cần gia hạn"
+          emptyDescription="Chưa có học viên nào chạm ngưỡng 6 buổi hoặc 15 ngày còn lại. Danh sách sẽ tự xuất hiện khi có."
+          emptyAction={
+            <Button asChild variant="secondary">
+              <Link to="/studio/hoc-vien">Xem danh sách học viên</Link>
+            </Button>
+          }
+        >
+          {(candidates) => {
+            // A reading order for a call list — soonest expiry, then fewest
+            // sessions left. It re-orders rows; it does not re-decide the flag.
+            const sorted = [...candidates].sort(
+              (a, b) =>
+                a.end_date.localeCompare(b.end_date) ||
+                a.credits_remaining - b.credits_remaining,
+            );
 
-          return (
-            <ul className="rule-t">
-              {sorted.map((candidate) => (
-                <li key={candidate.student_package_id} className="rule-b py-4">
-                  <RenewalRow candidate={candidate} onAnnounce={setAnnouncement} />
-                </li>
-              ))}
-            </ul>
-          );
-        }}
-      </QueryBoundary>
+            return (
+              <ul className="rule-t">
+                {sorted.map((candidate) => (
+                  <li key={candidate.student_package_id} className="rule-b py-4">
+                    <RenewalRow candidate={candidate} onAnnounce={setAnnouncement} />
+                  </li>
+                ))}
+              </ul>
+            );
+          }}
+        </QueryBoundary>
+      </Panel>
     </div>
   );
 }
@@ -202,6 +206,7 @@ function RenewalRow({
   const logContact = useLogRenewalContact();
   const [followUpDate, setFollowUpDate] = useState(candidate.next_contact_date ?? "");
   const [result, setResult] = useState("");
+  const [editing, setEditing] = useState(false);
 
   function submit() {
     void logContact
@@ -214,6 +219,7 @@ function RenewalRow({
       })
       .then(() => {
         setResult("");
+        setEditing(false);
         onAnnounce(`Đã ghi nhận liên hệ với ${candidate.student_name}.`);
       })
       .catch(() => onAnnounce(`Chưa ghi nhận được liên hệ với ${candidate.student_name}.`));
@@ -290,54 +296,67 @@ function RenewalRow({
         </p>
       </div>
 
-      {/* The follow-up date is rendered once, by the control that owns it: the
-          field is pre-filled with `next_contact_date`, so saving keeps the date
-          the studio already agreed unless someone changes it. Printing the same
-          date again as a read-only fact would be one fact rendered twice. */}
-      <div className="lg:justify-self-end">
-        <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-          <Field label="Kết quả" className="w-56">
-            {({ id }) => (
-              <Input
-                id={id}
-                value={result}
-                placeholder="Đã gọi"
-                onChange={(event) => setResult(event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field label="Hẹn lại" className="w-40">
-            {({ id }) => (
-              <Input
-                id={id}
-                type="date"
-                value={followUpDate}
-                onChange={(event) => setFollowUpDate(event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            pending={logContact.isPending}
-            onClick={submit}
-          >
-            Đã liên hệ
-          </Button>
-        </div>
-
-        {logContact.isError ? (
-          <p role="alert" className="text-danger mt-2 text-xs">
-            Chưa ghi nhận được. Vui lòng thử lại.
+      <div className="flex flex-col items-start gap-2 lg:items-end">
+        {candidate.next_contact_date ? (
+          <p className="text-ink-2 text-xs">
+            Hẹn lại {formatDate(dateKeyToIso(candidate.next_contact_date))}
           </p>
         ) : null}
-
-        {logContact.isSuccess && !logContact.isPending ? (
-          <p className="text-ink-2 mt-2 text-xs">Đã ghi nhận vào hồ sơ học viên.</p>
-        ) : null}
+        <Button variant="secondary" onClick={() => setEditing(true)}>
+          Ghi nhận liên hệ
+        </Button>
       </div>
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent
+          title={`Liên hệ ${candidate.student_name}`}
+          description="Ghi thêm một lần liên hệ vào hồ sơ. Số buổi và hạn sử dụng gói không thay đổi."
+        >
+          <div>
+            <div className="flex flex-col gap-5">
+              <Field label="Kết quả" className="w-full">
+                {({ id }) => (
+                  <Input
+                    id={id}
+                    value={result}
+                    placeholder="Đã gọi"
+                    onChange={(event) => setResult(event.target.value)}
+                  />
+                )}
+              </Field>
+
+              <Field label="Hẹn lại" className="w-full">
+                {({ id }) => (
+                  <Input
+                    id={id}
+                    type="date"
+                    value={followUpDate}
+                    onChange={(event) => setFollowUpDate(event.target.value)}
+                  />
+                )}
+              </Field>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                pending={logContact.isPending}
+                onClick={submit}
+              >
+                Đã liên hệ
+              </Button>
+            </div>
+
+            {logContact.isError ? (
+              <p role="alert" className="text-danger mt-2 text-xs">
+                Chưa ghi nhận được. Vui lòng thử lại.
+              </p>
+            ) : null}
+
+            {logContact.isSuccess && !logContact.isPending ? (
+              <p className="text-ink-2 mt-2 text-xs">Đã ghi nhận vào hồ sơ học viên.</p>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

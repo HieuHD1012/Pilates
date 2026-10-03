@@ -7,7 +7,7 @@ import { cn } from "~/lib/cn";
 /**
  * The operational workspace (docs/adr/0006-operational-workspace.md).
  *
- * Staff screens group concurrent work in bordered paper panels on the sand
+ * Staff screens group concurrent work in bordered paper panels on the warm
  * ground. Hairlines still do the work inside a panel; the panel exists so a
  * dozen tasks on one screen read as a dozen units rather than one long ruled
  * column. No shadow: elevation stays reserved for dialog, popover and sheet.
@@ -146,7 +146,9 @@ export function Toolbar({
       )}
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2.5">{children}</div>
-      {trailing ? <div className="flex flex-wrap items-center gap-2.5">{trailing}</div> : null}
+      {trailing ? (
+        <div className="flex flex-wrap items-center gap-2.5">{trailing}</div>
+      ) : null}
     </div>
   );
 }
@@ -181,7 +183,7 @@ export function SegmentFilter<T extends string>({
       role="group"
       aria-label={label}
       className={cn(
-        "bg-sand-deep/70 inline-flex max-w-full gap-1 overflow-x-auto rounded-md p-1",
+        "bg-sand-deep/70 inline-flex max-w-full flex-wrap gap-1 rounded-md p-1",
         className,
       )}
     >
@@ -194,7 +196,7 @@ export function SegmentFilter<T extends string>({
             aria-pressed={on}
             onClick={() => onChange(option.value)}
             className={cn(
-              "inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-sm px-3 text-sm whitespace-nowrap",
+              "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-sm px-3 text-sm whitespace-nowrap",
               "transition-colors duration-200",
               on
                 ? "bg-paper text-ink border-rule border font-medium"
@@ -229,7 +231,7 @@ export function Avatar({
       aria-hidden="true"
       className={cn(
         "bg-sand-deep text-copper-2 inline-grid shrink-0 place-items-center rounded-full font-semibold",
-        size === "sm" && "size-7 text-2xs",
+        size === "sm" && "text-2xs size-7",
         size === "md" && "size-9 text-xs",
         size === "lg" && "size-12 text-sm",
         size === "xl" && "size-14 text-base",
@@ -271,8 +273,8 @@ export function PersonCell({
     <span className={cn("flex min-w-0 items-center gap-3", className)}>
       <Avatar name={avatarName} size={size} />
       <span className="flex min-w-0 flex-col">
-        <span className="text-ink truncate text-sm font-medium">{name}</span>
-        {detail ? <span className="text-ink-2 truncate text-xs">{detail}</span> : null}
+        <span className="text-ink text-sm font-medium wrap-anywhere">{name}</span>
+        {detail ? <span className="text-ink-2 text-xs wrap-anywhere">{detail}</span> : null}
       </span>
     </span>
   );
@@ -297,7 +299,10 @@ export function Meter({
   return (
     <span
       aria-hidden="true"
-      className={cn("bg-sand-deep block h-1.5 w-full overflow-hidden rounded-full", className)}
+      className={cn(
+        "bg-sand-deep block h-1.5 w-full overflow-hidden rounded-full",
+        className,
+      )}
     >
       <span
         className={cn(
@@ -383,7 +388,7 @@ export function InlineNote({
 }
 
 /**
- * The overflow menu at a row's edge (ADR 0006, decision 7). Items are plain
+ * The overflow menu at a row's edge (ADR 0006). Items are plain
  * buttons; a destructive item carries `danger` and, where the consequence is
  * not obvious, a `note` under it.
  */
@@ -404,7 +409,7 @@ export function RowMenu({
           type="button"
           aria-label={label}
           className={cn(
-            "text-ink-2 hover:bg-sand-deep hover:text-ink inline-grid size-9 place-items-center rounded-md",
+            "text-ink-2 hover:bg-sand-deep hover:text-ink inline-grid size-11 place-items-center rounded-md",
             "data-[state=open]:bg-sand-deep data-[state=open]:text-ink",
           )}
         >
@@ -417,9 +422,7 @@ export function RowMenu({
           sideOffset={6}
           className="bg-paper border-rule shadow-popover z-(--z-dropdown) w-72 rounded-lg border p-1.5"
         >
-          <div className="flex flex-col">
-            {children}
-          </div>
+          <div className="flex flex-col">{children}</div>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>

@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -73,7 +74,7 @@ export default function StaffReportRevenue() {
     range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Báo cáo doanh thu"
         description="Tiền studio đã thu trong khoảng ngày bạn chọn, tách theo hình thức thanh toán và theo ngày."
@@ -83,7 +84,7 @@ export default function StaffReportRevenue() {
           </Button>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Khoảng ngày</dt>
               <dd>
@@ -96,194 +97,211 @@ export default function StaffReportRevenue() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Từ ngày" className="w-full sm:w-44">
-          {({ id }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.from}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, from: event.target.value }))
-              }
-            />
-          )}
-        </Field>
-
-        <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.to}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, to: event.target.value }))
-              }
-            />
-          )}
-        </Field>
-      </FilterBar>
-
-      <DemoDataNotice className="mb-3" />
-
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        isEmpty={(report) => report.payment_count === 0}
-        emptyTitle="Chưa có giao dịch đã xác nhận"
-        emptyDescription="Trong khoảng ngày này không có giao dịch nào đã xác nhận. Kiểm tra lại khoảng ngày, hoặc xác nhận giao dịch ở màn hình thanh toán."
-        emptyAction={
-          <Button asChild variant="secondary">
-            <Link to="/studio/thanh-toan">Mở màn hình thanh toán</Link>
-          </Button>
-        }
-        errorDescription="Không tải được báo cáo doanh thu."
-        showErrorDetail
-      >
-        {(report) => (
-          <>
-            <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-              <Metric
-                label="Tổng doanh thu"
-                value={<Figures display>{formatVnd(report.total)}</Figures>}
+      <Panel className="workspace-collection">
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
+          }
+        >
+          <Field label="Từ ngày" className="w-full sm:w-44">
+            {({ id }) => (
+              <Input
+                id={id}
+                type="date"
+                value={range.from}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, from: event.target.value }))
+                }
               />
-              <Metric
-                label="Số giao dịch"
-                value={<Figures display>{formatNumber(report.payment_count)}</Figures>}
-                unit="giao dịch"
+            )}
+          </Field>
+
+          <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                type="date"
+                value={range.to}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, to: event.target.value }))
+                }
               />
-            </div>
+            )}
+          </Field>
+        </FilterBar>
 
-            <p className="measure-wide text-ink-2 mt-5 text-xs">
-              Chỉ tính các giao dịch đã xác nhận. Giao dịch đang chờ xác nhận và giao dịch
-              đã hủy không được cộng vào bất kỳ con số nào trên trang này.
-            </p>
+        <DemoDataNotice className="mb-3" />
 
-            <section className="mt-10">
-              <h2 className="text-ink text-sm font-medium">Theo hình thức thanh toán</h2>
-              <p className="measure-wide text-ink-2 mt-1 text-xs">
-                Phần trăm là tỉ trọng của hình thức đó trong tổng doanh thu của khoảng ngày.
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          isEmpty={(report) => report.payment_count === 0}
+          emptyTitle="Chưa có giao dịch đã xác nhận"
+          emptyDescription="Trong khoảng ngày này không có giao dịch nào đã xác nhận. Kiểm tra lại khoảng ngày, hoặc xác nhận giao dịch ở màn hình thanh toán."
+          emptyAction={
+            <Button asChild variant="secondary">
+              <Link to="/studio/thanh-toan">Mở màn hình thanh toán</Link>
+            </Button>
+          }
+          errorDescription="Không tải được báo cáo doanh thu."
+          showErrorDetail
+        >
+          {(report) => (
+            <>
+              <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                <Metric
+                  label="Tổng doanh thu"
+                  value={<Figures display>{formatVnd(report.total)}</Figures>}
+                />
+                <Metric
+                  label="Số giao dịch"
+                  value={<Figures display>{formatNumber(report.payment_count)}</Figures>}
+                  unit="giao dịch"
+                />
+              </div>
+
+              <p className="measure-wide text-ink-2 mt-5 text-xs">
+                Chỉ tính các giao dịch đã xác nhận. Giao dịch đang chờ xác nhận và giao dịch
+                đã hủy không được cộng vào bất kỳ con số nào trên trang này.
               </p>
 
-              <ul className="mt-4 grid gap-6 sm:grid-cols-2">
-                {report.by_method.map((row) => {
-                  // Money crosses the network as a decimal string; it is parsed
-                  // here, at the point of display, and only to rank two bars.
-                  const total = decimalToNumber(report.total) ?? 0;
-                  const rowTotal = decimalToNumber(row.total) ?? 0;
-                  const share = total > 0 ? Math.round((rowTotal / total) * 100) : 0;
+              <section className="mt-10">
+                <h2 className="text-ink text-sm font-medium">Theo hình thức thanh toán</h2>
+                <p className="measure-wide text-ink-2 mt-1 text-xs">
+                  Phần trăm là tỉ trọng của hình thức đó trong tổng doanh thu của khoảng
+                  ngày.
+                </p>
 
-                  return (
-                    <li key={row.method} className="rule-t min-w-0 py-4">
-                      <div className="flex flex-col items-start gap-1">
-                        <span className="text-ink text-sm">{METHOD_LABEL[row.method]}</span>
-                        <Figures className="text-ink text-2xl">
-                          {formatVnd(row.total)}
-                        </Figures>
-                      </div>
+                <ul className="mt-4 grid gap-6 sm:grid-cols-2">
+                  {report.by_method.map((row) => {
+                    // Money crosses the network as a decimal string; it is parsed
+                    // here, at the point of display, and only to rank two bars.
+                    const total = decimalToNumber(report.total) ?? 0;
+                    const rowTotal = decimalToNumber(row.total) ?? 0;
+                    const share = total > 0 ? Math.round((rowTotal / total) * 100) : 0;
 
-                      <div className="mt-2.5 flex items-center gap-3">
-                        {/* The comparison, drawn as the hairline this system
+                    return (
+                      <li key={row.method} className="rule-t min-w-0 py-4">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="text-ink text-sm">
+                            {METHOD_LABEL[row.method]}
+                          </span>
+                          <Figures className="text-ink text-2xl">
+                            {formatVnd(row.total)}
+                          </Figures>
+                        </div>
+
+                        <div className="mt-2.5 flex items-center gap-3">
+                          {/* The comparison, drawn as the hairline this system
                             already uses for capacity. The number beside it is
                             the real content; the bar only ranks the two. */}
-                        <span aria-hidden="true" className="bg-rule block h-px flex-1">
-                          <span
-                            className="bg-ink block h-px transition-[width]"
-                            style={{ width: `${share}%` }}
-                          />
-                        </span>
-                        <span className="text-ink-2 shrink-0 text-xs whitespace-nowrap">
-                          <Figures className="text-ink">{share}%</Figures> tổng doanh thu
-                        </span>
-                      </div>
+                          <span aria-hidden="true" className="bg-rule block h-px flex-1">
+                            <span
+                              className="bg-ink block h-px transition-[width]"
+                              style={{ width: `${share}%` }}
+                            />
+                          </span>
+                          <span className="text-ink-2 shrink-0 text-xs whitespace-nowrap">
+                            <Figures className="text-ink">{share}%</Figures> tổng doanh thu
+                          </span>
+                        </div>
 
-                      <p className="text-ink-2 mt-1.5 text-xs">
-                        <Figures className="text-ink">
-                          {formatNumber(row.payment_count)}
-                        </Figures>{" "}
-                        giao dịch
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-
-            <section className="mt-10">
-              <h2 className="text-ink text-sm font-medium">Từng giao dịch</h2>
-              <p className="measure-wide text-ink-2 mt-1 mb-4 text-xs">
-                Các dòng tạo nên con số trên, cùng khoảng ngày và cùng truy vấn.
-              </p>
-
-              {detail.isPending ? (
-                <p className="rule-t text-ink-2 pt-4 text-xs">Đang tải danh sách.</p>
-              ) : detail.isError ? (
-                <p className="rule-t text-ink-2 pt-4 text-xs">
-                  Không tải được danh sách giao dịch.
-                </p>
-              ) : (detail.data?.length ?? 0) === 0 ? (
-                <p className="rule-t text-ink-2 pt-4 text-xs">
-                  Không có giao dịch nào trong khoảng này.
-                </p>
-              ) : (
-                <>
-                <ul className="rule-t md:hidden">
-                  {(detail.data ?? []).map(row => (
-                    <li key={row.payment_id} className="rule-b py-4">
-                      <p className="text-ink text-base">{row.student_name}</p>
-                      <p className="text-ink-2 mt-1 text-sm">{row.package_name}</p>
-                      <p className="mt-3"><Figures className="text-ink text-xl">{formatVnd(row.amount)}</Figures></p>
-                      <p className="text-ink-2 mt-1 text-sm">{METHOD_LABEL[row.method]}</p>
-                      <p className="text-ink-2 mt-2 text-xs">Xác nhận lúc <Figures>{formatTime(row.confirmed_at)} {formatDate(row.confirmed_at)}</Figures></p>
-                    </li>
-                  ))}
+                        <p className="text-ink-2 mt-1.5 text-xs">
+                          <Figures className="text-ink">
+                            {formatNumber(row.payment_count)}
+                          </Figures>{" "}
+                          giao dịch
+                        </p>
+                      </li>
+                    );
+                  })}
                 </ul>
-                <div className="hidden md:block">
-                <DataTable caption="Giao dịch đã xác nhận" minWidth="44rem">
-                  <thead>
-                    <tr>
-                      <Th>Xác nhận lúc</Th>
-                      <Th>Học viên</Th>
-                      <Th>Gói tập</Th>
-                      <Th>Hình thức</Th>
-                      <Th numeric>Số tiền</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(detail.data ?? []).map((row) => (
-                      <Tr key={row.payment_id}>
-                        <Td>
-                          <Figures className="whitespace-nowrap">
-                            {formatTime(row.confirmed_at)} {formatDate(row.confirmed_at)}
-                          </Figures>
-                        </Td>
-                        <Td>{row.student_name}</Td>
-                        <Td>{row.package_name}</Td>
-                        <Td>{METHOD_LABEL[row.method]}</Td>
-                        <Td numeric>
-                          <Figures className="whitespace-nowrap">
-                            {formatVnd(row.amount)}
-                          </Figures>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </tbody>
-                </DataTable>
-                </div>
-                </>
-              )}
-            </section>
-          </>
-        )}
-      </QueryBoundary>
+              </section>
+
+              <section className="mt-10">
+                <h2 className="text-ink text-sm font-medium">Từng giao dịch</h2>
+                <p className="measure-wide text-ink-2 mt-1 mb-4 text-xs">
+                  Các dòng tạo nên con số trên, cùng khoảng ngày và cùng truy vấn.
+                </p>
+
+                {detail.isPending ? (
+                  <p className="rule-t text-ink-2 pt-4 text-xs">Đang tải danh sách.</p>
+                ) : detail.isError ? (
+                  <p className="rule-t text-ink-2 pt-4 text-xs">
+                    Không tải được danh sách giao dịch.
+                  </p>
+                ) : (detail.data?.length ?? 0) === 0 ? (
+                  <p className="rule-t text-ink-2 pt-4 text-xs">
+                    Không có giao dịch nào trong khoảng này.
+                  </p>
+                ) : (
+                  <>
+                    <ul className="rule-t md:hidden">
+                      {(detail.data ?? []).map((row) => (
+                        <li key={row.payment_id} className="rule-b py-4">
+                          <p className="text-ink text-base">{row.student_name}</p>
+                          <p className="text-ink-2 mt-1 text-sm">{row.package_name}</p>
+                          <p className="mt-3">
+                            <Figures className="text-ink text-xl">
+                              {formatVnd(row.amount)}
+                            </Figures>
+                          </p>
+                          <p className="text-ink-2 mt-1 text-sm">
+                            {METHOD_LABEL[row.method]}
+                          </p>
+                          <p className="text-ink-2 mt-2 text-xs">
+                            Xác nhận lúc{" "}
+                            <Figures>
+                              {formatTime(row.confirmed_at)} {formatDate(row.confirmed_at)}
+                            </Figures>
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="hidden md:block">
+                      <DataTable caption="Giao dịch đã xác nhận" minWidth="44rem">
+                        <thead>
+                          <tr>
+                            <Th>Xác nhận lúc</Th>
+                            <Th>Học viên</Th>
+                            <Th>Gói tập</Th>
+                            <Th>Hình thức</Th>
+                            <Th numeric>Số tiền</Th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(detail.data ?? []).map((row) => (
+                            <Tr key={row.payment_id}>
+                              <Td>
+                                <Figures className="whitespace-nowrap">
+                                  {formatTime(row.confirmed_at)}{" "}
+                                  {formatDate(row.confirmed_at)}
+                                </Figures>
+                              </Td>
+                              <Td>{row.student_name}</Td>
+                              <Td>{row.package_name}</Td>
+                              <Td>{METHOD_LABEL[row.method]}</Td>
+                              <Td numeric>
+                                <Figures className="whitespace-nowrap">
+                                  {formatVnd(row.amount)}
+                                </Figures>
+                              </Td>
+                            </Tr>
+                          ))}
+                        </tbody>
+                      </DataTable>
+                    </div>
+                  </>
+                )}
+              </section>
+            </>
+          )}
+        </QueryBoundary>
+      </Panel>
     </div>
   );
 }

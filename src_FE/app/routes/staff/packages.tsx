@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -51,7 +52,7 @@ export default function StaffPackages() {
   const onSaleCount = (items ?? []).filter((item) => item.is_selling).length;
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Gói tập"
         description="Danh mục gói studio đang bán: số buổi, thời hạn sử dụng và giá niêm yết."
@@ -62,7 +63,7 @@ export default function StaffPackages() {
         }
         meta={
           items ? (
-            <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+            <dl className="workspace-summary">
               <div className="flex items-baseline gap-2">
                 <dt>Đang bán</dt>
                 <dd>
@@ -77,87 +78,90 @@ export default function StaffPackages() {
       />
 
       <div className="mt-5">
-        <QueryBoundary
-          query={query}
-          skeletonRows={5}
-          emptyTitle="Chưa có gói tập nào"
-          emptyDescription="Danh mục sẽ xuất hiện khi studio thiết lập gói bán trong hệ thống."
-          errorDescription="Không tải được danh mục gói tập."
-          showErrorDetail
-        >
-          {(types) => (
-            <>
-              {/* 1440 / 1024: six terms read down as columns. */}
-              <div className="hidden lg:block">
-                <DataTable caption="Danh mục gói tập" minWidth="56rem">
-                  <thead>
-                    <tr>
-                      <Th>Tên gói</Th>
-                      <Th numeric>Số buổi</Th>
-                      <Th numeric>Thời hạn</Th>
-                      <Th numeric>Giá</Th>
-                      <Th>Hình thức lớp</Th>
-                      <Th>Trạng thái</Th>
-                      <Th> </Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {types.map((item) => (
-                      <tr key={item.id}>
-                        <Td>{item.name}</Td>
-                        <Td numeric>
-                          <Figures>{formatNumber(item.credits)}</Figures>
-                        </Td>
-                        <Td numeric>
-                          <span className="whitespace-nowrap">
-                            <Figures>{formatNumber(item.duration_days)}</Figures> ngày
-                          </span>
-                        </Td>
-                        <Td numeric>
-                          {/* `null` is a price the studio has not entered, not
-                              a free package. It renders as a waiting slot. */}
-                          {item.price === null ? (
-                            <PendingFact label={`Giá gói ${item.name}`} />
-                          ) : (
-                            <Figures className="whitespace-nowrap">
-                              {formatVnd(item.price)}
-                            </Figures>
-                          )}
-                        </Td>
-                        <Td>{CLASS_TYPE_LABEL[item.class_type]}</Td>
-                        <Td>
-                          {item.is_selling ? (
-                            <StatusBadge tone="positive">Đang bán</StatusBadge>
-                          ) : (
-                            <StatusBadge tone="neutral">Ngừng bán</StatusBadge>
-                          )}
-                        </Td>
-                        <Td>
-                          <SellingToggle item={item} />
-                        </Td>
+        <Panel className="workspace-collection">
+          <QueryBoundary
+            query={query}
+            skeletonRows={5}
+            emptyTitle="Chưa có gói tập nào"
+            emptyDescription="Danh mục sẽ xuất hiện khi studio thiết lập gói bán trong hệ thống."
+            errorDescription="Không tải được danh mục gói tập."
+            showErrorDetail
+          >
+            {(types) => (
+              <>
+                {/* 1440 / 1024: six terms read down as columns. */}
+                <div className="hidden lg:block">
+                  <DataTable caption="Danh mục gói tập" minWidth="56rem">
+                    <thead>
+                      <tr>
+                        <Th>Tên gói</Th>
+                        <Th numeric>Số buổi</Th>
+                        <Th numeric>Thời hạn</Th>
+                        <Th numeric>Giá</Th>
+                        <Th>Hình thức lớp</Th>
+                        <Th>Trạng thái</Th>
+                        <Th> </Th>
                       </tr>
-                    ))}
-                  </tbody>
-                </DataTable>
-              </div>
+                    </thead>
+                    <tbody>
+                      {types.map((item) => (
+                        <tr key={item.id}>
+                          <Td>{item.name}</Td>
+                          <Td numeric>
+                            <Figures>{formatNumber(item.credits)}</Figures>
+                          </Td>
+                          <Td numeric>
+                            <span className="whitespace-nowrap">
+                              <Figures>{formatNumber(item.duration_days)}</Figures> ngày
+                            </span>
+                          </Td>
+                          <Td numeric>
+                            {/* `null` is a price the studio has not entered, not
+                              a free package. It renders as a waiting slot. */}
+                            {item.price === null ? (
+                              <PendingFact label={`Giá gói ${item.name}`} />
+                            ) : (
+                              <Figures className="whitespace-nowrap">
+                                {formatVnd(item.price)}
+                              </Figures>
+                            )}
+                          </Td>
+                          <Td>{CLASS_TYPE_LABEL[item.class_type]}</Td>
+                          <Td>
+                            {item.is_selling ? (
+                              <StatusBadge tone="positive">Đang bán</StatusBadge>
+                            ) : (
+                              <StatusBadge tone="neutral">Ngừng bán</StatusBadge>
+                            )}
+                          </Td>
+                          <Td>
+                            <SellingToggle item={item} />
+                          </Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
+                </div>
 
-              {/* Below lg the table becomes ruled rows — a studio phone is not
+                {/* Below lg the table becomes ruled rows — a studio phone is not
                   asked to render six columns (docs/RESPONSIVE.md). */}
-              <ul className="rule-t lg:hidden">
-                {types.map((item) => (
-                  <li key={item.id} className="rule-b">
-                    <PackageRow item={item} />
-                  </li>
-                ))}
-              </ul>
+                <ul className="rule-t lg:hidden">
+                  {types.map((item) => (
+                    <li key={item.id} className="rule-b">
+                      <PackageRow item={item} />
+                    </li>
+                  ))}
+                </ul>
 
-              <p className="rule-t measure-wide text-ink-2 mt-8 pt-3 text-xs">
-                Ngừng bán chỉ ẩn gói khỏi danh sách bán mới. Gói học viên đã mua giữ nguyên
-                tên, giá và số buổi của lúc mua, nên đổi giá ở đây không viết lại lịch sử.
-              </p>
-            </>
-          )}
-        </QueryBoundary>
+                <p className="rule-t measure-wide text-ink-2 mt-8 pt-3 text-xs">
+                  Ngừng bán chỉ ẩn gói khỏi danh sách bán mới. Gói học viên đã mua giữ
+                  nguyên tên, giá và số buổi của lúc mua, nên đổi giá ở đây không viết lại
+                  lịch sử.
+                </p>
+              </>
+            )}
+          </QueryBoundary>
+        </Panel>
       </div>
 
       <Dialog open={creating} onOpenChange={setCreating}>

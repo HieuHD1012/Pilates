@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -70,7 +71,7 @@ export default function StaffLeadDetail() {
   const query = useLead(Number(leadId));
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
+    <div className="workspace-page">
       <Link
         to="/studio/khach-quan-tam"
         className="text-ink-2 decoration-rule-2 hover:text-ink text-xs underline underline-offset-[6px]"
@@ -104,7 +105,9 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
     <>
       <header className="mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="text-ink text-xl font-medium">{lead.full_name}</h1>
+          <h1 className="font-display text-ink text-[2rem] leading-tight">
+            {lead.full_name}
+          </h1>
           <p className="mt-1.5">
             <a
               href={telHref(lead.phone)}
@@ -133,45 +136,61 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
         </div>
       </header>
 
-      <DetailList className="mt-6">
-        <DetailRow label="Nhu cầu" className="sm:col-span-2">
-          {lead.need === null || lead.need.trim() === "" ? (
-            <Absent>Chưa ghi nhu cầu</Absent>
+      <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Panel className="p-5 sm:p-6">
+          <h2 className="text-ink mb-4 text-base font-medium">Thông tin tư vấn</h2>
+          <DetailList>
+            <DetailRow label="Nhu cầu" className="sm:col-span-2">
+              {lead.need === null || lead.need.trim() === "" ? (
+                <Absent>Chưa ghi nhu cầu</Absent>
+              ) : (
+                lead.need
+              )}
+            </DetailRow>
+            <DetailRow label="Nguồn" labelWidth="10rem">
+              {lead.source === null ? (
+                <Absent>Không rõ nguồn</Absent>
+              ) : (
+                (SOURCE_LABEL[lead.source] ?? lead.source)
+              )}
+            </DetailRow>
+            <DetailRow label="Nhận lúc" labelWidth="10rem">
+              <Figures>{formatDate(lead.created_at)}</Figures>{" "}
+              <Figures>{formatTime(lead.created_at)}</Figures>
+            </DetailRow>
+            <DetailRow label="Người phụ trách" labelWidth="10rem">
+              {lead.assigned_to === null ? (
+                <Absent>Chưa giao cho ai</Absent>
+              ) : (
+                `Tài khoản #${lead.assigned_to}`
+              )}
+            </DetailRow>
+            {lead.converted_student_id !== null ? (
+              <DetailRow label="Hồ sơ học viên" labelWidth="10rem">
+                <Link
+                  to={`/studio/hoc-vien/${lead.converted_student_id}`}
+                  className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
+                >
+                  Mở hồ sơ học viên
+                </Link>
+              </DetailRow>
+            ) : null}
+          </DetailList>
+        </Panel>
+        <Panel className="p-5 sm:p-6">
+          {lead.status === "CONVERTED" ? (
+            <section>
+              <h2 className="text-ink text-base font-medium">Đã thành học viên</h2>
+              <p className="text-ink-2 mt-3 text-sm">
+                Tiếp tục chăm sóc khách trong hồ sơ học viên. Thông tin tư vấn được giữ lại
+                ở đây.
+              </p>
+            </section>
           ) : (
-            lead.need
+            <OutcomeForm lead={lead} />
           )}
-        </DetailRow>
-        <DetailRow label="Nguồn" labelWidth="10rem">
-          {lead.source === null ? (
-            <Absent>Không rõ nguồn</Absent>
-          ) : (
-            (SOURCE_LABEL[lead.source] ?? lead.source)
-          )}
-        </DetailRow>
-        <DetailRow label="Nhận lúc" labelWidth="10rem">
-          <Figures>{formatDate(lead.created_at)}</Figures>{" "}
-          <Figures>{formatTime(lead.created_at)}</Figures>
-        </DetailRow>
-        <DetailRow label="Người phụ trách" labelWidth="10rem">
-          {lead.assigned_to === null ? (
-            <Absent>Chưa giao cho ai</Absent>
-          ) : (
-            `Tài khoản #${lead.assigned_to}`
-          )}
-        </DetailRow>
-        {lead.converted_student_id !== null ? (
-          <DetailRow label="Hồ sơ học viên" labelWidth="10rem">
-            <Link
-              to={`/studio/hoc-vien/${lead.converted_student_id}`}
-              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
-            >
-              Mở hồ sơ học viên
-            </Link>
-          </DetailRow>
-        ) : null}
-      </DetailList>
-
-      <OutcomeForm lead={lead} />
+        </Panel>
+      </div>
 
       <Dialog
         open={converting}
@@ -224,7 +243,7 @@ function OutcomeForm({ lead }: { lead: LeadResponse }) {
   });
 
   return (
-    <section className="rule-t mt-10 pt-5">
+    <section>
       <LiveRegion
         message={
           update.isSuccess
@@ -235,7 +254,7 @@ function OutcomeForm({ lead }: { lead: LeadResponse }) {
         }
       />
 
-      <h2 className="text-ink text-sm font-medium">Ghi nhận kết quả liên hệ</h2>
+      <h2 className="text-ink text-base font-medium">Ghi nhận kết quả liên hệ</h2>
       <p className="measure text-ink-2 mt-1 text-xs">
         Lưu sẽ cập nhật trạng thái của khách và ghi đè phần ghi chú. Tên và số điện thoại
         khách để lại không bị thay đổi.

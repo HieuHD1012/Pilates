@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { Link, useParams } from "react-router";
 
 import {
@@ -43,7 +44,7 @@ export default function StaffTrainerDetail() {
   const query = useTrainer(Number(trainerId));
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
+    <div className="workspace-page">
       <Link
         to="/studio/huan-luyen-vien"
         className="text-ink-2 decoration-rule-2 hover:text-ink text-xs underline underline-offset-[6px]"
@@ -81,50 +82,52 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
 
       <Portrait trainer={trainer} />
 
-      <DetailList className="mt-5">
-        <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>
+      <Panel className="mt-5 p-5 sm:p-6">
+        <DetailList className="mt-5">
+          <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>
 
-        <DetailRow label="Giới thiệu ngắn" className="sm:col-span-2">
-          {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
-        </DetailRow>
+          <DetailRow label="Giới thiệu ngắn" className="sm:col-span-2">
+            {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
+          </DetailRow>
 
-        <DetailRow label="Chuyên môn">
-          {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
-        </DetailRow>
+          <DetailRow label="Chuyên môn">
+            {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
+          </DetailRow>
 
-        <DetailRow label="Điện thoại">
-          {trainer.phone ? (
-            <a
-              href={telHref(trainer.phone)}
-              className="decoration-rule-2 hover:decoration-copper underline underline-offset-[6px]"
-            >
-              {formatPhone(trainer.phone)}
-            </a>
-          ) : (
-            <PendingFact label="Số điện thoại huấn luyện viên" />
-          )}
-        </DetailRow>
+          <DetailRow label="Điện thoại">
+            {trainer.phone ? (
+              <a
+                href={telHref(trainer.phone)}
+                className="decoration-rule-2 hover:decoration-copper underline underline-offset-[6px]"
+              >
+                {formatPhone(trainer.phone)}
+              </a>
+            ) : (
+              <PendingFact label="Số điện thoại huấn luyện viên" />
+            )}
+          </DetailRow>
 
-        {/* A trainer record has no email of its own: the email is the login,
+          {/* A trainer record has no email of its own: the email is the login,
             and it lives on the account. `user_id` says whether there is one. */}
-        <DetailRow label="Tài khoản đăng nhập">
-          {trainer.user_id !== null ? (
-            "Đã có tài khoản"
-          ) : (
-            <Absent>Chưa có tài khoản</Absent>
-          )}
-        </DetailRow>
+          <DetailRow label="Tài khoản đăng nhập">
+            {trainer.user_id !== null ? (
+              "Đã có tài khoản"
+            ) : (
+              <Absent>Chưa có tài khoản</Absent>
+            )}
+          </DetailRow>
 
-        <DetailRow label="Thêm vào studio">
-          <Figures>{formatDate(trainer.created_at)}</Figures>
-        </DetailRow>
+          <DetailRow label="Thêm vào studio">
+            <Figures>{formatDate(trainer.created_at)}</Figures>
+          </DetailRow>
 
-        <DetailRow label="Trang công khai">
-          {trainer.is_public
-            ? "Đã hiện trên trang huấn luyện viên"
-            : "Chưa hiện trên trang huấn luyện viên"}
-        </DetailRow>
-      </DetailList>
+          <DetailRow label="Trang công khai">
+            {trainer.is_public
+              ? "Đã hiện trên trang huấn luyện viên"
+              : "Chưa hiện trên trang huấn luyện viên"}
+          </DetailRow>
+        </DetailList>
+      </Panel>
 
       <MonthStats trainerId={trainer.id} />
 

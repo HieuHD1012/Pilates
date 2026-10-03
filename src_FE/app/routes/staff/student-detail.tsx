@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -123,7 +124,7 @@ export default function StaffStudentDetail() {
   const maySeePhotos = session.data?.role === "ADMIN";
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <LiveRegion message={saved} />
 
       <Link
@@ -238,62 +239,76 @@ function OverviewTab({ student }: { student: StudentResponse }) {
 
   return (
     <>
-      <DetailList className="max-w-(--container-column)">
-        {/* Phone and status sit in the header strip, shown on every tab — so
+      <div className="grid items-start gap-5 xl:grid-cols-2">
+        <Panel className="p-5 sm:p-6">
+          <h2 className="text-ink mb-4 text-base font-medium">Thông tin cá nhân</h2>
+          <DetailList>
+            {/* Phone and status sit in the header strip, shown on every tab — so
             they are not repeated here. */}
-        <DetailRow label="Email">{student.email ?? <Absent>Chưa ghi</Absent>}</DetailRow>
-        <DetailRow label="Ngày sinh">
-          {student.dob ? (
-            <Figures>{formatDate(`${student.dob}T00:00:00+07:00`)}</Figures>
-          ) : (
-            <Absent>Chưa ghi</Absent>
-          )}
-        </DetailRow>
-        <DetailRow label="Vào studio">
-          <Figures>{formatDate(student.created_at)}</Figures>
-        </DetailRow>
-        <DetailRow label="Tài khoản đăng nhập">
-          {student.user_id !== null ? (
-            "Đã có tài khoản"
-          ) : (
-            <Absent>Chưa có tài khoản</Absent>
-          )}
-        </DetailRow>
-        {student.note ? <DetailRow label="Ghi chú" className="sm:col-span-2">{student.note}</DetailRow> : null}
-      </DetailList>
+            <DetailRow label="Email">
+              {student.email ?? <Absent>Chưa ghi</Absent>}
+            </DetailRow>
+            <DetailRow label="Ngày sinh">
+              {student.dob ? (
+                <Figures>{formatDate(`${student.dob}T00:00:00+07:00`)}</Figures>
+              ) : (
+                <Absent>Chưa ghi</Absent>
+              )}
+            </DetailRow>
+            <DetailRow label="Vào studio">
+              <Figures>{formatDate(student.created_at)}</Figures>
+            </DetailRow>
+            <DetailRow label="Tài khoản đăng nhập">
+              {student.user_id !== null ? (
+                "Đã có tài khoản"
+              ) : (
+                <Absent>Chưa có tài khoản</Absent>
+              )}
+            </DetailRow>
+            {student.note ? (
+              <DetailRow label="Ghi chú" className="sm:col-span-2">
+                {student.note}
+              </DetailRow>
+            ) : null}
+          </DetailList>
+        </Panel>
 
-      <section className="mt-8 max-w-(--container-column)">
-        <h2 className="text-ink text-base font-medium">Tình trạng gói tập</h2>
-        <DetailList className="mt-3">
-        <DetailRow label="Số buổi còn lại">
-          {overview.data ? (
-            <>
-              <Figures display className="text-2xl">{overview.data.credits_remaining}</Figures> buổi
-            </>
-          ) : (
-            <Placeholder />
-          )}
-        </DetailRow>
-        <DetailRow label="Gói đang hoạt động">
-          {overview.data ? (
-            overview.data.active_packages.length === 0 ? (
-              <Absent>Chưa có gói đang dùng</Absent>
-            ) : (
-              overview.data.active_packages.map((item) => item.name).join(", ")
-            )
-          ) : (
-            <Placeholder />
-          )}
-        </DetailRow>
-        {overview.data?.needs_renewal ? (
-          <DetailRow label="Gia hạn">
-            <StatusBadge tone="attention">Cần liên hệ gia hạn</StatusBadge>
-          </DetailRow>
-        ) : null}
-        </DetailList>
-      </section>
+        <Panel className="p-5 sm:p-6">
+          <h2 className="text-ink text-base font-medium">Tình trạng gói tập</h2>
+          <DetailList className="mt-3">
+            <DetailRow label="Số buổi còn lại">
+              {overview.data ? (
+                <>
+                  <Figures display className="text-2xl">
+                    {overview.data.credits_remaining}
+                  </Figures>{" "}
+                  buổi
+                </>
+              ) : (
+                <Placeholder />
+              )}
+            </DetailRow>
+            <DetailRow label="Gói đang hoạt động">
+              {overview.data ? (
+                overview.data.active_packages.length === 0 ? (
+                  <Absent>Chưa có gói đang dùng</Absent>
+                ) : (
+                  overview.data.active_packages.map((item) => item.name).join(", ")
+                )
+              ) : (
+                <Placeholder />
+              )}
+            </DetailRow>
+            {overview.data?.needs_renewal ? (
+              <DetailRow label="Gia hạn">
+                <StatusBadge tone="attention">Cần liên hệ gia hạn</StatusBadge>
+              </DetailRow>
+            ) : null}
+          </DetailList>
+        </Panel>
+      </div>
 
-      <section className="mt-10 max-w-(--container-column)">
+      <section className="bg-paper border-rule mt-6 rounded-lg border p-5 sm:p-6">
         <h2 className="text-ink text-sm font-medium">Lịch sử liên hệ gia hạn</h2>
         <p className="measure text-ink-2 mt-1 text-xs">
           Chỉ thêm, không sửa dòng cũ. Ghi nhận một lần liên hệ ở màn hình gia hạn.
@@ -353,7 +368,7 @@ function CommerceTab({
 
   return (
     <>
-      <section>
+      <section className="bg-paper border-rule rounded-lg border p-5 sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="text-ink text-sm font-medium">Gói tập</h2>
           <Button size="sm" onClick={() => setSelling(true)}>
@@ -386,7 +401,7 @@ function CommerceTab({
         </div>
       </section>
 
-      <section className="mt-10">
+      <section className="bg-paper border-rule mt-6 rounded-lg border p-5 sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="text-ink text-sm font-medium">Thanh toán</h2>
           <Button size="sm" variant="secondary" onClick={() => setRecording(true)}>
@@ -492,75 +507,89 @@ function HistoryTab({ studentId }: { studentId: number }) {
   });
 
   return (
-    <QueryBoundary
-      query={query}
-      skeletonRows={5}
-      emptyTitle="Chưa có buổi nào"
-      emptyDescription="Học viên này chưa đăng ký buổi nào trong hệ thống."
-      errorDescription="Không tải được lịch sử lớp."
-      showErrorDetail
-    >
-      {(items) => {
-        const newestFirst = [...items].sort(
-          (a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime(),
-        );
+    <Panel className="workspace-collection">
+      <QueryBoundary
+        query={query}
+        skeletonRows={5}
+        emptyTitle="Chưa có buổi nào"
+        emptyDescription="Học viên này chưa đăng ký buổi nào trong hệ thống."
+        errorDescription="Không tải được lịch sử lớp."
+        showErrorDetail
+      >
+        {(items) => {
+          const newestFirst = [...items].sort(
+            (a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime(),
+          );
 
-        return (
-          <>
-          <ul className="rule-t md:hidden">
-            {newestFirst.map(item => (
-              <li key={item.booking_id} className="rule-b py-4">
-                <p className="text-ink-2 text-sm">{weekdayShort(item.starts_at)} · <Figures>{formatDate(item.starts_at)} {formatTime(item.starts_at)}</Figures></p>
-                <p className="text-ink mt-2 text-base">{CLASS_TYPE[item.class_type]}</p>
-                <p className="text-ink-2 mt-1 text-sm">{item.trainer_name}</p>
-                <StatusBadge className="mt-2" tone={BOOKING_STATUS[item.booking_status].tone}>{BOOKING_STATUS[item.booking_status].label}</StatusBadge>
-                {item.session_status === "CANCELLED" ? <p className="text-ink-2 mt-1 text-sm">Studio đã hủy buổi</p> : null}
-              </li>
-            ))}
-          </ul>
-          <div className="hidden md:block">
-          <DataTable caption="Lịch sử lớp, mới nhất trước" minWidth="42rem">
-            <thead>
-              <tr>
-                <Th>Buổi</Th>
-                <Th>Hình thức</Th>
-                <Th>Huấn luyện viên</Th>
-                <Th>Trạng thái</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {newestFirst.map((item: MyScheduleItem) => (
-                <tr key={item.booking_id}>
-                  <Td className="whitespace-nowrap">
-                    <span className="text-ink-2 mr-2 text-xs">
-                      {weekdayShort(item.starts_at)}
-                    </span>
-                    <Figures>{formatDate(item.starts_at)}</Figures>
-                    <Figures className="text-ink-2 ml-2 text-xs">
-                      {formatTime(item.starts_at)}
-                    </Figures>
-                  </Td>
-                  <Td>{CLASS_TYPE[item.class_type]}</Td>
-                  <Td className="text-ink-2">{item.trainer_name}</Td>
-                  <Td>
-                    <StatusBadge tone={BOOKING_STATUS[item.booking_status].tone}>
+          return (
+            <>
+              <ul className="rule-t md:hidden">
+                {newestFirst.map((item) => (
+                  <li key={item.booking_id} className="rule-b py-4">
+                    <p className="text-ink-2 text-sm">
+                      {weekdayShort(item.starts_at)} ·{" "}
+                      <Figures>
+                        {formatDate(item.starts_at)} {formatTime(item.starts_at)}
+                      </Figures>
+                    </p>
+                    <p className="text-ink mt-2 text-base">{CLASS_TYPE[item.class_type]}</p>
+                    <p className="text-ink-2 mt-1 text-sm">{item.trainer_name}</p>
+                    <StatusBadge
+                      className="mt-2"
+                      tone={BOOKING_STATUS[item.booking_status].tone}
+                    >
                       {BOOKING_STATUS[item.booking_status].label}
                     </StatusBadge>
                     {item.session_status === "CANCELLED" ? (
-                      <span className="text-ink-2 text-2xs mt-1 block">
-                        Studio đã hủy buổi
-                      </span>
+                      <p className="text-ink-2 mt-1 text-sm">Studio đã hủy buổi</p>
                     ) : null}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </DataTable>
-          </div>
-          </>
-        );
-      }}
-    </QueryBoundary>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden md:block">
+                <DataTable caption="Lịch sử lớp, mới nhất trước" minWidth="42rem">
+                  <thead>
+                    <tr>
+                      <Th>Buổi</Th>
+                      <Th>Hình thức</Th>
+                      <Th>Huấn luyện viên</Th>
+                      <Th>Trạng thái</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {newestFirst.map((item: MyScheduleItem) => (
+                      <tr key={item.booking_id}>
+                        <Td className="whitespace-nowrap">
+                          <span className="text-ink-2 mr-2 text-xs">
+                            {weekdayShort(item.starts_at)}
+                          </span>
+                          <Figures>{formatDate(item.starts_at)}</Figures>
+                          <Figures className="text-ink-2 ml-2 text-xs">
+                            {formatTime(item.starts_at)}
+                          </Figures>
+                        </Td>
+                        <Td>{CLASS_TYPE[item.class_type]}</Td>
+                        <Td className="text-ink-2">{item.trainer_name}</Td>
+                        <Td>
+                          <StatusBadge tone={BOOKING_STATUS[item.booking_status].tone}>
+                            {BOOKING_STATUS[item.booking_status].label}
+                          </StatusBadge>
+                          {item.session_status === "CANCELLED" ? (
+                            <span className="text-ink-2 text-2xs mt-1 block">
+                              Studio đã hủy buổi
+                            </span>
+                          ) : null}
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </div>
+            </>
+          );
+        }}
+      </QueryBoundary>
+    </Panel>
   );
 }
 
@@ -669,49 +698,58 @@ function PaymentTable({ payments }: { payments: PaymentResponse[] }) {
 
   return (
     <>
-    <ul className="rule-t md:hidden">
-      {newestFirst.map(payment => (
-        <li key={payment.id} className="rule-b py-4">
-          <Figures className="text-ink text-xl">{formatVnd(payment.amount)}</Figures>
-          <p className="text-ink-2 mt-1 text-sm">{PAYMENT_METHOD[payment.method]}</p>
-          <StatusBadge className="mt-2" tone={PAYMENT_STATUS[payment.status].tone}>{PAYMENT_STATUS[payment.status].label}</StatusBadge>
-          <p className="text-ink-2 mt-2 text-xs">Ghi lúc <Figures>{formatDate(payment.recorded_at)} {formatTime(payment.recorded_at)}</Figures></p>
-        </li>
-      ))}
-    </ul>
-    <div className="hidden md:block">
-    <DataTable caption="Thanh toán của học viên, mới nhất trước" minWidth="40rem">
-      <thead>
-        <tr>
-          <Th>Ngày ghi</Th>
-          <Th>Phương thức</Th>
-          <Th numeric>Số tiền</Th>
-          <Th>Trạng thái</Th>
-        </tr>
-      </thead>
-      <tbody>
+      <ul className="rule-t md:hidden">
         {newestFirst.map((payment) => (
-          <tr key={payment.id}>
-            <Td className="whitespace-nowrap">
-              <Figures>{formatDate(payment.recorded_at)}</Figures>
-              <Figures className="text-ink-2 ml-2 text-xs">
-                {formatTime(payment.recorded_at)}
+          <li key={payment.id} className="rule-b py-4">
+            <Figures className="text-ink text-xl">{formatVnd(payment.amount)}</Figures>
+            <p className="text-ink-2 mt-1 text-sm">{PAYMENT_METHOD[payment.method]}</p>
+            <StatusBadge className="mt-2" tone={PAYMENT_STATUS[payment.status].tone}>
+              {PAYMENT_STATUS[payment.status].label}
+            </StatusBadge>
+            <p className="text-ink-2 mt-2 text-xs">
+              Ghi lúc{" "}
+              <Figures>
+                {formatDate(payment.recorded_at)} {formatTime(payment.recorded_at)}
               </Figures>
-            </Td>
-            <Td className="text-ink-2">{PAYMENT_METHOD[payment.method]}</Td>
-            <Td numeric>
-              <Figures className="whitespace-nowrap">{formatVnd(payment.amount)}</Figures>
-            </Td>
-            <Td>
-              <StatusBadge tone={PAYMENT_STATUS[payment.status].tone}>
-                {PAYMENT_STATUS[payment.status].label}
-              </StatusBadge>
-            </Td>
-          </tr>
+            </p>
+          </li>
         ))}
-      </tbody>
-    </DataTable>
-    </div>
+      </ul>
+      <div className="hidden md:block">
+        <DataTable caption="Thanh toán của học viên, mới nhất trước" minWidth="40rem">
+          <thead>
+            <tr>
+              <Th>Ngày ghi</Th>
+              <Th>Phương thức</Th>
+              <Th numeric>Số tiền</Th>
+              <Th>Trạng thái</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {newestFirst.map((payment) => (
+              <tr key={payment.id}>
+                <Td className="whitespace-nowrap">
+                  <Figures>{formatDate(payment.recorded_at)}</Figures>
+                  <Figures className="text-ink-2 ml-2 text-xs">
+                    {formatTime(payment.recorded_at)}
+                  </Figures>
+                </Td>
+                <Td className="text-ink-2">{PAYMENT_METHOD[payment.method]}</Td>
+                <Td numeric>
+                  <Figures className="whitespace-nowrap">
+                    {formatVnd(payment.amount)}
+                  </Figures>
+                </Td>
+                <Td>
+                  <StatusBadge tone={PAYMENT_STATUS[payment.status].tone}>
+                    {PAYMENT_STATUS[payment.status].label}
+                  </StatusBadge>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </DataTable>
+      </div>
     </>
   );
 }

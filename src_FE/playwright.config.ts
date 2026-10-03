@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4173;
+const PORT = 4188;
 /** The dev server, where MSW is live. See the `app` project below. */
-const DEV_PORT = 5199;
+const DEV_PORT = 5208;
 
 export default defineConfig({
   testDir: "./e2e",

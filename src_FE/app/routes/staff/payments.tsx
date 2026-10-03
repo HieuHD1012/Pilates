@@ -1,3 +1,5 @@
+import { SegmentFilter } from "~/ui/workspace";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -107,7 +109,7 @@ export default function StaffPayments() {
   const narrowed = status !== "all" || studentId !== null;
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Thanh toán"
         description="Các khoản thu đã ghi nhận. Tổng tiền chỉ cộng những giao dịch đã xác nhận đang hiển thị."
@@ -122,7 +124,7 @@ export default function StaffPayments() {
           </>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Tổng tiền (đã xác nhận)</dt>
               <dd>
@@ -159,95 +161,96 @@ export default function StaffPayments() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Học viên" className="w-full sm:w-64">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={studentId === null ? "" : String(studentId)}
-              onChange={(event) =>
-                setStudentId(event.target.value === "" ? null : Number(event.target.value))
-              }
-            >
-              <option value="">Tất cả học viên</option>
-              {(roster.data ?? []).map((student) => (
-                <option key={student.id} value={String(student.id)}>
-                  {student.full_name}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
+      <Panel className="workspace-collection">
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
+          }
+        >
+          <Field label="Học viên" className="w-full sm:w-64">
+            {({ id }) => (
+              <Select
+                id={id}
+                value={studentId === null ? "" : String(studentId)}
+                onChange={(event) =>
+                  setStudentId(
+                    event.target.value === "" ? null : Number(event.target.value),
+                  )
+                }
+              >
+                <option value="">Tất cả học viên</option>
+                {(roster.data ?? []).map((student) => (
+                  <option key={student.id} value={String(student.id)}>
+                    {student.full_name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
 
-        <Field label="Trạng thái" className="w-full sm:w-48">
-          {({ id }) => (
-            <Select
-              id={id}
+          <div className="max-w-full min-w-0">
+            <p className="text-ink-2 mb-2 text-sm">Trạng thái</p>
+            <SegmentFilter<PaymentStatus | "all">
+              label="Trạng thái"
               value={status}
-              onChange={(event) => setStatus(event.target.value as PaymentStatus | "all")}
-            >
-              <option value="all">Tất cả</option>
-              {STATUS_ORDER.map((value) => (
-                <option key={value} value={value}>
-                  {STATUS[value].label}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
+              onChange={setStatus}
+              options={[
+                { value: "all", label: "Tất cả" },
+                ...STATUS_ORDER.map((value) => ({ value, label: STATUS[value].label })),
+              ]}
+            />
+          </div>
+        </FilterBar>
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={8}
-        showErrorDetail
-        errorDescription="Không tải được danh sách thanh toán."
-        emptyTitle={
-          narrowed ? "Không có giao dịch nào khớp bộ lọc" : "Chưa có giao dịch nào"
-        }
-        emptyDescription={
-          narrowed
-            ? "Bộ lọc đang thu hẹp kết quả. Bỏ lọc để xem toàn bộ."
-            : "Các khoản thu do nhân viên ghi nhận sẽ xuất hiện ở đây, mới nhất trước."
-        }
-        emptyAction={
-          narrowed ? (
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setStatus("all");
-                setStudentId(null);
-              }}
-            >
-              Bỏ bộ lọc
-            </Button>
-          ) : undefined
-        }
-      >
-        {(payments) => {
-          // Newest first: a payments log is read from the most recent receipt.
-          const sorted = [...payments].sort(
-            (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime(),
-          );
+        <QueryBoundary
+          query={query}
+          skeletonRows={8}
+          showErrorDetail
+          errorDescription="Không tải được danh sách thanh toán."
+          emptyTitle={
+            narrowed ? "Không có giao dịch nào khớp bộ lọc" : "Chưa có giao dịch nào"
+          }
+          emptyDescription={
+            narrowed
+              ? "Bộ lọc đang thu hẹp kết quả. Bỏ lọc để xem toàn bộ."
+              : "Các khoản thu do nhân viên ghi nhận sẽ xuất hiện ở đây, mới nhất trước."
+          }
+          emptyAction={
+            narrowed ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setStatus("all");
+                  setStudentId(null);
+                }}
+              >
+                Bỏ bộ lọc
+              </Button>
+            ) : undefined
+          }
+        >
+          {(payments) => {
+            // Newest first: a payments log is read from the most recent receipt.
+            const sorted = [...payments].sort(
+              (a, b) =>
+                new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime(),
+            );
 
-          return (
-            <>
-              <div className="hidden lg:block">
-                <PaymentTable payments={sorted} packageNames={packageNames} />
-              </div>
-              <div className="lg:hidden">
-                <PaymentList payments={sorted} packageNames={packageNames} />
-              </div>
-            </>
-          );
-        }}
-      </QueryBoundary>
+            return (
+              <>
+                <div className="hidden lg:block">
+                  <PaymentTable payments={sorted} packageNames={packageNames} />
+                </div>
+                <div className="lg:hidden">
+                  <PaymentList payments={sorted} packageNames={packageNames} />
+                </div>
+              </>
+            );
+          }}
+        </QueryBoundary>
+      </Panel>
 
       <div className="rule-t mt-6 pt-3">
         <p className="measure-wide text-ink-2 text-xs">

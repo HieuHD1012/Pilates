@@ -1,3 +1,5 @@
+import { SegmentFilter } from "~/ui/workspace";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -9,7 +11,7 @@ import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Field, Input, Select } from "~/ui/field";
+import { Field, Input } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { FilterBar, PageHeader } from "~/ui/layout";
@@ -79,7 +81,7 @@ export default function StaffStudents() {
   }
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <LiveRegion message={createdName ? `Đã tạo hồ sơ cho ${createdName}.` : null} />
 
       <PageHeader
@@ -96,7 +98,7 @@ export default function StaffStudents() {
           </>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Đang hiển thị</dt>
               <dd>
@@ -108,7 +110,7 @@ export default function StaffStudents() {
               </dd>
             </div>
             <div className="flex items-baseline gap-2">
-              <dt>Đang học</dt>
+              <dt>Đang học trong kết quả</dt>
               <dd>
                 {items ? (
                   <Figures className="text-ink">{activeCount}</Figures>
@@ -121,129 +123,129 @@ export default function StaffStudents() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Tìm học viên" className="w-full sm:w-72">
-          {({ id }) => (
-            <Input
-              id={id}
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Tên hoặc số điện thoại"
-              autoComplete="off"
-            />
-          )}
-        </Field>
+      <Panel className="workspace-collection">
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
+          }
+        >
+          <Field label="Tìm học viên" className="w-full sm:w-72">
+            {({ id }) => (
+              <Input
+                id={id}
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Tên hoặc số điện thoại"
+                autoComplete="off"
+              />
+            )}
+          </Field>
 
-        <Field label="Trạng thái" className="w-full sm:w-48">
-          {({ id }) => (
-            <Select
-              id={id}
+          <div className="max-w-full min-w-0">
+            <p className="text-ink-2 mb-2 text-sm">Trạng thái</p>
+            <SegmentFilter<StudentStatus | "all">
+              label="Trạng thái"
               value={status}
-              onChange={(event) => setStatus(event.target.value as StudentStatus | "all")}
-            >
-              <option value="all">Tất cả</option>
-              {STATUS_ORDER.map((value) => (
-                <option key={value} value={value}>
-                  {STATUS[value].label}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
+              onChange={setStatus}
+              options={[
+                { value: "all", label: "Tất cả" },
+                ...STATUS_ORDER.map((value) => ({ value, label: STATUS[value].label })),
+              ]}
+            />
+          </div>
+        </FilterBar>
 
-      <DemoDataNotice className="mb-3" />
+        <DemoDataNotice className="mb-3" />
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={8}
-        emptyTitle={filtered ? "Không có học viên nào khớp bộ lọc" : "Chưa có học viên nào"}
-        emptyDescription={
-          filtered
-            ? "Thử bỏ bớt từ khoá tìm kiếm hoặc chọn lại trạng thái."
-            : "Học viên sẽ xuất hiện ở đây sau khi được ghi nhận trong hệ thống của studio."
-        }
-        emptyAction={
-          filtered ? (
-            <Button variant="secondary" onClick={clearFilters}>
-              Bỏ bộ lọc
-            </Button>
-          ) : null
-        }
-        errorDescription="Không tải được danh sách học viên."
-        showErrorDetail
-      >
-        {(students) => (
-          <>
-            {/* 1440 / 1024: the columns staff scan down. */}
-            <div className="hidden lg:block">
-              <DataTable caption="Danh sách học viên" minWidth="52rem">
-                <thead>
-                  <tr>
-                    <Th>Tên</Th>
-                    <Th>Điện thoại</Th>
-                    <Th>Email</Th>
-                    <Th numeric>Vào studio</Th>
-                    <Th>Trạng thái</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((student) => (
-                    <Tr
-                      key={student.id}
-                      onClick={(event) => openStudent(event, student.id)}
-                    >
-                      <Td>
-                        {/* A real link: the row click is a convenience, not the
+        <QueryBoundary
+          query={query}
+          skeletonRows={8}
+          emptyTitle={
+            filtered ? "Không có học viên nào khớp bộ lọc" : "Chưa có học viên nào"
+          }
+          emptyDescription={
+            filtered
+              ? "Thử bỏ bớt từ khoá tìm kiếm hoặc chọn lại trạng thái."
+              : "Học viên sẽ xuất hiện ở đây sau khi được ghi nhận trong hệ thống của studio."
+          }
+          emptyAction={
+            filtered ? (
+              <Button variant="secondary" onClick={clearFilters}>
+                Bỏ bộ lọc
+              </Button>
+            ) : null
+          }
+          errorDescription="Không tải được danh sách học viên."
+          showErrorDetail
+        >
+          {(students) => (
+            <>
+              {/* 1440 / 1024: the columns staff scan down. */}
+              <div className="hidden lg:block">
+                <DataTable caption="Danh sách học viên" minWidth="52rem">
+                  <thead>
+                    <tr>
+                      <Th>Tên</Th>
+                      <Th>Điện thoại</Th>
+                      <Th>Email</Th>
+                      <Th numeric>Vào studio</Th>
+                      <Th>Trạng thái</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.map((student) => (
+                      <Tr
+                        key={student.id}
+                        onClick={(event) => openStudent(event, student.id)}
+                      >
+                        <Td>
+                          {/* A real link: the row click is a convenience, not the
                             only way in. Names wrap — they are never truncated. */}
-                        <Link
-                          to={`/studio/hoc-vien/${student.id}`}
-                          className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
-                        >
-                          {student.full_name}
-                        </Link>
-                      </Td>
-                      <Td>
-                        <Figures className="text-ink-2 whitespace-nowrap">
-                          {formatPhone(student.phone)}
-                        </Figures>
-                      </Td>
-                      <Td>{student.email ?? <Absent>Chưa ghi</Absent>}</Td>
-                      <Td numeric>
-                        <Figures className="whitespace-nowrap">
-                          {formatDate(student.created_at)}
-                        </Figures>
-                      </Td>
-                      <Td>
-                        <StatusBadge tone={STATUS[student.status].tone}>
-                          {STATUS[student.status].label}
-                        </StatusBadge>
-                      </Td>
-                    </Tr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </div>
+                          <Link
+                            to={`/studio/hoc-vien/${student.id}`}
+                            className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+                          >
+                            {student.full_name}
+                          </Link>
+                        </Td>
+                        <Td>
+                          <Figures className="text-ink-2 whitespace-nowrap">
+                            {formatPhone(student.phone)}
+                          </Figures>
+                        </Td>
+                        <Td>{student.email ?? <Absent>Chưa ghi</Absent>}</Td>
+                        <Td numeric>
+                          <Figures className="whitespace-nowrap">
+                            {formatDate(student.created_at)}
+                          </Figures>
+                        </Td>
+                        <Td>
+                          <StatusBadge tone={STATUS[student.status].tone}>
+                            {STATUS[student.status].label}
+                          </StatusBadge>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </div>
 
-            {/* Below lg the table becomes ruled rows — a studio phone is not
+              {/* Below lg the table becomes ruled rows — a studio phone is not
                 asked to render a six-column grid (docs/RESPONSIVE.md). */}
-            <ul className="rule-t lg:hidden">
-              {students.map((student) => (
-                <li key={student.id} className="rule-b">
-                  <StudentRow student={student} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </QueryBoundary>
+              <ul className="rule-t lg:hidden">
+                {students.map((student) => (
+                  <li key={student.id} className="rule-b">
+                    <StudentRow student={student} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </QueryBoundary>
+      </Panel>
 
       <CreateStudentDialog
         open={creating}
@@ -315,10 +317,10 @@ function StudentRow({ student }: { student: StudentResponse }) {
     >
       <span className="min-w-0">
         <span className="text-ink block text-sm">{student.full_name}</span>
-        <Figures className="text-ink-2 mt-1 block text-xs">
+        <Figures className="text-ink-2 mt-1 block text-xs wrap-anywhere">
           {formatPhone(student.phone)}
         </Figures>
-        <span className="text-ink-2 mt-1 block text-xs">
+        <span className="text-ink-2 mt-1 block text-xs wrap-anywhere">
           {student.email ?? <Absent>Chưa ghi email</Absent>}
         </span>
       </span>

@@ -1,3 +1,5 @@
+import { SegmentFilter } from "~/ui/workspace";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -7,7 +9,6 @@ import { formatDate, formatPhone, formatTime, telHref } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Field, Select } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { FilterBar, PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
@@ -79,12 +80,12 @@ export default function StaffLeads() {
   const newCount = items.filter((item) => item.status === "NEW").length;
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Khách quan tâm"
         description="Người để lại thông tin tư vấn, mới nhất trước. Mở một khách để ghi nhận kết quả liên hệ."
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Đang hiển thị</dt>
               <dd>
@@ -92,7 +93,7 @@ export default function StaffLeads() {
               </dd>
             </div>
             <div className="flex items-baseline gap-2">
-              <dt>Chưa liên hệ</dt>
+              <dt>Chưa liên hệ trong kết quả</dt>
               <dd>
                 <Figures className={newCount > 0 ? "text-copper" : "text-ink"}>
                   {newCount}
@@ -103,73 +104,71 @@ export default function StaffLeads() {
         }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Trạng thái" className="w-56">
-          {({ id }) => (
-            <Select
-              id={id}
+      <Panel className="workspace-collection">
+        <FilterBar
+          trailing={
+            <span className="text-ink-2 text-xs">
+              {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
+            </span>
+          }
+        >
+          <div className="max-w-full min-w-0">
+            <p className="text-ink-2 mb-2 text-sm">Trạng thái</p>
+            <SegmentFilter<LeadStatus | "all">
+              label="Trạng thái"
               value={status}
-              onChange={(event) => setStatus(event.target.value as LeadStatus | "all")}
-            >
-              <option value="all">Tất cả</option>
-              {STATUS_ORDER.map((value) => (
-                <option key={value} value={value}>
-                  {STATUS_LABEL[value]}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
+              onChange={setStatus}
+              options={[
+                { value: "all", label: "Tất cả" },
+                ...STATUS_ORDER.map((value) => ({ value, label: STATUS_LABEL[value] })),
+              ]}
+            />
+          </div>
+        </FilterBar>
 
-      <DemoDataNotice className="mb-3" />
+        <DemoDataNotice className="mb-3" />
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        showErrorDetail
-        errorDescription="Không tải được danh sách khách quan tâm. Kiểm tra kết nối rồi thử lại."
-        emptyTitle={
-          status === "all"
-            ? "Chưa có khách quan tâm nào"
-            : "Không có khách ở trạng thái này"
-        }
-        emptyDescription={
-          status === "all"
-            ? "Thông tin gửi từ form tư vấn trên website sẽ xuất hiện ở đây."
-            : "Bộ lọc đang thu hẹp kết quả. Xem tất cả để thấy những khách ở trạng thái khác."
-        }
-        emptyAction={
-          status === "all" ? undefined : (
-            <Button variant="secondary" onClick={() => setStatus("all")}>
-              Xem tất cả
-            </Button>
-          )
-        }
-      >
-        {(leads) => {
-          const sorted = [...leads].sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-          );
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          showErrorDetail
+          errorDescription="Không tải được danh sách khách quan tâm. Kiểm tra kết nối rồi thử lại."
+          emptyTitle={
+            status === "all"
+              ? "Chưa có khách quan tâm nào"
+              : "Không có khách ở trạng thái này"
+          }
+          emptyDescription={
+            status === "all"
+              ? "Thông tin gửi từ form tư vấn trên website sẽ xuất hiện ở đây."
+              : "Bộ lọc đang thu hẹp kết quả. Xem tất cả để thấy những khách ở trạng thái khác."
+          }
+          emptyAction={
+            status === "all" ? undefined : (
+              <Button variant="secondary" onClick={() => setStatus("all")}>
+                Xem tất cả
+              </Button>
+            )
+          }
+        >
+          {(leads) => {
+            const sorted = [...leads].sort(
+              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+            );
 
-          return (
-            <>
-              <div className="hidden lg:block">
-                <LeadTable leads={sorted} />
-              </div>
-              <div className="lg:hidden">
-                <LeadList leads={sorted} />
-              </div>
-            </>
-          );
-        }}
-      </QueryBoundary>
+            return (
+              <>
+                <div className="hidden lg:block">
+                  <LeadTable leads={sorted} />
+                </div>
+                <div className="lg:hidden">
+                  <LeadList leads={sorted} />
+                </div>
+              </>
+            );
+          }}
+        </QueryBoundary>
+      </Panel>
     </div>
   );
 }

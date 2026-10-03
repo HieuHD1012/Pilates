@@ -1,3 +1,5 @@
+import { RowMenu, RowMenuItem } from "~/ui/workspace";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 
 import { RoleGate } from "~/features/auth/role-gate";
@@ -113,7 +115,7 @@ function AccountsScreen() {
   }
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <LiveRegion
         message={created ? `Đã tạo tài khoản cho ${created}. Lời mời đã được gửi.` : null}
       />
@@ -139,7 +141,7 @@ function AccountsScreen() {
           </Button>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Số tài khoản</dt>
               <dd>
@@ -173,112 +175,106 @@ function AccountsScreen() {
       ) : null}
 
       <div className="mt-3">
-        <QueryBoundary
-          query={query}
-          skeletonRows={6}
-          emptyTitle="Chưa có tài khoản nào"
-          emptyDescription="Danh sách tài khoản sẽ xuất hiện ở đây khi hệ thống ghi nhận người đăng nhập đầu tiên."
-          errorDescription="Không tải được danh sách tài khoản."
-          showErrorDetail
-        >
-          {(items) => (
-            <>
-              {/* From lg up: the five columns staff scan down, plus the action. */}
-              <div className="hidden lg:block">
-                <DataTable caption="Tài khoản đăng nhập của studio" minWidth="56rem">
-                  <thead>
-                    <tr>
-                      <Th>Họ tên</Th>
-                      <Th>Email đăng nhập</Th>
-                      <Th>Điện thoại</Th>
-                      <Th>Vai trò</Th>
-                      <Th>Trạng thái</Th>
-                      <Th numeric>Tạo lúc</Th>
-                      <Th className="text-right">Truy cập</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((account) => (
-                      <Tr key={account.id}>
-                        {/* Names wrap; a Vietnamese name is never truncated. */}
-                        <Td>{account.full_name ?? <Absent>Chưa ghi tên</Absent>}</Td>
-                        <Td>
-                          <span className="text-ink-2 break-words">{account.email}</span>
-                        </Td>
-                        <Td>
-                          {account.phone ? (
-                            <Figures className="text-ink-2 whitespace-nowrap">
-                              {formatPhone(account.phone)}
+        <Panel className="workspace-collection">
+          <QueryBoundary
+            query={query}
+            skeletonRows={6}
+            emptyTitle="Chưa có tài khoản nào"
+            emptyDescription="Danh sách tài khoản sẽ xuất hiện ở đây khi hệ thống ghi nhận người đăng nhập đầu tiên."
+            errorDescription="Không tải được danh sách tài khoản."
+            showErrorDetail
+          >
+            {(items) => (
+              <>
+                {/* From lg up: the five columns staff scan down, plus the action. */}
+                <div className="hidden lg:block">
+                  <DataTable caption="Tài khoản đăng nhập của studio" minWidth="56rem">
+                    <thead>
+                      <tr>
+                        <Th>Họ tên</Th>
+                        <Th>Email đăng nhập</Th>
+                        <Th>Điện thoại</Th>
+                        <Th>Vai trò</Th>
+                        <Th>Trạng thái</Th>
+                        <Th numeric>Tạo lúc</Th>
+                        <Th className="text-right">Truy cập</Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((account) => (
+                        <Tr key={account.id}>
+                          {/* Names wrap; a Vietnamese name is never truncated. */}
+                          <Td>{account.full_name ?? <Absent>Chưa ghi tên</Absent>}</Td>
+                          <Td>
+                            <span className="text-ink-2 break-words">{account.email}</span>
+                          </Td>
+                          <Td>
+                            {account.phone ? (
+                              <Figures className="text-ink-2 whitespace-nowrap">
+                                {formatPhone(account.phone)}
+                              </Figures>
+                            ) : (
+                              <Absent>Chưa ghi</Absent>
+                            )}
+                          </Td>
+                          <Td className="text-ink-2">{ROLE_LABEL[account.role]}</Td>
+                          <Td>
+                            <AccountStatus account={account} />
+                          </Td>
+                          <Td numeric className="whitespace-nowrap">
+                            <Figures className="text-ink">
+                              {formatDate(account.created_at)}
+                            </Figures>{" "}
+                            <Figures className="text-ink-2 text-xs">
+                              {formatTime(account.created_at)}
                             </Figures>
-                          ) : (
-                            <Absent>Chưa ghi</Absent>
-                          )}
-                        </Td>
-                        <Td className="text-ink-2">{ROLE_LABEL[account.role]}</Td>
-                        <Td>
-                          <AccountStatus account={account} />
-                        </Td>
-                        <Td numeric className="whitespace-nowrap">
-                          <Figures className="text-ink">
-                            {formatDate(account.created_at)}
-                          </Figures>{" "}
-                          <Figures className="text-ink-2 text-xs">
-                            {formatTime(account.created_at)}
-                          </Figures>
-                        </Td>
-                        <Td className="text-right">
-                          <RowActions account={account} onAsk={ask} />
-                        </Td>
-                      </Tr>
-                    ))}
-                  </tbody>
-                </DataTable>
-              </div>
+                          </Td>
+                          <Td className="text-right">
+                            <RowActions account={account} onAsk={ask} />
+                          </Td>
+                        </Tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
+                </div>
 
-              {/* Below lg the table becomes ruled rows: the same facts, one
+                {/* Below lg the table becomes ruled rows: the same facts, one
                   full-width action, no sideways scroll (docs/RESPONSIVE.md). */}
-              <ul className="rule-t lg:hidden">
-                {items.map((account) => (
-                  <li key={account.id} className="rule-b py-4">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
-                      <span className="text-ink min-w-0 text-sm">
-                        {account.full_name ?? account.email}
-                      </span>
-                      <AccountStatus account={account} />
-                    </div>
+                <ul className="rule-t lg:hidden">
+                  {items.map((account) => (
+                    <li key={account.id} className="rule-b py-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
+                        <span className="text-ink min-w-0 text-sm">
+                          {account.full_name ?? account.email}
+                        </span>
+                        <AccountStatus account={account} />
+                      </div>
 
-                    <p className="text-ink-2 mt-2 text-xs">
-                      <span className="break-words">{account.email}</span>
-                      <span className="mx-1.5" aria-hidden="true">
-                        ·
-                      </span>
-                      {ROLE_LABEL[account.role]}
-                    </p>
+                      <p className="text-ink-2 mt-2 text-xs">
+                        <span className="break-words">{account.email}</span>
+                        <span className="mx-1.5" aria-hidden="true">
+                          ·
+                        </span>
+                        {ROLE_LABEL[account.role]}
+                      </p>
 
-                    <p className="text-ink-2 mt-1.5 text-xs">
-                      Tạo lúc{" "}
-                      <Figures className="text-ink">
-                        {formatDate(account.created_at)}
-                      </Figures>
-                    </p>
+                      <p className="text-ink-2 mt-1.5 text-xs">
+                        Tạo lúc{" "}
+                        <Figures className="text-ink">
+                          {formatDate(account.created_at)}
+                        </Figures>
+                      </p>
 
-                    <div className="mt-3 flex flex-col gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        fullWidth
-                        onClick={() => ask(account)}
-                      >
-                        {account.is_active ? "Khóa tài khoản" : "Mở lại tài khoản"}
-                      </Button>
-                      <ResendInvite account={account} fullWidth />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </QueryBoundary>
+                      <div className="mt-3">
+                        <RowActions account={account} onAsk={ask} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </QueryBoundary>
+        </Panel>
       </div>
 
       <p className="rule-t text-ink-2 mt-6 pt-3 text-xs">
@@ -439,15 +435,21 @@ function RowActions({
 
   return (
     <span className="flex flex-wrap justify-end gap-2">
-      <ResendInvite account={account} />
-      <Button
-        variant={locking ? "danger" : "secondary"}
-        size="sm"
-        onClick={() => onAsk(account)}
-        aria-label={locking ? `Khóa tài khoản của ${name}` : `Mở lại tài khoản của ${name}`}
-      >
-        {locking ? "Khóa" : "Mở lại"}
-      </Button>
+      {account.status === "PENDING_ACTIVATION" ? <ResendInvite account={account} /> : null}
+      <RowMenu label={`Thao tác tài khoản ${name}`}>
+        {account.status !== "PENDING_ACTIVATION" ? (
+          <ResendInvite account={account} />
+        ) : null}
+        <RowMenuItem
+          danger={locking}
+          onClick={() => onAsk(account)}
+          aria-label={
+            locking ? `Khóa tài khoản của ${name}` : `Mở lại tài khoản của ${name}`
+          }
+        >
+          {locking ? "Khóa tài khoản" : "Mở lại tài khoản"}
+        </RowMenuItem>
+      </RowMenu>
     </span>
   );
 }

@@ -153,7 +153,7 @@ export default function ResetPassword() {
             <Field
               label="Mật khẩu mới"
               required
-              hint="Ít nhất 8 ký tự."
+              hint="Ít nhất 10 ký tự."
               error={errors.password?.message}
             >
               {({ id, describedBy, invalid }) => (

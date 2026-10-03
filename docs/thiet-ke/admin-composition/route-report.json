@@ -1,0 +1,758 @@
+[
+  {
+    "route": "/dang-nhap",
+    "role": null,
+    "width": 1440,
+    "title": "Đăng nhập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/quen-mat-khau",
+    "role": null,
+    "width": 1440,
+    "title": "Quên mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dat-lai-mat-khau",
+    "role": null,
+    "width": 1440,
+    "title": "Đặt lại mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tong-quan",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Một ngày tại studio",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Lịch & lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich/1",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Lớp nhóm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam/1",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "DEMO Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien/1",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "DEMO Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien/1",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "DEMO Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/goi-tap",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Gói tập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/thanh-toan",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Thanh toán",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/so-buoi",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Sổ buổi",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/gia-han",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Gia hạn",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Báo cáo",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/doanh-thu",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Báo cáo doanh thu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/lop-hoc",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Báo cáo lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Báo cáo huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tai-khoan",
+    "role": "ADMIN",
+    "width": 1440,
+    "title": "Tài khoản",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dang-nhap",
+    "role": null,
+    "width": 390,
+    "title": "Đăng nhập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/quen-mat-khau",
+    "role": null,
+    "width": 390,
+    "title": "Quên mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dat-lai-mat-khau",
+    "role": null,
+    "width": 390,
+    "title": "Đặt lại mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tong-quan",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Một ngày tại studio",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Lịch & lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich/1",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Lớp nhóm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam/1",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "DEMO Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien/1",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "DEMO Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien/1",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "DEMO Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/goi-tap",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Gói tập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/thanh-toan",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Thanh toán",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/so-buoi",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Sổ buổi",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/gia-han",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Gia hạn",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Báo cáo",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/doanh-thu",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Báo cáo doanh thu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/lop-hoc",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Báo cáo lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Báo cáo huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tai-khoan",
+    "role": "ADMIN",
+    "width": 390,
+    "title": "Tài khoản",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dang-nhap",
+    "role": null,
+    "width": 768,
+    "title": "Đăng nhập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/quen-mat-khau",
+    "role": null,
+    "width": 768,
+    "title": "Quên mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dat-lai-mat-khau",
+    "role": null,
+    "width": 768,
+    "title": "Đặt lại mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tong-quan",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Một ngày tại studio",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Lịch & lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich/1",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Lớp nhóm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam/1",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "DEMO Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien/1",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "DEMO Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien/1",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "DEMO Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/goi-tap",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Gói tập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/thanh-toan",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Thanh toán",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/so-buoi",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Sổ buổi",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/gia-han",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Gia hạn",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Báo cáo",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/doanh-thu",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Báo cáo doanh thu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/lop-hoc",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Báo cáo lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Báo cáo huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tai-khoan",
+    "role": "ADMIN",
+    "width": 768,
+    "title": "Tài khoản",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dang-nhap",
+    "role": null,
+    "width": 1024,
+    "title": "Đăng nhập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/quen-mat-khau",
+    "role": null,
+    "width": 1024,
+    "title": "Quên mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/dat-lai-mat-khau",
+    "role": null,
+    "width": 1024,
+    "title": "Đặt lại mật khẩu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tong-quan",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Một ngày tại studio",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Lịch & lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/lich/1",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Lớp nhóm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/khach-quan-tam/1",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "DEMO Khách quan tâm",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/hoc-vien/1",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "DEMO Học viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/huan-luyen-vien/1",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "DEMO Huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/goi-tap",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Gói tập",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/thanh-toan",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Thanh toán",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/so-buoi",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Sổ buổi",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/gia-han",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Gia hạn",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Báo cáo",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/doanh-thu",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Báo cáo doanh thu",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/lop-hoc",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Báo cáo lớp học",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/bao-cao/huan-luyen-vien",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Báo cáo huấn luyện viên",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  },
+  {
+    "route": "/studio/tai-khoan",
+    "role": "ADMIN",
+    "width": 1024,
+    "title": "Tài khoản",
+    "overflow": false,
+    "clipped": [],
+    "violations": []
+  }
+]

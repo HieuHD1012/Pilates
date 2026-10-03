@@ -1,3 +1,6 @@
+import { useStudents } from "~/features/people/queries";
+import { Field, Select } from "~/ui/field";
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 
@@ -73,23 +76,18 @@ export default function StaffSessionLedger() {
    * This screen used to default to one hard-coded package id, which meant the nav
    * item opened one arbitrary student's sessions and looked authoritative doing it.
    */
-  if (!studentPackageId) {
+  if (
+    !studentPackageId ||
+    !Number.isSafeInteger(Number(studentPackageId)) ||
+    Number(studentPackageId) <= 0
+  ) {
     return (
-      <div className="gutter py-6">
+      <div className="workspace-page">
         <PageHeader
           title="Sổ buổi"
           description="Mỗi gói tập có một sổ buổi riêng. Chọn gói để mở sổ của gói đó."
         />
-        <EmptyState
-          className="mt-4"
-          title="Chưa chọn gói nào"
-          description="Sổ buổi mở theo từng gói tập, không phải theo toàn studio. Vào hồ sơ học viên, tab Gói & thanh toán, rồi mở sổ của gói cần xem."
-          action={
-            <Button asChild variant="secondary">
-              <Link to="/studio/hoc-vien">Danh sách học viên</Link>
-            </Button>
-          }
-        />
+        <LedgerPicker />
       </div>
     );
   }
@@ -112,7 +110,7 @@ function LedgerScreen({
   const query = usePackageLedger(studentPackageId);
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <QueryBoundary
         query={query}
         skeletonRows={6}
@@ -168,7 +166,7 @@ function LedgerBody({
           </Button>
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             {studentId !== null ? (
               <div className="flex items-baseline gap-2">
                 <dt>Học viên</dt>
@@ -217,22 +215,24 @@ function LedgerBody({
 
       <DemoDataNotice className="mt-3 mb-3" />
 
-      {ledger.entries.length === 0 ? (
-        <EmptyState
-          title="Sổ buổi của gói này chưa có bút toán nào"
-          description="Mỗi lần mua gói, đặt lớp, hủy lớp hoặc điều chỉnh buổi đều tạo một bút toán ở đây, kèm lý do và người thực hiện."
-        />
-      ) : (
-        <>
-          <div className="hidden lg:block">
-            <LedgerTable entries={lines} balance={ledger.closing_balance} />
-          </div>
-          <div className="lg:hidden">
-            <LedgerList entries={lines} balance={ledger.closing_balance} />
-          </div>
-        </>
-      )}
-
+      <Panel className="workspace-collection mt-5">
+        {" "}
+        {ledger.entries.length === 0 ? (
+          <EmptyState
+            title="Sổ buổi của gói này chưa có bút toán nào"
+            description="Mỗi lần mua gói, đặt lớp, hủy lớp hoặc điều chỉnh buổi đều tạo một bút toán ở đây, kèm lý do và người thực hiện."
+          />
+        ) : (
+          <>
+            <div className="hidden lg:block">
+              <LedgerTable entries={lines} balance={ledger.closing_balance} />
+            </div>
+            <div className="lg:hidden">
+              <LedgerList entries={lines} balance={ledger.closing_balance} />
+            </div>
+          </>
+        )}
+      </Panel>
       <LiveRegion message={saved} />
 
       <Dialog
@@ -390,5 +390,79 @@ function LedgerList({
         </span>
       </div>
     </>
+  );
+}
+
+function LedgerPicker() {
+  const [studentId, setStudentId] = useState<number | null>(null);
+  const roster = useStudents({ limit: 200 });
+  const packages = useStudentPackages(
+    { student_id: studentId ?? undefined },
+    { enabled: studentId !== null },
+  );
+  return (
+    <Panel className="mt-6 p-5 sm:p-6">
+      <h2 className="text-ink text-base font-medium">Mở sổ buổi của học viên</h2>
+      <p className="text-ink-2 mt-2 mb-6 text-sm">
+        Chọn học viên, sau đó chọn đúng gói cần đối chiếu.
+      </p>
+      <QueryBoundary
+        query={roster}
+        errorDescription="Không tải được danh sách học viên."
+        emptyTitle="Chưa có học viên"
+        emptyDescription="Tạo hồ sơ học viên trước khi mở sổ buổi."
+      >
+        {(students) => (
+          <Field label="Học viên" className="max-w-md">
+            {({ id }) => (
+              <Select
+                id={id}
+                value={studentId ?? ""}
+                onChange={(event) =>
+                  setStudentId(event.target.value ? Number(event.target.value) : null)
+                }
+              >
+                <option value="">Chọn học viên</option>
+                {students.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {student.full_name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+      </QueryBoundary>
+      {studentId !== null ? (
+        <div className="mt-6">
+          <QueryBoundary
+            query={packages}
+            errorDescription="Không tải được các gói của học viên."
+            emptyTitle="Học viên chưa có gói"
+            emptyDescription="Mở hồ sơ học viên để bán gói trước."
+          >
+            {(items) => (
+              <ul className="space-y-3">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      to={`/studio/so-buoi?goi=${item.id}&hv=${studentId}`}
+                      className="border-rule hover:bg-sand flex flex-wrap items-center justify-between gap-3 rounded-md border p-4"
+                    >
+                      <span className="text-ink text-sm font-medium">
+                        {item.name_snapshot}
+                      </span>
+                      <span className="text-ink-2 text-sm">
+                        {item.balance_cached} buổi còn lại · Mở sổ →
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </QueryBoundary>
+        </div>
+      ) : null}
+    </Panel>
   );
 }

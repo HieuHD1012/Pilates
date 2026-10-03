@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -74,7 +75,7 @@ export default function StaffClassDetail() {
   const [notice, setNotice] = useState<string | null>(null);
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
+    <div className="workspace-page">
       <LiveRegion message={notice} />
 
       <Link
@@ -94,39 +95,40 @@ export default function StaffClassDetail() {
         {(item) => <ClassBody session={item} onNotice={setNotice} />}
       </QueryBoundary>
 
-      <section className="mt-8">
-        <h2 className="flex items-baseline gap-2">
-          <span className="text-ink text-sm font-medium">Học viên đã đăng ký</span>
-          <Figures className="text-ink-2 text-xs">{roster.data?.length ?? ""}</Figures>
-        </h2>
+      <Panel className="mt-6 p-5 sm:p-6">
+        <section className="mt-8">
+          <h2 className="flex items-baseline gap-2">
+            <span className="text-ink text-sm font-medium">Học viên đã đăng ký</span>
+            <Figures className="text-ink-2 text-xs">{roster.data?.length ?? ""}</Figures>
+          </h2>
 
-        <div className="mt-3">
-          <QueryBoundary
-            query={roster}
-            skeletonRows={4}
-            emptyTitle="Chưa có học viên nào"
-            emptyDescription="Chưa có ai đăng ký buổi này."
-            errorDescription="Không tải được danh sách đăng ký."
-            showErrorDetail
-          >
-            {(rows) => (
-              <ul className="rule-t">
-                {rows.map((row) => (
-                  <li key={row.bookingId} className="rule-b">
-                    <BookedRow row={row} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </QueryBoundary>
-        </div>
+          <div className="mt-3">
+            <QueryBoundary
+              query={roster}
+              skeletonRows={4}
+              emptyTitle="Chưa có học viên nào"
+              emptyDescription="Chưa có ai đăng ký buổi này."
+              errorDescription="Không tải được danh sách đăng ký."
+              showErrorDetail
+            >
+              {(rows) => (
+                <ul className="rule-t">
+                  {rows.map((row) => (
+                    <li key={row.bookingId} className="rule-b">
+                      <BookedRow row={row} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </QueryBoundary>
+          </div>
 
-        <p className="rule-t text-ink-2 measure mt-6 pt-3 text-xs">
-          Chỉ học viên tự đăng ký, hủy và đổi lớp của mình — đây là quy tắc đã chốt, không
-          phải tính năng còn thiếu. Nếu cần hủy cho cả lớp, dùng “Hủy lớp”: mọi lượt đăng ký
-          được hoàn buổi, bất kể còn hạn hủy hay không.
-        </p>
-      </section>
+          <p className="rule-t text-ink-2 measure mt-6 pt-3 text-xs">
+            Học viên tự đăng ký, hủy và đổi lớp của mình. Nếu cần hủy cho cả lớp, dùng “Hủy
+            lớp”: mọi lượt đăng ký được hoàn buổi, bất kể còn hạn hủy hay không.
+          </p>
+        </section>
+      </Panel>
     </div>
   );
 }
@@ -163,7 +165,7 @@ function ClassBody({
           ) : null
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+          <dl className="workspace-summary">
             <div className="flex items-baseline gap-2">
               <dt>Huấn luyện viên</dt>
               <dd className="text-ink">{session.trainer_name}</dd>
@@ -418,9 +420,9 @@ function BookedRow({ row }: { row: RosterRow }) {
   const status = BOOKING_STATUS[row.status];
 
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 py-3.5">
+    <div className="flex flex-wrap items-start gap-x-4 gap-y-2 py-4">
       {/* Names wrap; a Vietnamese name is never truncated (AGENTS P5). */}
-      <span className="min-w-0 flex-1">
+      <span className="min-w-0">
         <Link
           to={`/studio/hoc-vien/${row.studentId}`}
           className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"

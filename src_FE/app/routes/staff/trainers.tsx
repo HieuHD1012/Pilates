@@ -1,3 +1,4 @@
+import { Panel } from "~/ui/workspace";
 import { Link } from "react-router";
 
 import { useTrainers } from "~/features/people/queries";
@@ -38,13 +39,13 @@ export default function StaffTrainers() {
   const publishedCount = trainers.filter((trainer) => trainer.is_public).length;
 
   return (
-    <div className="gutter py-6">
+    <div className="workspace-page">
       <PageHeader
         title="Huấn luyện viên"
         description="Ai đang dạy, chuyên môn của từng người, và hồ sơ nào đã hiện trên trang công khai."
         meta={
           query.isSuccess ? (
-            <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
+            <dl className="workspace-summary">
               <div className="flex items-baseline gap-2">
                 <dt>Đang dạy</dt>
                 <dd>
@@ -66,22 +67,24 @@ export default function StaffTrainers() {
 
       <DemoDataNotice className="mt-5 mb-3" />
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={4}
-        emptyTitle="Chưa có huấn luyện viên"
-        emptyDescription="Danh sách sẽ xuất hiện khi studio thêm hồ sơ huấn luyện viên."
-        errorDescription="Không tải được danh sách huấn luyện viên."
-        showErrorDetail
-      >
-        {(items) => (
-          <ul className="rule-t">
-            {items.map((trainer) => (
-              <TrainerRow key={trainer.id} trainer={trainer} />
-            ))}
-          </ul>
-        )}
-      </QueryBoundary>
+      <Panel className="workspace-collection">
+        <QueryBoundary
+          query={query}
+          skeletonRows={4}
+          emptyTitle="Chưa có huấn luyện viên"
+          emptyDescription="Danh sách sẽ xuất hiện khi studio thêm hồ sơ huấn luyện viên."
+          errorDescription="Không tải được danh sách huấn luyện viên."
+          showErrorDetail
+        >
+          {(items) => (
+            <ul className="rule-t">
+              {items.map((trainer) => (
+                <TrainerRow key={trainer.id} trainer={trainer} />
+              ))}
+            </ul>
+          )}
+        </QueryBoundary>
+      </Panel>
     </div>
   );
 }

@@ -1,34 +1,52 @@
+import { ArrowLeft } from "lucide-react";
 import { Link, Outlet } from "react-router";
 
-/**
- * The threshold between the public brand and the product. It keeps the brand's
- * material — cream ground, rule, display serif — but drops the editorial
- * pacing: someone signing in wants one field, then the next. No photograph:
- * the half-screen picture this layout used to carry pushed the form off-centre
- * and told a returning student nothing (docs/adr/0005-warm-measure-palette.md).
- */
 export default function AuthLayout() {
   return (
-    <div className="bg-chalk flex min-h-dvh flex-col">
-      <header className="border-rule border-b">
-        <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center">
-          <Link to="/" className="flex items-baseline gap-2.5" aria-label="Về trang chủ">
-            <span className="wordmark text-ink text-lg">SOUL</span>
-            <span aria-hidden="true" className="bg-rule-2 h-px w-5" />
-            <span className="wordmark-sub text-ink-2">Nha Trang</span>
+    <div className="bg-sand min-h-dvh lg:grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+      <aside className="bg-ink-deep text-sand flex flex-col justify-between px-6 py-6 lg:min-h-dvh lg:px-14 lg:py-12">
+        <Link
+          to="/"
+          aria-label="Về trang chủ"
+          className="inline-flex w-fit items-baseline gap-3"
+        >
+          <span className="wordmark text-2xl">SOUL</span>
+          <span className="text-sand text-xs">Nha Trang</span>
+        </Link>
+        <div className="hidden max-w-sm py-16 lg:block">
+          <span className="border-amber mb-7 block w-12 border-t-2" aria-hidden="true" />
+          <p className="font-display text-d2 font-light">
+            Một nơi để tập.
+            <br />
+            <em>Một nhịp để trở về.</em>
+          </p>
+          <p className="text-sand mt-7 text-base">
+            Lịch tập của bạn. Những buổi học sắp tới.
+            <br />
+            Tất cả trong một không gian riêng.
+          </p>
+        </div>
+        <p className="text-sand hidden text-xs lg:block">Pilates reformer · Nha Trang</p>
+      </aside>
+      <div className="flex min-w-0 flex-col">
+        <header className="px-6 py-5 lg:px-10 lg:py-8">
+          <Link
+            to="/"
+            className="text-ink-2 hover:text-copper inline-flex min-h-11 items-center gap-2 text-sm"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Về website studio
           </Link>
-        </div>
-      </header>
-
-      <main className="gutter flex flex-1 items-center py-12 md:py-20">
-        <div className="mx-auto w-full max-w-md">
-          <Outlet />
-        </div>
-      </main>
-
-      <footer className="gutter text-2xs text-ink-2 mx-auto w-full max-w-(--container-page) py-6">
-        © {new Date().getFullYear()} Soul Pilates Nha Trang
-      </footer>
+        </header>
+        <main className="flex flex-1 items-center justify-center px-4 pb-8 sm:px-8">
+          <div className="bg-paper border-rule w-full max-w-lg rounded-lg border px-6 py-8 sm:px-10 sm:py-10">
+            <Outlet />
+          </div>
+        </main>
+        <footer className="text-ink-2 px-6 py-5 text-center text-xs">
+          © {new Date().getFullYear()} Soul Pilates Nha Trang
+        </footer>
+      </div>
     </div>
   );
 }

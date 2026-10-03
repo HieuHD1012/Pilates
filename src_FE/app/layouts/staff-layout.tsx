@@ -1,6 +1,21 @@
-import { NavLink, Outlet } from "react-router";
 import { useState } from "react";
-
+import { Link, NavLink, Outlet, useLocation } from "react-router";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  ChartNoAxesCombined,
+  ChevronRight,
+  CircleUserRound,
+  CreditCard,
+  Layers3,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  NotebookPen,
+  RefreshCw,
+  Users,
+  UserRoundCheck,
+} from "lucide-react";
 import { STAFF_NAV, STAFF_NAV_GROUPS, type NavItem } from "~/content/nav";
 import { RoleGate } from "~/features/auth/role-gate";
 import { useLogout } from "~/features/auth/use-logout";
@@ -8,116 +23,140 @@ import { useSession } from "~/features/auth/use-session";
 import { cn } from "~/lib/cn";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
+import { Avatar } from "~/ui/workspace";
 
-/**
- * The operational shell. Desktop-first: a studio manager works at 1440 or 1024
- * with the tab open all day. It shares the brand's material — plaster, rule,
- * ink, the serif figure — but none of the public site's editorial pacing.
- */
+const ICONS = [
+  LayoutDashboard,
+  CalendarDays,
+  CircleUserRound,
+  Users,
+  UserRoundCheck,
+  Layers3,
+  CreditCard,
+  NotebookPen,
+  RefreshCw,
+  ChartNoAxesCombined,
+  CircleUserRound,
+];
+const destinations = [...STAFF_NAV, ...STAFF_NAV_GROUPS.flatMap((group) => group.items)];
+
 export default function StaffLayout() {
-  return (
-    <RoleGate allow={["ADMIN", "STAFF"]}>
-      <div className="bg-chalk min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
-        <StaffRail />
-        <main className="min-w-0">
-          <Outlet />
-        </main>
-      </div>
-    </RoleGate>
-  );
-}
-
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    "block py-1.5 text-sm transition-colors",
-    isActive
-      ? "text-ink border-l-copper -ml-3 border-l-2 pl-[calc(0.75rem-2px)]"
-      : "text-ink-2 hover:text-ink active:text-ink",
-  );
-
-function StaffRail() {
   const { data: user } = useSession();
   const logout = useLogout();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // An entry with no `roles` is for everyone this layout admits.
+  const { pathname } = useLocation();
+  const current = destinations.find(
+    (item) => pathname === item.to || pathname.startsWith(`${item.to}/`),
+  );
   const visible = (item: NavItem) =>
-    item.roles === undefined ||
-    (user !== undefined && user !== null && item.roles.includes(user.role));
-
-  return (
-    <div className="rule-b bg-sand lg:border-rule lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0">
-      <div className="flex items-center justify-between gap-4 px-5 py-4 lg:block lg:px-6 lg:py-6">
-        <div className="shrink-0">
-          <span className="wordmark text-ink text-base">SOUL</span>
-          {/* Below lg the rail is a scrolling strip and the nav needs the width;
-              the subtitle wrapped to three lines and squeezed the wordmark. */}
-          <p className="wordmark-sub text-ink-2 mt-1 hidden lg:block">Vận hành studio</p>
-        </div>
-
-        <Button variant="secondary" className="lg:hidden" onClick={() => setMenuOpen(true)}>Menu studio</Button>
-
-        {/* Below lg the rail collapses to a scrolling strip: a studio phone gets
-            the same destinations without a drawer to open. */}
-        <nav aria-label="Điều hướng studio" className="hidden min-w-0 lg:mt-8 lg:block">
-          <ul className="flex gap-4 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
-            {STAFF_NAV.filter(visible).map((item) => (
-              <li key={item.to} className="lg:rule-b shrink-0 lg:py-1.5">
-                <NavLink to={item.to} className={linkClass} end>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-            {STAFF_NAV_GROUPS.map((group) => (
-              <li key={group.label} className="shrink-0 lg:mt-5 lg:block">
-                <p className="label-micro hidden lg:mb-1.5 lg:block">{group.label}</p>
-                <ul className="flex gap-4 lg:flex-col lg:gap-0">
-                  {group.items.filter(visible).map((item) => (
-                    <li key={item.to} className="shrink-0 lg:py-1.5">
-                      <NavLink to={item.to} className={linkClass}>
-                        {item.label}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
+    !item.roles || (user != null && item.roles.includes(user.role));
+  const nav = (mobile = false) => (
+    <nav aria-label={mobile ? "Điều hướng studio trên điện thoại" : "Điều hướng studio"}>
+      {[{ label: "", items: STAFF_NAV }, ...STAFF_NAV_GROUPS].map((group) => (
+        <div key={group.label} className="mb-6 last:mb-0">
+          {group.label ? (
+            <p className="text-ink-2 mb-2 px-3 text-xs font-medium">{group.label}</p>
+          ) : null}
+          <ul className="space-y-1">
+            {group.items.filter(visible).map((item) => {
+              const Icon = ICONS[destinations.indexOf(item)] ?? CircleUserRound;
+              return (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.to === "/studio/tong-quan"}
+                    onClick={() => setMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+                        isActive
+                          ? "bg-sand-deep text-copper font-medium"
+                          : "text-ink-2 hover:bg-sand-deep/60 hover:text-ink",
+                      )
+                    }
+                  >
+                    <Icon className="size-4 shrink-0" aria-hidden="true" />
+                    {item.label}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
-        </nav>
+        </div>
+      ))}
+    </nav>
+  );
+  return (
+    <RoleGate allow={["ADMIN", "STAFF"]}>
+      <div className="bg-chalk min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <aside className="bg-sand border-rule hidden h-dvh flex-col border-r lg:sticky lg:top-0 lg:flex">
+          <Link to="/studio/tong-quan" className="block px-7 py-7">
+            <span className="wordmark text-ink text-xl">SOUL</span>
+            <span className="text-ink-2 mt-2 block text-xs">Không gian vận hành</span>
+          </Link>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{nav()}</div>
+          <div className="border-rule border-t p-4">
+            <Link
+              to="/"
+              className="text-ink-2 hover:text-copper flex min-h-11 items-center justify-between gap-3 px-3 text-sm"
+            >
+              Website studio
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </aside>
+        <div className="min-w-0">
+          <header className="bg-paper border-rule flex min-h-18 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 md:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <Button
+                variant="ghost"
+                className="lg:hidden"
+                aria-label="Menu studio"
+                onClick={() => setMenuOpen(true)}
+              >
+                <Menu className="size-5" aria-hidden="true" />
+              </Button>
+              <p className="text-ink-2 flex flex-wrap items-center gap-2 text-sm">
+                <span className="hidden sm:inline">Studio</span>
+                <ChevronRight className="hidden size-3 sm:block" aria-hidden="true" />
+                <span className="text-ink">{current?.label ?? "Quản lý"}</span>
+              </p>
+            </div>
+            {user ? (
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar name={user.full_name} />
+                <div className="hidden min-w-0 sm:block">
+                  <p className="text-ink max-w-52 text-sm wrap-anywhere">
+                    {user.full_name}
+                  </p>
+                  <p className="text-ink-2 text-xs">
+                    {user.role === "ADMIN" ? "Quản trị viên" : "Nhân viên studio"}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  aria-label="Đăng xuất"
+                  pending={logout.isPending}
+                  onClick={() => logout.mutate()}
+                >
+                  <LogOut className="size-4" aria-hidden="true" />
+                </Button>
+              </div>
+            ) : null}
+          </header>
+          <main className="admin-workspace min-w-0">
+            <Outlet />
+          </main>
+        </div>
       </div>
-
       <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
         <DialogContent title="Điều hướng studio">
-          <nav aria-label="Điều hướng studio trên điện thoại">
-            {STAFF_NAV.filter(visible).map(item => (
-              <NavLink key={item.to} to={item.to} end onClick={() => setMenuOpen(false)} className={({isActive}) => cn("block min-h-11 py-3 text-sm", isActive ? "text-copper font-medium" : "text-ink")}>{item.label}</NavLink>
-            ))}
-            {STAFF_NAV_GROUPS.map(group => (
-              <section key={group.label} className="rule-t mt-3 pt-4">
-                <h2 className="text-ink-2 mb-2 text-xs">{group.label}</h2>
-                {group.items.filter(visible).map(item => (
-                  <NavLink key={item.to} to={item.to} onClick={() => setMenuOpen(false)} className={({isActive}) => cn("block min-h-11 py-3 text-sm", isActive ? "text-copper font-medium" : "text-ink")}>{item.label}</NavLink>
-                ))}
-              </section>
-            ))}
-          </nav>
-          {user ? <div className="rule-t mt-4 pt-4"><p className="text-ink-2 text-sm">{user.full_name}</p><Button className="mt-3" variant="secondary" pending={logout.isPending} onClick={() => logout.mutate()}>Đăng xuất</Button></div> : null}
+          {nav(true)}
+          <Link to="/" className="text-copper inline-flex min-h-11 items-center text-sm">
+            Về website studio
+          </Link>
         </DialogContent>
       </Dialog>
-
-      {user ? (
-        <div className="hidden px-6 pb-6 lg:mt-auto lg:block">
-          <p className="rule-t text-ink-2 pt-4 text-xs">{user.full_name}</p>
-          <button
-            type="button"
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-            className="text-ink-2 hover:text-ink active:text-ink decoration-rule-2 hover:decoration-copper mt-1 text-xs underline underline-offset-[6px] disabled:cursor-not-allowed"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      ) : null}
-    </div>
+    </RoleGate>
   );
 }
