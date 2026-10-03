@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 
-import { CANCELLATION_POLICY, CLASS_FORMATS, FIRST_VISIT_STEPS } from "~/content/studio";
+import { CLASS_FORMATS } from "~/content/studio";
 import {
   EMPTY_LEAD,
   isUnexpectedLeadError,
@@ -19,7 +19,6 @@ import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { EmptyState, ErrorState, LiveRegion, SkeletonRows } from "~/ui/feedback";
 import { Field, Input } from "~/ui/field";
-import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
 import { SectionRail } from "~/ui/public-page";
 
@@ -63,57 +62,37 @@ function Hero() {
   return (
     <section className="bg-sand">
       <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid grid-cols-1 lg:min-h-[45rem] lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-6">
-          <div className="pt-9 md:pt-14 lg:col-span-6 lg:row-start-1 lg:pt-22 lg:pr-10">
-            <p className="label-micro text-copper">Pilates reformer tại Nha Trang</p>
+        <div className="grid lg:min-h-[42rem] lg:grid-cols-12 lg:gap-x-6">
+          <div className="flex flex-col justify-center py-12 md:py-16 lg:col-span-5 lg:py-24 lg:pr-6">
+            <p className="label-micro text-copper">Pilates reformer · Nha Trang</p>
             <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em className="text-copper font-light">Tập đúng hơn.</em>
+              Một buổi tập <em className="text-copper font-light">dành cho bạn.</em>
             </h1>
+            <p className="measure text-lede text-ink-2 mt-7">
+              Bắt đầu với lớp nhóm hoặc lớp riêng. Trên máy reformer, huấn luyện viên quan sát
+              và hướng dẫn từng chuyển động.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
+              <Button asChild variant="copper" size="lg">
+                <Link to="/dat-tu-van">Trao đổi với studio</Link>
+              </Button>
+              <ArrowLink to="/dich-vu">Chọn hình thức tập</ArrowLink>
+            </div>
+            <p className="text-ink-2 mt-4 text-sm">Để lại số điện thoại; studio sẽ liên hệ lại.</p>
           </div>
-
-          <div className="bleed-x lg:bleed-r mt-8 aspect-4/3 md:aspect-16/10 lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:ml-0 lg:aspect-auto">
+          <div className="bleed-x lg:bleed-r aspect-4/3 md:aspect-16/10 lg:col-span-7 lg:col-start-6 lg:aspect-auto lg:min-h-[42rem]">
             <ArtDirectedImage
               photo="hero"
               priority
-              disclose
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              imgClassName="object-[60%_50%] lg:object-[57%_50%]"
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              imgClassName="object-[57%_50%]"
             />
           </div>
-
-          <div className="pt-8 pb-14 lg:col-span-6 lg:row-start-2 lg:self-end lg:pt-10 lg:pr-10">
-            <p className="measure text-lede text-ink-2">
-              Lớp nhóm nhỏ và lớp riêng trên máy reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-            <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-7">
-              <Button asChild variant="copper" size="lg" className="w-full sm:w-auto">
-                <Link to="/dat-tu-van">Nhận tư vấn</Link>
-              </Button>
-              <ArrowLink to="/lich-tap">Xem lịch tập</ArrowLink>
-            </div>
-            <p className="text-ink-2 mt-3 text-sm">
-              Để lại tên và số điện thoại, studio sẽ gọi lại cho bạn.
-            </p>
-
-            <dl className="sm:border-rule mt-10 grid sm:mt-14 sm:grid-cols-3 sm:gap-5 sm:border-t sm:pt-5">
-              {[
-                ["Thiết bị", "Máy reformer"],
-                ["Hình thức", "Lớp nhóm hoặc lớp riêng"],
-                ["Người dạy", "Một huấn luyện viên phụ trách mỗi buổi"],
-              ].map(([term, value]) => (
-                <div
-                  key={term}
-                  className="rule-t last:border-rule grid grid-cols-[6rem_1fr] gap-3 py-3 last:border-b sm:block sm:border-0 sm:py-0 sm:last:border-0"
-                >
-                  <dt className="text-ink-2 text-xs">{term}</dt>
-                  <dd className="text-ink text-base sm:mt-1">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+        </div>
+      </div>
+      <div className="border-rule border-b">
+        <div className="gutter mx-auto flex max-w-(--container-page) flex-wrap gap-x-10 gap-y-2 py-5 text-sm text-ink-2">
+          <span>Hướng dẫn trực tiếp</span><span>Máy reformer</span><span>Nhóm &amp; riêng</span>
         </div>
       </div>
     </section>
@@ -127,55 +106,33 @@ function Hero() {
    ──────────────────────────────────────────────────────────────────────────── */
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập" className="pt-6 md:pt-10">
-      <div className="grid grid-cols-1 gap-y-12 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-        <SectionRail
-          title="Hai hình thức, cùng một phương pháp."
-          className="lg:col-span-12 xl:col-span-4"
-        >
-          <p className="measure text-ink-2 mt-5 text-base">
-            Khác nhau ở mức độ bài tập được dựng riêng cho cơ thể bạn. Nếu chưa chắc, studio
-            sẽ tư vấn khi gọi lại.
-          </p>
-          <div className="mt-4">
-            <ArrowLink to="/dich-vu">So sánh chi tiết</ArrowLink>
-          </div>
-        </SectionRail>
-
-        {CLASS_FORMATS.map((format, index) => (
-          <article
-            key={format.id}
-            className={
-              index === 0
-                ? "lg:col-span-6 lg:pr-4 xl:col-span-4 xl:pr-2"
-                : "rule-t lg:border-rule pt-12 lg:col-span-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:col-span-4"
-            }
-          >
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="label-micro text-copper">{format.sub}</p>
-              <span className="figures-display text-copper-bright text-[1.75rem] leading-none">
-                {format.ratio}
-              </span>
+    <Section index="01" label="Hình thức tập" className="pt-12 md:pt-20">
+      <div className="flex flex-wrap items-end justify-between gap-5 pb-9 md:pb-12">
+        <div>
+          <h2 className="font-display text-d2 text-ink font-light">Bắt đầu theo cách của bạn.</h2>
+          <p className="measure text-ink-2 mt-4 text-base">Hai trải nghiệm khác nhau, cùng sự chú ý đến từng chuyển động.</p>
+        </div>
+        <ArrowLink to="/dich-vu">So sánh hai hình thức</ArrowLink>
+      </div>
+      <div className="grid gap-10 pb-20 md:grid-cols-2 md:gap-6 md:pb-28">
+        {CLASS_FORMATS.map((format) => (
+          <article key={format.id} className="min-w-0">
+            <div className="aspect-16/10 overflow-hidden md:aspect-3/2">
+              <ArtDirectedImage photo={format.id} sizes="(min-width: 768px) 50vw, 100vw" />
             </div>
-            <h3 className="font-display text-d3 text-ink mt-2 font-light">{format.name}</h3>
-            <p className="text-ink mt-1 text-sm font-medium">{format.size}</p>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="text-ink-2 mt-8 text-sm">Phù hợp với</p>
-            <ul className="mt-2">
-              {format.forWho.map((item) => (
-                <li
-                  key={item}
-                  className="rule-b text-ink first:border-rule py-3 text-base first:border-t"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <p className="text-ink-2 mt-5 text-sm">
-              Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ để được hoàn
-              buổi.
-            </p>
+            <div className="border-rule flex items-start justify-between gap-6 border-t pt-5">
+              <div>
+                <p className="label-micro text-copper">{format.sub}</p>
+                <h3 className="font-display text-d3 text-ink mt-2 font-light">{format.name}</h3>
+                <p className="measure text-ink-2 mt-3 max-w-[29em] text-base">
+                  {format.id === "group"
+                    ? "Một nhịp tập chung, với hướng dẫn riêng cho từng người trong lớp."
+                    : "Một buổi dành riêng cho mục tiêu, khả năng và nhịp độ của bạn."}
+                </p>
+              </div>
+              <span className="font-display text-copper text-3xl" aria-hidden="true">↗</span>
+            </div>
+            <ArrowLink to={`/lich-tap?loai=${format.id === "group" ? "nhom" : "rieng"}`}>Xem lịch {format.name.toLowerCase()}</ArrowLink>
           </article>
         ))}
       </div>
@@ -188,20 +145,11 @@ function Formats() {
    against the hero's right bleed) so the eye travels in a Z. The claims are
    about the discipline, true of reformer Pilates anywhere.
    ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  { term: "Hơi thở", def: "Nhịp thở dẫn động tác, không phải ngược lại." },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm lực.",
-  },
-  { term: "Kiểm soát", def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào." },
-];
-
 function Method() {
   return (
     <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid grid-cols-1 gap-y-10 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-        <div className="bleed-x lg:bleed-l aspect-4/3 lg:col-span-6 lg:mr-0 lg:aspect-5/4">
+      <div className="grid grid-cols-1 gap-y-10 pb-16 md:pb-24 lg:grid-cols-12 lg:gap-x-6">
+        <div className="bleed-x lg:bleed-l aspect-16/10 lg:col-span-6 lg:mr-0 lg:aspect-5/4">
           <ArtDirectedImage
             photo="craft"
             sizes="(min-width: 1024px) 50vw, 100vw"
@@ -210,27 +158,12 @@ function Method() {
         </div>
 
         <div className="lg:col-span-5 lg:col-start-8 lg:self-center">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự{" "}
-            <em className="text-copper font-light">chính xác</em>.
-          </h2>
+          <h2 className="font-display text-d2 text-ink font-light">Chuyển động tốt bắt đầu từ <em className="text-copper font-light">sự chú ý.</em></h2>
           <p className="measure text-ink-2 mt-6 text-base">
-            Lực cản của reformer đến từ lò xo, và được chọn trước mỗi bài. Máy không làm bài
-            tập nhẹ đi; nó làm cho sai lệch hiện ra rõ hơn, để huấn luyện viên có chỗ chỉnh.
-            Đó là lý do lớp được giữ nhỏ.
+            Lò xo trên reformer tạo lực cản có thể điều chỉnh. Huấn luyện viên quan sát cách
+            bạn di chuyển, rồi hướng dẫn nhịp thở, tư thế và biên độ phù hợp với buổi tập.
           </p>
-
-          <dl className="mt-9">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div
-                key={term}
-                className="border-rule-2 grid gap-1 border-t py-4 last:border-b sm:grid-cols-[8rem_1fr] sm:gap-5"
-              >
-                <dt className="text-ink text-base font-medium">{term}</dt>
-                <dd className="text-ink-2 text-base">{def}</dd>
-              </div>
-            ))}
-          </dl>
+          <p className="border-rule text-ink mt-8 border-t pt-5 text-sm">Hơi thở&nbsp; · &nbsp;Căn chỉnh&nbsp; · &nbsp;Kiểm soát</p>
         </div>
       </div>
     </Section>
@@ -291,7 +224,7 @@ function ThisWeek() {
                 <DemoDataNotice />
               </div>
               <div className="rule-t">
-                {query.data.slice(0, 6).map((session) => (
+                {query.data.slice(0, 3).map((session) => (
                   <SessionLine
                     key={`${session.starts_at}-${session.trainer_name}`}
                     session={session}
@@ -317,26 +250,17 @@ function ThisWeek() {
 function FirstVisit() {
   return (
     <Section index="04" label="Buổi đầu tiên">
-      <div className="pb-20 md:pb-28">
-        <h2 className="font-display text-d2 text-ink max-w-[16em] font-light">
-          Bạn không cần biết gì trước khi đến.
-        </h2>
-
-        <ol className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
-          {FIRST_VISIT_STEPS.map((step) => (
-            <li key={step.index} className="rule-t relative pt-5">
-              <span
-                aria-hidden="true"
-                className="bg-copper-bright absolute -top-px left-0 h-px w-10"
-              />
-              <span className="figures-display text-copper-bright block text-[2.75rem] leading-none">
-                {step.index}
-              </span>
-              <h3 className="text-ink mt-5 text-lg font-medium">{step.title}</h3>
-              <p className="measure text-ink-2 mt-2 text-base">{step.body}</p>
-            </li>
-          ))}
-        </ol>
+      <div className="grid gap-10 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
+        <div className="lg:col-span-5">
+          <h2 className="font-display text-d2 text-ink max-w-[12em] font-light">Buổi đầu bắt đầu bằng một cuộc trò chuyện.</h2>
+          <p className="measure text-ink-2 mt-5 text-base">Bạn kể điều mình đang tìm kiếm. Studio giúp chọn hình thức tập và lịch phù hợp trước khi bạn quyết định gói tập.</p>
+          <div className="mt-6"><ArrowLink to="/dat-tu-van">Nói với studio điều bạn cần</ArrowLink></div>
+        </div>
+        <div className="border-rule lg:col-span-6 lg:col-start-7 lg:border-l lg:pl-10">
+          <div className="border-rule border-t py-5"><span className="font-display text-copper text-3xl">01</span><h3 className="text-ink mt-2 font-medium">Gửi thông tin</h3><p className="text-ink-2 mt-1 text-sm">Tên và số điện thoại là đủ để bắt đầu.</p></div>
+          <div className="border-rule border-t py-5"><span className="font-display text-copper text-3xl">02</span><h3 className="text-ink mt-2 font-medium">Studio liên hệ</h3><p className="text-ink-2 mt-1 text-sm">Cùng tìm hình thức và giờ tập phù hợp.</p></div>
+          <div className="border-rule border-y py-5"><span className="font-display text-copper text-3xl">03</span><h3 className="text-ink mt-2 font-medium">Bắt đầu tập</h3><p className="text-ink-2 mt-1 text-sm">Khi có tài khoản và gói, bạn có thể tự đặt lớp trực tuyến.</p></div>
+        </div>
       </div>
     </Section>
   );

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-import { CANCELLATION_POLICY, CLASS_FORMATS, SESSION_MINUTES } from "~/content/studio";
+import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
 import { ArrowLink } from "~/ui/arrow-link";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
@@ -33,50 +33,35 @@ function formatById(id: ClassFormat["id"]): ClassFormat {
 const GROUP = formatById("group");
 const PRIVATE = formatById("private");
 
-/**
- * The comparison is the subject, so the two photographs ARE the comparison:
- * the group frame is wide (several people side by side), the private frame is
- * narrow and tall (one person, close). The private column starts level with the
- * title, the group frame under it, so title and both frames lock into one block.
- */
 export default function Services() {
   return (
     <>
       <section className="bg-sand">
         <div className="gutter mx-auto max-w-(--container-page)">
-          <div className="grid grid-cols-1 gap-y-16 pt-12 pb-20 md:pt-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-            <div className="lg:col-span-7">
+          <div className="pt-12 pb-20 md:pt-20 md:pb-28">
+            <div className="max-w-[52rem]">
               <p className="label-micro text-copper">Hình thức tập</p>
               <h1 className="font-display text-d1 text-ink mt-5 font-light">
-                Hai hình thức, <em className="text-copper font-light">cùng một cách tập</em>
-                .
+                Tập cùng nhau. <em className="text-copper font-light">Hay dành riêng cho bạn.</em>
               </h1>
               <p className="measure text-lede text-ink-2 mt-6">
-                Khác nhau ở số người trong phòng và mức độ bài tập được dựng riêng cho cơ
-                thể bạn.
+                Chọn nhịp chung của một lớp nhóm hoặc dành trọn buổi cho mục tiêu của mình.
+                Studio sẽ giúp bạn chọn nếu đây là lần đầu.
               </p>
-
-              <div className="mt-12 aspect-3/2 lg:mt-16">
-                <ArtDirectedImage
-                  photo="group"
-                  priority
-                  disclose
-                  sizes="(min-width: 1024px) 55vw, 100vw"
-                  imgClassName="object-[40%_50%]"
-                />
-              </div>
-              <FormatCopy format={GROUP} />
             </div>
-
-            <div className="lg:col-span-4 lg:col-start-9">
-              <div className="aspect-4/5 max-w-[32.5rem]">
-                <ArtDirectedImage
-                  photo="private"
-                  sizes="(min-width: 1024px) 30vw, 100vw"
-                  imgClassName="object-[50%_40%]"
-                />
+            <div className="mt-12 grid gap-12 md:mt-16 md:grid-cols-2 md:gap-6">
+              <div>
+                <div className="aspect-4/3 overflow-hidden md:aspect-3/2">
+                  <ArtDirectedImage photo="group" priority sizes="(min-width: 768px) 50vw, 100vw" />
+                </div>
+                <FormatCopy format={GROUP} />
               </div>
-              <FormatCopy format={PRIVATE} />
+              <div>
+                <div className="aspect-4/3 overflow-hidden md:aspect-3/2">
+                  <ArtDirectedImage photo="private" sizes="(min-width: 768px) 50vw, 100vw" />
+                </div>
+                <FormatCopy format={PRIVATE} />
+              </div>
             </div>
           </div>
         </div>
@@ -121,11 +106,8 @@ export default function Services() {
 function FormatCopy({ format }: { format: ClassFormat }) {
   return (
     <div className="mt-8">
-      <div className="flex items-baseline justify-between gap-4">
+      <div className="border-rule flex items-baseline justify-between gap-4 border-t pt-5">
         <p className="label-micro text-copper">{format.sub}</p>
-        <span className="figures-display text-copper-bright text-[2rem] leading-none">
-          {format.ratio}
-        </span>
       </div>
       <h2 className="font-display text-d2 text-ink mt-2 font-light">{format.name}</h2>
       <p className="text-ink mt-2 text-sm font-medium">{format.size}</p>
@@ -158,19 +140,9 @@ const ROWS: { label: string; group: ReactNode; private: ReactNode }[] = [
     private: PRIVATE.size,
   },
   {
-    label: "Thời lượng",
-    group: `${SESSION_MINUTES} phút mỗi buổi`,
-    private: `${SESSION_MINUTES} phút mỗi buổi`,
-  },
-  {
     label: "Bài tập",
     group: "Cùng một bài, chỉnh riêng từng người",
     private: "Dựng theo tình trạng và mục tiêu của bạn",
-  },
-  {
-    label: "Người dạy",
-    group: "Một huấn luyện viên phụ trách buổi",
-    private: "Một huấn luyện viên phụ trách buổi",
   },
   {
     label: "Hủy để được hoàn buổi",
@@ -184,11 +156,6 @@ const ROWS: { label: string; group: ReactNode; private: ReactNode }[] = [
         Trước giờ học ít nhất <Figures>{CANCELLATION_POLICY.private}</Figures> giờ
       </>
     ),
-  },
-  {
-    label: "Gói tập",
-    group: "Gói lớp nhóm: số buổi và thời hạn",
-    private: "Gói lớp riêng: số buổi và thời hạn",
   },
 ];
 

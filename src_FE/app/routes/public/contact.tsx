@@ -67,12 +67,11 @@ export default function Contact() {
           <div className="lg:col-span-5">
             <p className="label-micro text-copper">Liên hệ</p>
             <h1 className="font-display text-d1 text-ink mt-5 font-light">
-              Tìm đến studio, hoặc để{" "}
-              <em className="text-copper font-light">studio gọi bạn</em>.
+              Bắt đầu bằng <em className="text-copper font-light">một lời chào.</em>
             </h1>
             <p className="measure text-lede text-ink-2 mt-6">
-              Cách nhanh nhất là để lại số điện thoại. Các kênh trực tiếp sẽ hiện ở đây khi
-              studio xác nhận.
+              Để lại số điện thoại để studio liên hệ và giúp bạn chọn buổi tập đầu tiên.
+              Địa chỉ cùng các kênh trực tiếp sẽ hiện ở đây khi được xác nhận.
             </p>
 
             <dl className="mt-10">
@@ -122,7 +121,6 @@ export default function Contact() {
             <div className="aspect-4/3 lg:aspect-5/4">
               <ArtDirectedImage
                 photo="arrival"
-                disclose
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 imgClassName="object-[46%_55%]"
               />

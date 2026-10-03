@@ -47,6 +47,17 @@ for (const viewport of VIEWPORTS) {
       role ?? null,
     );
     await page.goto(url, { waitUntil: "networkidle" });
+    // A full-page capture does not trigger native lazy images outside the
+    // viewport. Travel through the page like a reader before taking the shot.
+    const pageHeight = await page.evaluate(() => globalThis.document.documentElement.scrollHeight);
+    for (let y = 0; y < pageHeight; y += viewport.height) {
+      await page.evaluate((position) => globalThis.window.scrollTo(0, position), y);
+      await page.waitForTimeout(80);
+    }
+    await page.evaluate(() => globalThis.window.scrollTo(0, 0));
+    await page.locator("img").evaluateAll(async (images) => {
+      await Promise.all(images.map((image) => image.decode().catch(() => {})));
+    });
     await page.waitForTimeout(600);
     const slug = route === "/" ? "home" : route.replace(/^\//, "").replace(/\//g, "_");
     const file = `${outDir}/${slug}-${viewport.name}.png`;

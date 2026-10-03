@@ -35,9 +35,7 @@ export const STUDIO: StudioFacts = {
   whatsappUrl: null,
   instagramUrl: null,
   email: null,
-  // PROVISIONAL (2026-10-03): modelled on Soul Pilates Đà Nẵng's published
-  // hours at the owner's request, pending the Nha Trang owner's confirmation.
-  openingHours: "Thứ hai – Thứ bảy · 07:30 – 19:30",
+  openingHours: null,
 };
 
 /**
@@ -92,9 +90,8 @@ export const CLASS_FORMATS = [
     id: "group" as const,
     name: "Lớp nhóm",
     sub: "Group",
-    /** PROVISIONAL — Soul Đà Nẵng caps group classes at three. */
-    ratio: "1:3",
-    size: "Tối đa 3 học viên mỗi lớp",
+    ratio: "",
+    size: "Tập trong một nhóm nhỏ",
     /** Capacity is configured per class by the studio; it is not a brand claim. */
     body: "Một nhóm nhỏ trên reformer, cùng một bài, nhưng mỗi người được chỉnh riêng. Huấn luyện viên vẫn nhìn thấy từng người trong suốt buổi tập.",
     forWho: [
@@ -109,9 +106,9 @@ export const CLASS_FORMATS = [
     sub: "Private",
     ratio: "1:1",
     size: "Một học viên, một huấn luyện viên",
-    body: "Bài tập được dựng theo cơ thể bạn — chấn thương cũ, thói quen tư thế, mục tiêu cụ thể.",
+    body: "Huấn luyện viên dành trọn buổi để điều chỉnh bài tập theo khả năng và mục tiêu của bạn.",
     forWho: [
-      "Đang phục hồi sau chấn thương",
+      "Muốn được theo sát trong từng chuyển động",
       "Buổi tập đầu tiên với reformer",
       "Cần điều chỉnh sâu về tư thế",
     ],

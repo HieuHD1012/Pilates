@@ -10,3 +10,5 @@ test-results
 .DS_Store
 *.local
 .reference-shots
+visual-qa/
+verify.log

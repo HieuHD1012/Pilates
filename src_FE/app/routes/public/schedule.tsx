@@ -40,7 +40,7 @@ export function meta(_: Route.MetaArgs) {
     {
       name: "description",
       content:
-        "Lịch lớp Pilates reformer 14 ngày tới tại Soul Pilates Nha Trang. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
+        "Lịch lớp Pilates reformer 14 ngày tới tại Soul Pilates Nha Trang. Xem lớp nhóm, lớp riêng, giờ học và chỗ còn trống.",
     },
   ];
 }

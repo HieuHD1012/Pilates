@@ -22,7 +22,7 @@ export function meta(_: Route.MetaArgs) {
 const PRINCIPLES = [
   {
     term: "Lớp nhỏ",
-    def: "Lớp nhóm tối đa 3 học viên, và không vượt quá kể cả khi có người muốn tập thêm. Lớp riêng là một kèm một.",
+    def: "Bạn có thể chọn nhịp chung của lớp nhóm hoặc một buổi riêng với huấn luyện viên.",
   },
   {
     term: "Một người dạy",
@@ -30,7 +30,7 @@ const PRINCIPLES = [
   },
   {
     term: "Chỉnh trước, tăng sau",
-    def: "Nếu một động tác chưa đúng, buổi tập dừng lại để chỉnh thay vì đi tiếp cho đủ bài.",
+    def: "Huấn luyện viên quan sát chuyển động và điều chỉnh bài tập theo khả năng của người tập.",
   },
 ];
 
@@ -48,7 +48,6 @@ export default function About() {
           <ArtDirectedImage
             photo="room"
             priority
-            disclose="top-right"
             sizes="100vw"
             imgClassName="object-[50%_62%]"
           />
@@ -64,12 +63,12 @@ export default function About() {
               />
               <p className="label-micro text-copper">Studio</p>
               <h1 className="font-display text-d1 text-ink mt-5 font-light">
-                Một phòng tập được giữ nhỏ,{" "}
-                <em className="text-copper font-light">có chủ đích</em>.
+                Một khoảng thời gian để{" "}
+                <em className="text-copper font-light">trở lại với cơ thể.</em>
               </h1>
               <p className="measure text-lede text-ink-2 mt-6">
-                Studio chọn số người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác,
-                để huấn luyện viên luôn nhìn thấy từng người.
+                Từ một buổi lớp nhóm đến một giờ tập riêng, cách hướng dẫn bắt đầu bằng việc
+                quan sát bạn di chuyển trên máy reformer.
               </p>
             </div>
             {/* The sticky header already carries the ask in this viewport (P2),
@@ -86,15 +85,15 @@ export default function About() {
 
       <Section index="01" label="Không gian">
         <div className="grid grid-cols-1 gap-y-8 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-          <SectionRail title="Bố trí quanh máy, không quanh gương." />
+          <SectionRail title="Không gian dành cho chuyển động." />
           <div className="grid gap-6 sm:grid-cols-2 sm:gap-x-12 lg:col-span-8">
             <p className="measure text-ink-2 text-base">
-              Các máy reformer được đặt song song, đủ khoảng trống để huấn luyện viên đi
-              giữa các máy và quan sát cả hai bên cơ thể mỗi người.
+              Reformer hỗ trợ nhiều mức lực cản và tư thế tập. Bài tập có thể được điều chỉnh
+              để phù hợp với buổi học và người tập.
             </p>
             <p className="measure text-ink-2 text-base">
-              Phần lớn việc căn chỉnh được cảm nhận hơn là nhìn thấy, vì vậy hướng dẫn trong
-              buổi tập đi qua lời nói và tay chỉnh của huấn luyện viên.
+              Một buổi tập tốt có không gian cho câu hỏi, hướng dẫn và những điều chỉnh nhỏ.
+              Bạn không cần thuộc bài trước khi đến.
             </p>
           </div>
         </div>
