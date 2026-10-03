@@ -1,10 +1,10 @@
 import { Link } from "react-router";
 
 import { CANCELLATION_POLICY, CLASS_FORMATS } from "~/content/studio";
+import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -22,11 +22,23 @@ export function meta(_: Route.MetaArgs) {
 export default function Services() {
   return (
     <>
-      <PublicPageHeader
-        label="Hình thức tập"
-        title="Nhóm nhỏ, hoặc một kèm một."
-        lede="Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
-      />
+      <section className="ella-services-hero">
+        <div className="ella-services-copy">
+          <p className="ella-kicker">Hình thức tập · Reformer</p>
+          <h1 className="font-display">Nhóm nhỏ, hoặc một kèm một.</h1>
+          <p>
+            Hai hình thức, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ
+            thể bạn.
+          </p>
+        </div>
+        <div className="ella-services-photo">
+          <ArtDirectedImage
+            photo="method"
+            priority
+            sizes="(min-width: 768px) 49vw, 100vw"
+          />
+        </div>
+      </section>
 
       {CLASS_FORMATS.map((format, index) => (
         <Section

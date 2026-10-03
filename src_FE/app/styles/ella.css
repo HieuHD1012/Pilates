@@ -1,0 +1,416 @@
+/* ELLA study: a real room anchors the invitation; calm cream holds all text. */
+.ella-site {
+  background: var(--color-sand);
+}
+
+.ella-header .wordmark {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: -0.06em;
+}
+.ella-header .wordmark-sub {
+  color: var(--color-sand-deep);
+}
+.ella-header .ella-login {
+  color: var(--color-sand);
+}
+.ella-header .ella-login:hover {
+  color: var(--color-white);
+}
+
+.ella-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+  width: 100%;
+  height: clamp(620px, calc(100svh - 72px), 710px);
+  background: var(--color-cream);
+}
+.ella-hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(2.5rem, 4vw, 4rem) clamp(2.5rem, 6vw, 7.5rem);
+}
+.ella-kicker {
+  font-size: 0.73rem;
+  letter-spacing: 0.08em;
+  color: var(--color-lacquer);
+}
+.ella-hero-title {
+  max-width: 8.1ch;
+  margin-top: 2.2rem;
+  font-size: clamp(4rem, 5.5vw, 6.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  color: var(--color-ink);
+}
+.ella-hero-title em {
+  font-weight: 350;
+}
+.ella-hero-lede {
+  max-width: 31rem;
+  margin-top: 2.3rem;
+  color: var(--color-ink-2);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+.ella-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.6rem;
+  margin-top: 2.3rem;
+}
+.ella-hero-actions a:first-child {
+  border-radius: 0.3rem;
+}
+.ella-text-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.4rem;
+  text-decoration-color: var(--color-copper);
+}
+.ella-text-link:hover {
+  color: var(--color-lacquer);
+}
+.ella-hero-visual {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.ella-hero-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 58%;
+  filter: sepia(0.08) saturate(0.86) brightness(1.04);
+}
+
+.ella-method {
+  padding-top: 1.25rem;
+}
+.ella-method-heading {
+  display: grid;
+  grid-template-columns: 1.15fr 0.7fr;
+  align-items: end;
+  gap: 3rem;
+}
+.ella-method-heading h2,
+.ella-format-intro h2 {
+  max-width: 12ch;
+  color: var(--color-ink);
+  font-size: clamp(2.7rem, 4.3vw, 5rem);
+  line-height: 1.03;
+  letter-spacing: -0.04em;
+}
+.ella-method-heading p,
+.ella-format-intro p {
+  max-width: 32rem;
+  color: var(--color-ink-2);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+.ella-method-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.8rem;
+  margin-top: 4.7rem;
+}
+.ella-method-notes > div {
+  border-top: 1px solid var(--color-rule-2);
+  padding: 1.3rem 0 0;
+}
+.ella-method-notes dt {
+  color: var(--color-ink);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.ella-method-notes dd {
+  max-width: 22rem;
+  margin-top: 0.7rem;
+  color: var(--color-ink-2);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+.ella-movement {
+  display: grid;
+  grid-template-columns: 1fr 15rem;
+  align-items: end;
+  gap: 2.8rem;
+  padding: 6rem 0 7rem;
+}
+.ella-movement-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.ella-movement-pair img {
+  width: 100%;
+  height: min(32vw, 490px);
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+.ella-movement > p {
+  max-width: 15rem;
+  padding-bottom: 0.4rem;
+  color: var(--color-ink-2);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.ella-formats {
+  padding-top: 1.25rem;
+}
+.ella-format-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 3rem;
+  padding-bottom: 3.2rem;
+}
+.ella-format-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, 0.97fr);
+  min-height: 620px;
+  margin-bottom: 7rem;
+  background: var(--color-paper);
+}
+.ella-format-image {
+  min-height: 0;
+  overflow: hidden;
+}
+.ella-format-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+.ella-format-list {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+}
+.ella-format-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(2rem, 4vw, 4rem);
+  border-bottom: 1px solid var(--color-rule);
+}
+.ella-format-item:last-child {
+  border-bottom: 0;
+}
+.ella-format-index {
+  color: var(--color-lacquer);
+  font-size: 0.69rem;
+  letter-spacing: 0.07em;
+}
+.ella-format-item h3 {
+  margin-top: 0.9rem;
+  color: var(--color-ink);
+  font-size: clamp(2.5rem, 3.3vw, 4.4rem);
+  line-height: 1.06;
+}
+.ella-format-item p {
+  max-width: 28rem;
+  margin-top: 1rem;
+  color: var(--color-ink-2);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+.ella-format-item .ella-text-link {
+  margin-top: 1.4rem;
+}
+
+.ella-schedule {
+  padding-top: 1.2rem;
+}
+.ella-schedule h2 {
+  font-size: clamp(2.8rem, 3.5vw, 4rem);
+  line-height: 1.08;
+}
+.ella-schedule-row {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+.ella-schedule-row .text-sm {
+  font-size: 0.89rem;
+}
+.ella-firstvisit {
+  padding-top: 1.2rem;
+}
+.ella-firstvisit ol {
+  border-bottom: 1px solid var(--color-rule);
+}
+.ella-firstvisit ol li {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.ella-site #noi-dung > section:not(.ella-hero):not(.ella-method):not(.ella-formats) h2 {
+  letter-spacing: -0.035em;
+}
+.ella-footer {
+  border-top: 8px solid var(--color-copper);
+}
+
+.ella-about-hero,
+.ella-services-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  height: 650px;
+  background: var(--color-cream);
+}
+.ella-about-photo,
+.ella-services-photo {
+  min-height: 0;
+  overflow: hidden;
+}
+.ella-about-photo img,
+.ella-services-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ella-about-photo img {
+  object-position: center 52%;
+}
+.ella-services-photo img {
+  object-position: center;
+}
+.ella-about-copy,
+.ella-services-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(3rem, 6vw, 7rem);
+}
+.ella-about-copy h1,
+.ella-services-copy h1 {
+  max-width: 11ch;
+  margin-top: 1.7rem;
+  color: var(--color-ink);
+  font-size: clamp(3.6rem, 5.8vw, 6.7rem);
+  font-weight: 350;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.ella-about-copy p:last-child,
+.ella-services-copy p:last-child {
+  max-width: 31rem;
+  margin-top: 2rem;
+  color: var(--color-ink-2);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.ella-services-hero {
+  grid-template-columns: 0.95fr 1.05fr;
+}
+.ella-services-copy {
+  order: 0;
+}
+.ella-services-photo {
+  order: 1;
+}
+
+@media (max-width: 767px) {
+  .ella-hero {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+  .ella-hero-copy {
+    padding: 3.25rem 1.4rem 3.2rem;
+  }
+  .ella-hero-title {
+    max-width: 9ch;
+    margin-top: 1.3rem;
+    font-size: clamp(3.8rem, 12vw, 5.8rem);
+  }
+  .ella-hero-lede {
+    margin-top: 1.35rem;
+    font-size: 0.96rem;
+  }
+  .ella-hero-actions {
+    margin-top: 1.6rem;
+  }
+  .ella-hero-visual {
+    width: 100%;
+    height: min(115vw, 480px);
+  }
+  .ella-hero-visual img {
+    object-position: center 46%;
+  }
+  .ella-method-heading,
+  .ella-format-grid {
+    display: block;
+  }
+  .ella-method-heading h2,
+  .ella-format-intro h2 {
+    font-size: 2.95rem;
+  }
+  .ella-method-heading p {
+    margin-top: 1.2rem;
+  }
+  .ella-method-notes {
+    display: block;
+    margin-top: 2.5rem;
+  }
+  .ella-method-notes > div {
+    margin-top: 1.2rem;
+  }
+  .ella-movement {
+    display: block;
+    padding: 3rem 0 4.5rem;
+  }
+  .ella-movement-pair img {
+    height: 62vw;
+  }
+  .ella-movement > p {
+    max-width: 25rem;
+    margin-top: 1rem;
+  }
+  .ella-format-intro {
+    display: block;
+    padding-bottom: 2rem;
+  }
+  .ella-format-intro p {
+    margin-top: 1rem;
+  }
+  .ella-format-grid {
+    margin-bottom: 4.5rem;
+  }
+  .ella-format-image {
+    height: 78vw;
+    max-height: 430px;
+  }
+  .ella-format-item {
+    padding: 2rem 1.3rem;
+  }
+  .ella-about-hero,
+  .ella-services-hero {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+  .ella-about-copy,
+  .ella-services-copy {
+    order: 0;
+    padding: 3.5rem 1.4rem;
+  }
+  .ella-about-photo,
+  .ella-services-photo {
+    order: 1;
+    height: min(112vw, 500px);
+  }
+  .ella-about-copy h1,
+  .ella-services-copy h1 {
+    font-size: 3.7rem;
+  }
+}

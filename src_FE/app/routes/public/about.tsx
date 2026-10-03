@@ -1,6 +1,5 @@
 import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
 
 import type { Route } from "./+types/about";
 
@@ -18,29 +17,19 @@ export function meta(_: Route.MetaArgs) {
 export default function About() {
   return (
     <>
-      <PublicPageHeader
-        label="Studio"
-        title="Một phòng tập được giữ nhỏ, có chủ đích."
-        lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
-      />
-
-      <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
-            <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
-            </p>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-            </div>
-          </div>
+      <section className="ella-about-hero">
+        <div className="ella-about-photo">
+          <ArtDirectedImage photo="room" priority sizes="(min-width: 768px) 54vw, 100vw" />
         </div>
-      </Section>
+        <div className="ella-about-copy">
+          <p className="ella-kicker">Studio · Nha Trang</p>
+          <h1 className="font-display">Một phòng tập dành cho việc tập trung.</h1>
+          <p>
+            Máy reformer được đặt trong một không gian sáng, đủ rõ để bạn thấy nơi mình sẽ
+            tập. Lớp nhóm nhỏ và lớp riêng đều bắt đầu từ sự quan sát từng chuyển động.
+          </p>
+        </div>
+      </section>
 
       <Section index="02" label="Nguyên tắc" tone="deep">
         <dl className="pb-20 md:pb-28">

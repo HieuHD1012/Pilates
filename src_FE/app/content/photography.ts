@@ -1,13 +1,10 @@
 /**
  * ART DIRECTION BRIEFS
  *
- * Soul Pilates Nha Trang has not supplied photography yet, and the Đà Nẵng
- * studio's images are a different room, a different team and a different city —
- * using them here would be a lie about this branch. So every image slot in the
- * product is declared as a brief first. `src` stays null until the studio
- * delivers the frame; `<ArtDirectedImage>` renders a designed placeholder that
- * reserves the exact aspect ratio, so no layout shifts when the real photograph
- * lands and no design decision was ever made to flatter a stock image.
+ * Reference experiment: the owner confirmed the source studio photographs are
+ * from the same place under its former name. The selected frames have concrete
+ * editorial roles documented in docs/reference-variant.md. Other slots remain
+ * null until a truthful photograph exists.
  *
  * Shared direction for every frame (docs/REFERENCE_LOCK.md):
  *   Light      Hard equatorial daylight, shaped by the room. Windows are the
@@ -51,62 +48,54 @@ function brief(b: PhotoBrief): PhotoBrief {
 export const PHOTOGRAPHY = {
   hero: brief({
     id: "hero",
-    src: null,
-    alt: "Phòng tập Soul Pilates Nha Trang vào buổi sáng sớm, ánh sáng tự nhiên đổ dài trên sàn gỗ và các máy reformer.",
-    aspect: "3 / 4 on mobile, 16 / 9 from md",
-    typeRegion:
-      "Left third, full height. Continuous surface (wall or floor in shade), no " +
-      "reformer rails crossing it. Luminance variance inside the region under " +
-      "10%, and dark enough that #f2f0ea type clears 4.5:1 against the darkest " +
-      "sampled pixel with no scrim. If the room does not offer this, the frame " +
-      "is a reject — do not crop a blank area to manufacture it.",
-    subject:
-      "The empty studio before the first class. Reformers aligned, springs still, one window open.",
-    lighting:
-      "Early morning, 6:15–6:45. Low sun raking across the floor. Long shadows from the reformer rails are the composition.",
-    crop: "Room-wide, horizon low, ceiling included. The rails must read as parallel lines.",
-    distance: "Wide. No person, or one figure small and far, setting a spring.",
-    feeling: "Order before effort. Quiet, exact, unhurried.",
+    src: "/images/studio/room-architecture-clean.webp",
+    alt: "Phòng Pilates Nha Trang với các máy reformer xếp cạnh cửa sổ.",
+    aspect: "architectural portrait frame beside the opening statement",
+    typeRegion: null,
+    subject: "The actual reformer room before a class.",
+    lighting: "Window light from the real room, retained from the owner photograph.",
+    crop: "Keep the reformer arrangement and window visible; never crop to an empty wall for type.",
+    distance: "Wide room view.",
+    feeling: "A real place ready for practice.",
   }),
 
   method: brief({
     id: "method",
-    src: null,
+    src: "/images/studio/reformer-action-clean.webp",
     typeRegion: null,
-    alt: "Bàn tay huấn luyện viên chỉnh vị trí vai của học viên trên máy reformer.",
-    aspect: "4 / 5",
-    subject:
-      "A trainer's hand correcting a shoulder or rib position. Two people, one adjustment.",
-    lighting: "Side light from a window. The hand is lit; the background falls off.",
-    crop: "Tight. Shoulder to elbow. Faces are not required and should not dominate.",
-    distance: "Close — near enough to see pressure in the fingers.",
-    feeling: "Attention. This is what a 1:3 class actually buys.",
+    alt: "Người tập đang giữ động tác trên máy reformer trong phòng studio.",
+    aspect: "landscape practice frame",
+    subject: "A real reformer practice in progress.",
+    lighting: "Actual backlight through the studio curtains.",
+    crop: "Keep the whole body and the machine visible.",
+    distance: "Wide enough to read person and apparatus.",
+    feeling: "Controlled movement.",
   }),
 
   room: brief({
     id: "room",
-    src: null,
+    src: "/images/studio/room-architecture-clean.webp",
     typeRegion: null,
-    alt: "Chi tiết máy reformer: dây, lò xo và khung gỗ trong ánh sáng ban ngày.",
-    aspect: "1 / 1",
-    subject: "Reformer detail — springs, strap, carriage edge, worn leather or wood.",
-    lighting: "Flat daylight, no flash. Texture over drama.",
-    crop: "Object study. Square. Centred or deliberately offset to one third.",
-    distance: "Macro-adjacent, 40–60cm.",
-    feeling: "Material honesty. The equipment is a tool, not a prop.",
+    alt: "Các máy reformer được sắp theo hàng trong phòng tập Nha Trang.",
+    aspect: "bounded portrait studio chapter",
+    subject: "The actual Pilates room with reformers arranged in rows.",
+    lighting: "Actual window and ceiling light, not a fabricated luxury setting.",
+    crop: "Retain the aisles between machines; exclude the former brand mark.",
+    distance: "Room-wide.",
+    feeling: "A credible view of the place the customer may visit.",
   }),
 
   practice: brief({
     id: "practice",
-    src: null,
+    src: "/images/studio/practice-extend.jpg",
     typeRegion: null,
-    alt: "Học viên đang giữ một tư thế trên máy reformer, tập trung vào hơi thở.",
-    aspect: "16 / 10",
-    subject: "One student mid-repetition, holding. Trainer visible but not centred.",
-    lighting: "Backlit against the window. Silhouette edge, face in shade is fine.",
-    crop: "Full body, generous headroom, the rail line running through the frame.",
-    distance: "Medium-wide, 3–4m.",
-    feeling: "Concentration. Not exertion, not performance.",
+    alt: "Cùng người tập vươn thân và hai tay trên ghế Pilates.",
+    aspect: "paired portrait sequence",
+    subject: "The same Pilates chair exercise in its extended phase.",
+    lighting: "Actual backlight through the studio curtains.",
+    crop: "Match the compressed phase beside it; keep body and chair visible.",
+    distance: "Full-body medium view.",
+    feeling: "Extension with visible control.",
   }),
 
   city: brief({

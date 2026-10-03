@@ -10,7 +10,7 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="ella-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -62,7 +62,7 @@ function PublicHeader() {
   // P2 — one ask, stated once. The homepage hero already carries this exact
   // label at 48px; repeating it at 32px in the same viewport is one subject
   // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  const heroOwnsTheAsk = ["/", "/dat-tu-van"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -80,9 +80,9 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
-        <Wordmark />
+    <header className="ella-header border-rule-dark bg-ink-deep sticky top-0 z-(--z-nav) border-b">
+      <div className="gutter mx-auto flex h-18 max-w-(--container-page) items-center justify-between gap-6">
+        <Wordmark tone="sand" />
 
         <nav aria-label="Điều hướng chính" className="hidden lg:block">
           <ul className="flex items-center gap-7">
@@ -94,8 +94,8 @@ function PublicHeader() {
                     cn(
                       "relative py-2 text-sm transition-colors duration-200",
                       "after:bg-lacquer after:ease-measure after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:transition-transform after:duration-200",
-                      "hover:text-ink hover:after:scale-x-100",
-                      isActive ? "text-ink after:scale-x-100" : "text-ink-2",
+                      "hover:text-sand hover:after:scale-x-100",
+                      isActive ? "text-sand after:scale-x-100" : "text-sand/75",
                     )
                   }
                 >
@@ -107,7 +107,12 @@ function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="ella-login hidden sm:inline-flex"
+          >
             <Link to="/dang-nhap">Đăng nhập</Link>
           </Button>
           {heroOwnsTheAsk ? null : (
@@ -120,7 +125,7 @@ function PublicHeader() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            className="text-sand -mr-2 p-2 lg:hidden"
           >
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (
@@ -135,7 +140,7 @@ function PublicHeader() {
       {open ? (
         <div
           id="menu-di-dong"
-          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
+          className="bg-sand fixed inset-x-0 top-18 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
         >
           <nav aria-label="Điều hướng chính (di động)" className="gutter">
             <ul>
@@ -169,7 +174,7 @@ function PublicHeader() {
 
 function PublicFooter() {
   return (
-    <footer data-field="dark" className="bg-ink-deep text-sand">
+    <footer data-field="dark" className="ella-footer bg-ink-deep text-sand">
       <div className="gutter mx-auto max-w-(--container-page) py-14 md:py-20">
         <div className="border-rule-dark grid gap-10 border-t pt-8 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-4">
