@@ -16,6 +16,7 @@ const routes = process.argv.slice(4).length ? process.argv.slice(4) : ["/"];
 
 const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
+  { name: "1024", width: 1024, height: 768 },
   { name: "768", width: 768, height: 1024 },
   { name: "390", width: 390, height: 844 },
 ];
@@ -49,6 +50,27 @@ for (const viewport of VIEWPORTS) {
     await page.goto(url, { waitUntil: "networkidle" });
     await page.waitForTimeout(600);
     const slug = route === "/" ? "home" : route.replace(/^\//, "").replace(/\//g, "_");
+    // The first fold is what a visitor actually meets; capture it before any
+    // scrolling, at the two widths the reference reviews compare.
+    if (viewport.name === "1440" || viewport.name === "390") {
+      const first = `${outDir}/${slug}-first-${viewport.name}.png`;
+      await page.screenshot({ path: first });
+      console.log(`  ${first}`);
+    }
+    // Lazy images below the fold load only once scrolled near; without this a
+    // full-page capture shows empty frames the real page never shows.
+    for (const lazyImage of await page.locator('img[loading="lazy"]').all()) {
+      await lazyImage.scrollIntoViewIfNeeded();
+    }
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => globalThis.scrollTo(0, 0));
+    await page.waitForTimeout(200);
+    const overflow = await page.evaluate(
+      () =>
+        globalThis.document.documentElement.scrollWidth -
+        globalThis.document.documentElement.clientWidth,
+    );
+    if (overflow > 0) console.log(`  [overflow] ${route} @${viewport.name}: ${overflow}px`);
     const file = `${outDir}/${slug}-${viewport.name}.png`;
     await page.screenshot({ path: file, fullPage: true });
     console.log(`  ${file}`);

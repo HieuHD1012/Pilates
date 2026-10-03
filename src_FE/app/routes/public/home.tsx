@@ -1,15 +1,42 @@
+import {
+  ArrowRight,
+  CalendarCheck,
+  Check,
+  CircleHelp,
+  Clock,
+  HeartHandshake,
+  MapPin,
+  MessageCircle,
+  Package,
+  Repeat,
+  Rows3,
+  UserCheck,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router";
 
-import { CLASS_FORMATS, FIRST_VISIT_STEPS } from "~/content/studio";
-import { addDays, formatTime, studioDateKey, weekdayShort } from "~/lib/format";
+import {
+  CANCELLATION_POLICY,
+  CLASS_FORMATS,
+  FIRST_VISIT_STEPS,
+  STUDIO,
+} from "~/content/studio";
+import {
+  FaqItem,
+  IconChip,
+  SectionHead,
+  SpecRow,
+  SwipeRow,
+} from "~/features/public/ella-blocks";
 import { usePublicSchedule } from "~/features/public/queries";
+import { addDays, formatTime, studioDateKey, weekdayShort } from "~/lib/format";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Button } from "~/ui/button";
+import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
-import { Section } from "~/ui/layout";
+import { Figures } from "~/ui/figure";
+import { PendingFact } from "~/ui/pending-fact";
 import { StatusBadge } from "~/ui/status";
-import { TickRule } from "~/ui/tick-rule";
 
 import type { Route } from "./+types/home";
 
@@ -28,339 +55,442 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
+/**
+ * ELLA reference variant. The page grammar is ELLA Studio's — veiled hero,
+ * benefit cards, format cards, a start-here trio, a photo panel, FAQ — and
+ * every fact on it is Soul's own (app/content/studio.ts, the public API).
+ * See docs/reference-variant.md for what was translated and what was refused.
+ */
 export default function Home() {
   return (
     <>
       <Hero />
+      <Benefits />
       <Formats />
-      <Method />
-      <ThisWeek />
-      <FirstVisit />
-      <Closing />
+      <StartHere />
+      <RoomPanel />
+      <Faq />
     </>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Hero — an editorial split, not a photograph with type on top. The statement
-   holds the left seven columns; the image bleeds off the right page edge. The
-   page opens on a ruled edge rather than a picture.
+   Hero — the photograph's own bright wall dissolves into a solid cream field.
+   Type only ever sits on that field: no scrim, no dimmed pixels.
    ──────────────────────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="bg-sand">
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <div className="grid items-start gap-x-8 gap-y-10 pt-10 pb-14 md:grid-cols-12 md:pt-14 md:pb-20">
-          <div className="md:col-span-7 lg:col-span-6">
-            <p className="label-micro">Pilates reformer · Nha Trang</p>
-
-            <h1 className="font-display text-d1 text-ink mt-6 font-light">
-              Không tập nhiều hơn.
-              <br />
-              <em>Tập đúng hơn.</em>
-            </h1>
-
-            <p className="measure text-lede text-ink-2 mt-7">
-              Lớp nhóm nhỏ và lớp riêng trên reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Button asChild variant="lacquer" size="lg">
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/lich-tap">Xem lịch tập</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-5 lg:col-span-6 lg:col-start-7">
-            <div className="aspect-4/5 w-full md:aspect-3/4 lg:aspect-4/5">
-              <ArtDirectedImage
-                photo="hero"
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-              />
-            </div>
+    <section className="el-hero">
+      <div className="el-hero-inner gutter mx-auto max-w-(--container-page)">
+        <div className="el-hero-copy">
+          <p className="label-micro el-eyebrow">Soul Pilates · Nha Trang</p>
+          <h1 className="el-display">
+            Studio
+            <br />
+            Pilates reformer
+            <br />
+            tại Nha Trang
+          </h1>
+          <p className="el-hero-lede">
+            Lớp nhóm nhỏ và lớp riêng trên máy reformer. Một nơi để tập chậm lại, chính xác
+            hơn và đều đặn theo nhịp của bạn.
+          </p>
+          <div className="el-hero-actions">
+            <Button asChild variant="primary" size="lg" className="el-btn">
+              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+            </Button>
+            <Button asChild variant="secondary" size="lg" className="el-btn el-btn-outline">
+              <Link to="/dich-vu">Xem hình thức tập</Link>
+            </Button>
           </div>
         </div>
       </div>
-      <div className="gutter mx-auto max-w-(--container-page)">
-        <TickRule />
+      <div className="el-hero-photo">
+        <ArtDirectedImage photo="hero" priority sizes="(min-width: 768px) 62vw, 100vw" />
       </div>
     </section>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   Two formats — a ruled comparison. Two columns divided by a hairline; no
-   cards, no borders around the outside, no "most popular" badge.
+   Benefits — only what the product already states: small groups without a
+   number, one trainer per class (Q4), a private format, self-service booking (Q5).
    ──────────────────────────────────────────────────────────────────────────── */
+const BENEFITS = [
+  {
+    icon: Users,
+    title: "Lớp nhóm nhỏ",
+    body: "Số chỗ mỗi buổi do studio đặt cho từng lớp và không bị vượt qua.",
+  },
+  {
+    icon: UserCheck,
+    title: "Một huấn luyện viên mỗi buổi",
+    body: "Người dạy buổi của bạn chịu trách nhiệm cho buổi đó, từ đầu đến cuối.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Lớp riêng khi cần",
+    body: "Một kèm một, bài tập dựng theo cơ thể bạn và mục tiêu cụ thể.",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Tự đặt lịch trực tuyến",
+    body: "Đặt, đổi hoặc hủy lớp trong tài khoản, theo hạn hủy của từng hình thức.",
+  },
+] as const;
+
+function Benefits() {
+  return (
+    <section className="el-section">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <SectionHead
+          eyebrow="Vì sao chọn Soul"
+          title={
+            <>
+              Không tập nhiều hơn.
+              <br />
+              Tập đúng hơn.
+            </>
+          }
+        />
+        <SwipeRow className="el-benefits" label="Lý do chọn studio">
+          {BENEFITS.map((benefit) => (
+            <article key={benefit.title} className="el-card el-benefit">
+              <IconChip icon={benefit.icon} />
+              <h3 className="el-h3">{benefit.title}</h3>
+              <p>{benefit.body}</p>
+            </article>
+          ))}
+        </SwipeRow>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Formats — ELLA's level cards, mapped to the two confirmed formats (Q3). The
+   clock footer states the confirmed cancellation window, because the class
+   duration is not confirmed and must not be guessed.
+   ──────────────────────────────────────────────────────────────────────────── */
+const FORMAT_NOTE = { group: "Nhóm nhỏ", private: "Một kèm một" } as const;
+
+/** Who the private format suits, as the studio wrote it (CLASS_FORMATS). */
+const PRIVATE_FIT = CLASS_FORMATS.find((format) => format.id === "private")?.forWho ?? [];
+
 function Formats() {
   return (
-    <Section index="01" label="Hai hình thức tập">
-      <div className="grid gap-y-12 pb-20 md:grid-cols-2 md:gap-x-0 md:pb-28">
-        {CLASS_FORMATS.map((format, index) => (
-          <article
-            key={format.id}
-            className={
-              index === 0
-                ? "md:rule-r md:pr-10 lg:pr-16"
-                : "rule-t pt-12 md:border-t-0 md:pt-0 md:pl-10 lg:pl-16"
-            }
-          >
-            <p className="label-micro">{format.sub}</p>
-            <h2 className="font-display text-d3 text-ink mt-3 font-light">{format.name}</h2>
-            <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-
-            <p className="label-micro mt-9">Phù hợp với</p>
-            <ul className="mt-3">
-              {format.forWho.map((item) => (
-                <li key={item} className="rule-b text-ink py-3 text-sm">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Method — one image, one narrow column of text, three ruled notes. The claims
-   here are about the discipline, which is true of Pilates anywhere; nothing is
-   asserted about this studio that the studio has not confirmed.
-   ──────────────────────────────────────────────────────────────────────────── */
-const METHOD_NOTES = [
-  {
-    term: "Hơi thở",
-    def: "Nhịp thở dẫn động tác, không phải ngược lại. Đây là phần khó nhất của buổi đầu tiên.",
-  },
-  {
-    term: "Căn chỉnh",
-    def: "Vai, khung sườn, khung chậu được đặt đúng trước khi thêm bất kỳ lực nào.",
-  },
-  {
-    term: "Kiểm soát",
-    def: "Biên độ nhỏ, tốc độ chậm, dừng được ở bất kỳ điểm nào trong động tác.",
-  },
-];
-
-function Method() {
-  return (
-    <Section index="02" label="Phương pháp" tone="deep">
-      <div className="grid gap-x-8 gap-y-12 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-5">
-          <div className="aspect-square w-full">
-            <ArtDirectedImage photo="method" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <h2 className="font-display text-d2 text-ink font-light">
-            Pilates là một môn học về sự chính xác.
-          </h2>
-          <p className="measure text-ink-2 mt-6 text-base">
-            Reformer không làm bài tập nhẹ đi. Nó làm cho sai sót hiện ra rõ hơn — và cho
-            huấn luyện viên chỗ để chỉnh. Đó là lý do lớp được giữ nhỏ.
-          </p>
-
-          <dl className="mt-10">
-            {METHOD_NOTES.map(({ term, def }) => (
-              <div key={term} className="rule-t grid grid-cols-6 gap-x-8 py-4">
-                <dt className="text-ink col-span-2 text-sm font-medium">{term}</dt>
-                <dd className="text-ink-2 col-span-4 text-sm">{def}</dd>
+    <section className="el-section">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <SectionHead
+          eyebrow="Hình thức tập"
+          title="Chọn cách bạn tập"
+          intro="Hai hình thức trên reformer, cùng một phương pháp. Khác nhau ở mức độ điều chỉnh riêng cho cơ thể bạn."
+        />
+        <div className="el-formats">
+          {CLASS_FORMATS.map((format) => (
+            <article key={format.id} className="el-card el-format" data-format={format.id}>
+              <div className="el-format-top">
+                <span className="el-tag" data-format={format.id}>
+                  {format.sub}
+                </span>
+                <span className="el-format-note">{FORMAT_NOTE[format.id]}</span>
               </div>
-            ))}
-          </dl>
+              <h3 className="el-h3">{format.name}</h3>
+              <p>{format.body}</p>
+              <p className="el-format-foot">
+                <Clock aria-hidden="true" className="size-3.5 shrink-0" />
+                <span>
+                  Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ để được
+                  hoàn buổi
+                </span>
+              </p>
+            </article>
+          ))}
+        </div>
+        <ThisWeek />
+        <div className="el-center">
+          <Button asChild variant="primary" size="lg" className="el-btn">
+            <Link to="/lich-tap">Xem toàn bộ lịch tập</Link>
+          </Button>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   This week — the pre-rendered document, hydrated with live studio data.
-   All four remote states are designed: loading, error, empty, and loaded.
-   ──────────────────────────────────────────────────────────────────────────── */
+/**
+ * The pre-rendered document, hydrated with live studio data. All four remote
+ * states are designed: loading, error, empty and loaded.
+ */
 function ThisWeek() {
   const today = studioDateKey(new Date());
   const query = usePublicSchedule(today, addDays(today, 6));
 
   return (
-    <Section index="03" label="Bảy ngày tới">
-      <div className="grid gap-x-8 gap-y-8 pb-20 md:grid-cols-12 md:pb-28">
-        <div className="md:col-span-4">
-          <h2 className="font-display text-d3 text-ink font-light">Lịch tập sắp tới</h2>
-          {/* No claim about how or how often the timetable syncs: there is no
-              backend yet, and even with one the frontend cannot promise it. */}
-          <p className="measure text-ink-2 mt-4 text-sm">
-            Đăng nhập để đặt chỗ, hoặc để lại thông tin nếu bạn chưa có gói tập.
-          </p>
-          <div className="mt-6">
-            <Button asChild variant="ghost">
-              <Link to="/lich-tap">Xem toàn bộ lịch</Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="md:col-span-8">
-          {query.isPending ? <SkeletonRows rows={5} /> : null}
-
-          {query.isError ? (
-            <ErrorState
-              description="Chưa tải được lịch tập. Bạn vẫn có thể liên hệ studio để hỏi lịch."
-              onRetry={() => void query.refetch()}
-            />
-          ) : null}
-
-          {query.isSuccess && query.data.length === 0 ? (
-            <EmptyState
-              title="Chưa có lớp nào trong bảy ngày tới"
-              description="Studio chưa mở lịch cho khoảng thời gian này. Để lại thông tin và nhân viên sẽ báo bạn khi có lịch mới."
-              action={
-                <Button asChild variant="secondary">
-                  <Link to="/dat-tu-van">Để lại thông tin</Link>
-                </Button>
-              }
-            />
-          ) : null}
-
-          {query.isSuccess && query.data.length > 0 ? (
-            <>
-              <DemoDataNotice className="mb-3" />
-              <ul className="rule-t">
-                {query.data.slice(0, 7).map((item) => (
-                  /**
-                   * Two deliberate layouts, not one grid left to wrap.
-                   *
-                   * Under `sm` the row is a flex pair: day + time and the
-                   * availability badge on one baseline, title beneath. The
-                   * previous single grid auto-wrapped on a phone, leaving dead
-                   * space after the time and detaching the badge from the class
-                   * it qualifies.
-                   */
-                  <li
-                    key={`${item.starts_at}-${item.trainer_name}`}
-                    className="rule-b py-4"
-                  >
-                    <div className="flex items-baseline justify-between gap-3 sm:hidden">
-                      <span className="flex items-baseline gap-2.5">
-                        <span className="figures text-ink-2 text-xs">
-                          {weekdayShort(item.starts_at)}
-                        </span>
-                        <span className="figures text-ink text-sm">
-                          {formatTime(item.starts_at)}
-                        </span>
-                      </span>
-                      <AvailabilityBadge isFull={item.is_full} />
-                    </div>
-                    <p className="text-ink mt-1 text-sm sm:hidden">
-                      {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-                      <span className="text-ink-2 ml-2">{item.trainer_name}</span>
-                    </p>
-
-                    <div className="hidden grid-cols-[3.25rem_5rem_1fr_auto] items-baseline gap-x-4 sm:grid">
-                      <span className="figures text-ink-2 text-xs">
-                        {weekdayShort(item.starts_at)}
-                      </span>
-                      <span className="figures text-ink text-sm">
-                        {formatTime(item.starts_at)}
-                      </span>
-                      <span className="text-ink text-sm">
-                        {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-                        <span className="text-ink-2 ml-2">{item.trainer_name}</span>
-                      </span>
-                      <span className="justify-self-end">
-                        <AvailabilityBadge isFull={item.is_full} />
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-        </div>
+    <div className="el-card el-week">
+      <div className="el-week-head">
+        <h3 className="el-h3">Bảy ngày tới</h3>
+        <p>Đăng nhập để đặt chỗ, hoặc để lại thông tin nếu bạn chưa có gói tập.</p>
       </div>
-    </Section>
-  );
-}
 
-/**
- * Full or not full. `GET /public/schedule` returns `is_full` and no seat count,
- * because a count says which class has one person in it — a safety question at
- * a small studio, not just a privacy one.
- */
-function AvailabilityBadge({ isFull }: { isFull: boolean }) {
-  return isFull ? (
-    <StatusBadge tone="critical">Hết chỗ</StatusBadge>
-  ) : (
-    <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+      <div className="el-week-body">
+        {query.isPending ? <SkeletonRows rows={5} /> : null}
+
+        {query.isError ? (
+          <ErrorState
+            description="Chưa tải được lịch tập. Bạn vẫn có thể liên hệ studio để hỏi lịch."
+            onRetry={() => void query.refetch()}
+          />
+        ) : null}
+
+        {query.isSuccess && query.data.length === 0 ? (
+          <EmptyState
+            title="Chưa có lớp nào trong bảy ngày tới"
+            description="Studio chưa mở lịch cho khoảng thời gian này. Để lại thông tin và nhân viên sẽ báo bạn khi có lịch mới."
+            action={
+              <Button asChild variant="secondary">
+                <Link to="/dat-tu-van">Để lại thông tin</Link>
+              </Button>
+            }
+          />
+        ) : null}
+
+        {query.isSuccess && query.data.length > 0 ? (
+          <>
+            <DemoDataNotice className="mb-3" />
+            <ul>
+              {query.data.slice(0, 6).map((item) => (
+                <li key={`${item.starts_at}-${item.trainer_name}`} className="el-week-row">
+                  <span className="el-week-when">
+                    <span className="figures text-ink-2 text-xs">
+                      {weekdayShort(item.starts_at)}
+                    </span>
+                    <span className="figures text-ink text-sm">
+                      {formatTime(item.starts_at)}
+                    </span>
+                  </span>
+                  <span className="el-week-what">
+                    {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
+                    <span className="text-ink-2 ml-2">{item.trainer_name}</span>
+                  </span>
+                  <span className="el-week-badge">
+                    {item.is_full ? (
+                      <StatusBadge tone="critical">Hết chỗ</StatusBadge>
+                    ) : (
+                      <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
-   First visit — what the system actually does, written down. This is the
-   section where a template would put invented testimonials.
+   Start here — ELLA's offer trio without prices. The big serif slot carries a
+   confirmed figure (cancellation window, first-visit steps); package prices are
+   pending and live on /goi-tap, which renders the backend's catalogue.
    ──────────────────────────────────────────────────────────────────────────── */
-function FirstVisit() {
+function StartHere() {
   return (
-    <Section index="04" label="Buổi đầu tiên">
-      <div className="pb-20 md:pb-28">
-        <h2 className="measure-wide font-display text-d2 text-ink font-light">
-          Bạn không cần biết gì trước khi đến.
-        </h2>
-
-        <ol className="mt-12">
-          {FIRST_VISIT_STEPS.map((step) => (
-            <li
-              key={step.index}
-              className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12 md:py-8"
-            >
-              <span className="figures-display text-ink-3 text-2xl md:col-span-2 md:text-3xl">
-                {step.index}
-              </span>
-              <h3 className="text-ink text-lg md:col-span-4">{step.title}</h3>
-              <p className="measure text-ink-2 text-sm md:col-span-6">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </Section>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Closing — a dark field, one statement, one action.
-   ──────────────────────────────────────────────────────────────────────────── */
-function Closing() {
-  return (
-    <>
-      <div className="h-[38vw] max-h-72 w-full md:h-[22vw]">
-        <ArtDirectedImage photo="city" sizes="100vw" />
-      </div>
-
-      <Section tone="ink">
-        <div className="grid gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
-            <h2 className="font-display text-d2 text-sand font-light">
-              Bắt đầu bằng một cuộc gọi, không phải một gói tập.
-            </h2>
-            <p className="measure text-sand/70 mt-6 text-base">
-              Để lại tên và số điện thoại. Studio sẽ liên hệ để nghe tình trạng của bạn
-              trước khi đề xuất bất cứ điều gì.
+    <section className="el-section">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <SectionHead
+          eyebrow="Bắt đầu"
+          title="Bước đầu tiên của bạn"
+          aside={
+            <Link to="/goi-tap" className="el-chip-link">
+              Xem gói tập <ArrowRight aria-hidden="true" className="size-3.5" />
+            </Link>
+          }
+        />
+        <SwipeRow className="el-offers" label="Các cách bắt đầu" until="lg">
+          <article className="el-card el-offer">
+            <h3 className="el-h3">Lớp nhóm</h3>
+            <p className="el-offer-desc">
+              Tập đều đặn trên reformer cùng một nhóm nhỏ, mỗi người được chỉnh riêng.
             </p>
-          </div>
-          <div className="flex items-end md:col-span-4 md:col-start-9">
-            <Button asChild size="lg" className="bg-sand text-ink hover:bg-white">
+            <p className="el-offer-figure">
+              <Figures display>{CANCELLATION_POLICY.group} giờ</Figures>
+              <span>hạn hủy để được hoàn buổi</span>
+            </p>
+            <ul className="el-checks">
+              <li>
+                <Check aria-hidden="true" /> Gói tính theo số buổi và thời hạn
+              </li>
+              <li>
+                <Check aria-hidden="true" /> Tự đặt, đổi, hủy lớp trong tài khoản
+              </li>
+              <li>
+                <Check aria-hidden="true" /> Giá gói:{" "}
+                <PendingFact label="Giá gói lớp nhóm" />
+              </li>
+            </ul>
+            <Button asChild variant="primary" size="lg" fullWidth className="el-btn">
+              <Link to="/lich-tap">Xem lịch lớp nhóm</Link>
+            </Button>
+          </article>
+
+          <article className="el-card el-offer el-offer-featured" data-field="dark">
+            <h3 className="el-h3">Buổi tư vấn</h3>
+            <p className="el-offer-desc">
+              Bắt đầu bằng một cuộc trò chuyện, không phải một gói tập. Studio nghe tình
+              trạng của bạn trước khi đề xuất.
+            </p>
+            <p className="el-offer-figure">
+              <Figures display>{FIRST_VISIT_STEPS.length} bước</Figures>
+              <span>từ lúc để lại thông tin đến khi tự đặt lớp</span>
+            </p>
+            <ul className="el-checks">
+              <li>
+                <Check aria-hidden="true" /> Không cần tài khoản
+              </li>
+              <li>
+                <Check aria-hidden="true" /> Nhân viên gọi lại để tư vấn
+              </li>
+              <li>
+                <Check aria-hidden="true" /> Gợi ý hình thức lớp phù hợp
+              </li>
+            </ul>
+            <Button asChild size="lg" fullWidth className="el-btn el-btn-light">
               <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
             </Button>
+          </article>
+
+          <article className="el-card el-offer el-offer-outlined">
+            <span className="el-badge">Gợi ý cho buổi đầu với reformer</span>
+            <h3 className="el-h3">Lớp riêng</h3>
+            <p className="el-offer-desc">
+              Một học viên, một huấn luyện viên. Bài tập dựng theo cơ thể bạn.
+            </p>
+            <p className="el-offer-figure">
+              <Figures display>{CANCELLATION_POLICY.private} giờ</Figures>
+              <span>hạn hủy để được hoàn buổi</span>
+            </p>
+            <ul className="el-checks">
+              {PRIVATE_FIT.map((item) => (
+                <li key={item}>
+                  <Check aria-hidden="true" /> {item}
+                </li>
+              ))}
+            </ul>
+            <Button asChild variant="primary" size="lg" fullWidth className="el-btn">
+              <Link to="/dich-vu">Tìm hiểu lớp riêng</Link>
+            </Button>
+          </article>
+        </SwipeRow>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Room panel — ELLA's photo-and-spec panel, holding the actual room. The
+   photograph shows reformers in rows; the copy says exactly that.
+   ──────────────────────────────────────────────────────────────────────────── */
+function RoomPanel() {
+  return (
+    <section className="el-section">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <div className="el-card el-panel">
+          <div className="el-panel-photo">
+            <ArtDirectedImage photo="room" sizes="(min-width: 768px) 40vw, 100vw" />
+          </div>
+          <div className="el-panel-copy">
+            <p className="label-micro el-eyebrow">Phòng tập</p>
+            <h2 className="el-h2">Các máy đặt song song, có lối đi giữa từng máy.</h2>
+            <p>
+              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
+              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người.
+            </p>
+            <ul className="el-specs">
+              <SpecRow icon={Rows3} label="Bố trí">
+                Reformer xếp thành hàng, lối đi giữa các máy
+              </SpecRow>
+              <SpecRow icon={Users} label="Hình thức">
+                Lớp nhóm nhỏ và lớp riêng, một huấn luyện viên mỗi buổi
+              </SpecRow>
+              <SpecRow icon={MapPin} label="Địa chỉ">
+                {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}
+              </SpecRow>
+            </ul>
+            <Link to="/gioi-thieu" className="el-pill-dark">
+              Xem studio <ArrowRight aria-hidden="true" className="size-3.5" />
+            </Link>
           </div>
         </div>
-      </Section>
-    </>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   FAQ — only questions the product can answer today. What-to-bring, trial
+   lessons and waitlist behaviour (Q7) are deliberately absent.
+   ──────────────────────────────────────────────────────────────────────────── */
+function Faq() {
+  return (
+    <section className="el-section el-section-last">
+      <div className="gutter mx-auto max-w-(--container-page)">
+        <SectionHead
+          eyebrow="Câu hỏi thường gặp"
+          title="Hỏi & đáp"
+          intro="Những điều người mới thường muốn biết trước khi đến studio."
+        />
+        <div className="el-faqs">
+          <FaqItem
+            icon={CircleHelp}
+            question="Tôi chưa từng tập reformer, có bắt đầu được không?"
+          >
+            <p>
+              Được. Bạn không cần biết gì trước khi đến. Lớp riêng phù hợp với buổi tập đầu
+              tiên trên reformer, và studio sẽ tư vấn hình thức sau khi nghe tình trạng của
+              bạn.
+            </p>
+          </FaqItem>
+          <FaqItem icon={MessageCircle} question="Bắt đầu như thế nào?">
+            <ol>
+              {FIRST_VISIT_STEPS.map((step) => (
+                <li key={step.index}>
+                  <strong>{step.title}.</strong> {step.body}
+                </li>
+              ))}
+            </ol>
+          </FaqItem>
+          <FaqItem icon={Package} question="Gói tập hoạt động thế nào?">
+            <p>
+              Mỗi gói có một số buổi cụ thể và một ngày hết hạn. Hệ thống trừ buổi khi bạn
+              đặt lớp và hoàn lại nếu bạn hủy đúng hạn. Bảng giá hiện hành nằm ở trang{" "}
+              <Link to="/goi-tap">Gói tập</Link>.
+            </p>
+          </FaqItem>
+          <FaqItem icon={CalendarCheck} question="Tôi đặt lớp như thế nào?">
+            <p>
+              Từ buổi thứ hai trở đi, bạn tự đặt, đổi hoặc hủy lớp trong tài khoản của mình.{" "}
+              <Link to="/lich-tap">Lịch tập</Link> cho biết lớp nào còn chỗ.
+            </p>
+          </FaqItem>
+          <FaqItem icon={Repeat} question="Tôi có thể hủy buổi đã đặt không?">
+            <p>
+              Có. Hủy trước <Figures>{CANCELLATION_POLICY.group}</Figures> giờ với lớp nhóm
+              và <Figures>{CANCELLATION_POLICY.private}</Figures> giờ với lớp riêng, tính
+              đến giờ bắt đầu, để được hoàn lại buổi tập. Hủy muộn hơn thì buổi không được
+              hoàn.
+            </p>
+          </FaqItem>
+          <FaqItem icon={MapPin} question="Studio ở đâu và mở cửa lúc nào?">
+            <p>
+              Địa chỉ: {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}. Giờ mở
+              cửa: {STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}. Bạn có thể{" "}
+              <Link to="/dat-tu-van">để lại số điện thoại</Link> để studio liên hệ.
+            </p>
+          </FaqItem>
+        </div>
+      </div>
+    </section>
   );
 }

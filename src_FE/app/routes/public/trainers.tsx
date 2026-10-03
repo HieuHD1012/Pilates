@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 import { usePublicTrainers } from "~/features/public/queries";
 import { publicApi } from "~/lib/api/endpoints";
-import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
@@ -101,7 +100,13 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        // A movement photograph must never stand in for a named
+                        // person: a trainer without a portrait gets an empty frame.
+                        <div
+                          role="img"
+                          aria-label={`Chưa có ảnh chân dung của ${trainer.full_name}`}
+                          className="border-rule bg-sand-deep size-full border"
+                        />
                       )}
                     </div>
                   </div>

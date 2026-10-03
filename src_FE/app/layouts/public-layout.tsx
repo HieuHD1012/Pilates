@@ -1,4 +1,4 @@
-import { Menu, X } from "lucide-react";
+import { Clock, MapPin, Menu, MessageCircle, Phone, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 
@@ -8,9 +8,14 @@ import { cn } from "~/lib/cn";
 import { Button } from "~/ui/button";
 import { PendingFact } from "~/ui/pending-fact";
 
+/**
+ * ELLA reference variant: a walnut frame (header + footer) around a cream
+ * canvas of soft cards. `el-site` scopes every variant rule in
+ * app/styles/ella.css, so the token layer itself is untouched.
+ */
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    <div className="el-site bg-sand flex min-h-dvh flex-col">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -26,31 +31,16 @@ export default function PublicLayout() {
   );
 }
 
-function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
+function Wordmark() {
   return (
     <Link
       to="/"
-      className="group flex items-baseline gap-2.5"
+      className="el-wordmark group flex items-baseline gap-2.5"
       aria-label="Soul Pilates Nha Trang — trang chủ"
     >
-      <span className={cn("wordmark text-lg", tone === "ink" ? "text-ink" : "text-sand")}>
-        SOUL
-      </span>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "hidden h-px w-5 sm:block",
-          tone === "ink" ? "bg-rule-2" : "bg-rule-dark",
-        )}
-      />
-      <span
-        className={cn(
-          "wordmark-sub hidden sm:block",
-          tone === "ink" ? "text-ink-2" : "text-sand/70",
-        )}
-      >
-        Nha Trang
-      </span>
+      <span className="wordmark text-sand text-xl">SOUL</span>
+      <span aria-hidden="true" className="bg-rule-dark hidden h-px w-5 sm:block" />
+      <span className="wordmark-sub text-sand/75 hidden sm:block">Nha Trang</span>
     </Link>
   );
 }
@@ -59,10 +49,11 @@ function PublicHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  // P2 — one ask, stated once. The homepage hero carries "Đặt lịch tư vấn" in
+  // the same viewport, and the consultation route is that ask. On those two
+  // routes the white pill becomes the member entry instead, so the frame keeps
+  // its shape without rendering one subject twice.
+  const askInPage = ["/", "/dat-tu-van"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -80,8 +71,8 @@ function PublicHeader() {
   }, [open]);
 
   return (
-    <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+    <header data-field="dark" className="el-header sticky top-0 z-(--z-nav)">
+      <div className="el-header-inner gutter mx-auto h-16 max-w-(--container-page)">
         <Wordmark />
 
         <nav aria-label="Điều hướng chính" className="hidden lg:block">
@@ -91,12 +82,7 @@ function PublicHeader() {
                 <NavLink
                   to={item.to}
                   className={({ isActive }) =>
-                    cn(
-                      "relative py-2 text-sm transition-colors duration-200",
-                      "after:bg-lacquer after:ease-measure after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:transition-transform after:duration-200",
-                      "hover:text-ink hover:after:scale-x-100",
-                      isActive ? "text-ink after:scale-x-100" : "text-ink-2",
-                    )
+                    cn("el-nav-link", isActive && "el-nav-link-active")
                   }
                 >
                   {item.label}
@@ -106,21 +92,29 @@ function PublicHeader() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link to="/dang-nhap">Đăng nhập</Link>
-          </Button>
-          {heroOwnsTheAsk ? null : (
-            <Button asChild variant="lacquer" size="sm" className="hidden sm:inline-flex">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-            </Button>
+        <div className="flex items-center justify-end gap-5">
+          {askInPage ? (
+            <Link to="/dang-nhap" className="el-pill hidden sm:inline-flex">
+              <UserRound aria-hidden="true" className="size-3.5" />
+              Đăng nhập
+            </Link>
+          ) : (
+            <>
+              <Link to="/dang-nhap" className="el-login hidden sm:inline-flex">
+                <UserRound aria-hidden="true" className="size-3.5" />
+                Đăng nhập
+              </Link>
+              <Link to="/dat-tu-van" className="el-pill hidden sm:inline-flex">
+                Đặt lịch tư vấn
+              </Link>
+            </>
           )}
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            className="text-sand -mr-2 p-2 lg:hidden"
           >
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (
@@ -135,28 +129,35 @@ function PublicHeader() {
       {open ? (
         <div
           id="menu-di-dong"
-          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
+          data-field="light"
+          className="el-mobile-menu bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
         >
           <nav aria-label="Điều hướng chính (di động)" className="gutter">
-            <ul>
-              {PUBLIC_NAV.map((item, index) => (
-                <li key={item.to} className="border-rule border-b">
-                  <NavLink to={item.to} className="flex items-baseline gap-4 py-5">
-                    <span className="figures text-2xs text-ink-2">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="font-display text-ink text-2xl font-light">
-                      {item.label}
+            <ul className="el-mobile-menu-list">
+              {PUBLIC_NAV.map((item) => (
+                <li key={item.to}>
+                  <NavLink to={item.to} className="el-mobile-menu-link">
+                    <span className="font-display text-ink text-2xl">{item.label}</span>
+                    <span aria-hidden="true" className="text-ink-2">
+                      →
                     </span>
                   </NavLink>
                 </li>
               ))}
             </ul>
             <div className="flex flex-col gap-3 py-8">
-              <Button asChild variant="lacquer" size="lg" fullWidth>
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-              </Button>
-              <Button asChild variant="secondary" size="lg" fullWidth>
+              {location.pathname === "/dat-tu-van" ? null : (
+                <Button asChild variant="primary" size="lg" fullWidth className="el-btn">
+                  <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+                </Button>
+              )}
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                fullWidth
+                className="el-btn el-btn-outline"
+              >
                 <Link to="/dang-nhap">Đăng nhập</Link>
               </Button>
             </div>
@@ -169,65 +170,95 @@ function PublicHeader() {
 
 function PublicFooter() {
   return (
-    <footer data-field="dark" className="bg-ink-deep text-sand">
-      <div className="gutter mx-auto max-w-(--container-page) py-14 md:py-20">
-        <div className="border-rule-dark grid gap-10 border-t pt-8 md:grid-cols-12 md:gap-8">
-          <div className="md:col-span-4">
-            <Wordmark tone="sand" />
-            <p className="measure text-sand/70 mt-5 text-sm">
-              Studio reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
+    <footer data-field="dark" className="el-footer">
+      <div className="gutter mx-auto max-w-(--container-page) pt-14 pb-8 md:pt-20">
+        <div className="el-footer-grid">
+          <div>
+            <Wordmark />
+            <p className="text-sand/80 mt-5 max-w-64 text-sm">
+              Studio Pilates reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
             </p>
           </div>
 
-          <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Liên hệ</p>
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Địa chỉ</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}
-                </dd>
-              </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Điện thoại</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.phone ? (
-                    <a href={`tel:${STUDIO.phone.replace(/\s/g, "")}`}>{STUDIO.phone}</a>
-                  ) : (
-                    <PendingFact label="Số điện thoại" />
-                  )}
-                </dd>
-              </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Giờ mở cửa</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Trang</p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div>
+            <p className="el-footer-label">Trang</p>
+            <ul className="mt-4 space-y-2.5 text-sm">
               {PUBLIC_FOOTER_NAV.map((item) => (
                 <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    className="text-sand/85 hover:decoration-sand/50 underline decoration-transparent underline-offset-[6px] transition-colors"
-                  >
+                  <Link to={item.to} className="el-footer-link">
                     {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
+
+          <div>
+            <p className="el-footer-label">Liên hệ</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              <li className="el-footer-fact">
+                <MapPin aria-hidden="true" className="size-4 shrink-0" />
+                <span>
+                  <span className="sr-only">Địa chỉ: </span>
+                  {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}
+                </span>
+              </li>
+              <li className="el-footer-fact">
+                <Phone aria-hidden="true" className="size-4 shrink-0" />
+                <span>
+                  <span className="sr-only">Điện thoại: </span>
+                  {STUDIO.phone ? (
+                    <a href={`tel:${STUDIO.phone.replace(/\s/g, "")}`}>{STUDIO.phone}</a>
+                  ) : (
+                    <PendingFact label="Số điện thoại" />
+                  )}
+                </span>
+              </li>
+              <li className="el-footer-fact">
+                <Clock aria-hidden="true" className="size-4 shrink-0" />
+                <span>
+                  <span className="sr-only">Giờ mở cửa: </span>
+                  {STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="el-footer-label">Kết nối</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              <li className="el-footer-fact">
+                <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
+                {STUDIO.zaloUrl ? (
+                  <a href={STUDIO.zaloUrl} className="el-footer-link">
+                    Zalo
+                  </a>
+                ) : (
+                  <span>
+                    Zalo · <PendingFact label="Liên kết Zalo" />
+                  </span>
+                )}
+              </li>
+              <li className="el-footer-fact">
+                <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
+                {STUDIO.instagramUrl ? (
+                  <a href={STUDIO.instagramUrl} className="el-footer-link">
+                    Instagram
+                  </a>
+                ) : (
+                  <span>
+                    Instagram · <PendingFact label="Instagram" />
+                  </span>
+                )}
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div className="border-rule-dark text-2xs text-sand/50 mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+        <div className="border-rule-dark text-2xs text-sand/70 mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
           <p>© {new Date().getFullYear()} Soul Pilates Nha Trang</p>
           <p>
-            <Link to="/dang-nhap" className="hover:text-sand/80">
+            <Link to="/dang-nhap" className="hover:text-sand">
               Dành cho học viên, huấn luyện viên và nhân viên studio
             </Link>
           </p>
