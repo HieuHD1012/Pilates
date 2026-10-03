@@ -10,6 +10,7 @@ mkdirSync(output, { recursive: true });
 const references = [
   "blok", "surrenne", "third-space", "othership", "barrys", "pvolve",
   "tracksmith", "remedy-place", "pillar", "on", "1rebel", "satisfy",
+  "ella", "pearl",
 ];
 
 for (const name of references) {

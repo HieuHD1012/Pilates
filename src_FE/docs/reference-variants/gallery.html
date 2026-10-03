@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>12 hướng hình ảnh theo gu màu be · J Pilates</title>
+    <title>14 hướng hình ảnh theo gu màu be · J Pilates</title>
     <style>
       :root { color-scheme: light; font-family: Arial, sans-serif; color: #2c2319; background: #fff5ec; }
       * { box-sizing: border-box; }
@@ -46,7 +46,7 @@
       <header class="intro">
         <p class="eyebrow">J Pilates · Nha Trang · lọc theo gu màu be</p>
         <h1>Ưu tiên những bố cục làm màu be đẹp hơn.</h1>
-        <p>Cả 12 bản đã được chụp lại ngày 30/09/2026 sau khi chuyển bảng màu kem–đào–đồng–nâu từ Soul Đà Nẵng. Thứ tự dựa trên mức độ hợp gu be của bố cục và ảnh sau khi đổi màu. Bấm từng khung để xem ảnh nguyên kích thước.</p>
+        <p>12 bản đầu được chụp lại ngày 30/09/2026 sau khi chuyển bảng màu kem–đào–đồng–nâu từ Soul Đà Nẵng. Hai bản ELLA và Pearl được dựng từ main, chụp ngày 03/10/2026, cùng bảng màu nhưng khác cấu trúc trang và vai trò ảnh. Bấm từng khung để xem ảnh nguyên kích thước.</p>
         <p class="identity">Lưu ý thương hiệu: Soul là cơ sở Đà Nẵng; tư liệu ảnh Nha Trang trong repo ghi J Pilates. Các bản nghiên cứu vẫn hiện chữ “Soul Pilates Nha Trang”, nên chưa phải bản giao khách đúng tên J Pilates. Xem <a href="SOUL_THEME_TRANSFER.md">bảng token và nguyên tắc chuyển màu</a>.</p>
       </header>
       <section class="board" id="board-1" aria-label="Sáu hướng đầu">
@@ -56,6 +56,10 @@
       <section class="board" id="board-2" aria-label="Sáu hướng tiếp theo">
         <div class="board-head"><h2>02 / Tương phản mạnh, nhiều nền nâu</h2><span>Đã dùng palette Soul · ảnh thử nghiệm còn tên Soul</span></div>
         <div class="cards" id="cards-2"></div>
+      </section>
+      <section class="board" id="board-3" aria-label="Hai hướng mới từ ELLA và Pearl">
+        <div class="board-head"><h2>03 / Hai hướng mới · 03/10/2026</h2><span>Ảnh thật của studio · hai bố cục dựng độc lập từ main</span></div>
+        <div class="cards" id="cards-3"></div>
       </section>
       <p class="note">Mọi bản đều là nghiên cứu bố cục. Tên thương hiệu trong code, địa chỉ, điện thoại, giờ mở cửa, Zalo, bản đồ và dữ liệu vận hành phải được xác nhận trước bản J Pilates cuối. Third Space và SATISFY có ảnh minh họa được đánh dấu trong trang và chặn release.</p>
     </main>
@@ -73,12 +77,14 @@
         ["blok", "BLOK", "Ảnh thật sáng, bảng chocolate lớn; cảm giác năng động hơn hướng studio yên tĩnh.", "Tham khảo cấu trúc"],
         ["1rebel", "1Rebel", "Chọn lớp nhanh; mảng chocolate lớn và ảnh lặp vẫn lấn nền kem.", "Tham khảo cấu trúc"],
         ["barrys", "Barry’s", "Thông tin buổi đầu hữu ích; tông chocolate đậm hợp hướng thể thao hơn boutique.", "Tham khảo cấu trúc"],
+        ["ella", "ELLA", "Studio thật mở đầu câu chuyện; copy và ảnh chung một khung, phương pháp rồi mới tới lớp tập.", "Không gian · be nâu"],
+        ["pearl", "Pearl", "Động tác reformer mở đầu; chọn nhóm hoặc riêng ngay sau, ảnh phòng xuất hiện đúng lúc giới thiệu studio.", "Chuyển động · be đào"],
       ];
       for (const [index, [id, name, description, tag]] of variants.entries()) {
         const card = document.createElement("article");
         card.className = "card";
         card.innerHTML = `<div class="card-head"><div class="card-top"><h3>${name}</h3><span class="tag">${tag}</span></div><p>${description}</p></div><div class="pair"><figure class="shot"><a href="previews/${id}-1440.png"><img src="previews/${id}-1440.png" alt="${name} ở 1440 px" /></a><figcaption>1440 px · mở ảnh gốc ↗</figcaption></figure><figure class="shot"><a href="previews/${id}-390.png"><img src="previews/${id}-390.png" alt="${name} ở 390 px" /></a><figcaption>390 px ↗</figcaption></figure></div>`;
-        document.getElementById(index < 6 ? "cards-1" : "cards-2").append(card);
+        document.getElementById(index < 6 ? "cards-1" : index < 12 ? "cards-2" : "cards-3").append(card);
       }
     </script>
   </body>

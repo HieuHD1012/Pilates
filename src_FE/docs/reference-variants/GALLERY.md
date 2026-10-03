@@ -1,10 +1,12 @@
 # First-fold comparison gallery · Soul palette pass (2026-09-30)
 
-Open [the beige-ranked visual HTML gallery](gallery.html) to see all 12 updated desktop/mobile pairs at readable size and click any image for its original screenshot. The screenshots were recaptured after applying the observed [Soul Đà Nẵng palette](SOUL_THEME_TRANSFER.md) to every branch. They still say “Soul Pilates Nha Trang”; the owner-supplied Nha Trang archive is labeled **J Pilates**, so these remain layout studies rather than correctly branded pages. For a quick scan, the two overview images are embedded below.
+Open [the beige-ranked visual HTML gallery](gallery.html) to see all 14 desktop/mobile pairs at readable size and click any image for its original screenshot. The first 12 were recaptured after applying the observed [Soul Đà Nẵng palette](SOUL_THEME_TRANSFER.md); ELLA and Pearl were added on 2026-10-03 from clean `main` with the same palette. They still say “Soul Pilates Nha Trang”; the owner-supplied Nha Trang archive is labeled **J Pilates**, so these remain layout studies rather than correctly branded pages. For a quick scan, the three overview images are embedded below.
 
 ![Beige-led studies: Tracksmith, Pillar, Pvolve, Surrenne, Othership and Remedy Place — desktop and mobile](overview-1.png)
 
 ![Chocolate-led studies: On Culture, SATISFY, Third Space, BLOK, 1Rebel and Barry's — desktop and mobile](overview-2.png)
+
+![New studio-led and movement-led studies: ELLA and Pearl — desktop and mobile](overview-3.png)
 
 These are **unmodified screenshots of the implemented reference variants**, copied from each named Git branch by `build-gallery.mjs`. They are sorted for the owner's beige preference, not for their reference site's original colors. Each image links to its full-size capture. Compare the desktop and phone composition together; a convincing desktop frame can fail at 390 px. Updated full-page home captures and the branch review are under `src_FE/docs/reference-variant-captures/` and `src_FE/docs/reference-variant.md`; older interior-route captures predate this palette pass.
 
@@ -24,3 +26,5 @@ Ask of each frame: Does the photograph prove the adjacent sentence? Are the firs
 | BLOK `ref/blok` | <a href="previews/blok-1440.png"><img src="previews/blok-1440.png" width="360" alt="BLOK first fold desktop"></a> | <a href="previews/blok-390.png"><img src="previews/blok-390.png" width="130" alt="BLOK first fold mobile"></a> |
 | 1Rebel `ref/1rebel` | <a href="previews/1rebel-1440.png"><img src="previews/1rebel-1440.png" width="360" alt="1Rebel first fold desktop"></a> | <a href="previews/1rebel-390.png"><img src="previews/1rebel-390.png" width="130" alt="1Rebel first fold mobile"></a> |
 | Barry's `ref/barrys` | <a href="previews/barrys-1440.png"><img src="previews/barrys-1440.png" width="360" alt="Barry's first fold desktop"></a> | <a href="previews/barrys-390.png"><img src="previews/barrys-390.png" width="130" alt="Barry's first fold mobile"></a> |
+| ELLA `ref/ella` | <a href="previews/ella-1440.png"><img src="previews/ella-1440.png" width="360" alt="ELLA first fold desktop"></a> | <a href="previews/ella-390.png"><img src="previews/ella-390.png" width="130" alt="ELLA first fold mobile"></a> |
+| Pearl `ref/pearl` | <a href="previews/pearl-1440.png"><img src="previews/pearl-1440.png" width="360" alt="Pearl first fold desktop"></a> | <a href="previews/pearl-390.png"><img src="previews/pearl-390.png" width="130" alt="Pearl first fold mobile"></a> |

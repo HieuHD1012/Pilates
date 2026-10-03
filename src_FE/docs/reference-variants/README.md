@@ -1,5 +1,16 @@
 # Reference variants: independent branches
 
+## ELLA and Pearl extensions (2026-10-03)
+
+Two further hypotheses were implemented independently from `main` with the requested `codex/` branch prefix. The [source study and composition briefs](ELLA_PEARL_BRIEF.md) record what was observed on [ELLA](https://ella-studio.de/) and [Pearl](https://www.pearlpilatesnitra.sk/), including what should not transfer to J Pilates. The [gallery](gallery.html) now shows 14 actual desktop/mobile first folds; [the third overview board](overview-3.png) lets the two additions be compared directly.
+
+| Branch | Structural hypothesis | What the screenshots show | Current judgment |
+| --- | --- | --- | --- |
+| `ref/ella` | Architectural room proof opens the visit; method and movement follow; Group and Private sit beside one reformer image. | Solid cream text field and real room share the first view; dark chocolate navigation, no text overlay. | Credible place-first route, but the owner's room photograph cannot create the luxury of the source architecture. A stronger approved room shoot is the decisive improvement. |
+| `ref/pearl` | Real practice opens; Group and Private are the next decision; paired movement and actual room appear later. | Reformer body and apparatus remain legible within a soft frame on desktop and phone; the two format panels are immediate. | Better immediate Pilates recognition and class clarity. Soft shape and beige/peach are promising for the owner's taste; avoid adding decorative labels or invented testimonials. |
+
+Both branches include four-route captures at 1440/1024/768/390, plus first-view captures at 1440/390. Browser checks found no overflow or broken images, and mobile menus opened. `npm run verify` passed on both using Node 24; the 66 tests, build, prerender and content code gate passed. Missing contact facts and the unresolved J/Soul name are still release blockers. These studies reuse minimally cleaned owner photographs, not either reference site's imagery.
+
 ## Soul palette pass across all 12 branches (2026-09-30)
 
 The owner's approved direction is the warm beige, orange and brown language of [Soul Pilates Đà Nẵng](https://soulpilates.com.vn/). We read the homepage's computed tokens, documented the exact source values and accessible adaptations in [SOUL_THEME_TRANSFER.md](SOUL_THEME_TRANSFER.md), and applied them to all 12 separate branches. The shared tokens now use cream `#fff5ec`, peach `#fce5d1`, chocolate `#2c2319`, copper accents `#c97b4b` and legible action copper `#9a4e2d`. Branch-specific purple, green, gray and red color literals were mapped to the same family. Layout, image role and mobile composition remain specific to each reference study.
