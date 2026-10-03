@@ -1,0 +1,288 @@
+{
+  "name": "ella",
+  "url": "https://ella-studio.de/",
+  "viewports": {
+    "390": {
+      "title": "ELLA Studio — Reformer-Pilates · Kiel",
+      "pageHeight": 7272,
+      "body": {
+        "text": "KurseSelf-TrainingKursplanPreiseSpecialsGutscheinEvents & Feiern AnmeldenKurs buchenNEW IN KIELBoutiqueReformer Pilatesin KielEin Wohlfühlort, an dem du stärker",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 7272.15625
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "lab(97.0856 1.34349 2.65969)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "header": {
+        "text": "KurseSelf-TrainingKursplanPreiseSpecialsGutscheinEvents & Feiern AnmeldenKurs buchen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 65
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgb(99, 81, 67)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "h1": {
+        "text": "BoutiqueReformer Pilatesin Kiel",
+        "box": {
+          "x": 16,
+          "y": 210.71875,
+          "width": 358,
+          "height": 146.859375
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"Instrument Serif\", Georgia, serif",
+        "fontSize": "48px",
+        "fontWeight": "400",
+        "lineHeight": "48.96px"
+      },
+      "h2": {
+        "text": "Dein Wohlfühlort",
+        "box": {
+          "x": 16,
+          "y": 867.3125,
+          "width": 358,
+          "height": 48
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"Instrument Serif\", Georgia, serif",
+        "fontSize": "48px",
+        "fontWeight": "400",
+        "lineHeight": "48px"
+      },
+      "button": {
+        "text": "KURS BUCHEN",
+        "box": {
+          "x": 16,
+          "y": 525.578125,
+          "width": 358,
+          "height": 40
+        },
+        "color": "lab(96.5056 1.34358 2.65974)",
+        "background": "rgb(99, 81, 67)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "20px"
+      },
+      "images": [
+        {
+          "alt": "ELLA Studio",
+          "width": 1277,
+          "height": 488,
+          "box": {
+            "x": 16,
+            "y": 12,
+            "width": 104.671875,
+            "height": 40,
+            "top": 12,
+            "right": 120.671875,
+            "bottom": 52,
+            "left": 16
+          }
+        },
+        {
+          "alt": "Reformer-Raum des ELLA Studios mit natürlichem Licht",
+          "width": 1600,
+          "height": 900,
+          "box": {
+            "x": 0,
+            "y": 65,
+            "width": 390,
+            "height": 658.3125,
+            "top": 65,
+            "right": 390,
+            "bottom": 723.3125,
+            "left": 0
+          }
+        },
+        {
+          "alt": "Reformer mit Bildschirm im Studio",
+          "width": 1122,
+          "height": 1402,
+          "box": {
+            "x": 28,
+            "y": 4144.3125,
+            "width": 334,
+            "height": 417.34375,
+            "top": 4144.3125,
+            "right": 362,
+            "bottom": 4561.65625,
+            "left": 28
+          }
+        },
+        {
+          "alt": "ELLA Studio",
+          "width": 1277,
+          "height": 488,
+          "box": {
+            "x": 16,
+            "y": 6477.65625,
+            "width": 125.59375,
+            "height": 48,
+            "top": 6477.65625,
+            "right": 141.59375,
+            "bottom": 6525.65625,
+            "left": 16
+          }
+        }
+      ]
+    },
+    "1440": {
+      "title": "ELLA Studio — Reformer-Pilates · Kiel",
+      "pageHeight": 5674,
+      "body": {
+        "text": "KurseSelf-TrainingKursplanPreiseSpecialsGutscheinEvents & Feiern AnmeldenKurs buchenNEW IN KIELBoutiqueReformer Pilatesin KielEin Wohlfühlort, an dem du stärker",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 5674
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "lab(97.0856 1.34349 2.65969)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "header": {
+        "text": "KurseSelf-TrainingKursplanPreiseSpecialsGutscheinEvents & Feiern AnmeldenKurs buchen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 65
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgb(99, 81, 67)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "h1": {
+        "text": "BoutiqueReformer Pilatesin Kiel",
+        "box": {
+          "x": 112,
+          "y": 235.84375,
+          "width": 451.90625,
+          "height": 220.3125
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"Instrument Serif\", Georgia, serif",
+        "fontSize": "72px",
+        "fontWeight": "400",
+        "lineHeight": "73.44px"
+      },
+      "h2": {
+        "text": "Dein Wohlfühlort",
+        "box": {
+          "x": 112,
+          "y": 943,
+          "width": 1216,
+          "height": 60
+        },
+        "color": "lab(9.45472 2.62912 2.51747)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"Instrument Serif\", Georgia, serif",
+        "fontSize": "60px",
+        "fontWeight": "400",
+        "lineHeight": "60px"
+      },
+      "button": {
+        "text": "KURS BUCHEN",
+        "box": {
+          "x": 112,
+          "y": 596.15625,
+          "width": 163.625,
+          "height": 40
+        },
+        "color": "lab(96.5056 1.34358 2.65974)",
+        "background": "rgb(99, 81, 67)",
+        "fontFamily": "\"Work Sans\", system-ui, sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "20px"
+      },
+      "images": [
+        {
+          "alt": "ELLA Studio",
+          "width": 1277,
+          "height": 488,
+          "box": {
+            "x": 112,
+            "y": 8,
+            "width": 125.59375,
+            "height": 48,
+            "top": 8,
+            "right": 237.59375,
+            "bottom": 56,
+            "left": 112
+          }
+        },
+        {
+          "alt": "Reformer-Raum des ELLA Studios mit natürlichem Licht",
+          "width": 1600,
+          "height": 900,
+          "box": {
+            "x": 0,
+            "y": 65,
+            "width": 1440,
+            "height": 702,
+            "top": 65,
+            "right": 1440,
+            "bottom": 767,
+            "left": 0
+          }
+        },
+        {
+          "alt": "Reformer mit Bildschirm im Studio",
+          "width": 1122,
+          "height": 1402,
+          "box": {
+            "x": 128,
+            "y": 3343,
+            "width": 576,
+            "height": 520,
+            "top": 3343,
+            "right": 704,
+            "bottom": 3863,
+            "left": 128
+          }
+        },
+        {
+          "alt": "ELLA Studio",
+          "width": 1277,
+          "height": 488,
+          "box": {
+            "x": 112,
+            "y": 5305,
+            "width": 125.59375,
+            "height": 48,
+            "top": 5305,
+            "right": 237.59375,
+            "bottom": 5353,
+            "left": 112
+          }
+        }
+      ]
+    }
+  }
+}

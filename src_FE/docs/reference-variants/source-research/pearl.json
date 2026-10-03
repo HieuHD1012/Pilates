@@ -1,0 +1,592 @@
+{
+  "name": "pearl",
+  "url": "https://www.pearlpilatesnitra.sk/",
+  "viewports": {
+    "390": {
+      "title": "Pearl Pilates Štúdio Nitra | Reformer · Mat · Barre",
+      "pageHeight": 18305,
+      "body": {
+        "text": "(function () {\n            var pl = document.getElementById('pl');\n            var MIN_MS = 2100;\n            var t0 = Date.now();\n            document.body.sty",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 18304.703125
+        },
+        "color": "rgb(58, 46, 40)",
+        "background": "rgb(235, 228, 223)",
+        "fontFamily": "\"DM Sans\", system-ui, sans-serif",
+        "fontSize": "17px",
+        "fontWeight": "300",
+        "lineHeight": "28.9px"
+      },
+      "header": null,
+      "h1": null,
+      "h2": {
+        "text": "Priestor, kde vzniká skutočná zmena",
+        "box": {
+          "x": 20,
+          "y": 1713.0625,
+          "width": 350,
+          "height": 80.625
+        },
+        "color": "rgb(48, 25, 18)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "Abramo, Georgia, serif",
+        "fontSize": "36px",
+        "fontWeight": "700",
+        "lineHeight": "40.32px"
+      },
+      "button": {
+        "text": "",
+        "box": {
+          "x": 18,
+          "y": 16,
+          "width": 140,
+          "height": 46
+        },
+        "color": "rgb(58, 46, 40)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"DM Sans\", system-ui, sans-serif",
+        "fontSize": "17px",
+        "fontWeight": "300",
+        "lineHeight": "17px"
+      },
+      "images": [
+        {
+          "alt": "PEARL – Pilates | Barre | Reformer",
+          "width": 3600,
+          "height": 1440,
+          "box": {
+            "x": 18,
+            "y": 16,
+            "width": 115,
+            "height": 46,
+            "top": 16,
+            "right": 133,
+            "bottom": 62,
+            "left": 18
+          }
+        },
+        {
+          "alt": "Tím štúdia Pearl",
+          "width": 1024,
+          "height": 1536,
+          "box": {
+            "x": 20,
+            "y": 1107.375,
+            "width": 350,
+            "height": 525,
+            "top": 1107.375,
+            "right": 370,
+            "bottom": 1632.375,
+            "left": 20
+          }
+        },
+        {
+          "alt": "Tím štúdia Pearl",
+          "width": 1024,
+          "height": 1536,
+          "box": {
+            "x": 20,
+            "y": 1107.375,
+            "width": 350,
+            "height": 525,
+            "top": 1107.375,
+            "right": 370,
+            "bottom": 1632.375,
+            "left": 20
+          }
+        },
+        {
+          "alt": "Štúdio Pearl",
+          "width": 1402,
+          "height": 1122,
+          "box": {
+            "x": 20,
+            "y": 2047.90625,
+            "width": 350,
+            "height": 525,
+            "top": 2047.90625,
+            "right": 370,
+            "bottom": 2572.90625,
+            "left": 20
+          }
+        },
+        {
+          "alt": "Reformer Pilates – cvičenie na reformeri",
+          "width": 1482,
+          "height": 1009,
+          "box": {
+            "x": 21,
+            "y": 2984.171875,
+            "width": 348,
+            "height": 252,
+            "top": 2984.171875,
+            "right": 369,
+            "bottom": 3236.171875,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Mat Pilates – cvičenie na podložke",
+          "width": 1463,
+          "height": 917,
+          "box": {
+            "x": 21,
+            "y": 3536.875,
+            "width": 348,
+            "height": 252,
+            "top": 3536.875,
+            "right": 369,
+            "bottom": 3788.875,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Barre – cvičenie pri tyči",
+          "width": 1269,
+          "height": 903,
+          "box": {
+            "x": 21,
+            "y": 4066.90625,
+            "width": 348,
+            "height": 252,
+            "top": 4066.90625,
+            "right": 369,
+            "bottom": 4318.90625,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Evka – zakladateľka a hlavná inštruktorka",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 4925.484375,
+            "width": 348,
+            "height": 522,
+            "top": 4925.484375,
+            "right": 369,
+            "bottom": 5447.484375,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Evka – zakladateľka a hlavná inštruktorka",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 4925.484375,
+            "width": 348,
+            "height": 522,
+            "top": 4925.484375,
+            "right": 369,
+            "bottom": 5447.484375,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Emmka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 5726.5625,
+            "width": 348,
+            "height": 522,
+            "top": 5726.5625,
+            "right": 369,
+            "bottom": 6248.5625,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Emmka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 5726.5625,
+            "width": 348,
+            "height": 522,
+            "top": 5726.5625,
+            "right": 369,
+            "bottom": 6248.5625,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Beri – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 6419.890625,
+            "width": 348,
+            "height": 522,
+            "top": 6419.890625,
+            "right": 369,
+            "bottom": 6941.890625,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Beri – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 6419.890625,
+            "width": 348,
+            "height": 522,
+            "top": 6419.890625,
+            "right": 369,
+            "bottom": 6941.890625,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Paťka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 7113.21875,
+            "width": 348,
+            "height": 522,
+            "top": 7113.21875,
+            "right": 369,
+            "bottom": 7635.21875,
+            "left": 21
+          }
+        },
+        {
+          "alt": "Paťka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 21,
+            "y": 7113.21875,
+            "width": 348,
+            "height": 522,
+            "top": 7113.21875,
+            "right": 369,
+            "bottom": 7635.21875,
+            "left": 21
+          }
+        },
+        {
+          "alt": "",
+          "width": 3601,
+          "height": 1441,
+          "box": {
+            "x": 95,
+            "y": 8036,
+            "width": 200,
+            "height": 80.03125,
+            "top": 8036,
+            "right": 295,
+            "bottom": 8116.03125,
+            "left": 95
+          }
+        }
+      ]
+    },
+    "1440": {
+      "title": "Pearl Pilates Štúdio Nitra | Reformer · Mat · Barre",
+      "pageHeight": 11405,
+      "body": {
+        "text": "(function () {\n            var pl = document.getElementById('pl');\n            var MIN_MS = 2100;\n            var t0 = Date.now();\n            document.body.sty",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 11405.25
+        },
+        "color": "rgb(58, 46, 40)",
+        "background": "rgb(235, 228, 223)",
+        "fontFamily": "\"DM Sans\", system-ui, sans-serif",
+        "fontSize": "17px",
+        "fontWeight": "300",
+        "lineHeight": "28.9px"
+      },
+      "header": null,
+      "h1": null,
+      "h2": {
+        "text": "Priestor, kde vzniká skutočná zmena",
+        "box": {
+          "x": 760,
+          "y": 1254.96875,
+          "width": 580,
+          "height": 116.46875
+        },
+        "color": "rgb(48, 25, 18)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "Abramo, Georgia, serif",
+        "fontSize": "52px",
+        "fontWeight": "700",
+        "lineHeight": "58.24px"
+      },
+      "button": {
+        "text": "",
+        "box": {
+          "x": 40,
+          "y": 22,
+          "width": 235,
+          "height": 84
+        },
+        "color": "rgb(58, 46, 40)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontFamily": "\"DM Sans\", system-ui, sans-serif",
+        "fontSize": "17px",
+        "fontWeight": "300",
+        "lineHeight": "17px"
+      },
+      "images": [
+        {
+          "alt": "PEARL – Pilates | Barre | Reformer",
+          "width": 3600,
+          "height": 1440,
+          "box": {
+            "x": 40,
+            "y": 22,
+            "width": 210,
+            "height": 84,
+            "top": 22,
+            "right": 250,
+            "bottom": 106,
+            "left": 40
+          }
+        },
+        {
+          "alt": "Tím štúdia Pearl",
+          "width": 1024,
+          "height": 1536,
+          "box": {
+            "x": 100,
+            "y": 1222.28125,
+            "width": 580,
+            "height": 870,
+            "top": 1222.28125,
+            "right": 680,
+            "bottom": 2092.28125,
+            "left": 100
+          }
+        },
+        {
+          "alt": "Tím štúdia Pearl",
+          "width": 1024,
+          "height": 1536,
+          "box": {
+            "x": 100,
+            "y": 1222.28125,
+            "width": 580,
+            "height": 870,
+            "top": 1222.28125,
+            "right": 680,
+            "bottom": 2092.28125,
+            "left": 100
+          }
+        },
+        {
+          "alt": "Štúdio Pearl",
+          "width": 1402,
+          "height": 1122,
+          "box": {
+            "x": 760,
+            "y": 1594.71875,
+            "width": 580,
+            "height": 497.5625,
+            "top": 1594.71875,
+            "right": 1340,
+            "bottom": 2092.28125,
+            "left": 760
+          }
+        },
+        {
+          "alt": "Reformer Pilates – cvičenie na reformeri",
+          "width": 1482,
+          "height": 1009,
+          "box": {
+            "x": 101,
+            "y": 2511.15625,
+            "width": 399.328125,
+            "height": 252,
+            "top": 2511.15625,
+            "right": 500.328125,
+            "bottom": 2763.15625,
+            "left": 101
+          }
+        },
+        {
+          "alt": "Mat Pilates – cvičenie na podložke",
+          "width": 1463,
+          "height": 917,
+          "box": {
+            "x": 520.328125,
+            "y": 2511.15625,
+            "width": 399.328125,
+            "height": 252,
+            "top": 2511.15625,
+            "right": 919.65625,
+            "bottom": 2763.15625,
+            "left": 520.328125
+          }
+        },
+        {
+          "alt": "Barre – cvičenie pri tyči",
+          "width": 1269,
+          "height": 903,
+          "box": {
+            "x": 939.65625,
+            "y": 2511.15625,
+            "width": 399.34375,
+            "height": 252,
+            "top": 2511.15625,
+            "right": 1339,
+            "bottom": 2763.15625,
+            "left": 939.65625
+          }
+        },
+        {
+          "alt": "Evka – zakladateľka a hlavná inštruktorka",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 101,
+            "y": 3445.0625,
+            "width": 380,
+            "height": 440,
+            "top": 3445.0625,
+            "right": 481,
+            "bottom": 3885.0625,
+            "left": 101
+          }
+        },
+        {
+          "alt": "Evka – zakladateľka a hlavná inštruktorka",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 101,
+            "y": 3445.0625,
+            "width": 380,
+            "height": 440,
+            "top": 3445.0625,
+            "right": 481,
+            "bottom": 3885.0625,
+            "left": 101
+          }
+        },
+        {
+          "alt": "Emmka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 101,
+            "y": 3911.0625,
+            "width": 395.328125,
+            "height": 592.984375,
+            "top": 3911.0625,
+            "right": 496.328125,
+            "bottom": 4504.046875,
+            "left": 101
+          }
+        },
+        {
+          "alt": "Emmka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 101,
+            "y": 3911.0625,
+            "width": 395.328125,
+            "height": 592.984375,
+            "top": 3911.0625,
+            "right": 496.328125,
+            "bottom": 4504.046875,
+            "left": 101
+          }
+        },
+        {
+          "alt": "Beri – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 522.328125,
+            "y": 3911.0625,
+            "width": 395.328125,
+            "height": 592.984375,
+            "top": 3911.0625,
+            "right": 917.65625,
+            "bottom": 4504.046875,
+            "left": 522.328125
+          }
+        },
+        {
+          "alt": "Beri – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 522.328125,
+            "y": 3911.0625,
+            "width": 395.328125,
+            "height": 592.984375,
+            "top": 3911.0625,
+            "right": 917.65625,
+            "bottom": 4504.046875,
+            "left": 522.328125
+          }
+        },
+        {
+          "alt": "Paťka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 943.65625,
+            "y": 3911.0625,
+            "width": 395.34375,
+            "height": 593.015625,
+            "top": 3911.0625,
+            "right": 1339,
+            "bottom": 4504.078125,
+            "left": 943.65625
+          }
+        },
+        {
+          "alt": "Paťka – inštruktorka pilates",
+          "width": 675,
+          "height": 1013,
+          "box": {
+            "x": 943.65625,
+            "y": 3911.0625,
+            "width": 395.34375,
+            "height": 593.015625,
+            "top": 3911.0625,
+            "right": 1339,
+            "bottom": 4504.078125,
+            "left": 943.65625
+          }
+        },
+        {
+          "alt": "",
+          "width": 3601,
+          "height": 1441,
+          "box": {
+            "x": 460.8046875,
+            "y": 4970.51708984375,
+            "width": 518.390625,
+            "height": 207.4375,
+            "top": 4970.51708984375,
+            "right": 979.1953125,
+            "bottom": 5177.95458984375,
+            "left": 460.8046875
+          }
+        }
+      ]
+    }
+  }
+}
