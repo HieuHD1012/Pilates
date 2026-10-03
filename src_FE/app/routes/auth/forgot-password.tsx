@@ -13,7 +13,7 @@ import type { Route } from "./+types/forgot-password";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Quên mật khẩu — Soul Pilates Nha Trang" },
+    { title: "Quên mật khẩu — J Pilates Nha Trang" },
     { name: "robots", content: "noindex" },
   ];
 }

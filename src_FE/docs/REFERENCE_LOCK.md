@@ -3,6 +3,12 @@
 Accepted. Changing anything here requires the process in §"Reconsideration"
 below — not a preference.
 
+**Identity confirmed by the owner, 2026-10-03:** this product is **J Pilates,
+Nha Trang**. The final layout and warm beige/copper/brown palette are retained.
+Soul Pilates Đà Nẵng remains a historical design and provisional-policy source,
+not the name displayed by this product. Use `J Pilates` in copy and metadata,
+`J PILATES` for the wordmark, and `J` for the existing monogram slots.
+
 ## Primary inspiration
 
 Contemporary editorial and architectural print practice: content ruled into
@@ -22,7 +28,7 @@ tracked labels carrying the structure. Not a website genre — a printed one.
 ## Preserve from Soul
 
 Warmth in the ground; a serif with presence; an italic line as a rhetorical
-gesture; the word _Soul_ set light with open tracking; Pilates framed as care.
+gesture; a light wordmark with open tracking; Pilates framed as care.
 
 ## Evolve
 
@@ -139,13 +145,13 @@ operational surface responds instantly and gets out of the way.
 
 ## Public → application translation
 
-|                | Public                                                                 | Application        |
-| -------------- | ---------------------------------------------------------------------- | ------------------ |
+|                | Public                                                                 | Application                                                  |
+| -------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Ground         | `sand`                                                                 | `sand` + `paper` panels (staff, ADR 0006); `chalk` elsewhere |
-| Display serif  | Headlines and editorial                                                | Figures and page titles |
-| Density        | Editorial, generous                                                    | Compact, scannable |
-| Primary action | `copper`                                                               | `ink`              |
-| Motion         | Reveals allowed                                                        | Feedback only      |
+| Display serif  | Headlines and editorial                                                | Figures and page titles                                      |
+| Density        | Editorial, generous                                                    | Compact, scannable                                           |
+| Primary action | `copper`                                                               | `ink`                                                        |
+| Motion         | Reveals allowed                                                        | Feedback only                                                |
 | Shared         | Rules, tokens, figures, micro-labels, status vocabulary, form language |
 
 ## Reconsideration

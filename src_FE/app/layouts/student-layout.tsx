@@ -31,7 +31,7 @@ function StudentHeader() {
   return (
     <header className="rule-b bg-sand/95 sticky top-0 z-(--z-nav) backdrop-blur-[2px]">
       <div className="gutter mx-auto flex h-14 max-w-(--container-page) items-center justify-between gap-4">
-        <span className="wordmark text-ink text-base">SOUL</span>
+        <span className="wordmark text-ink text-base">J PILATES</span>
 
         <nav aria-label="Điều hướng học viên" className="hidden md:block">
           <ul className="flex items-center gap-6">

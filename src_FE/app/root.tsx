@@ -21,8 +21,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export const meta: Route.MetaFunction = () => [
-  { title: "Soul Pilates Nha Trang" },
-  { name: "theme-color", content: "#f2f0ea" },
+  { title: "J Pilates Nha Trang" },
+  { name: "theme-color", content: "#fff5ec" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -74,7 +74,7 @@ export function HydrateFallback() {
   return (
     <div className="bg-sand flex min-h-dvh items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <span className="wordmark text-ink text-2xl">SOUL</span>
+        <span className="wordmark text-ink text-2xl">J PILATES</span>
         <span className="bg-copper h-px w-16 origin-left animate-[rule-draw_900ms_var(--ease-measure)_infinite] motion-reduce:animate-none" />
         <span className="sr-only">Đang tải</span>
       </div>

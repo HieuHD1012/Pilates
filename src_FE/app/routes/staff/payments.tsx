@@ -62,7 +62,7 @@ import {
 import type { Route } from "./+types/payments";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Thanh toán — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Thanh toán — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

@@ -9,7 +9,7 @@ import { WorkspacePage } from "~/ui/workspace";
 import type { Route } from "./+types/reports";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Báo cáo — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Báo cáo — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

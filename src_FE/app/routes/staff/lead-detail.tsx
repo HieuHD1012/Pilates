@@ -23,7 +23,7 @@ import type { Route } from "./+types/lead-detail";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Chi tiết khách quan tâm — Soul Pilates" },
+    { title: "Chi tiết khách quan tâm — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

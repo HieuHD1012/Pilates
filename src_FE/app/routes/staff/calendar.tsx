@@ -51,7 +51,7 @@ import type { Route } from "./+types/calendar";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Lịch & lớp học — Soul Pilates" },
+    { title: "Lịch & lớp học — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

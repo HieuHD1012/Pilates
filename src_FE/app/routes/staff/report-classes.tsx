@@ -16,7 +16,7 @@ import type { Route } from "./+types/report-classes";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Báo cáo lớp học — Soul Pilates" },
+    { title: "Báo cáo lớp học — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

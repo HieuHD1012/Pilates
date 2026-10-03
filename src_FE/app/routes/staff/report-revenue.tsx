@@ -31,7 +31,7 @@ import type { Route } from "./+types/report-revenue";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Báo cáo doanh thu — Soul Pilates" },
+    { title: "Báo cáo doanh thu — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

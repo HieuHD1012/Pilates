@@ -13,11 +13,11 @@ import type { Route } from "./+types/services";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Hình thức tập — Soul Pilates Nha Trang" },
+    { title: "Hình thức tập — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại Soul Pilates Nha Trang.",
+        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại J Pilates Nha Trang.",
     },
   ];
 }
@@ -52,8 +52,8 @@ export default function Services() {
                 .
               </h1>
               <p className="measure text-lede text-ink-2 mt-6">
-                Khác nhau ở số người trong phòng và mức độ bài tập được dựng riêng cho cơ
-                thể bạn.
+                Lớp nhóm tạo nhịp tập cùng nhau. Lớp riêng dành nhiều thời gian hơn cho nhu
+                cầu và mục tiêu của bạn.
               </p>
 
               <div className="mt-12 aspect-3/2 lg:mt-16">
@@ -110,7 +110,7 @@ export default function Services() {
               <Link to="/dat-tu-van">Nhận tư vấn</Link>
             </Button>
             <p className="text-sand/75 mt-3 text-sm">
-              Studio gọi lại để hỏi tình trạng của bạn.
+              J Pilates sẽ cùng bạn chọn hình thức tập phù hợp.
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ function FormatCopy({ format }: { format: ClassFormat }) {
       <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
       <p className="text-ink-2 mt-6 text-sm">Phù hợp với</p>
       <CheckList items={format.forWho} className="mt-3" />
-      {/* Soul's best shortcut: each format opens the timetable already
+      {/* Each format opens the timetable already
           filtered to it, instead of making the visitor filter again. */}
       <div className="mt-4">
         <ArrowLink to={`/lich-tap?loai=${format.id === "private" ? "rieng" : "nhom"}`}>

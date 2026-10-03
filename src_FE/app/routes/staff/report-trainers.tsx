@@ -25,7 +25,7 @@ import type { Route } from "./+types/report-trainers";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Báo cáo huấn luyện viên — Soul Pilates" },
+    { title: "Báo cáo huấn luyện viên — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

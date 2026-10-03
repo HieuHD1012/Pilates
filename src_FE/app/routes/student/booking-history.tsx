@@ -13,7 +13,7 @@ import type { Route } from "./+types/booking-history";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Lịch sử đặt lớp — Soul Pilates" },
+    { title: "Lịch sử đặt lớp — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

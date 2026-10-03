@@ -21,7 +21,7 @@ import { StatusBadge } from "~/ui/status";
 import type { Route } from "./+types/classes";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Lớp học — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Lớp học — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

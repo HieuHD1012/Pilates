@@ -18,11 +18,11 @@ import type { Route } from "./+types/packages";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Gói tập — Soul Pilates Nha Trang" },
+    { title: "Gói tập — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Gói tập tại Soul Pilates Nha Trang được tính theo số buổi và thời hạn sử dụng. Liên hệ studio để nhận bảng giá hiện hành.",
+        "Gói tập tại J Pilates Nha Trang được tính theo số buổi và thời hạn sử dụng. Liên hệ studio để nhận bảng giá hiện hành.",
     },
   ];
 }
@@ -46,7 +46,7 @@ export default function Packages() {
             Gói tính theo <em>số buổi</em> và <em>thời hạn</em>.
           </>
         }
-        lede="Mỗi gói gắn với một hình thức lớp, có số buổi cụ thể và ngày hết hạn. Gói được studio ghi nhận sau khi tư vấn; trang này chưa bán gói trực tuyến."
+        lede="Chọn gói theo hình thức tập, số buổi và thời hạn phù hợp với lịch của bạn. J Pilates sẽ tư vấn và hỗ trợ mua gói trực tiếp tại studio."
         aside={
           <>
             <Button asChild variant="copper" size="lg" fullWidth>

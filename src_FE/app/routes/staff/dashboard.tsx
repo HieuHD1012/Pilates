@@ -34,7 +34,7 @@ import { Kpi, Meter, Panel, PanelBody, PanelHeader, WorkspacePage } from "~/ui/w
 import type { Route } from "./+types/dashboard";
 
 export function meta(_: Route.MetaArgs) {
-  return [{ title: "Tổng quan — Soul Pilates" }, { name: "robots", content: "noindex" }];
+  return [{ title: "Tổng quan — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**

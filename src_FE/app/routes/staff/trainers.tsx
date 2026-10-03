@@ -17,7 +17,7 @@ import type { Route } from "./+types/trainers";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Huấn luyện viên — Soul Pilates" },
+    { title: "Huấn luyện viên — J Pilates" },
     { name: "robots", content: "noindex" },
   ];
 }

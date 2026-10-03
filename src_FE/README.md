@@ -1,8 +1,14 @@
-# Soul Pilates Nha Trang
+# J Pilates Nha Trang
 
 Public website and studio-management application for a boutique Pilates studio
 in Nha Trang. React 19 · React Router v8 (framework mode, `ssr: false`) ·
 Vite 8 · TypeScript 6 strict · Tailwind CSS 4 · TanStack Query 5.
+
+The owner confirmed the name **J Pilates** on 2026-10-03. Soul references in
+research and provisional-policy provenance identify the Đà Nẵng reference site,
+not this product. Existing `soul:*` session-storage keys and demo account
+credentials remain compatible with previously created local sessions/accounts;
+they are not public brand text.
 
 ## Start here
 

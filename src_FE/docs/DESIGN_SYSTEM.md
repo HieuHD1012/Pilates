@@ -173,7 +173,7 @@ are now utilities and inline tracking is not permitted:
 
 | Utility        | Tracking | Use                                                                                                                   |
 | -------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `wordmark`     | `0.22em` | "SOUL" only. The one place caps are allowed — it is Latin and carries no diacritics.                                  |
+| `wordmark`     | `0.22em` | "J PILATES" only. The one place caps are allowed — it is Latin and carries no diacritics.                             |
 | `wordmark-sub` | `0.14em` | The city or role line beside the wordmark.                                                                            |
 | `label-micro`  | `0.11em` | The sentence-case eyebrow on public sections.                                                                         |
 | `label-badge`  | `0.04em` | Text inside a bounded shape — badges, markers, notices — where open tracking reads as loose rather than as structure. |

@@ -31,7 +31,7 @@ import { CheckList, SectionRail } from "~/ui/public-page";
 import type { Route } from "./+types/home";
 
 export function meta(_: Route.MetaArgs) {
-  const title = "Soul Pilates Nha Trang — Studio reformer, lớp nhóm nhỏ và lớp riêng";
+  const title = "J Pilates Nha Trang — Studio reformer, lớp nhóm nhỏ và lớp riêng";
   const description =
     "Studio Pilates reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng, huấn luyện viên theo sát từng người. Để lại số điện thoại để được tư vấn.";
   return [
@@ -89,8 +89,8 @@ function Hero() {
 
           <div className="pt-8 pb-14 lg:col-span-6 lg:row-start-2 lg:self-end lg:pt-10 lg:pr-10">
             <p className="measure text-lede text-ink-2">
-              Lớp nhóm nhỏ và lớp riêng trên máy reformer, để huấn luyện viên theo được từng
-              người trong suốt buổi tập.
+              Lớp nhóm nhỏ và lớp riêng trên máy reformer. Huấn luyện viên hướng dẫn và điều
+              chỉnh cho từng người trong suốt buổi tập.
             </p>
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-7">
               <Button asChild variant="copper" size="lg" className="w-full sm:w-auto">
@@ -99,7 +99,7 @@ function Hero() {
               <ArrowLink to="/lich-tap">Xem lịch tập</ArrowLink>
             </div>
             <p className="text-ink-2 mt-3 text-sm">
-              Để lại tên và số điện thoại, studio sẽ gọi lại cho bạn.
+              Để lại thông tin để J Pilates tư vấn buổi tập đầu tiên.
             </p>
 
             <dl className="sm:border-rule mt-10 grid sm:mt-14 sm:grid-cols-3 sm:gap-5 sm:border-t sm:pt-5">
@@ -138,8 +138,8 @@ function Formats() {
           className="lg:col-span-12 xl:col-span-4"
         >
           <p className="measure text-ink-2 mt-5 text-base">
-            Khác nhau ở mức độ bài tập được dựng riêng cho cơ thể bạn. Nếu chưa chắc, studio
-            sẽ tư vấn khi gọi lại.
+            Chọn lớp nhóm để tập cùng người khác, hoặc lớp riêng để được hướng dẫn sát hơn.
+            J Pilates sẽ cùng bạn tìm hình thức phù hợp.
           </p>
           <div className="mt-4">
             <ArrowLink to="/dich-vu">So sánh chi tiết</ArrowLink>
@@ -328,7 +328,7 @@ function FirstVisit() {
     <Section index="04" label="Buổi đầu tiên">
       <div className="pb-20 md:pb-28">
         <h2 className="font-display text-d2 text-ink max-w-[16em] font-light">
-          Bạn không cần biết gì trước khi đến.
+          Bắt đầu nhẹ nhàng, từng bước một.
         </h2>
 
         <ol className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
@@ -412,7 +412,7 @@ function Closing() {
                   mutation.reset();
                 }}
               >
-                Gửi thêm một thông tin khác
+                Gửi yêu cầu khác
               </Button>
             </div>
           ) : (
@@ -477,7 +477,7 @@ function Closing() {
                   to="/dat-tu-van"
                   className="text-copper decoration-rule-2 hover:decoration-copper underline underline-offset-4"
                 >
-                  Mở form đầy đủ
+                  Thêm thông tin tư vấn
                 </Link>
               </p>
             </form>
