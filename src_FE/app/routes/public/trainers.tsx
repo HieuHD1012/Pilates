@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 import { usePublicTrainers } from "~/features/public/queries";
 import { publicApi } from "~/lib/api/endpoints";
-import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
@@ -91,7 +90,7 @@ export default function Trainers() {
                   className="rule-b grid gap-x-8 gap-y-4 py-7 md:grid-cols-12"
                 >
                   <div className="md:col-span-3">
-                    <div className="aspect-4/5 w-28 md:w-full md:max-w-40">
+                    <div className="pl-portrait w-28 md:w-full md:max-w-40">
                       {trainer.photo_key ? (
                         <img
                           src={publicApi.trainerPhotoUrl(trainer.photo_key)}
@@ -101,7 +100,11 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        <div
+                          role="img"
+                          aria-label={`Chưa có ảnh chân dung của ${trainer.full_name}`}
+                          className="pl-portrait-empty"
+                        />
                       )}
                     </div>
                   </div>

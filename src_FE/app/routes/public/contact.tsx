@@ -50,9 +50,17 @@ export default function Contact() {
         title="Cách nhanh nhất là để lại số điện thoại."
         lede="Studio gọi lại trong giờ làm việc. Nếu bạn thích nhắn tin, các kênh bên dưới đều được theo dõi."
         aside={
-          <Button asChild variant="lacquer" size="lg" fullWidth>
-            <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
-          </Button>
+          <div data-page-ask>
+            <Button
+              asChild
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="pl-btn pl-btn-solid"
+            >
+              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+            </Button>
+          </div>
         }
       />
 
