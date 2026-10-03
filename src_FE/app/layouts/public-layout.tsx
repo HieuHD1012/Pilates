@@ -7,6 +7,7 @@ import { STUDIO } from "~/content/studio";
 import { cn } from "~/lib/cn";
 import { Button } from "~/ui/button";
 import { PendingFact } from "~/ui/pending-fact";
+import { HoursText } from "~/ui/public-page";
 
 export default function PublicLayout() {
   return (
@@ -69,7 +70,7 @@ function PublicHeader() {
   // P2 — one ask, stated once. The homepage hero already carries this exact
   // label; repeating it in the same viewport is one subject rendered twice.
   // The consultation page IS the ask, so a header link to itself is noise.
-  const pageOwnsTheAsk = location.pathname === "/" || location.pathname === "/dat-tu-van";
+  const pageOwnsTheAsk = ["/", "/dat-tu-van", "/goi-tap", "/lien-he"].includes(location.pathname);
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -194,16 +195,16 @@ function PublicFooter() {
 
           <div className="md:col-span-4">
             <p className="label-micro text-amber">Đến studio</p>
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Địa chỉ</dt>
-                <dd className="text-sand/85">
+            <dl className="mt-4 flex flex-col gap-3.5 text-sm">
+              <div>
+                <dt className="text-sand/60 text-xs">Địa chỉ</dt>
+                <dd className="text-sand/90 mt-0.5">
                   {STUDIO.address ?? <PendingFact label="Địa chỉ studio" />}
                 </dd>
               </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Điện thoại</dt>
-                <dd className="text-sand/85">
+              <div>
+                <dt className="text-sand/60 text-xs">Điện thoại</dt>
+                <dd className="text-sand/90 mt-0.5">
                   {STUDIO.phone ? (
                     <a href={`tel:${STUDIO.phone.replace(/\s/g, "")}`}>{STUDIO.phone}</a>
                   ) : (
@@ -211,10 +212,14 @@ function PublicFooter() {
                   )}
                 </dd>
               </div>
-              <div className="flex gap-3">
-                <dt className="text-sand/50 w-20 shrink-0">Giờ mở cửa</dt>
-                <dd className="text-sand/85">
-                  {STUDIO.openingHours ?? <PendingFact label="Giờ mở cửa" />}
+              <div>
+                <dt className="text-sand/60 text-xs">Giờ mở cửa</dt>
+                <dd className="text-sand/90 mt-0.5">
+                  {STUDIO.openingHours ? (
+                    <HoursText value={STUDIO.openingHours} />
+                  ) : (
+                    <PendingFact label="Giờ mở cửa" />
+                  )}
                 </dd>
               </div>
             </dl>

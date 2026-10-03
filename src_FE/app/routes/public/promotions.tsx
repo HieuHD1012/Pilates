@@ -58,8 +58,8 @@ export default function Promotions() {
                     key={index}
                     className="rule-b grid gap-x-8 gap-y-3 py-7 md:grid-cols-12"
                   >
-                    <Skeleton className="h-3 w-24 md:col-span-3" />
-                    <div className="space-y-3 md:col-span-8 md:col-start-5">
+                    <div className="space-y-3 md:col-span-8">
+                      <Skeleton className="h-3 w-24" />
                       <Skeleton className="h-5 max-w-80" />
                       <Skeleton className="h-3 max-w-full" />
                     </div>
@@ -93,20 +93,20 @@ export default function Promotions() {
                     key={`${item.publish_at ?? "immediate"}-${index}`}
                     className="rule-b grid gap-x-8 gap-y-3 py-7 md:grid-cols-12"
                   >
-                    {item.publish_at ? (
-                      <time dateTime={item.publish_at} className="md:col-span-3">
-                        <Figures className="text-ink-2 text-sm">
-                          {formatDate(item.publish_at)}
-                        </Figures>
-                      </time>
-                    ) : (
-                      <span className="md:col-span-3" />
-                    )}
-                    <div className="md:col-span-8 md:col-start-5">
-                      <h2 className="font-display text-ink text-xl font-light">
+                    {/* The date sits directly above the title it dates, not three
+                        columns away on the left edge. */}
+                    <div className="md:col-span-8">
+                      {item.publish_at ? (
+                        <time dateTime={item.publish_at} className="block">
+                          <Figures className="text-ink-2 text-sm">
+                            {formatDate(item.publish_at)}
+                          </Figures>
+                        </time>
+                      ) : null}
+                      <h2 className="font-display text-ink mt-1 text-2xl font-light">
                         {item.title}
                       </h2>
-                      <p className="measure text-ink-2 mt-2 text-sm whitespace-pre-line">
+                      <p className="measure text-ink-2 mt-2 text-base whitespace-pre-line">
                         {item.body}
                       </p>
                     </div>

@@ -259,10 +259,16 @@ function OverviewTab({ student }: { student: StudentResponse }) {
             <Absent>Chưa có tài khoản</Absent>
           )}
         </DetailRow>
+        {student.note ? <DetailRow label="Ghi chú" className="sm:col-span-2">{student.note}</DetailRow> : null}
+      </DetailList>
+
+      <section className="mt-8 max-w-(--container-column)">
+        <h2 className="text-ink text-base font-medium">Tình trạng gói tập</h2>
+        <DetailList className="mt-3">
         <DetailRow label="Số buổi còn lại">
           {overview.data ? (
             <>
-              <Figures>{overview.data.credits_remaining}</Figures> buổi
+              <Figures display className="text-2xl">{overview.data.credits_remaining}</Figures> buổi
             </>
           ) : (
             <Placeholder />
@@ -284,8 +290,8 @@ function OverviewTab({ student }: { student: StudentResponse }) {
             <StatusBadge tone="attention">Cần liên hệ gia hạn</StatusBadge>
           </DetailRow>
         ) : null}
-        {student.note ? <DetailRow label="Ghi chú">{student.note}</DetailRow> : null}
-      </DetailList>
+        </DetailList>
+      </section>
 
       <section className="mt-10 max-w-(--container-column)">
         <h2 className="text-ink text-sm font-medium">Lịch sử liên hệ gia hạn</h2>
@@ -500,6 +506,19 @@ function HistoryTab({ studentId }: { studentId: number }) {
         );
 
         return (
+          <>
+          <ul className="rule-t md:hidden">
+            {newestFirst.map(item => (
+              <li key={item.booking_id} className="rule-b py-4">
+                <p className="text-ink-2 text-sm">{weekdayShort(item.starts_at)} · <Figures>{formatDate(item.starts_at)} {formatTime(item.starts_at)}</Figures></p>
+                <p className="text-ink mt-2 text-base">{CLASS_TYPE[item.class_type]}</p>
+                <p className="text-ink-2 mt-1 text-sm">{item.trainer_name}</p>
+                <StatusBadge className="mt-2" tone={BOOKING_STATUS[item.booking_status].tone}>{BOOKING_STATUS[item.booking_status].label}</StatusBadge>
+                {item.session_status === "CANCELLED" ? <p className="text-ink-2 mt-1 text-sm">Studio đã hủy buổi</p> : null}
+              </li>
+            ))}
+          </ul>
+          <div className="hidden md:block">
           <DataTable caption="Lịch sử lớp, mới nhất trước" minWidth="42rem">
             <thead>
               <tr>
@@ -537,6 +556,8 @@ function HistoryTab({ studentId }: { studentId: number }) {
               ))}
             </tbody>
           </DataTable>
+          </div>
+          </>
         );
       }}
     </QueryBoundary>
@@ -553,8 +574,7 @@ function PhotosTab({ studentId }: { studentId: number }) {
   return (
     <>
       <p className="measure text-ink-2 text-xs">
-        Ảnh xếp theo thời điểm chụp, để so sánh lúc bắt đầu với hiện tại. Mỗi lần xem đều
-        được kiểm quyền lại — không có đường dẫn ảnh nào dùng lại được bên ngoài.
+        Các mốc chụp ảnh giúp theo dõi tiến trình của học viên theo thời gian.
       </p>
 
       <div className="mt-3">
@@ -648,6 +668,18 @@ function PaymentTable({ payments }: { payments: PaymentResponse[] }) {
   );
 
   return (
+    <>
+    <ul className="rule-t md:hidden">
+      {newestFirst.map(payment => (
+        <li key={payment.id} className="rule-b py-4">
+          <Figures className="text-ink text-xl">{formatVnd(payment.amount)}</Figures>
+          <p className="text-ink-2 mt-1 text-sm">{PAYMENT_METHOD[payment.method]}</p>
+          <StatusBadge className="mt-2" tone={PAYMENT_STATUS[payment.status].tone}>{PAYMENT_STATUS[payment.status].label}</StatusBadge>
+          <p className="text-ink-2 mt-2 text-xs">Ghi lúc <Figures>{formatDate(payment.recorded_at)} {formatTime(payment.recorded_at)}</Figures></p>
+        </li>
+      ))}
+    </ul>
+    <div className="hidden md:block">
     <DataTable caption="Thanh toán của học viên, mới nhất trước" minWidth="40rem">
       <thead>
         <tr>
@@ -679,6 +711,8 @@ function PaymentTable({ payments }: { payments: PaymentResponse[] }) {
         ))}
       </tbody>
     </DataTable>
+    </div>
+    </>
   );
 }
 

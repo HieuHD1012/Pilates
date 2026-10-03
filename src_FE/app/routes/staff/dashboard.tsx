@@ -155,7 +155,7 @@ function SessionRow({
   children: React.ReactNode;
 }) {
   return (
-    <li className="rule-b grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3">
+    <li className="rule-b flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
       <span className="flex shrink-0 items-baseline gap-2">
         {dated ? (
           <span className="text-ink-2 w-13 text-xs">

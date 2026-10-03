@@ -31,6 +31,7 @@ import {
   weekdayLong,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
+import { DetailList, DetailRow as Row } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import {
   EmptyState,
@@ -457,7 +458,7 @@ function ClassDetailDialog({
             </>
           }
         >
-          <dl className="text-sm">
+          <DetailList className="text-sm">
             <Row label="Giờ">
               <Figures>{formatTimeRange(item.starts_at, item.ends_at)}</Figures>
             </Row>
@@ -483,7 +484,7 @@ function ClassDetailDialog({
                 <StatusBadge tone="positive">Còn chỗ</StatusBadge>
               )}
             </Row>
-          </dl>
+          </DetailList>
 
           <p className="rule-t text-ink-2 mt-4 pt-3 text-xs">
             Danh sách học viên, đổi huấn luyện viên và hủy lớp nằm ở màn hình chi tiết lớp.
@@ -496,11 +497,3 @@ function ClassDetailDialog({
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="rule-b grid grid-cols-[7.5rem_1fr] items-center gap-3 py-2.5 last:border-b-0">
-      <dt className="text-ink-2 text-xs">{label}</dt>
-      <dd className="text-ink">{children}</dd>
-    </div>
-  );
-}

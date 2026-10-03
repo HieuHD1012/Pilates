@@ -95,7 +95,7 @@ context. A bare `{count}` inside a table cell, metric or price is a bug.
 
 ### Scale
 
-`text-2xs` 11 · `text-xs` 12 · `text-sm` 13 · `text-base` 15 · `text-lg` 17 ·
+`text-2xs` 12 · `text-xs` 13 · `text-sm` 14 · `text-base` 15 · `text-lg` 17 ·
 `text-xl` 20 · `text-2xl` 24 · `text-3xl` 30, plus fluid display sizes
 `text-d1` / `text-d2` / `text-d3` and `text-lede`.
 

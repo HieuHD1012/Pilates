@@ -314,13 +314,13 @@ function RowActions({ payment }: { payment: PaymentResponse }) {
   }
 
   return (
-    <span className="flex flex-col items-start gap-1 lg:gap-0.5">
+    <span className="flex flex-wrap items-start gap-2">
       {payment.status === "PENDING" ? (
         <button
           type="button"
           disabled={confirm.isPending}
           onClick={() => confirm.mutate(payment.id)}
-          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px] disabled:opacity-60"
+          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper min-h-10 py-2 text-sm underline underline-offset-[6px] disabled:opacity-60"
         >
           Xác nhận
         </button>
@@ -329,7 +329,7 @@ function RowActions({ payment }: { payment: PaymentResponse }) {
       <button
         type="button"
         onClick={() => setVoiding(true)}
-        className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px]"
+        className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper min-h-10 py-2 text-sm underline underline-offset-[6px]"
       >
         Hủy phiếu
       </button>

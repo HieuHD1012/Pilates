@@ -173,7 +173,7 @@ export default function StaffReportRevenue() {
                 Phần trăm là tỉ trọng của hình thức đó trong tổng doanh thu của khoảng ngày.
               </p>
 
-              <ul className="rule-t mt-4">
+              <ul className="mt-4 grid gap-6 sm:grid-cols-2">
                 {report.by_method.map((row) => {
                   // Money crosses the network as a decimal string; it is parsed
                   // here, at the point of display, and only to rank two bars.
@@ -182,10 +182,10 @@ export default function StaffReportRevenue() {
                   const share = total > 0 ? Math.round((rowTotal / total) * 100) : 0;
 
                   return (
-                    <li key={row.method} className="rule-b py-4">
-                      <div className="flex items-baseline justify-between gap-4">
+                    <li key={row.method} className="rule-t min-w-0 py-4">
+                      <div className="flex flex-col items-start gap-1">
                         <span className="text-ink text-sm">{METHOD_LABEL[row.method]}</span>
-                        <Figures className="text-ink text-sm">
+                        <Figures className="text-ink text-2xl">
                           {formatVnd(row.total)}
                         </Figures>
                       </div>
@@ -234,6 +234,19 @@ export default function StaffReportRevenue() {
                   Không có giao dịch nào trong khoảng này.
                 </p>
               ) : (
+                <>
+                <ul className="rule-t md:hidden">
+                  {(detail.data ?? []).map(row => (
+                    <li key={row.payment_id} className="rule-b py-4">
+                      <p className="text-ink text-base">{row.student_name}</p>
+                      <p className="text-ink-2 mt-1 text-sm">{row.package_name}</p>
+                      <p className="mt-3"><Figures className="text-ink text-xl">{formatVnd(row.amount)}</Figures></p>
+                      <p className="text-ink-2 mt-1 text-sm">{METHOD_LABEL[row.method]}</p>
+                      <p className="text-ink-2 mt-2 text-xs">Xác nhận lúc <Figures>{formatTime(row.confirmed_at)} {formatDate(row.confirmed_at)}</Figures></p>
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block">
                 <DataTable caption="Giao dịch đã xác nhận" minWidth="44rem">
                   <thead>
                     <tr>
@@ -264,6 +277,8 @@ export default function StaffReportRevenue() {
                     ))}
                   </tbody>
                 </DataTable>
+                </div>
+                </>
               )}
             </section>
           </>

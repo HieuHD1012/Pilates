@@ -17,7 +17,7 @@ import { cn } from "~/lib/cn";
  */
 
 const CONTROL = cn(
-  "w-full rounded-sm border border-rule-2 bg-paper px-3 text-sm text-ink",
+  "w-full min-w-0 rounded-sm border border-rule-2 bg-paper px-3 text-base md:text-sm text-ink",
   // Placeholders are real text and must meet contrast; ink-3 does not.
   "placeholder:text-ink-2",
   "transition-colors duration-200 ease-measure",
@@ -66,7 +66,7 @@ export function Field({
     <div className={cn("flex flex-col", large ? "gap-2" : "gap-1.5", className)}>
       <LabelPrimitive.Root
         htmlFor={id}
-        className={cn("text-ink font-medium", large ? "text-sm" : "text-xs")}
+        className="text-ink text-sm font-medium"
       >
         {label}
         {required ? (
@@ -101,7 +101,7 @@ export function Field({
 }
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(CONTROL, "h-10", className)} {...props} />;
+  return <input className={cn(CONTROL, "h-11", className)} {...props} />;
 }
 
 export function Textarea({
@@ -129,7 +129,7 @@ export function Select({
 }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={cn(CONTROL, "h-10 appearance-none pr-9", className)} {...props}>
+      <select className={cn(CONTROL, "h-11 appearance-none pr-9", className)} {...props}>
         {children}
       </select>
       <svg

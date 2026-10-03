@@ -90,35 +90,41 @@ export function Rule({
 }
 
 /**
- * Operational page header. Title, the one sentence that orients the user, and
- * the actions for this screen. Deliberately small: an admin screen with a
- * 48px headline wastes the row a studio manager actually needs.
+ * Operational page header (docs/adr/0006-operational-workspace.md). The title
+ * is set in the display serif, with the one sentence that says what the page is
+ * for; actions sit at its right edge and wrap under it on a phone. `eyebrow`
+ * carries a breadcrumb or the date above the title.
  */
 export function PageHeader({
   title,
   description,
   actions,
   meta,
+  eyebrow,
   className,
 }: {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   actions?: ReactNode;
   meta?: ReactNode;
+  eyebrow?: ReactNode;
   className?: string;
 }) {
   return (
-    <header className={cn("rule-b pb-4", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+    <header className={cn("flex flex-col gap-3", className)}>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <h1 className="text-ink text-xl font-medium">{title}</h1>
+          {eyebrow ? <div className="text-ink-2 mb-2 text-sm">{eyebrow}</div> : null}
+          <h1 className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em] md:text-[2rem]">
+            {title}
+          </h1>
           {description ? (
-            <p className="measure-wide text-ink-2 mt-1 text-sm">{description}</p>
+            <p className="measure-wide text-ink-2 mt-1.5 text-sm">{description}</p>
           ) : null}
         </div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        {actions ? <div className="flex max-w-full flex-wrap items-center gap-2.5">{actions}</div> : null}
       </div>
-      {meta ? <div className="mt-3">{meta}</div> : null}
+      {meta ? <div>{meta}</div> : null}
     </header>
   );
 }

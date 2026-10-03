@@ -1,10 +1,13 @@
 import { NavLink, Outlet } from "react-router";
+import { useState } from "react";
 
 import { STAFF_NAV, STAFF_NAV_GROUPS, type NavItem } from "~/content/nav";
 import { RoleGate } from "~/features/auth/role-gate";
 import { useLogout } from "~/features/auth/use-logout";
 import { useSession } from "~/features/auth/use-session";
 import { cn } from "~/lib/cn";
+import { Button } from "~/ui/button";
+import { Dialog, DialogContent } from "~/ui/dialog";
 
 /**
  * The operational shell. Desktop-first: a studio manager works at 1440 or 1024
@@ -16,9 +19,9 @@ export default function StaffLayout() {
     <RoleGate allow={["ADMIN", "STAFF"]}>
       <div className="bg-chalk min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
         <StaffRail />
-        <div className="min-w-0">
+        <main className="min-w-0">
           <Outlet />
-        </div>
+        </main>
       </div>
     </RoleGate>
   );
@@ -35,6 +38,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 function StaffRail() {
   const { data: user } = useSession();
   const logout = useLogout();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // An entry with no `roles` is for everyone this layout admits.
   const visible = (item: NavItem) =>
@@ -51,9 +55,11 @@ function StaffRail() {
           <p className="wordmark-sub text-ink-2 mt-1 hidden lg:block">Vận hành studio</p>
         </div>
 
+        <Button variant="secondary" className="lg:hidden" onClick={() => setMenuOpen(true)}>Menu studio</Button>
+
         {/* Below lg the rail collapses to a scrolling strip: a studio phone gets
             the same destinations without a drawer to open. */}
-        <nav aria-label="Điều hướng studio" className="min-w-0 lg:mt-8">
+        <nav aria-label="Điều hướng studio" className="hidden min-w-0 lg:mt-8 lg:block">
           <ul className="flex gap-4 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
             {STAFF_NAV.filter(visible).map((item) => (
               <li key={item.to} className="lg:rule-b shrink-0 lg:py-1.5">
@@ -79,6 +85,25 @@ function StaffRail() {
           </ul>
         </nav>
       </div>
+
+      <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+        <DialogContent title="Điều hướng studio">
+          <nav aria-label="Điều hướng studio trên điện thoại">
+            {STAFF_NAV.filter(visible).map(item => (
+              <NavLink key={item.to} to={item.to} end onClick={() => setMenuOpen(false)} className={({isActive}) => cn("block min-h-11 py-3 text-sm", isActive ? "text-copper font-medium" : "text-ink")}>{item.label}</NavLink>
+            ))}
+            {STAFF_NAV_GROUPS.map(group => (
+              <section key={group.label} className="rule-t mt-3 pt-4">
+                <h2 className="text-ink-2 mb-2 text-xs">{group.label}</h2>
+                {group.items.filter(visible).map(item => (
+                  <NavLink key={item.to} to={item.to} onClick={() => setMenuOpen(false)} className={({isActive}) => cn("block min-h-11 py-3 text-sm", isActive ? "text-copper font-medium" : "text-ink")}>{item.label}</NavLink>
+                ))}
+              </section>
+            ))}
+          </nav>
+          {user ? <div className="rule-t mt-4 pt-4"><p className="text-ink-2 text-sm">{user.full_name}</p><Button className="mt-3" variant="secondary" pending={logout.isPending} onClick={() => logout.mutate()}>Đăng xuất</Button></div> : null}
+        </DialogContent>
+      </Dialog>
 
       {user ? (
         <div className="hidden px-6 pb-6 lg:mt-auto lg:block">

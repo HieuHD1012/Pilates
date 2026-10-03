@@ -34,7 +34,7 @@ const REPORTS = [
     to: "/studio/bao-cao/huan-luyen-vien",
     name: "Huấn luyện viên",
     question:
-      "Mỗi huấn luyện viên dạy bao nhiêu lớp, và lớp của họ lấp đầy tới đâu so với người khác.",
+      "Mỗi huấn luyện viên được xếp bao nhiêu lớp, hủy bao nhiêu lớp và có bao nhiêu lượt đăng ký.",
   },
 ];
 
@@ -69,8 +69,8 @@ export default function StaffReports() {
       </ul>
 
       <p className="rule-t measure-wide text-ink-2 mt-10 pt-4 text-xs">
-        Xuất Excel sẽ được bổ sung cùng giai đoạn báo cáo. Hiện các báo cáo chỉ xem trên màn
-        hình, nên chưa có nút xuất nào ở đây.
+        Chọn báo cáo để xem số liệu theo khoảng ngày. Báo cáo huấn luyện viên có thể tải
+        dưới dạng CSV hoặc Excel.
       </p>
     </div>
   );

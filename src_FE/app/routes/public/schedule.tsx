@@ -18,13 +18,7 @@ import {
   type FormatFilter,
 } from "~/features/public/schedule-ui";
 import type { PublicClassSession } from "~/lib/api/schema";
-import {
-  addDays,
-  formatTime,
-  formatTimeRange,
-  minutesBetween,
-  studioDateKey,
-} from "~/lib/format";
+import { addDays, formatTime, minutesBetween, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { ErrorState, RefreshingRule, Skeleton } from "~/ui/feedback";
@@ -260,7 +254,7 @@ export default function PublicSchedule() {
             <p className="figures-display text-[1.625rem] leading-none">
               {formatTime(selected.starts_at)}
             </p>
-            <p className="text-sand/75 mt-1 truncate text-xs">
+            <p className="text-sand/75 mt-1 text-xs">
               {formatName(selected.class_type)} · {selected.trainer_name}
             </p>
           </div>
@@ -303,34 +297,27 @@ function SelectedSession({ session }: { session: PublicClassSession | null }) {
   return (
     <div className="border-copper/40 bg-paper hidden rounded-sm border p-6 sm:p-7 lg:block">
       <p className="label-micro text-copper">Buổi bạn chọn</p>
-      <div className="mt-3 flex items-end justify-between gap-4">
-        <p className="figures-display text-ink text-[2.75rem] leading-none">
+      {/* A summary, not a form: the values explain themselves, so they are
+          read as one block (when → what → who) instead of label-left /
+          value-far-right pairs that make the eye zig-zag across the panel. */}
+      <p className="text-ink mt-3 text-base">{dayLabel(day, null)}</p>
+      <p className="mt-1 flex items-baseline gap-3">
+        <span className="figures-display text-ink text-[2.75rem] leading-none">
           {formatTime(session.starts_at)}
-        </p>
-        <Availability isFull={session.is_full} className="pb-1" />
-      </div>
-      <dl className="mt-5">
-        {[
-          ["Ngày", dayLabel(day, null)],
-          [
-            "Hình thức",
-            `${formatName(session.class_type)} · ${formatRatio(session.class_type)}`,
-          ],
-          ["Người dạy", session.trainer_name],
-          [
-            "Thời lượng",
-            `${formatTimeRange(session.starts_at, session.ends_at)} · ${minutesBetween(session.starts_at, session.ends_at)} phút`,
-          ],
-        ].map(([term, value]) => (
-          <div
-            key={term}
-            className="rule-t last:border-rule flex items-baseline justify-between gap-4 py-2.5 text-sm last:border-b"
-          >
-            <dt className="text-ink-2">{term}</dt>
-            <dd className="text-ink text-right">{value}</dd>
-          </div>
-        ))}
-      </dl>
+        </span>
+        <span className="figures text-ink-2 text-base">
+          – {formatTime(session.ends_at)} ·{" "}
+          {minutesBetween(session.starts_at, session.ends_at)} phút
+        </span>
+      </p>
+      <p className="text-ink mt-4 text-base font-medium">
+        {formatName(session.class_type)}{" "}
+        <span className="figures text-ink-2 font-normal">
+          {formatRatio(session.class_type)}
+        </span>
+      </p>
+      <p className="text-ink-2 text-base">với {session.trainer_name}</p>
+      <Availability isFull={session.is_full} className="mt-3" />
 
       {session.is_full ? (
         <>

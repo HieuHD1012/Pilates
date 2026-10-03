@@ -70,7 +70,7 @@ export default function StaffReportTrainers() {
     <div className="gutter py-6">
       <PageHeader
         title="Báo cáo huấn luyện viên"
-        description="Mỗi huấn luyện viên dạy bao nhiêu lớp trong khoảng ngày, và lớp của họ được lấp đầy tới đâu."
+        description="Số lớp đã xếp, lớp đã hủy và lượt đăng ký của từng huấn luyện viên trong khoảng ngày."
         actions={
           <>
             <Button asChild size="sm" variant="secondary">
@@ -188,9 +188,22 @@ export default function StaffReportTrainers() {
         errorDescription="Không tải được báo cáo huấn luyện viên."
         showErrorDetail
       >
-        {(report) => (
+        {(report) => (<>
+          <ul className="rule-t sm:hidden">
+            {[...report].sort(byTeachingLoad).map(row => (
+              <li key={row.trainer_id} className="rule-b py-5">
+                <Link to={`/studio/huan-luyen-vien/${row.trainer_id}`} className="text-ink text-base underline underline-offset-4">{row.trainer_name}</Link>
+                <dl className="mt-4 grid grid-cols-3 gap-3">
+                  {[["Lớp đã xếp", row.scheduled_sessions], ["Lớp đã hủy", row.cancelled_sessions], ["Lượt đăng ký", row.total_bookings]].map(([label, value]) => (
+                    <div key={label}><dt className="text-ink-2 text-xs">{label}</dt><dd className="mt-1"><Figures className="text-ink text-xl">{formatNumber(Number(value))}</Figures></dd></div>
+                  ))}
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden sm:block">
           <DataTable
-            caption="Số lớp và tỉ lệ lấp đầy theo huấn luyện viên"
+            caption="Lớp đã xếp, lớp đã hủy và lượt đăng ký theo huấn luyện viên"
             minWidth="44rem"
           >
             <thead>
@@ -227,7 +240,8 @@ export default function StaffReportTrainers() {
               ))}
             </tbody>
           </DataTable>
-        )}
+          </div>
+        </>)}
       </QueryBoundary>
 
       <LiveRegion

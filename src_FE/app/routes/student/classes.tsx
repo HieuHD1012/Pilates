@@ -83,7 +83,7 @@ export default function StudentClasses() {
 
       <div
         className="rule-t mt-5 flex gap-1 overflow-x-auto py-3"
-        role="tablist"
+        role="group"
         aria-label="Chọn ngày"
       >
         {days.map((day) => {
@@ -92,8 +92,8 @@ export default function StudentClasses() {
             <button
               key={day}
               type="button"
-              role="tab"
-              aria-selected={selected}
+              aria-pressed={selected}
+              aria-label={`${weekdayLong(`${day}T00:00:00+07:00`)} ${formatDate(`${day}T00:00:00+07:00`)}`}
               onClick={() => setActiveDay(day)}
               className={cn(
                 "flex min-w-13 flex-col items-center gap-0.5 rounded-sm px-2 py-2 transition-colors",
@@ -125,7 +125,7 @@ export default function StudentClasses() {
             aria-pressed={classType === option.value}
             onClick={() => setClassType(option.value)}
             className={cn(
-              "rounded-sm px-3 py-1.5 text-xs transition-colors",
+              "min-h-11 rounded-sm px-3 py-2 text-sm transition-colors",
               classType === option.value
                 ? "bg-ink text-sand"
                 : "text-ink-2 hover:bg-sand-deep",
@@ -167,7 +167,7 @@ export default function StudentClasses() {
               <li key={item.id} className="rule-b">
                 <Link
                   to={`/hv/lop-hoc/${item.id}`}
-                  className="hover:bg-sand-deep/50 flex items-start justify-between gap-4 py-4 transition-colors"
+                  className="hover:bg-sand-deep/50 flex flex-col items-start gap-2 py-4 transition-colors"
                 >
                   <span className="min-w-0">
                     <Figures className="text-ink block text-sm">
@@ -181,7 +181,7 @@ export default function StudentClasses() {
                     </span>
                   </span>
 
-                  <span className="flex shrink-0 flex-col items-end gap-2">
+                  <span className="flex flex-wrap items-center gap-2">
                     {mine.has(item.id) ? (
                       <StatusBadge tone="positive">Đã đặt</StatusBadge>
                     ) : item.canBook ? (
@@ -229,7 +229,7 @@ function BalanceBanner({
   }
 
   return (
-    <div className="rule-t mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+    <div className="rule-t mt-4 flex flex-col gap-1 py-4">
       <p className="text-ink-2 flex items-baseline gap-2 text-sm">
         <span>Còn lại</span>
         <Figures display className="text-ink text-2xl">

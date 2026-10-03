@@ -139,7 +139,7 @@ export default function StudentAccount() {
                   <DetailRow label="Tên gói">{active.name_snapshot}</DetailRow>
                   <DetailRow label="Số buổi còn lại">
                     <span className="flex items-baseline gap-1.5">
-                      <Figures className="text-ink">{active.balance_cached}</Figures>
+                      <Figures display className="text-ink text-2xl">{active.balance_cached}</Figures>
                       <span className="text-ink-2 text-xs">
                         / <Figures>{active.credits_snapshot}</Figures> buổi
                       </span>

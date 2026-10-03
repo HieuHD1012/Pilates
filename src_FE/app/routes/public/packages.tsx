@@ -6,6 +6,7 @@ import { formatRatio } from "~/features/public/schedule-ui";
 import { cn } from "~/lib/cn";
 import type { PublicPackage } from "~/lib/api/schema";
 import { decimalToNumber, formatNumber, formatVnd } from "~/lib/format";
+import { ArrowLink } from "~/ui/arrow-link";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
@@ -85,14 +86,20 @@ export default function Packages() {
       </section>
 
       <Section index="01" label="Bảng giá" tone="deep">
-        <div className="grid grid-cols-1 gap-y-10 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-          <SectionRail title="Các gói đang mở bán">
-            <p className="measure text-ink-2 mt-5 text-base">
-              Danh sách lấy từ hệ thống của studio. Gói chưa có giá hiện “Đang cập nhật”,
-              không bao giờ hiện số 0.
+        {/* Pricing is the subject of this page, so it gets the full width: plans
+            sit side by side as cards, read top to bottom inside each card and
+            compared across cards at the same height. */}
+        <div className="pb-20 md:pb-28">
+          <div className="grid grid-cols-1 gap-y-4 lg:grid-cols-12 lg:gap-x-6">
+            <h2 className="font-display text-d2 text-ink font-light lg:col-span-6">
+              Các gói đang mở bán
+            </h2>
+            <p className="measure text-ink-2 text-base lg:col-span-5 lg:col-start-8 lg:self-end">
+              So sánh số buổi, tổng giá và thời hạn trong từng hình thức tập. Giá mỗi
+              buổi giúp bạn cân nhắc các gói; gói chưa có giá cần hỏi studio.
             </p>
-          </SectionRail>
-          <div className="lg:col-span-8">
+          </div>
+          <div className="mt-12">
             <PriceList />
           </div>
         </div>
@@ -101,14 +108,14 @@ export default function Packages() {
       <Section index="02" label="Hủy, hoàn buổi và gia hạn" className="pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-y-10 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
           <SectionRail title="Điều nên biết trước khi mua." />
-          <dl className="lg:col-span-8">
+          {/* Four independent rules, each a heading and its sentence read
+              together — not a two-column table that makes the eye travel from
+              a label on the left to its meaning on the right. */}
+          <dl className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2 lg:col-span-8">
             {TERMS.map(({ term, def }) => (
-              <div
-                key={term}
-                className="rule-t last:border-rule grid gap-1 py-5 last:border-b sm:grid-cols-[11rem_1fr] sm:gap-6"
-              >
-                <dt className="text-ink text-base font-medium">{term}</dt>
-                <dd className="measure text-ink-2 text-base">{def}</dd>
+              <div key={term} className="border-rule-2 border-t pt-4">
+                <dt className="text-ink text-lg font-medium">{term}</dt>
+                <dd className="measure text-ink-2 mt-1.5 text-base">{def}</dd>
               </div>
             ))}
           </dl>
@@ -192,19 +199,22 @@ function PriceGroup({ type, rows }: { type: "GROUP" | "PRIVATE"; rows: PublicPac
     const price = decimalToNumber(pack.price);
     return price === null || pack.credits <= 0 ? null : price / pack.credits;
   };
-  const baseline = rows.map(perSession).find((value) => value !== null) ?? null;
+  const priced = rows.map(perSession).filter((value): value is number => value !== null);
+  const baseline = priced[0] ?? null;
+  const best = priced.length > 1 && priced.length === rows.length ? Math.min(...priced) : null;
+  const formatLabel = type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm";
 
   return (
-    <section aria-label={type === "PRIVATE" ? "Gói lớp riêng" : "Gói lớp nhóm"}>
-      <div className="flex items-baseline justify-between gap-4 pb-4">
-        <h3 className="font-display text-ink text-2xl font-light">
-          {type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-        </h3>
-        <span className="figures-display text-copper-bright text-2xl leading-none">
+    <section aria-label={`Gói ${formatLabel.toLowerCase()}`}>
+      <h3 className="flex items-baseline gap-3">
+        <span className="font-display text-ink text-[1.75rem] font-light">
+          {formatLabel}
+        </span>
+        <span className="figures-display text-copper text-[1.75rem] leading-none">
           {formatRatio(type)}
         </span>
-      </div>
-      <ul className="border-rule-2 border-t">
+      </h3>
+      <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {rows.map((pack) => {
           const price = decimalToNumber(pack.price);
           const each = perSession(pack);
@@ -212,37 +222,68 @@ function PriceGroup({ type, rows }: { type: "GROUP" | "PRIVATE"; rows: PublicPac
             each !== null && baseline !== null && baseline > 0
               ? Math.round((1 - each / baseline) * 100)
               : 0;
+          const isBest = best !== null && each === best;
           return (
             <li
               key={`${pack.name}-${pack.credits}`}
-              className="rule-b grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-1 py-5"
+              className={cn(
+                "bg-paper flex min-w-0 flex-col rounded-sm border p-5 sm:p-6",
+                isBest ? "border-copper ring-copper ring-1" : "border-rule",
+              )}
             >
-              <div className="min-w-0">
-                <p className="text-ink text-lg font-medium">{pack.name}</p>
-                <p className="text-ink-2 mt-1 text-sm">
-                  <Figures>{formatNumber(pack.credits)}</Figures> buổi · dùng trong{" "}
-                  <Figures>{formatNumber(pack.duration_days)}</Figures> ngày
-                  {saving >= 1 ? (
-                    <span className="bg-copper-wash text-copper-2 ml-2 inline-block rounded-xs px-1.5 py-px text-xs font-medium">
-                      Tiết kiệm {saving}%
-                    </span>
-                  ) : null}
-                </p>
-              </div>
-              <div className="text-right">
-                {/* A price of 0 is a price; only a missing one is pending. */}
+              <p className="text-copper-2 min-h-6 text-sm font-medium">
+                {isBest ? "Giá mỗi buổi thấp nhất" : <span aria-hidden="true">&nbsp;</span>}
+              </p>
+
+              {/* What you get: the number of sessions is the plan's identity. */}
+              <h4 className="mt-2 flex items-baseline gap-2">
+                <span className="figures-display text-ink text-[2.5rem] leading-none sm:text-[3rem]">
+                  {formatNumber(pack.credits)}
+                </span>
+                <span className="text-ink text-lg">buổi</span>
+              </h4>
+              <p className="text-ink-2 mt-2 text-sm sm:min-h-12">{pack.name}</p>
+
+              {/* What it costs, total first and the per-session price right
+                  beneath it, so the comparison happens in one glance. */}
+              <div className="border-rule mt-4 border-t pt-4 sm:mt-5 sm:min-h-32 sm:pt-5">
+                <p className="text-ink-2 mb-1 text-sm">Tổng giá gói</p>
                 {price !== null ? (
                   <>
-                    <p className="figures text-ink text-xl">{formatVnd(price)}</p>
+                    <p className="figures text-ink text-xl sm:text-2xl">
+                      {formatVnd(price)}
+                    </p>
                     {each !== null ? (
-                      <p className="text-ink-2 mt-1 text-sm">
-                        <Figures>{formatVnd(Math.round(each))}</Figures> / buổi
+                      <p className="text-ink mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:text-base">
+                        <span>
+                          <Figures>{formatVnd(Math.round(each))}</Figures>
+                          <span className="text-ink-2"> / buổi</span>
+                        </span>
                       </p>
                     ) : null}
                   </>
                 ) : (
-                  <PendingFact label={`Giá gói ${pack.name}`} />
+                  <p className="text-ink-2 text-base">
+                    <PendingFact label={`Giá gói ${pack.name}`} />
+                  </p>
                 )}
+              </div>
+
+              {/* The terms that come with it. */}
+              <ul className="text-ink-2 mt-4 flex flex-col gap-1.5 text-sm sm:mt-5">
+                <li>
+                  Dùng trong <Figures>{formatNumber(pack.duration_days)}</Figures> ngày
+                </li>
+                <li>Chỉ dùng cho {formatLabel.toLowerCase()}</li>
+                {saving >= 1 ? (
+                  <li>Giá mỗi buổi thấp hơn {saving}% so với gói {rows.find(p => perSession(p) !== null)?.credits} buổi.</li>
+                ) : null}
+              </ul>
+
+              <div className="mt-auto pt-4 sm:pt-6">
+                <ArrowLink to={`/dat-tu-van?tu=goi-tap&goi=${encodeURIComponent(pack.name)}`}>
+                  Tư vấn gói này<span className="sr-only">: {pack.name}</span>
+                </ArrowLink>
               </div>
             </li>
           );

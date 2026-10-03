@@ -3,14 +3,11 @@ import { cn } from "~/lib/cn";
 export type StatusTone = "neutral" | "positive" | "attention" | "critical" | "info";
 
 const TONE: Record<StatusTone, { badge: string; dot: string }> = {
-  neutral: { badge: "text-ink-2 border-rule-2 bg-transparent", dot: "bg-ink-3" },
-  positive: { badge: "text-success border-success/35 bg-success-wash", dot: "bg-success" },
-  attention: {
-    badge: "text-warning border-warning/35 bg-warning-wash",
-    dot: "bg-warning",
-  },
-  critical: { badge: "text-danger border-danger/35 bg-danger-wash", dot: "bg-danger" },
-  info: { badge: "text-info border-info/35 bg-info-wash", dot: "bg-info" },
+  neutral: { badge: "text-ink-2 bg-sand-deep", dot: "bg-ink-3" },
+  positive: { badge: "text-success bg-success-wash", dot: "bg-success" },
+  attention: { badge: "text-warning bg-warning-wash", dot: "bg-warning" },
+  critical: { badge: "text-danger bg-danger-wash", dot: "bg-danger" },
+  info: { badge: "text-info bg-info-wash", dot: "bg-info" },
 };
 
 /**
@@ -29,8 +26,10 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-xs border px-2 py-0.5",
-        "label-badge whitespace-nowrap",
+        // A filled wash with a dot (ADR 0006): a bordered rectangle at 11px read
+        // as an input at a glance.
+        "inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-0.5",
+        "text-xs font-medium whitespace-nowrap",
         TONE[tone].badge,
         className,
       )}

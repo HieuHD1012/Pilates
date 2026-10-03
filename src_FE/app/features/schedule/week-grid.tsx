@@ -71,7 +71,7 @@ export function WeekGrid({
 
   return (
     <div className="rule-t overflow-x-auto">
-      <div className="grid min-w-[68rem] grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]">
+      <div className="grid min-w-[78rem] grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]">
         {/* Day headers */}
         <div className="rule-b bg-chalk sticky left-0 z-(--z-sticky)" />
         {days.map((day) => (
@@ -196,7 +196,7 @@ export function WeekList({
   return (
     <div className="rule-t">
       {days.map((day) => {
-        const dayItems = byDay.get(day) ?? [];
+        const dayItems = [...(byDay.get(day) ?? [])].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
         return (
           <section key={day} className="rule-b py-4">
             <h3 className="flex items-baseline gap-2">
@@ -222,7 +222,7 @@ export function WeekList({
                       <button
                         type="button"
                         onClick={() => onSelect(item)}
-                        className="border-rule flex w-full items-center justify-between gap-3 border-t py-3 text-left"
+                        className="border-rule hover:bg-sand-deep/50 flex w-full flex-col items-start gap-2 border-t py-4 text-left"
                       >
                         <span className="min-w-0">
                           <Figures className="text-ink block text-xs">
@@ -235,7 +235,7 @@ export function WeekList({
                             {trainerNames.get(item.trainer_id) ?? `HLV #${item.trainer_id}`}
                           </span>
                         </span>
-                        <span className="shrink-0">
+                        <span className="flex flex-wrap items-center gap-3">
                           {taken === undefined ? (
                             <Figures className="text-ink-2 text-xs">
                               {item.capacity} chỗ
@@ -245,6 +245,7 @@ export function WeekList({
                           ) : (
                             <CapacityMeter booked={taken} capacity={item.capacity} />
                           )}
+                          <span className="text-ink text-sm underline underline-offset-4">Xem lớp</span>
                         </span>
                       </button>
                     </li>

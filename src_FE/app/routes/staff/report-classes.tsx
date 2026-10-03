@@ -190,13 +190,13 @@ export default function StaffReportClasses() {
                   <DataTable caption="Số lớp theo sĩ số" minWidth="46rem">
                     <thead>
                       <tr>
-                        <Th>Huấn luyện viên</Th>
-                        <Th numeric>1</Th>
-                        <Th numeric>2</Th>
-                        <Th numeric>3</Th>
-                        <Th numeric>4</Th>
-                        <Th numeric>5</Th>
-                        <Th numeric>Trên 5</Th>
+                        <Th className="left-0 z-10">Huấn luyện viên</Th>
+                        <Th numeric>1 học viên</Th>
+                        <Th numeric>2 học viên</Th>
+                        <Th numeric>3 học viên</Th>
+                        <Th numeric>4 học viên</Th>
+                        <Th numeric>5 học viên</Th>
+                        <Th numeric>Trên 5 học viên</Th>
                         <Th numeric>Không ai đăng ký</Th>
                         <Th numeric>Tổng</Th>
                       </tr>
@@ -204,7 +204,7 @@ export default function StaffReportClasses() {
                     <tbody>
                       {(sizes.data ?? []).map((row) => (
                         <Tr key={row.trainer_id}>
-                          <Td>{row.trainer_name}</Td>
+                          <Td className="bg-chalk sticky left-0 min-w-40">{row.trainer_name}</Td>
                           <Td numeric>
                             <Figures>{formatNumber(row.size_1)}</Figures>
                           </Td>

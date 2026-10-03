@@ -59,7 +59,7 @@ export function DialogContent({
             ) : null}
           </div>
           <DialogPrimitive.Close
-            className="text-ink-2 hover:text-ink -m-1.5 rounded-xs p-1.5"
+            className="text-ink-2 hover:text-ink -m-2 flex size-11 shrink-0 items-center justify-center rounded-xs"
             aria-label="Đóng"
           >
             <X aria-hidden="true" className="size-4" />
@@ -69,7 +69,7 @@ export function DialogContent({
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
         ) : null}
         {footer ? (
-          <div className="rule-t flex shrink-0 items-center justify-end gap-2 px-5 py-3">
+          <div className="rule-t flex shrink-0 flex-wrap items-center justify-end gap-2 px-5 py-3">
             {footer}
           </div>
         ) : null}

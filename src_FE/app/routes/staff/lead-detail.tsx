@@ -134,7 +134,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
       </header>
 
       <DetailList className="mt-6">
-        <DetailRow label="Nhu cầu" labelWidth="10rem">
+        <DetailRow label="Nhu cầu" className="sm:col-span-2">
           {lead.need === null || lead.need.trim() === "" ? (
             <Absent>Chưa ghi nhu cầu</Absent>
           ) : (

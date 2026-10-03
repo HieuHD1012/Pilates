@@ -84,7 +84,7 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
       <DetailList className="mt-5">
         <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>
 
-        <DetailRow label="Giới thiệu ngắn">
+        <DetailRow label="Giới thiệu ngắn" className="sm:col-span-2">
           {trainer.bio ?? <PendingFact label="Giới thiệu ngắn" />}
         </DetailRow>
 
