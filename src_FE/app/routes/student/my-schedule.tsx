@@ -127,14 +127,14 @@ export default function MySchedule() {
                     <button
                       type="button"
                       onClick={() => setChanging(item)}
-                      className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+                      className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
                     >
                       Đổi buổi
                     </button>
                     <button
                       type="button"
                       onClick={() => setCancelling(item)}
-                      className="text-ink-2 decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+                      className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
                     >
                       Hủy buổi
                     </button>

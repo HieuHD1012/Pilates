@@ -225,7 +225,7 @@ function RenewalRow({
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <Link
             to={`/studio/hoc-vien/${candidate.student_id}`}
-            className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+            className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
           >
             {candidate.student_name}
           </Link>
@@ -239,7 +239,7 @@ function RenewalRow({
         <p className="text-ink-2 mt-1.5 text-xs">
           <a
             href={telHref(candidate.student_phone)}
-            className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+            className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
           >
             {formatPhone(candidate.student_phone)}
           </a>

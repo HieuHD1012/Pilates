@@ -423,14 +423,14 @@ function BookedRow({ row }: { row: RosterRow }) {
       <span className="min-w-0 flex-1">
         <Link
           to={`/studio/hoc-vien/${row.studentId}`}
-          className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
         >
           {row.studentName}
         </Link>
         {row.phone ? (
           <a
             href={telHref(row.phone)}
-            className="figures text-ink-2 decoration-rule-2 hover:text-lacquer hover:decoration-lacquer mt-0.5 block w-fit text-xs underline underline-offset-[5px]"
+            className="figures text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper mt-0.5 block w-fit text-xs underline underline-offset-[5px]"
           >
             {formatPhone(row.phone)}
           </a>

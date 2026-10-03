@@ -66,7 +66,7 @@ export default function Login() {
 
   return (
     <div>
-      <h1 className="font-display text-d3 text-ink font-light">Đăng nhập</h1>
+      <h1 className="font-display text-d2 text-ink font-light">Đăng nhập</h1>
       <p className="text-ink-2 mt-3 text-sm">
         Dành cho học viên, huấn luyện viên và nhân viên studio. Tài khoản do studio cấp.
       </p>
@@ -76,11 +76,12 @@ export default function Login() {
         onSubmit={handleSubmit((values) => mutation.mutateAsync(values).catch(() => {}))}
         className="mt-8 flex flex-col gap-5"
       >
-        <Field label="Email" required error={errors.email?.message}>
+        <Field label="Email" required size="lg" error={errors.email?.message}>
           {({ id, describedBy, invalid }) => (
             <Input
               id={id}
               type="email"
+              className="h-12 text-base"
               autoComplete="username"
               inputMode="email"
               aria-describedby={describedBy}
@@ -90,11 +91,12 @@ export default function Login() {
           )}
         </Field>
 
-        <Field label="Mật khẩu" required error={errors.password?.message}>
+        <Field label="Mật khẩu" required size="lg" error={errors.password?.message}>
           {({ id, describedBy, invalid }) => (
             <Input
               id={id}
               type="password"
+              className="h-12 text-base"
               autoComplete="current-password"
               aria-describedby={describedBy}
               aria-invalid={invalid}
@@ -121,11 +123,28 @@ export default function Login() {
       <p className="text-ink-2 mt-6 text-sm">
         <Link
           to="/quen-mat-khau"
-          className="decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+          className="decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
         >
           Quên mật khẩu?
         </Link>
       </p>
+
+      {/* The dead end the audit found: a newcomer arrives here from the public
+          timetable, but accounts are created by the studio after a package is
+          sold. Say so, and point at the one door that works. */}
+      <div className="bg-sand-deep mt-10 rounded-sm px-5 py-4">
+        <p className="text-ink text-sm font-medium">Chưa có tài khoản?</p>
+        <p className="text-ink-2 mt-1 text-sm">
+          Tài khoản do studio tạo khi bạn bắt đầu gói tập. Để lại số điện thoại để được tư
+          vấn trước.
+        </p>
+        <Link
+          to="/dat-tu-van"
+          className="text-copper decoration-rule-2 hover:decoration-copper mt-2 inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-[6px]"
+        >
+          Nhận tư vấn
+        </Link>
+      </div>
     </div>
   );
 }

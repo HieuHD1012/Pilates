@@ -383,7 +383,7 @@ export function ClassForm({
                     // The real checkbox is sr-only, so its own focus ring is
                     // clipped away with it. Without this a keyboard user tabbing
                     // through the weekdays sees nothing move.
-                    "has-[:focus-visible]:outline-lacquer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
+                    "has-[:focus-visible]:outline-copper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
                     on
                       ? "border-ink bg-ink text-sand"
                       : "text-ink hover:border-ink-3 bg-transparent",

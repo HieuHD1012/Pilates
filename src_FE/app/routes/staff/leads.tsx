@@ -94,7 +94,7 @@ export default function StaffLeads() {
             <div className="flex items-baseline gap-2">
               <dt>Chưa liên hệ</dt>
               <dd>
-                <Figures className={newCount > 0 ? "text-lacquer" : "text-ink"}>
+                <Figures className={newCount > 0 ? "text-copper" : "text-ink"}>
                   {newCount}
                 </Figures>
               </dd>
@@ -198,7 +198,7 @@ function LeadTable({ leads }: { leads: LeadResponse[] }) {
             <Td className="align-top">
               <Link
                 to={`/studio/khach-quan-tam/${lead.id}`}
-                className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+                className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
               >
                 {lead.full_name}
               </Link>
@@ -206,7 +206,7 @@ function LeadTable({ leads }: { leads: LeadResponse[] }) {
             <Td className="align-top">
               <a
                 href={telHref(lead.phone)}
-                className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer whitespace-nowrap underline underline-offset-[6px]"
+                className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper whitespace-nowrap underline underline-offset-[6px]"
               >
                 {formatPhone(lead.phone)}
               </a>
@@ -242,7 +242,7 @@ function LeadList({ leads }: { leads: LeadResponse[] }) {
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
             <Link
               to={`/studio/khach-quan-tam/${lead.id}`}
-              className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
             >
               {lead.full_name}
             </Link>
@@ -254,7 +254,7 @@ function LeadList({ leads }: { leads: LeadResponse[] }) {
           <p className="text-ink-2 mt-2 text-xs">
             <a
               href={telHref(lead.phone)}
-              className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+              className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
             >
               {formatPhone(lead.phone)}
             </a>

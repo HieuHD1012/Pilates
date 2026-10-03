@@ -38,9 +38,24 @@ export interface FieldProps {
     invalid: boolean;
   }) => ReactNode;
   className?: string;
+  /**
+   * `lg` is the public-site form: a visitor filling one form once, often on a
+   * phone, so labels and help text are body-sized rather than the 12px of a
+   * staff screen that is filled forty times a day.
+   */
+  size?: "md" | "lg";
 }
 
-export function Field({ label, hint, error, required, children, className }: FieldProps) {
+export function Field({
+  label,
+  hint,
+  error,
+  required,
+  children,
+  className,
+  size = "md",
+}: FieldProps) {
+  const large = size === "lg";
   const id = useId();
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
@@ -48,8 +63,11 @@ export function Field({ label, hint, error, required, children, className }: Fie
     [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <LabelPrimitive.Root htmlFor={id} className="text-ink text-xs font-medium">
+    <div className={cn("flex flex-col", large ? "gap-2" : "gap-1.5", className)}>
+      <LabelPrimitive.Root
+        htmlFor={id}
+        className={cn("text-ink font-medium", large ? "text-sm" : "text-xs")}
+      >
         {label}
         {required ? (
           <>
@@ -66,7 +84,7 @@ export function Field({ label, hint, error, required, children, className }: Fie
       </LabelPrimitive.Root>
 
       {hint ? (
-        <p id={hintId} className="measure text-ink-2 text-xs">
+        <p id={hintId} className={cn("measure text-ink-2", large ? "text-sm" : "text-xs")}>
           {hint}
         </p>
       ) : null}
@@ -74,7 +92,7 @@ export function Field({ label, hint, error, required, children, className }: Fie
       {children({ id, describedBy, invalid: Boolean(error) })}
 
       {error ? (
-        <p id={errorId} className="text-danger text-xs">
+        <p id={errorId} className={cn("text-danger", large ? "text-sm" : "text-xs")}>
           {error}
         </p>
       ) : null}

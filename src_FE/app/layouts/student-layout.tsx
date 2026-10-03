@@ -75,7 +75,7 @@ function StudentTabBar() {
                 cn(
                   // 56px tall: comfortably above the 44px minimum touch target.
                   "flex h-14 flex-col items-center justify-center gap-1 border-t-2 text-xs",
-                  isActive ? "border-lacquer text-ink" : "text-ink-2 border-transparent",
+                  isActive ? "border-copper text-ink" : "text-ink-2 border-transparent",
                 )
               }
             >

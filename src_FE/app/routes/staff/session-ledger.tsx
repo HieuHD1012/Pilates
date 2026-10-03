@@ -175,7 +175,7 @@ function LedgerBody({
                 <dd>
                   <Link
                     to={`/studio/hoc-vien/${studentId}`}
-                    className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+                    className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
                   >
                     {student.data?.full_name ?? `Học viên #${studentId}`}
                   </Link>

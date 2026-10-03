@@ -28,8 +28,10 @@ export function Section({
       data-field={tone === "ink" ? "dark" : undefined}
       className={cn(
         tone === "sand" && "bg-sand text-ink",
-        tone === "deep" && "bg-sand-deep text-ink",
-        tone === "ink" && "bg-ink-deep text-sand",
+        // A tonal field starts its own rhythm: the label hairline needs air
+        // above it, or it reads as the edge of the colour change.
+        tone === "deep" && "bg-sand-deep text-ink pt-20 md:pt-28",
+        tone === "ink" && "bg-ink text-sand pt-20 md:pt-28",
         className,
       )}
     >
@@ -38,20 +40,24 @@ export function Section({
           <div
             className={cn(
               "flex items-baseline gap-4 border-t pt-5 pb-12 md:pb-16",
-              tone === "ink" ? "border-rule-dark" : "border-rule",
+              tone === "ink" && "border-rule-dark",
+              tone === "deep" && "border-rule-2",
+              tone === "sand" && "border-rule",
             )}
           >
             {index ? (
               <span
                 className={cn(
-                  "figures text-2xs",
-                  tone === "ink" ? "text-sand/50" : "text-ink-2",
+                  "figures text-sm",
+                  tone === "ink" ? "text-amber" : "text-copper",
                 )}
               >
                 {index}
               </span>
             ) : null}
-            <span className={cn("label-micro", tone === "ink" && "text-sand/70")}>
+            <span
+              className={cn("label-micro", tone === "ink" ? "text-amber" : "text-copper")}
+            >
               {label}
             </span>
           </div>
@@ -162,7 +168,7 @@ export function Metric({
         <span
           className={cn(
             "figures-display text-3xl",
-            tone === "attention" ? "text-lacquer" : "text-ink",
+            tone === "attention" ? "text-copper" : "text-ink",
           )}
         >
           {value}

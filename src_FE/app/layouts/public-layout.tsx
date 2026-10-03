@@ -10,7 +10,9 @@ import { PendingFact } from "~/ui/pending-fact";
 
 export default function PublicLayout() {
   return (
-    <div className="bg-sand flex min-h-dvh flex-col">
+    // overflow-x-clip: images may bleed to the viewport edge (`bleed-*`), and
+    // 100vw includes a classic scrollbar; clipping keeps that from scrolling.
+    <div className="bg-sand flex min-h-dvh flex-col overflow-x-clip">
       <a
         href="#noi-dung"
         className="sr-only-focusable bg-ink text-sand absolute top-2 left-2 z-(--z-nav) px-3 py-2 text-xs"
@@ -30,22 +32,27 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
   return (
     <Link
       to="/"
-      className="group flex items-baseline gap-2.5"
+      className="group flex items-center gap-3"
       aria-label="Soul Pilates Nha Trang — trang chủ"
     >
-      <span className={cn("wordmark text-lg", tone === "ink" ? "text-ink" : "text-sand")}>
+      <span
+        className={cn(
+          "wordmark text-[1.375rem] font-normal",
+          tone === "ink" ? "text-ink" : "text-sand",
+        )}
+      >
         SOUL
       </span>
       <span
         aria-hidden="true"
         className={cn(
-          "hidden h-px w-5 sm:block",
+          "hidden h-px w-6 sm:block",
           tone === "ink" ? "bg-rule-2" : "bg-rule-dark",
         )}
       />
       <span
         className={cn(
-          "wordmark-sub hidden sm:block",
+          "wordmark-sub hidden pt-px sm:block",
           tone === "ink" ? "text-ink-2" : "text-sand/70",
         )}
       >
@@ -60,9 +67,9 @@ function PublicHeader() {
   const location = useLocation();
 
   // P2 — one ask, stated once. The homepage hero already carries this exact
-  // label at 48px; repeating it at 32px in the same viewport is one subject
-  // rendered twice. Other routes keep it, because their hero CTA is below the fold.
-  const heroOwnsTheAsk = location.pathname === "/";
+  // label; repeating it in the same viewport is one subject rendered twice.
+  // The consultation page IS the ask, so a header link to itself is noise.
+  const pageOwnsTheAsk = location.pathname === "/" || location.pathname === "/dat-tu-van";
 
   // Reset during render rather than in an effect: navigating away must close
   // the menu in the same commit, not one cascading render later.
@@ -81,19 +88,19 @@ function PublicHeader() {
 
   return (
     <header className="border-rule bg-sand/92 sticky top-0 z-(--z-nav) border-b backdrop-blur-[2px]">
-      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6">
+      <div className="gutter mx-auto flex h-16 max-w-(--container-page) items-center justify-between gap-6 lg:h-20">
         <Wordmark />
 
         <nav aria-label="Điều hướng chính" className="hidden lg:block">
-          <ul className="flex items-center gap-7">
+          <ul className="flex items-center gap-7 xl:gap-9">
             {PUBLIC_NAV.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "relative py-2 text-sm transition-colors duration-200",
-                      "after:bg-lacquer after:ease-measure after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:transition-transform after:duration-200",
+                      "relative py-2 text-sm transition-colors duration-200 xl:text-base",
+                      "after:bg-copper-bright after:ease-measure after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:transition-transform after:duration-200",
                       "hover:text-ink hover:after:scale-x-100",
                       isActive ? "text-ink after:scale-x-100" : "text-ink-2",
                     )
@@ -107,12 +114,12 @@ function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
             <Link to="/dang-nhap">Đăng nhập</Link>
           </Button>
-          {heroOwnsTheAsk ? null : (
-            <Button asChild variant="lacquer" size="sm" className="hidden sm:inline-flex">
-              <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+          {pageOwnsTheAsk ? null : (
+            <Button asChild variant="copper" size="md">
+              <Link to="/dat-tu-van">Nhận tư vấn</Link>
             </Button>
           )}
           <button
@@ -120,7 +127,7 @@ function PublicHeader() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            className="text-ink -mr-2 p-2 lg:hidden"
+            className="text-ink border-rule-2 inline-flex size-11 items-center justify-center rounded-sm border lg:hidden"
           >
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
             {open ? (
@@ -135,7 +142,7 @@ function PublicHeader() {
       {open ? (
         <div
           id="menu-di-dong"
-          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:hidden"
+          className="bg-sand fixed inset-x-0 top-16 bottom-0 z-(--z-sheet) overflow-y-auto lg:top-20 lg:hidden"
         >
           <nav aria-label="Điều hướng chính (di động)" className="gutter">
             <ul>
@@ -153,8 +160,8 @@ function PublicHeader() {
               ))}
             </ul>
             <div className="flex flex-col gap-3 py-8">
-              <Button asChild variant="lacquer" size="lg" fullWidth>
-                <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+              <Button asChild variant="copper" size="lg" fullWidth>
+                <Link to="/dat-tu-van">Nhận tư vấn</Link>
               </Button>
               <Button asChild variant="secondary" size="lg" fullWidth>
                 <Link to="/dang-nhap">Đăng nhập</Link>
@@ -177,10 +184,16 @@ function PublicFooter() {
             <p className="measure text-sand/70 mt-5 text-sm">
               Studio reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
             </p>
+            <Link
+              to="/dat-tu-van"
+              className="text-amber decoration-amber/40 hover:decoration-amber mt-5 inline-block text-sm underline underline-offset-[6px]"
+            >
+              Nhận tư vấn
+            </Link>
           </div>
 
           <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Liên hệ</p>
+            <p className="label-micro text-amber">Đến studio</p>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex gap-3">
                 <dt className="text-sand/50 w-20 shrink-0">Địa chỉ</dt>
@@ -208,7 +221,7 @@ function PublicFooter() {
           </div>
 
           <div className="md:col-span-4">
-            <p className="label-micro text-sand/60">Trang</p>
+            <p className="label-micro text-amber">Trang</p>
             <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               {PUBLIC_FOOTER_NAV.map((item) => (
                 <li key={item.to}>
@@ -224,8 +237,14 @@ function PublicFooter() {
           </div>
         </div>
 
-        <div className="border-rule-dark text-2xs text-sand/50 mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+        <div className="border-rule-dark text-sand/55 mt-12 flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t pt-6 text-xs">
           <p>© {new Date().getFullYear()} Soul Pilates Nha Trang</p>
+          {/* One disclosure for the whole site instead of a caption under every
+              frame. Remove with the last file in public/images/concept/. */}
+          <p>
+            Ảnh trên website là ảnh minh họa cho bản duyệt thiết kế, sẽ được thay bằng ảnh
+            chụp tại studio.
+          </p>
           <p>
             <Link to="/dang-nhap" className="hover:text-sand/80">
               Dành cho học viên, huấn luyện viên và nhân viên studio

@@ -1,6 +1,10 @@
+import { Link } from "react-router";
+
+import { ArrowLink } from "~/ui/arrow-link";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
+import { Button } from "~/ui/button";
 import { Section } from "~/ui/layout";
-import { PublicPageHeader } from "~/ui/public-page";
+import { SectionRail } from "~/ui/public-page";
 
 import type { Route } from "./+types/about";
 
@@ -15,58 +19,116 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
+const PRINCIPLES = [
+  {
+    term: "Lớp nhỏ",
+    def: "Lớp nhóm tối đa 3 học viên, và không vượt quá kể cả khi có người muốn tập thêm. Lớp riêng là một kèm một.",
+  },
+  {
+    term: "Một người dạy",
+    def: "Người dạy buổi của bạn chịu trách nhiệm cho buổi đó, từ đầu đến cuối.",
+  },
+  {
+    term: "Chỉnh trước, tăng sau",
+    def: "Nếu một động tác chưa đúng, buổi tập dừng lại để chỉnh thay vì đi tiếp cho đủ bài.",
+  },
+];
+
+/**
+ * The one page whose subject is the room itself, so it is the one page that
+ * opens on a full-width photograph. The title panel overlaps the frame's lower
+ * left corner on the cream ground: type is joined to the picture without being
+ * set on it, so no scrim is ever needed (P1).
+ */
 export default function About() {
   return (
     <>
-      <PublicPageHeader
-        label="Studio"
-        title="Một phòng tập được giữ nhỏ, có chủ đích."
-        lede="Soul Pilates Nha Trang chọn số lượng người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác."
-      />
+      <section className="bg-sand">
+        <div className="aspect-4/3 md:aspect-16/9 lg:aspect-auto lg:h-[38.75rem]">
+          <ArtDirectedImage
+            photo="room"
+            priority
+            disclose="top-right"
+            sizes="100vw"
+            imgClassName="object-[50%_62%]"
+          />
+        </div>
+        <div className="gutter mx-auto max-w-(--container-page)">
+          <div className="grid grid-cols-1 gap-y-8 pb-16 md:pb-24 lg:grid-cols-12 lg:gap-x-6">
+            <div className="bg-sand relative -mt-10 pt-8 pr-6 md:-mt-18 md:pt-12 lg:col-span-7 lg:-mt-42 lg:pt-14 lg:pr-16">
+              {/* The panel's ground continues to the viewport edge on the left
+                  so its corner reads as a cut into the photograph, not a card. */}
+              <span
+                aria-hidden="true"
+                className="bg-sand absolute inset-y-0 right-full w-[100vw]"
+              />
+              <p className="label-micro text-copper">Studio</p>
+              <h1 className="font-display text-d1 text-ink mt-5 font-light">
+                Một phòng tập được giữ nhỏ,{" "}
+                <em className="text-copper font-light">có chủ đích</em>.
+              </h1>
+              <p className="measure text-lede text-ink-2 mt-6">
+                Studio chọn số người trong mỗi buổi tập trước khi chọn bất cứ điều gì khác,
+                để huấn luyện viên luôn nhìn thấy từng người.
+              </p>
+            </div>
+            {/* The sticky header already carries the ask in this viewport (P2),
+                so the page offers it as a question instead of a second button. */}
+            <div className="lg:col-span-4 lg:col-start-9 lg:self-end">
+              <p className="measure text-ink-2 text-sm">
+                Muốn hỏi về phòng tập hay giờ tập? Để lại số, studio gọi lại.
+              </p>
+              <ArrowLink to="/dat-tu-van">Hỏi studio</ArrowLink>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Section index="01" label="Không gian">
-        <div className="grid gap-x-8 gap-y-10 pb-20 md:grid-cols-12 md:pb-28">
-          <div className="md:col-span-6">
+        <div className="grid grid-cols-1 gap-y-8 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
+          <SectionRail title="Bố trí quanh máy, không quanh gương." />
+          <div className="grid gap-6 sm:grid-cols-2 sm:gap-x-12 lg:col-span-8">
             <p className="measure text-ink-2 text-base">
-              Phòng tập được bố trí quanh các máy reformer đặt song song, để huấn luyện viên
-              đi được giữa các máy và nhìn thấy cả hai bên cơ thể của mỗi người. Ánh sáng
-              lấy từ cửa sổ; không có gương phủ kín tường, vì phần lớn việc căn chỉnh được
-              cảm nhận chứ không nhìn thấy.
+              Các máy reformer được đặt song song, đủ khoảng trống để huấn luyện viên đi
+              giữa các máy và quan sát cả hai bên cơ thể mỗi người.
             </p>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <div className="aspect-square w-full">
-              <ArtDirectedImage photo="room" sizes="(min-width: 768px) 35vw, 100vw" />
-            </div>
+            <p className="measure text-ink-2 text-base">
+              Phần lớn việc căn chỉnh được cảm nhận hơn là nhìn thấy, vì vậy hướng dẫn trong
+              buổi tập đi qua lời nói và tay chỉnh của huấn luyện viên.
+            </p>
           </div>
         </div>
       </Section>
 
       <Section index="02" label="Nguyên tắc" tone="deep">
-        <dl className="pb-20 md:pb-28">
-          {[
-            {
-              term: "Lớp nhỏ",
-              def: "Số chỗ mỗi buổi do studio đặt cho từng lớp, và không được vượt qua — kể cả khi có người muốn tập thêm.",
-            },
-            {
-              term: "Một huấn luyện viên cho mỗi buổi",
-              def: "Người dạy buổi của bạn là người chịu trách nhiệm cho buổi đó, từ đầu đến cuối.",
-            },
-            {
-              term: "Không có buổi tập bù cho việc tập sai",
-              def: "Nếu một động tác chưa đúng, buổi tập dừng lại ở đó và chỉnh, thay vì đi tiếp cho đủ bài.",
-            },
-          ].map(({ term, def }) => (
-            <div key={term} className="rule-t grid gap-x-8 gap-y-2 py-6 md:grid-cols-12">
-              <dt className="text-ink text-lg md:col-span-4">{term}</dt>
-              <dd className="measure text-ink-2 text-sm md:col-span-7 md:col-start-6">
-                {def}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="grid grid-cols-1 gap-y-8 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
+          <SectionRail title="Ba điều studio giữ ở mọi buổi tập." />
+          <dl className="lg:col-span-8">
+            {PRINCIPLES.map(({ term, def }) => (
+              <div
+                key={term}
+                className="border-rule-2 grid gap-2 border-t py-5 last:border-b sm:grid-cols-[11rem_1fr] sm:gap-6"
+              >
+                <dt className="text-ink text-base font-medium">{term}</dt>
+                <dd className="measure text-ink-2 text-base">{def}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </Section>
+
+      <section className="bg-sand">
+        <div className="gutter mx-auto flex max-w-(--container-page) flex-wrap items-end justify-between gap-8 py-20 md:py-28">
+          <h2 className="font-display text-d2 text-ink max-w-[16em] font-light">
+            Hai hình thức tập: lớp nhóm và lớp riêng.
+          </h2>
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-2">
+            <Button asChild variant="secondary" size="lg">
+              <Link to="/dich-vu">Xem hình thức tập</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

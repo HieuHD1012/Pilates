@@ -86,13 +86,24 @@ for (const pattern of PUBLIC_SOURCES) {
 /* ── Report ─────────────────────────────────────────────────────────────── */
 const photosMissing = Object.values(PHOTOGRAPHY).filter((b) => b.src === null).length;
 const photosTotal = Object.keys(PHOTOGRAPHY).length;
+const conceptPhotos = Object.values(PHOTOGRAPHY).filter((b) =>
+  b.src?.startsWith("/images/concept/"),
+);
+
+if (releaseMode && conceptPhotos.length > 0) {
+  failures.push(
+    `${conceptPhotos.length} ảnh minh họa tạm vẫn còn trong public/images/concept/ — thay bằng ảnh thật được studio duyệt trước khi release.`,
+  );
+}
 
 if (notes.length) {
   console.log("Nội dung đang chờ:");
   for (const note of notes) console.log(`  · ${note}`);
   console.log("");
 }
-console.log(`Ảnh studio: ${photosTotal - photosMissing}/${photosTotal} slot đã có.\n`);
+console.log(
+  `Ảnh: ${photosTotal - photosMissing}/${photosTotal} slot đã có; ${conceptPhotos.length} ảnh minh họa tạm.\n`,
+);
 
 if (untracked.length > 0) {
   console.error("Dữ kiện bắt buộc còn thiếu và chưa ai nhận:\n");

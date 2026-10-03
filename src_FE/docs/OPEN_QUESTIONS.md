@@ -113,3 +113,19 @@ items are listed so they are not "re-discovered"; open items are work.
   see the class-capacity item above.
 - Neither the grid nor the ruler collapses unused midday hours; roughly half the
   visible grid can be empty for a studio that teaches mornings and evenings.
+
+## Provisional policies modelled on Soul Pilates Đà Nẵng (03/10/2026)
+
+The owner asked for the public site to follow Soul Đà Nẵng's published policies
+until the Nha Trang studio confirms its own ("sai gì chủ sửa sau"). These are
+**owner-authorised placeholders, not confirmed facts**. Location facts were not
+copied: another city's address, phone or map link is a wrong door, not a policy.
+
+| Claim on the public site                       | Source                                                                           | Where it lives                                  | Confirm before launch                                           |
+| ---------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- |
+| Group classes: at most 3 students (1:3)        | Soul homepage, "Group Class 1:3"                                                 | `CLASS_FORMATS[group].ratio/size`               | Real capacity per class is still set by staff; must match.      |
+| Private classes: 1 student, 1 trainer (1:1)    | Soul homepage                                                                    | `CLASS_FORMATS[private]`                        | Backend allows capacity 2 (internal Duo) — decide.              |
+| 55-minute sessions                             | Soul timetable                                                                   | `SESSION_MINUTES`; schedule rows use real times | Copy only; rows always show the class's real duration.          |
+| Opening hours Mon–Sat 07:30–19:30              | Soul footer                                                                      | `STUDIO.openingHours`                           | Nha Trang hours.                                                |
+| Private cancellation window 1 hour (was 8)     | **Not Soul** — matches what the backend enforces; Soul publishes both 12h and 3h | `CANCELLATION_POLICY.private`                   | Owner picks one window per format; backend and copy must agree. |
+| Demo catalogue 5/10/20/30 packs at Soul prices | Soul /packages                                                                   | `app/mocks/fixtures.ts` (DEMO, dev only)        | Real packages and prices are entered by staff.                  |

@@ -96,7 +96,7 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
           {trainer.phone ? (
             <a
               href={telHref(trainer.phone)}
-              className="decoration-rule-2 hover:decoration-lacquer underline underline-offset-[6px]"
+              className="decoration-rule-2 hover:decoration-copper underline underline-offset-[6px]"
             >
               {formatPhone(trainer.phone)}
             </a>

@@ -94,7 +94,7 @@ function TrainerRow({ trainer }: { trainer: TrainerResponse }) {
       <div className="min-w-0">
         <Link
           to={`/studio/huan-luyen-vien/${trainer.id}`}
-          className="text-ink decoration-rule-2 hover:decoration-lacquer text-base underline underline-offset-[6px]"
+          className="text-ink decoration-rule-2 hover:decoration-copper text-base underline underline-offset-[6px]"
         >
           {trainer.full_name}
         </Link>

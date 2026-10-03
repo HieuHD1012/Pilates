@@ -130,7 +130,7 @@ export default function ResetPassword() {
           <p className="text-ink-2 mt-6 text-sm">
             <Link
               to="/dang-nhap"
-              className="decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+              className="decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
             >
               Quay lại đăng nhập
             </Link>
@@ -199,7 +199,7 @@ export default function ResetPassword() {
           <p className="text-ink-2 mt-6 text-sm">
             <Link
               to="/dang-nhap"
-              className="decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+              className="decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
             >
               Quay lại đăng nhập
             </Link>
