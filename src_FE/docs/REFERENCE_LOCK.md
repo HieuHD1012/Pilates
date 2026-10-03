@@ -48,6 +48,13 @@ composition needs a photograph to work, the composition is wrong.
 Never: yoga stock, AI-generated people, transformation before/after, tropical
 tourism imagery, influencer fitness photography, or another branch's pictures.
 
+**Temporary exception, 2026-10-03 (ADR 0005):** six AI-generated concept
+frames in `public/images/concept/` stand in for the shoot so the owner can judge
+the composition. Each page's first concept frame carries an "Ảnh minh họa" note,
+the footer discloses once, the trainers page uses none, and
+`npm run check:release` fails while any is referenced. The replacement brief is
+in the owner-review canvas; recheck every focal point after the swap.
+
 ## Type strategy
 
 - **Newsreader** (variable, `opsz` 6–72) — display, editorial passages, and every
@@ -60,17 +67,23 @@ tourism imagery, influencer fitness photography, or another branch's pictures.
 
 ## Colour strategy
 
-Ground `--color-sand` (public) / `--color-chalk` (app). Ink `--color-ink`, a
-green-black. Hairlines `--color-rule`.
+**Revised 2026-10-03 — ADR 0005 ("Warm Measure").** The owner chose the warm
+cream, copper and brown of Soul Đà Nẵng; the lacquer red and green-black ink are
+retired. Token names keep their roles.
 
-**One BRAND mark: `--color-lacquer`.** It is the only decorative colour, and it
-appears at most once per page as an action, plus as the "today"/active marker.
+Ground `--color-sand` (cream, public) / `--color-chalk` (app). Ink `--color-ink`,
+a warm brown. Hairlines `--color-rule`.
+
+**One BRAND colour: `--color-copper`.** It is the action and link colour of the
+public site, and the "today"/active marker. `--color-copper-bright` (Soul's own
+copper) and `--color-amber` are its decorative forms: display numerals ≥ 40px,
+accent strokes, accents on the ink field — never body text.
 
 Separately, four **semantic** hues (`success` / `warning` / `danger` / `info`)
 carry status and nothing else. They are data, not decoration — a schedule row
 legitimately shows three of them at once. Do not describe this system as
 "single-accent": it is one brand mark plus a status palette, and the two never
-share a context (which is why the app's primary button is `ink`, not `lacquer`).
+share a context (which is why the app's primary button is `ink`, not `copper`).
 
 Full palette and measured contrast ratios: `docs/DESIGN_SYSTEM.md`.
 
@@ -79,6 +92,8 @@ Full palette and measured contrast ratios: `docs/DESIGN_SYSTEM.md`.
 1. Rules, not cards. A border-box needs a reason beyond "grouping".
 2. Sections open on a hairline with a numeral and a sentence-case label.
 3. Twelve-column grid; content is offset, not centred, unless centring is the point.
+   Public sections split 4 (heading rail) / 8 (content). Only photographs leave
+   the grid (`bleed-*`), in the three places ADR 0005 names.
 4. Long-form text is capped at the measure.
 5. Repetition is the rhythm. Not every section gets its own invention.
 6. Square corners for structure; 2–3px only on controls; pills only for avatars
@@ -99,7 +114,7 @@ operational surface responds instantly and gets out of the way.
 | Ground         | `sand`                                                                 | `chalk` / `paper`  |
 | Display serif  | Headlines and editorial                                                | Figures only       |
 | Density        | Editorial, generous                                                    | Compact, scannable |
-| Primary action | `lacquer`                                                              | `ink`              |
+| Primary action | `copper`                                                               | `ink`              |
 | Motion         | Reveals allowed                                                        | Feedback only      |
 | Shared         | Rules, tokens, figures, micro-labels, status vocabulary, form language |
 

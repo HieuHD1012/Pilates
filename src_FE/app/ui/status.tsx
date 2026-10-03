@@ -71,3 +71,36 @@ export function CapacityMeter({
     </span>
   );
 }
+
+/**
+ * Public availability. A schedule row is not a status report, so this is not a
+ * badge: no box, no wash, one dot and two words. "Còn chỗ" is a filled olive
+ * dot in ink; "Hết chỗ" is an empty ring in the secondary ink, and the row it
+ * sits in recedes with it. The words carry the meaning; the dot only repeats it.
+ */
+export function Availability({
+  isFull,
+  className,
+}: {
+  isFull: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 text-sm whitespace-nowrap",
+        isFull ? "text-ink-2" : "text-ink",
+        className,
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "size-2 shrink-0 rounded-full",
+          isFull ? "border-ink-3 border" : "bg-success",
+        )}
+      />
+      {isFull ? "Hết chỗ" : "Còn chỗ"}
+    </span>
+  );
+}

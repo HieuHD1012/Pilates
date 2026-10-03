@@ -28,7 +28,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     "block py-1.5 text-sm transition-colors",
     isActive
-      ? "text-ink border-l-lacquer -ml-3 border-l-2 pl-[calc(0.75rem-2px)]"
+      ? "text-ink border-l-copper -ml-3 border-l-2 pl-[calc(0.75rem-2px)]"
       : "text-ink-2 hover:text-ink active:text-ink",
   );
 
@@ -87,7 +87,7 @@ function StaffRail() {
             type="button"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
-            className="text-ink-2 hover:text-ink active:text-ink decoration-rule-2 hover:decoration-lacquer mt-1 text-xs underline underline-offset-[6px] disabled:cursor-not-allowed"
+            className="text-ink-2 hover:text-ink active:text-ink decoration-rule-2 hover:decoration-copper mt-1 text-xs underline underline-offset-[6px] disabled:cursor-not-allowed"
           >
             Đăng xuất
           </button>

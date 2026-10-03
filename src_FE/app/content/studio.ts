@@ -35,8 +35,20 @@ export const STUDIO: StudioFacts = {
   whatsappUrl: null,
   instagramUrl: null,
   email: null,
-  openingHours: null,
+  // PROVISIONAL (2026-10-03): modelled on Soul Pilates Đà Nẵng's published
+  // hours at the owner's request, pending the Nha Trang owner's confirmation.
+  openingHours: "Thứ hai – Thứ bảy · 07:30 – 19:30",
 };
+
+/**
+ * PROVISIONAL POLICIES (2026-10-03). The owner asked for the public site to
+ * follow Soul Pilates Đà Nẵng's policies until the Nha Trang studio confirms
+ * its own ("sai gì chủ sửa sau"). Every value here is a product claim the owner
+ * still has to sign off — see docs/OPEN_QUESTIONS.md. Location facts (address,
+ * phone, map) are deliberately NOT copied: another city's address is not a
+ * policy, it is a wrong door.
+ */
+export const SESSION_MINUTES = 55;
 
 /**
  * CONTENT DEBT
@@ -80,6 +92,9 @@ export const CLASS_FORMATS = [
     id: "group" as const,
     name: "Lớp nhóm",
     sub: "Group",
+    /** PROVISIONAL — Soul Đà Nẵng caps group classes at three. */
+    ratio: "1:3",
+    size: "Tối đa 3 học viên mỗi lớp",
     /** Capacity is configured per class by the studio; it is not a brand claim. */
     body: "Một nhóm nhỏ trên reformer, cùng một bài, nhưng mỗi người được chỉnh riêng. Huấn luyện viên vẫn nhìn thấy từng người trong suốt buổi tập.",
     forWho: [
@@ -92,7 +107,9 @@ export const CLASS_FORMATS = [
     id: "private" as const,
     name: "Lớp riêng",
     sub: "Private",
-    body: "Một học viên, một huấn luyện viên. Bài tập được dựng theo cơ thể bạn — chấn thương cũ, thói quen tư thế, mục tiêu cụ thể.",
+    ratio: "1:1",
+    size: "Một học viên, một huấn luyện viên",
+    body: "Bài tập được dựng theo cơ thể bạn — chấn thương cũ, thói quen tư thế, mục tiêu cụ thể.",
     forWho: [
       "Đang phục hồi sau chấn thương",
       "Buổi tập đầu tiên với reformer",
@@ -108,7 +125,10 @@ export const CLASS_FORMATS = [
  */
 export const CANCELLATION_POLICY = {
   group: 4,
-  private: 8,
+  // Was 8, which contradicted the backend (1 hour). The site now states what
+  // the booking system actually enforces; Soul Đà Nẵng publishes two different
+  // windows itself (12h and 3h), so it could not settle this one.
+  private: 1,
 } as const;
 
 /** How a first visit actually works in this system. Not a marketing promise. */
@@ -131,6 +151,9 @@ export const FIRST_VISIT_STEPS = [
   {
     index: "04",
     title: "Đặt lớp trực tuyến",
-    body: "Từ buổi thứ hai trở đi, bạn tự đặt, đổi hoặc hủy lớp trong tài khoản của mình.",
+    // Neutral on purpose. "From the second session" is the usual journey, not a
+    // rule the backend enforces, and the owner has not confirmed it as policy
+    // (SOUL_BUSINESS_AUDIT.md, BR-10).
+    body: "Khi đã có tài khoản và gói, bạn tự đặt, đổi hoặc hủy lớp trong tài khoản của mình.",
   },
 ];

@@ -38,9 +38,13 @@ export default function Promotions() {
   return (
     <>
       <PublicPageHeader
-        label="Khuyến mãi"
-        title="Ưu đãi và thông báo được công bố tại đây."
-        lede="Khi studio có đợt ưu đãi, thay đổi lịch tập hoặc thông báo cần học viên biết, nội dung sẽ xuất hiện trên trang này kèm ngày công bố."
+        label="Ưu đãi và thông báo"
+        title={
+          <>
+            Tin từ <em>studio</em>
+          </>
+        }
+        lede="Ưu đãi, lịch nghỉ lễ và thay đổi lịch tập. Chỉ những thông báo studio đã đăng mới xuất hiện ở đây, kèm ngày công bố."
       />
 
       <Section index="01" label="Thông báo">
@@ -68,7 +72,7 @@ export default function Promotions() {
             emptyDescription="Studio đăng các đợt ưu đãi, thay đổi lịch tập và thông báo dành cho học viên tại trang này. Nếu bạn đang muốn biết mức giá và gói đang áp dụng, nhân viên sẽ trao đổi trực tiếp với bạn."
             emptyAction={
               <Button asChild variant="secondary">
-                <Link to="/dat-tu-van">Hỏi studio về ưu đãi</Link>
+                <Link to="/dat-tu-van?tu=khuyen-mai">Hỏi studio về ưu đãi</Link>
               </Button>
             }
             errorDescription="Chưa tải được danh sách thông báo. Bạn có thể thử lại, hoặc để lại thông tin để nhân viên studio trao đổi trực tiếp."

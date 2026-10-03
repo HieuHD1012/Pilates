@@ -164,7 +164,7 @@ export default function StaffStudentDetail() {
                     <dd>
                       <a
                         href={telHref(student.phone)}
-                        className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+                        className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
                       >
                         {formatPhone(student.phone)}
                       </a>

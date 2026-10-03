@@ -108,7 +108,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
           <p className="mt-1.5">
             <a
               href={telHref(lead.phone)}
-              className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-sm underline underline-offset-[6px]"
+              className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
             >
               {formatPhone(lead.phone)}
             </a>
@@ -121,7 +121,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
           {lead.converted_student_id !== null ? (
             <Link
               to={`/studio/hoc-vien/${lead.converted_student_id}`}
-              className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-xs underline underline-offset-[6px]"
+              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px]"
             >
               Xem hồ sơ học viên
             </Link>
@@ -163,7 +163,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
           <DetailRow label="Hồ sơ học viên" labelWidth="10rem">
             <Link
               to={`/studio/hoc-vien/${lead.converted_student_id}`}
-              className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[6px]"
+              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
             >
               Mở hồ sơ học viên
             </Link>

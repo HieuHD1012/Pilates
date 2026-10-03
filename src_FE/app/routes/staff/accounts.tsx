@@ -40,8 +40,8 @@ export function meta(_: Route.MetaArgs) {
  * screen. The result then replaces the action — the row's badge and its button
  * both flip once the backend has confirmed.
  *
- * No `text-lacquer` accent on the locked count on purpose: a locked account
- * already renders a `danger` badge, and lacquer must never share a context with
+ * No `text-copper` accent on the locked count on purpose: a locked account
+ * already renders a `danger` badge, and copper must never share a context with
  * danger (docs/DESIGN_SYSTEM.md).
  */
 

@@ -320,7 +320,7 @@ function RowActions({ payment }: { payment: PaymentResponse }) {
           type="button"
           disabled={confirm.isPending}
           onClick={() => confirm.mutate(payment.id)}
-          className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-xs underline underline-offset-[6px] disabled:opacity-60"
+          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px] disabled:opacity-60"
         >
           Xác nhận
         </button>
@@ -329,7 +329,7 @@ function RowActions({ payment }: { payment: PaymentResponse }) {
       <button
         type="button"
         onClick={() => setVoiding(true)}
-        className="text-ink-2 decoration-rule-2 hover:text-lacquer hover:decoration-lacquer text-xs underline underline-offset-[6px]"
+        className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px]"
       >
         Hủy phiếu
       </button>

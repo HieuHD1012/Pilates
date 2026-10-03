@@ -176,11 +176,17 @@ export const DEMO_STUDENTS: StudentResponse[] = [
   },
 ];
 
+/**
+ * The public catalogue is modelled on Soul Pilates Đà Nẵng's published packs
+ * (5 / 10 / 20 / 30 credits, group and private) so a design review sees a
+ * realistic price ladder. Still DEMO data: names keep the prefix and nothing
+ * here reaches a production build. Validity windows are invented for the demo.
+ */
 export const DEMO_PACKAGE_TYPES: PackageTypeResponse[] = [
   {
     id: 1,
     name: "DEMO Gói 10 buổi nhóm",
-    price: "3000000.00",
+    price: "4250000.00",
     credits: 10,
     duration_days: 90,
     class_type: "GROUP",
@@ -189,7 +195,7 @@ export const DEMO_PACKAGE_TYPES: PackageTypeResponse[] = [
   {
     id: 2,
     name: "DEMO Gói 5 buổi riêng",
-    price: null,
+    price: "3825000.00",
     credits: 5,
     duration_days: 60,
     class_type: "PRIVATE",
@@ -203,6 +209,51 @@ export const DEMO_PACKAGE_TYPES: PackageTypeResponse[] = [
     duration_days: 30,
     class_type: "GROUP",
     is_selling: false,
+  },
+  {
+    id: 4,
+    name: "DEMO Gói 5 buổi nhóm",
+    price: "2250000.00",
+    credits: 5,
+    duration_days: 45,
+    class_type: "GROUP",
+    is_selling: true,
+  },
+  {
+    id: 5,
+    name: "DEMO Gói 20 buổi nhóm",
+    price: "8000000.00",
+    credits: 20,
+    duration_days: 150,
+    class_type: "GROUP",
+    is_selling: true,
+  },
+  {
+    id: 6,
+    name: "DEMO Gói 30 buổi nhóm",
+    price: "11250000.00",
+    credits: 30,
+    duration_days: 210,
+    class_type: "GROUP",
+    is_selling: true,
+  },
+  {
+    id: 7,
+    name: "DEMO Gói 10 buổi riêng",
+    price: "7225000.00",
+    credits: 10,
+    duration_days: 120,
+    class_type: "PRIVATE",
+    is_selling: true,
+  },
+  {
+    id: 8,
+    name: "DEMO Gói 20 buổi riêng",
+    price: null,
+    credits: 20,
+    duration_days: 180,
+    class_type: "PRIVATE",
+    is_selling: true,
   },
 ];
 
@@ -387,31 +438,32 @@ export function buildDemoClasses(): ClassSessionResponse[] {
     const weekday = new Date(`${dayKey(offset)}T00:00:00Z`).getUTCDay();
     if (weekday === 0) continue; // The studio is closed on Sundays in this fixture.
 
-    sessions.push({
-      id: id++,
-      starts_at: at(offset, "06:00"),
-      ends_at: at(offset, "06:50"),
-      trainer_id: 1,
-      class_type: "GROUP",
-      capacity: 6,
-      status: "SCHEDULED",
-      recurrence_id: "demo-recurrence",
-      cancel_reason: null,
-    });
-
-    if (weekday % 2 === 1) {
+    const add = (
+      start: string,
+      end: string,
+      trainer: number,
+      type: "GROUP" | "PRIVATE",
+      capacity: number,
+    ) =>
       sessions.push({
         id: id++,
-        starts_at: at(offset, "17:30"),
-        ends_at: at(offset, "18:20"),
-        trainer_id: 2,
-        class_type: "PRIVATE",
-        capacity: 2,
+        starts_at: at(offset, start),
+        ends_at: at(offset, end),
+        trainer_id: trainer,
+        class_type: type,
+        capacity,
         status: "SCHEDULED",
-        recurrence_id: null,
+        recurrence_id: type === "GROUP" ? "demo-recurrence" : null,
         cancel_reason: null,
       });
-    }
+
+    // Soul Đà Nẵng's rhythm: 55-minute sessions, groups of three, mornings and
+    // evenings, private sessions in the afternoon gap.
+    add("07:00", "07:55", 1, "GROUP", 3);
+    if (weekday % 2 === 1) add("09:00", "09:55", 2, "GROUP", 3);
+    if (weekday % 2 === 0) add("15:00", "15:55", 2, "PRIVATE", 1);
+    add("17:30", "18:25", 1, "GROUP", 3);
+    if (weekday !== 6) add("18:45", "19:40", 2, "GROUP", 3);
   }
 
   return sessions;

@@ -94,7 +94,7 @@ export default function StudentPackages() {
                   </div>
 
                   {item.status === "ACTIVE" && item.balance_cached === 0 ? (
-                    <p className="text-lacquer mt-3 text-xs">
+                    <p className="text-copper mt-3 text-xs">
                       Gói đã hết buổi. Nhân viên studio sẽ liên hệ để gia hạn.
                     </p>
                   ) : null}

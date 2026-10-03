@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "~/lib/cn";
 
-type Variant = "primary" | "lacquer" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "copper" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANT: Record<Variant, string> = {
@@ -13,13 +13,13 @@ const VARIANT: Record<Variant, string> = {
   /**
    * The brand mark as an action. Reserved for the single dominant call to
    * action on a public page. Never appears beside a status badge (see
-   * docs/DESIGN_SYSTEM.md — lacquer and danger must not share a context).
+   * docs/DESIGN_SYSTEM.md — copper and danger must not share a context).
    */
-  lacquer: "bg-lacquer text-sand hover:bg-lacquer-2 active:bg-lacquer-2 disabled:bg-ink-3",
+  copper: "bg-copper text-sand hover:bg-copper-2 active:bg-copper-2 disabled:bg-ink-3",
   secondary:
     "bg-transparent text-ink border border-rule-2 hover:border-ink hover:bg-sand-deep/60 active:bg-sand-deep active:border-ink disabled:text-ink-3 disabled:border-rule",
   ghost:
-    "bg-transparent text-ink underline decoration-rule-2 decoration-1 underline-offset-[6px] hover:decoration-lacquer hover:text-lacquer active:text-lacquer-2 active:decoration-lacquer-2 disabled:text-ink-3 disabled:no-underline",
+    "bg-transparent text-ink underline decoration-rule-2 decoration-1 underline-offset-[6px] hover:decoration-copper hover:text-copper active:text-copper-2 active:decoration-copper-2 disabled:text-ink-3 disabled:no-underline",
   danger:
     "bg-transparent text-danger border border-danger/40 hover:bg-danger-wash hover:border-danger active:bg-danger-wash active:border-danger disabled:text-ink-3 disabled:border-rule",
 };

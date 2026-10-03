@@ -22,34 +22,40 @@ the answer is a token, not an exception.
 
 ## Colour
 
-| Token       | Value     | Contrast on `sand` | Use                                                             |
-| ----------- | --------- | ------------------ | --------------------------------------------------------------- |
-| `sand`      | `#f2f0ea` | —                  | Public canvas                                                   |
-| `sand-deep` | `#e9e6dd` | —                  | Recessed public field, hover                                    |
-| `chalk`     | `#fbfaf7` | —                  | Application canvas                                              |
-| `paper`     | `#ffffff` | —                  | Application surfaces: tables, panels, dialogs                   |
-| `ink`       | `#1b1e19` | 14.79 : 1          | Primary text, primary buttons                                   |
-| `ink-deep`  | `#101210` | —                  | Dark full-bleed fields, footer                                  |
-| `ink-2`     | `#5c6057` | 5.64 : 1           | Secondary text                                                  |
-| `ink-3`     | `#767a6e` | 3.86 : 1           | **Non-text only**: disabled, decorative, ≥24px display numerals |
-| `rule`      | `#dedace` | —                  | The hairline                                                    |
-| `rule-2`    | `#c3bfb1` | —                  | Emphasised hairline, control borders                            |
-| `rule-dark` | `#33362e` | —                  | Hairline on dark fields                                         |
-| `lacquer`   | `#8a3324` | 7.14 : 1           | The brand mark, focus ring, "today", the one public CTA         |
-| `lacquer-2` | `#6d2718` | —                  | Hover / pressed                                                 |
-| `success`   | `#2f6a4f` | 5.59 : 1           | Status only                                                     |
-| `warning`   | `#8a6212` | 4.80 : 1           | Status only                                                     |
-| `danger`    | `#b3261e` | 5.74 : 1           | Status and destructive actions only                             |
-| `info`      | `#2b5673` | 6.87 : 1           | Status only                                                     |
+| Token           | Value     | Contrast on `sand`   | Use                                                             |
+| --------------- | --------- | -------------------- | --------------------------------------------------------------- |
+| `sand`          | `#fff5ec` | —                    | Public canvas (Soul cream)                                      |
+| `sand-deep`     | `#f8e9da` | —                    | Recessed public field (linen), hover                            |
+| `chalk`         | `#fffaf5` | —                    | Application canvas                                              |
+| `paper`         | `#ffffff` | —                    | Application surfaces: tables, panels, dialogs                   |
+| `ink`           | `#2c2319` | 14.34 : 1            | Primary text, primary buttons                                   |
+| `ink-deep`      | `#1a1410` | —                    | Dark full-bleed fields, footer                                  |
+| `ink-2`         | `#64503e` | 7.08 : 1             | Secondary text (6.40 : 1 on `sand-deep`)                        |
+| `ink-3`         | `#8f7a66` | 3.80 : 1             | **Non-text only**: disabled, decorative, ≥24px display numerals |
+| `rule`          | `#ead8c6` | —                    | The hairline                                                    |
+| `rule-2`        | `#d3baa1` | —                    | Emphasised hairline, control borders                            |
+| `rule-dark`     | `#4b3c2f` | —                    | Hairline on dark fields                                         |
+| `copper`        | `#9a4e2d` | 5.58 : 1             | The brand colour: public CTA, links, focus ring, "today"        |
+| `copper-2`      | `#7a3b20` | —                    | Hover / pressed                                                 |
+| `copper-wash`   | `#fce5d1` | —                    | Selected choice chip, lead-context note (Soul peach)            |
+| `copper-bright` | `#c97b4b` | 3.04 : 1             | **Non-text only**: display numerals ≥ 40px, accent strokes      |
+| `amber`         | `#d4a574` | 8.19 : 1 on ink-deep | Accent text on the ink field only                               |
+| `success`       | `#3c6a3b` | 5.89 : 1             | Status only; public "Còn chỗ" dot                               |
+| `warning`       | `#8a6212` | 5.09 : 1             | Status only                                                     |
+| `danger`        | `#b3261e` | 6.08 : 1             | Status and destructive actions only                             |
+| `info`          | `#2b5673` | 7.28 : 1             | Status only                                                     |
 
-White on `lacquer` is 8.14 : 1; white on `ink` is 16.85 : 1.
+Values from ADR 0005 ("Warm Measure"), which replaced the lacquer red and
+green-black ink with the owner's Soul palette. White on `copper` is 6.00 : 1;
+white on `ink` is 15.42 : 1.
 
 **Two colour rules that matter**
 
-1. `ink-3` fails AA for body text. Use `ink-2` for anything readable.
-2. `lacquer` and `danger` are adjacent hues. They must never appear in the same
+1. `ink-3` and `copper-bright` fail AA for body text. Use `ink-2` or `copper`
+   for anything readable.
+2. `copper` and `danger` are adjacent hues. They must never appear in the same
    context. In the application the primary button is `ink`, precisely so a
-   lacquer button never sits beside a danger badge.
+   copper button never sits beside a danger badge.
 
 ## Type
 

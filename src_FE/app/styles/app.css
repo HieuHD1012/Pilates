@@ -9,7 +9,8 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    SOUL PILATES NHA TRANG — design tokens
-   Direction: "Measure" (docs/DESIGN_DIRECTION.md, docs/REFERENCE_LOCK.md)
+   Direction: "Warm Measure" (docs/DESIGN_DIRECTION.md, docs/REFERENCE_LOCK.md,
+   docs/adr/0005-warm-measure-palette.md)
 
    Namespaces below are reset with `initial` on purpose. Clearing Tailwind's
    stock palette, radii and shadows means `bg-blue-500`, `rounded-2xl` and
@@ -30,35 +31,43 @@
   --font-*: initial;
 
   /* ── Colour ─────────────────────────────────────────────────────────────
-     Ground is bleached plaster, not cream. Ink is a green-black shadow.
-     One chromatic mark: lacquer, an oxidised red drawn from Vietnamese
-     sơn mài — warm continuity with Soul without tan/terracotta wellness.
+     Direction "Warm Measure" (docs/adr/0005-warm-measure-palette.md). The
+     owner chose the warm cream, beige, copper and brown of Soul Pilates
+     Đà Nẵng; the values below are that palette, adapted for contrast. Ground
+     is cream, ink is a warm brown, and copper is the one brand colour.
      Contrast ratios verified against --color-sand; see DESIGN_SYSTEM.md. */
   --color-transparent: transparent;
   --color-current: currentColor;
   --color-white: #ffffff;
   --color-black: #000000;
 
-  --color-sand: #f2f0ea; /* public canvas */
-  --color-sand-deep: #e9e6dd; /* recessed public field */
-  --color-chalk: #fbfaf7; /* app canvas */
+  --color-sand: #fff5ec; /* public canvas — Soul cream */
+  --color-sand-deep: #f8e9da; /* recessed public field — linen */
+  --color-chalk: #fffaf5; /* app canvas */
   --color-paper: #ffffff; /* app surface: tables, panels, sheets */
 
-  --color-ink: #1b1e19; /* 14.79:1 on sand */
-  --color-ink-deep: #101210; /* dark full-bleed field */
-  --color-ink-2: #5c6057; /*  5.64:1 on sand — secondary text */
-  --color-ink-3: #767a6e; /*  3.86:1 on sand — NON-TEXT / disabled only */
+  --color-ink: #2c2319; /* 14.34:1 on sand */
+  --color-ink-deep: #1a1410; /* dark full-bleed field, footer */
+  --color-ink-2: #64503e; /*  7.08:1 on sand, 6.40:1 on sand-deep — secondary text */
+  --color-ink-3: #8f7a66; /*  3.80:1 on sand — NON-TEXT / disabled only */
 
-  --color-rule: #dedace; /* hairline: the structural unit of this system */
-  --color-rule-2: #c3bfb1; /* emphasised hairline */
-  --color-rule-dark: #33362e; /* hairline on dark fields */
+  --color-rule: #ead8c6; /* hairline: the structural unit of this system */
+  --color-rule-2: #d3baa1; /* emphasised hairline, control border */
+  --color-rule-dark: #4b3c2f; /* hairline on dark fields */
 
-  --color-lacquer: #8a3324; /*  7.14:1 on sand */
-  --color-lacquer-2: #6d2718; /* hover / pressed */
-  --color-lacquer-wash: #f4e7e2;
+  --color-copper: #9a4e2d; /*  5.58:1 on sand; white on it 6.00:1 — actions, links */
+  --color-copper-2: #7a3b20; /* hover / pressed */
+  --color-copper-wash: #fce5d1; /* Soul peach — selected chip, notice ground */
+  /* Soul's own copper. 3.04:1 on sand, so it is decoration only: display
+     numerals at 40px and above, and short accent strokes. Never text. */
+  --color-copper-bright: #c97b4b;
+  /* Accent on dark fields: 8.19:1 on ink-deep. */
+  --color-amber: #d4a574;
 
-  --color-success: #2f6a4f;
-  --color-success-wash: #e6efe9;
+  /* Warmed toward olive so a status dot sits in the cream palette instead of
+     reading as a cool system green. 5.86:1 on sand. */
+  --color-success: #3c6a3b;
+  --color-success-wash: #e8eedf;
   --color-warning: #8a6212;
   --color-warning-wash: #f5eddc;
   --color-danger: #b3261e;
@@ -102,8 +111,12 @@
   /* Leading is set for the WORST CASE line pair, not the average one: a
      dot-below (ộ ạ ệ) sitting under a stacked tone mark (ề ấ ổ) on the next
      line. 0.94 looked right in Latin and left those two marks touching. */
-  --text-d1: clamp(2.75rem, 1.1rem + 6.6vw, 6.25rem);
-  --text-d1--line-height: 1.04;
+  /* Hero and page titles share one composition with an image or an aside, so
+     the ceiling is 78px, not 100px: at 1440 the title column is six tracks
+     wide and a larger size broke "Không tập nhiều hơn." across three lines.
+     Leading 1.08 clears a dot-below under a stacked tone mark. */
+  --text-d1: clamp(2.625rem, 1.2rem + 4.1vw, 4.875rem);
+  --text-d1--line-height: 1.08;
   --text-d1--letter-spacing: -0.022em;
   --text-d2: clamp(2rem, 1.15rem + 3.4vw, 3.5rem);
   --text-d2--line-height: 1.1;
@@ -126,9 +139,9 @@
   /* ── Elevation ──────────────────────────────────────────────────────────
      Three shadows, for three genuinely floating layers. Nothing else may
      cast one; hierarchy comes from rule, surface and space. */
-  --shadow-popover: 0 1px 2px rgb(27 30 25 / 0.06), 0 8px 24px rgb(27 30 25 / 0.1);
-  --shadow-dialog: 0 2px 4px rgb(27 30 25 / 0.06), 0 24px 64px rgb(27 30 25 / 0.18);
-  --shadow-sheet: 0 0 0 1px rgb(27 30 25 / 0.06), -16px 0 48px rgb(27 30 25 / 0.14);
+  --shadow-popover: 0 1px 2px rgb(44 35 25 / 0.06), 0 8px 24px rgb(44 35 25 / 0.1);
+  --shadow-dialog: 0 2px 4px rgb(44 35 25 / 0.06), 0 24px 64px rgb(44 35 25 / 0.18);
+  --shadow-sheet: 0 0 0 1px rgb(44 35 25 / 0.06), -16px 0 48px rgb(44 35 25 / 0.14);
 
   /* ── Layout ─────────────────────────────────────────────────────────────
      `measure` is the typographic measure — the constant this direction is
@@ -234,12 +247,12 @@
   }
 
   ::selection {
-    background-color: var(--color-lacquer);
+    background-color: var(--color-copper);
     color: var(--color-sand);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-lacquer);
+    outline: 2px solid var(--color-copper);
     outline-offset: 2px;
     border-radius: var(--radius-xs);
   }
@@ -308,9 +321,11 @@
  */
 @utility label-micro {
   font-family: var(--font-sans);
-  font-size: var(--text-2xs);
+  /* 12px, not 11: at 11px with open tracking the eyebrow read as a whisper on
+     the cream ground and its stacked marks broke up (2026-10 public audit). */
+  font-size: var(--text-xs);
   line-height: 1.45;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.09em;
   font-weight: 500;
   color: var(--color-ink-2);
 }
@@ -365,13 +380,35 @@
 
 /** Page gutters. One definition, used everywhere. */
 @utility gutter {
-  padding-inline: 1.25rem;
+  --gutter-x: 1.25rem;
+  padding-inline: var(--gutter-x);
   @media (width >= 48rem) {
-    padding-inline: 2.5rem;
+    --gutter-x: 2.5rem;
   }
   @media (width >= 64rem) {
-    padding-inline: 4rem;
+    --gutter-x: 4rem;
   }
+}
+
+/**
+ * BLEED. A photograph inside a `gutter` container may run to the viewport edge
+ * on one side — the only width exception the public grid allows, and only for
+ * images (docs/adr/0005-warm-measure-palette.md). The distance is the gutter
+ * plus whatever the viewport has beyond --container-page. The public layout
+ * clips horizontal overflow, so a classic scrollbar inside 100vw never scrolls.
+ */
+@utility bleed-r {
+  margin-right: calc(
+    -1 * (var(--gutter-x) + max(0px, (100vw - var(--container-page)) / 2))
+  );
+}
+@utility bleed-l {
+  margin-left: calc(-1 * (var(--gutter-x) + max(0px, (100vw - var(--container-page)) / 2)));
+}
+@utility bleed-x {
+  margin-inline: calc(
+    -1 * (var(--gutter-x) + max(0px, (100vw - var(--container-page)) / 2))
+  );
 }
 
 /** Hairline rules — the structural unit. */

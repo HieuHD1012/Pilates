@@ -98,7 +98,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer mt-5 text-sm underline underline-offset-[6px]"
+          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper mt-5 text-sm underline underline-offset-[6px]"
         >
           Thử lại
         </button>
@@ -132,7 +132,7 @@ export function RefreshingRule({ active }: { active: boolean }) {
         active ? "opacity-100" : "opacity-0",
       )}
     >
-      <span className="bg-lacquer block h-px w-1/3 animate-[rule-draw_1200ms_var(--ease-measure)_infinite] motion-reduce:animate-none" />
+      <span className="bg-copper block h-px w-1/3 animate-[rule-draw_1200ms_var(--ease-measure)_infinite] motion-reduce:animate-none" />
     </span>
   );
 }

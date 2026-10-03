@@ -79,7 +79,7 @@ export function WeekGrid({
             key={day}
             className={cn(
               "rule-b rule-l px-2 py-2",
-              day === today && "border-b-lacquer border-b-2",
+              day === today && "border-b-copper border-b-2",
             )}
           >
             <div className="flex items-baseline gap-1.5">
@@ -90,7 +90,7 @@ export function WeekGrid({
                 {formatDayMonth(`${day}T00:00:00+07:00`)}
               </Figures>
               {day === today ? (
-                <span className="label-badge text-lacquer ml-auto">Hôm nay</span>
+                <span className="label-badge text-copper ml-auto">Hôm nay</span>
               ) : null}
             </div>
           </div>
@@ -207,7 +207,7 @@ export function WeekList({
                 {formatDayMonth(`${day}T00:00:00+07:00`)}
               </Figures>
               {day === today ? (
-                <span className="label-badge text-lacquer">Hôm nay</span>
+                <span className="label-badge text-copper">Hôm nay</span>
               ) : null}
             </h3>
 

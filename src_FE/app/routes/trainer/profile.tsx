@@ -64,7 +64,7 @@ export default function TrainerProfile() {
                   {trainer.phone ? (
                     <a
                       href={telHref(trainer.phone)}
-                      className="figures text-ink decoration-rule-2 hover:text-lacquer hover:decoration-lacquer underline underline-offset-[5px]"
+                      className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[5px]"
                     >
                       {formatPhone(trainer.phone)}
                     </a>

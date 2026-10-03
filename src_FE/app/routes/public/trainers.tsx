@@ -2,7 +2,6 @@ import { Link } from "react-router";
 
 import { usePublicTrainers } from "~/features/public/queries";
 import { publicApi } from "~/lib/api/endpoints";
-import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
@@ -34,8 +33,12 @@ export default function Trainers() {
     <>
       <PublicPageHeader
         label="Huấn luyện viên"
-        title="Một người chịu trách nhiệm cho buổi tập của bạn."
-        lede="Mỗi lớp có đúng một huấn luyện viên phụ trách. Bạn biết trước ai sẽ dạy buổi mình đã đặt."
+        title={
+          <>
+            Người sẽ <em>đứng cạnh máy</em> của bạn.
+          </>
+        }
+        lede="Mỗi buổi có một huấn luyện viên phụ trách từ đầu đến cuối. Trang này chỉ hiện những người đã đồng ý công khai hồ sơ."
       />
 
       <Section index="01" label="Đội ngũ">
@@ -71,7 +74,7 @@ export default function Trainers() {
               description="Studio sẽ công bố hồ sơ đội ngũ tại đây. Trong lúc đó, bạn có thể để lại thông tin để được tư vấn."
               action={
                 <Button asChild variant="secondary">
-                  <Link to="/dat-tu-van">Đặt lịch tư vấn</Link>
+                  <Link to="/dat-tu-van">Nhận tư vấn</Link>
                 </Button>
               }
             />
@@ -101,7 +104,10 @@ export default function Trainers() {
                           className="size-full object-cover"
                         />
                       ) : (
-                        <ArtDirectedImage photo="method" />
+                        // No concept photograph here: a stranger's face beside a
+                        // real name would read as that trainer (P3, identity is
+                        // absolute). The frame waits, quietly, for the portrait.
+                        <div className="border-rule bg-sand-deep size-full border" />
                       )}
                     </div>
                   </div>

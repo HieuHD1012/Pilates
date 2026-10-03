@@ -169,7 +169,7 @@ export default function StaffCalendar() {
             <div className="flex items-baseline gap-2">
               <dt>Lớp đủ chỗ</dt>
               <dd>
-                <Figures className={fullCount > 0 ? "text-lacquer" : "text-ink"}>
+                <Figures className={fullCount > 0 ? "text-copper" : "text-ink"}>
                   {fullCount}
                 </Figures>
               </dd>

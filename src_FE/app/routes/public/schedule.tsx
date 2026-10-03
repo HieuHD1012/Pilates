@@ -1,23 +1,36 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
+import { CANCELLATION_POLICY } from "~/content/studio";
 import { usePublicSchedule } from "~/features/public/queries";
 import {
+  DayStrip,
+  FormatSwitch,
+  SCHEDULE_HORIZON_DAYS,
+  SessionOption,
+  dayLabel,
+  formatName,
+  formatRatio,
+  groupByPeriod,
+  sessionKey,
+  useSearchParam,
+  useStudioToday,
+  type FormatFilter,
+} from "~/features/public/schedule-ui";
+import type { PublicClassSession } from "~/lib/api/schema";
+import {
   addDays,
-  formatDayMonth,
+  formatTime,
   formatTimeRange,
-  startOfStudioWeek,
+  minutesBetween,
   studioDateKey,
-  weekdayLong,
-  weekdayShort,
 } from "~/lib/format";
-import { cn } from "~/lib/cn";
 import { Button } from "~/ui/button";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { EmptyState, ErrorState, RefreshingRule, SkeletonRows } from "~/ui/feedback";
+import { ErrorState, RefreshingRule, Skeleton } from "~/ui/feedback";
 import { Section } from "~/ui/layout";
-import { StatusBadge } from "~/ui/status";
 import { PublicPageHeader } from "~/ui/public-page";
+import { Availability } from "~/ui/status";
 
 import type { Route } from "./+types/schedule";
 
@@ -27,10 +40,12 @@ export function meta(_: Route.MetaArgs) {
     {
       name: "description",
       content:
-        "Lịch lớp Pilates reformer theo tuần tại Soul Pilates Nha Trang. Lớp nhóm nhỏ và lớp riêng, xem giờ và chỗ còn trống.",
+        "Lịch lớp Pilates reformer 14 ngày tới tại Soul Pilates Nha Trang. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
     },
   ];
 }
+
+const LOGIN_TO_BOOK = "/dang-nhap?next=/hv/lop-hoc";
 
 /**
  * PRE-RENDERED + HYDRATED.
@@ -39,227 +54,305 @@ export function meta(_: Route.MetaArgs) {
  * page is indexable. The timetable itself is mutable studio data and is owned
  * by TanStack Query at runtime. Those two facts must not be mixed: no timetable
  * row is ever baked into the build. See docs/DATA_OWNERSHIP.md.
+ *
+ * The page is a choice, not a table: a day strip that starts today (the public
+ * endpoint only serves upcoming classes, so there is no past to page back to),
+ * one column of times grouped by part of the day, and a summary of the chosen
+ * session with the one next step that actually works for this visitor.
  */
 export default function PublicSchedule() {
-  const [weekStart, setWeekStart] = useState(() => startOfStudioWeek(new Date()));
-  const [activeDay, setActiveDay] = useState(() => studioDateKey(new Date()));
+  const today = useStudioToday();
+  const urlFormat = useSearchParam("loai");
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
+  const [pickedFormat, setPickedFormat] = useState<FormatFilter | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
-  const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
-  const query = usePublicSchedule(weekStart, addDays(weekStart, 6));
-  const today = studioDateKey(new Date());
+  const format: FormatFilter =
+    pickedFormat ??
+    (urlFormat === "rieng" ? "PRIVATE" : urlFormat === "nhom" ? "GROUP" : "ALL");
 
-  const byDay = new Map<string, NonNullable<typeof query.data>>();
-  for (const item of query.data ?? []) {
-    const key = studioDateKey(item.starts_at);
-    const bucket = byDay.get(key) ?? [];
-    bucket.push(item);
-    byDay.set(key, bucket);
+  const start = today ?? "";
+  const days = today
+    ? Array.from({ length: SCHEDULE_HORIZON_DAYS }, (_, index) => addDays(today, index))
+    : [];
+  const query = usePublicSchedule(
+    start,
+    today ? addDays(today, SCHEDULE_HORIZON_DAYS - 1) : "",
+  );
+
+  const visible = (query.data ?? []).filter(
+    (session) => format === "ALL" || session.class_type === format,
+  );
+  const byDay = new Map<string, PublicClassSession[]>();
+  for (const session of visible) {
+    const key = studioDateKey(session.starts_at);
+    byDay.set(key, [...(byDay.get(key) ?? []), session]);
   }
+  const counts = new Map([...byDay].map(([day, items]) => [day, items.length]));
 
-  function shiftWeek(delta: number) {
-    const next = addDays(weekStart, delta * 7);
-    setWeekStart(next);
-    setActiveDay(next);
-  }
+  // Until the visitor picks a day, open on the first day that has a class —
+  // landing on an empty "today" at 21:00 is a dead end with a full week behind it.
+  const firstWithClasses = days.find((day) => (counts.get(day) ?? 0) > 0);
+  const activeDay = pickedDay ?? firstWithClasses ?? today ?? "";
+  const daySessions = byDay.get(activeDay) ?? [];
+  const nextDayWithClasses = days.find(
+    (day) => day > activeDay && (counts.get(day) ?? 0) > 0,
+  );
+
+  const selected = visible.find((session) => sessionKey(session) === selectedKey) ?? null;
 
   return (
     <>
       <PublicPageHeader
         label="Lịch tập"
-        title="Lịch lớp theo tuần."
-        lede="Lớp còn chỗ được cập nhật liên tục. Học viên đã có gói tập đăng nhập để đặt chỗ trực tiếp."
-        aside={
-          <Button asChild variant="secondary" fullWidth>
-            <Link to="/dang-nhap">Đăng nhập để đặt lớp</Link>
-          </Button>
+        title={
+          <>
+            Chọn một buổi <em>hợp với bạn</em>.
+          </>
         }
+        lede="Chọn ngày, rồi chọn giờ. Học viên có gói đăng nhập để đặt; khách mới để studio xếp buổi đầu tiên."
       />
 
-      <Section>
-        <div className="pb-20 md:pb-28">
-          <div className="flex items-center justify-between gap-4 py-5">
-            <h2 className="text-ink-2 text-sm">
-              Tuần {formatDayMonth(`${weekStart}T00:00:00+07:00`)} –{" "}
-              {formatDayMonth(`${addDays(weekStart, 6)}T00:00:00+07:00`)}
-            </h2>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={() => shiftWeek(-1)}>
-                Tuần trước
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => shiftWeek(1)}>
-                Tuần sau
-              </Button>
-            </div>
-          </div>
-
-          <DemoDataNotice className="mb-3" />
-          <RefreshingRule active={query.isFetching && !query.isPending} />
-
-          {/* Mobile: one day at a time. A seven-column grid squeezed onto a
-              phone is a desktop calendar in disguise. */}
-          <div className="md:hidden">
-            <div
-              role="tablist"
-              aria-label="Chọn ngày"
-              className="rule-b flex overflow-x-auto"
-            >
-              {days.map((day) => {
-                const selected = day === activeDay;
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveDay(day)}
-                    className={cn(
-                      "flex min-w-14 flex-1 flex-col items-center gap-1 border-b-2 py-3",
-                      selected
-                        ? "border-lacquer text-ink"
-                        : "text-ink-2 border-transparent",
-                    )}
-                  >
-                    <span className="text-2xs">
-                      {weekdayShort(`${day}T00:00:00+07:00`)}
-                    </span>
-                    <span className="figures text-sm">{day.slice(8)}</span>
-                    {day === today ? (
-                      <span aria-hidden="true" className="bg-lacquer size-1 rounded-full" />
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            <DayList
-              query={query}
-              items={byDay.get(activeDay) ?? []}
-              emptyLabel={weekdayLong(`${activeDay}T00:00:00+07:00`)}
-            />
-          </div>
-
-          {/* Desktop: the whole week as ruled day blocks. */}
-          <div className="hidden md:block">
-            {query.isPending ? <SkeletonRows rows={6} /> : null}
-            {query.isError ? (
-              <ErrorState
-                description="Chưa tải được lịch tập. Vui lòng thử lại hoặc liên hệ studio."
-                onRetry={() => void query.refetch()}
+      <Section className={selected ? "pb-28 lg:pb-0" : undefined}>
+        <div className="grid grid-cols-1 gap-y-12 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
+          <div className="min-w-0 lg:col-span-8">
+            <div className="rule-t flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-5">
+              <FormatSwitch
+                value={format}
+                onChange={(value) => {
+                  setPickedFormat(value);
+                  setSelectedKey(null);
+                }}
               />
-            ) : null}
+              <p className="text-ink-2 text-sm">Giờ Nha Trang (GMT+7)</p>
+            </div>
 
-            {query.isSuccess
-              ? days.map((day) => {
-                  const items = byDay.get(day) ?? [];
-                  return (
-                    <section key={day} className="rule-t grid grid-cols-12 gap-x-8 py-6">
-                      <h3 className="col-span-3">
-                        <span className="text-ink block text-base">
-                          {weekdayLong(`${day}T00:00:00+07:00`)}
+            {today ? (
+              <DayStrip
+                days={days}
+                active={activeDay}
+                today={today}
+                counts={counts}
+                onSelect={(day) => {
+                  setPickedDay(day);
+                  setSelectedKey(null);
+                }}
+              />
+            ) : (
+              <div aria-hidden="true" className="grid grid-cols-7 gap-1.5">
+                {Array.from({ length: 7 }, (_, index) => (
+                  <Skeleton key={index} className="h-20 rounded-sm" />
+                ))}
+              </div>
+            )}
+
+            <div className="mt-10 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-ink text-[1.75rem] leading-tight font-light sm:text-[2rem]">
+                {today ? dayLabel(activeDay, today) : "Đang tải lịch"}
+              </h2>
+              <DemoDataNotice />
+            </div>
+            <RefreshingRule active={query.isFetching && !query.isPending} />
+
+            <div className="mt-4">
+              {query.isPending || !today ? (
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <Skeleton key={index} className="h-[4.75rem] rounded-sm" />
+                  ))}
+                  <span className="sr-only">Đang tải lịch tập</span>
+                </div>
+              ) : null}
+
+              {query.isError ? (
+                <ErrorState
+                  description="Chưa tải được lịch tập. Vui lòng thử lại, hoặc để lại số điện thoại để studio báo lịch cho bạn."
+                  onRetry={() => void query.refetch()}
+                />
+              ) : null}
+
+              {query.isSuccess && today && daySessions.length === 0 ? (
+                <div className="rule-t py-10">
+                  <p className="text-ink text-lg">Không có lớp trong ngày này.</p>
+                  <p className="measure text-ink-2 mt-2 text-base">
+                    {nextDayWithClasses
+                      ? "Studio có lớp vào những ngày khác trong hai tuần tới."
+                      : "Studio chưa mở lịch cho hai tuần tới. Để lại số điện thoại, studio sẽ báo bạn khi có lịch."}
+                  </p>
+                  <div className="mt-6">
+                    {nextDayWithClasses ? (
+                      <Button
+                        variant="secondary"
+                        size="lg"
+                        onClick={() => setPickedDay(nextDayWithClasses)}
+                      >
+                        Xem {dayLabel(nextDayWithClasses, today).toLowerCase()}
+                      </Button>
+                    ) : (
+                      <Button asChild variant="secondary" size="lg">
+                        <Link to="/dat-tu-van?tu=lich-tap">Nhận tư vấn</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {query.isSuccess && daySessions.length > 0
+                ? groupByPeriod(daySessions).map((period) => (
+                    <section
+                      key={period.id}
+                      aria-label={period.label}
+                      className="rule-t grid gap-3 py-5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-6"
+                    >
+                      <h3 className="flex items-baseline gap-2 sm:flex-col sm:gap-1 sm:pt-3">
+                        <span className="font-display text-ink text-xl font-light">
+                          {period.label}
                         </span>
-                        <span className="figures text-ink-2 mt-1 block text-xs">
-                          {formatDayMonth(`${day}T00:00:00+07:00`)}
-                        </span>
-                        {day === today ? (
-                          <span className="label-badge text-lacquer mt-2 inline-block">
-                            Hôm nay
-                          </span>
-                        ) : null}
+                        <span className="text-ink-2 text-xs">{period.range}</span>
                       </h3>
-
-                      <div className="col-span-9">
-                        {items.length === 0 ? (
-                          <p className="text-ink-2 py-2 text-sm">Không có lớp</p>
-                        ) : (
-                          <ul>
-                            {items.map((item) => (
-                              <li
-                                key={`${item.starts_at}-${item.trainer_name}`}
-                                className="border-rule grid grid-cols-[8.5rem_1fr_auto] items-baseline gap-4 border-b py-3 last:border-b-0"
-                              >
-                                <span className="figures text-ink text-sm">
-                                  {formatTimeRange(item.starts_at, item.ends_at)}
-                                </span>
-                                <span className="text-ink text-sm">
-                                  {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-                                  <span className="text-ink-2 ml-2">
-                                    {item.trainer_name}
-                                  </span>
-                                </span>
-                                <Availability isFull={item.is_full} />
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
+                      <ul className="flex flex-col gap-2">
+                        {period.sessions.map((session) => {
+                          const key = sessionKey(session);
+                          return (
+                            <li key={key}>
+                              <SessionOption
+                                session={session}
+                                selected={key === selectedKey}
+                                onSelect={() =>
+                                  setSelectedKey(key === selectedKey ? null : key)
+                                }
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </section>
-                  );
-                })
-              : null}
+                  ))
+                : null}
+            </div>
           </div>
+
+          <aside className="flex flex-col gap-4 lg:sticky lg:top-28 lg:col-span-4 lg:self-start">
+            <SelectedSession session={selected} />
+            <div className="border-rule bg-paper rounded-sm border p-6 sm:p-7">
+              <h2 className="font-display text-ink text-2xl font-light">
+                Chưa có gói tập?
+              </h2>
+              <p className="text-ink-2 mt-2 text-base">
+                Tài khoản đặt lớp do studio tạo khi bạn bắt đầu gói. Studio sẽ gọi để xếp
+                buổi đầu tiên cùng bạn.
+              </p>
+              <Button asChild variant="copper" size="lg" fullWidth className="mt-5">
+                <Link to="/dat-tu-van?tu=lich-tap">Nhờ studio xếp lớp</Link>
+              </Button>
+            </div>
+          </aside>
         </div>
       </Section>
+
+      {/* Phone: the chosen session follows the thumb. */}
+      {selected ? (
+        <div
+          data-field="dark"
+          className="bg-ink text-sand fixed inset-x-0 bottom-0 z-(--z-sticky) flex items-center justify-between gap-4 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
+        >
+          <div className="min-w-0">
+            <p className="figures-display text-[1.625rem] leading-none">
+              {formatTime(selected.starts_at)}
+            </p>
+            <p className="text-sand/75 mt-1 truncate text-xs">
+              {formatName(selected.class_type)} · {selected.trainer_name}
+            </p>
+          </div>
+          {selected.is_full ? (
+            <Button asChild size="md" className="bg-sand text-ink hover:bg-paper">
+              <Link to="/dat-tu-van?tu=lich-tap">Hỏi buổi khác</Link>
+            </Button>
+          ) : (
+            <Button asChild size="md" className="bg-sand text-ink hover:bg-paper">
+              <Link to={LOGIN_TO_BOOK}>Đăng nhập để đặt</Link>
+            </Button>
+          )}
+        </div>
+      ) : null}
     </>
   );
 }
 
-function DayList({
-  query,
-  items,
-  emptyLabel,
-}: {
-  query: ReturnType<typeof usePublicSchedule>;
-  items: NonNullable<ReturnType<typeof usePublicSchedule>["data"]>;
-  emptyLabel: string;
-}) {
-  if (query.isPending) return <SkeletonRows rows={3} className="border-t-0" />;
-  if (query.isError) {
+/**
+ * What the visitor chose, and the honest next step. The public timetable has no
+ * session id, so signing in cannot jump straight to this class — the panel says
+ * so instead of letting the visitor discover it.
+ */
+function SelectedSession({ session }: { session: PublicClassSession | null }) {
+  if (!session) {
     return (
-      <ErrorState
-        description="Chưa tải được lịch tập."
-        onRetry={() => void query.refetch()}
-      />
+      <div className="border-rule-2 hidden rounded-sm border border-dashed p-6 sm:p-7 lg:block">
+        <p className="label-micro text-copper">Buổi bạn chọn</p>
+        <p className="text-ink-2 mt-3 text-base">
+          Chọn một buổi trong lịch để xem chi tiết và cách đặt chỗ.
+        </p>
+      </div>
     );
   }
-  if (items.length === 0) {
-    return (
-      <EmptyState
-        title={`Không có lớp vào ${emptyLabel.toLowerCase()}`}
-        description="Chọn một ngày khác trong tuần, hoặc xem tuần kế tiếp."
-        className="border-t-0"
-      />
-    );
-  }
+
+  const isPrivate = session.class_type === "PRIVATE";
+  const hours = CANCELLATION_POLICY[isPrivate ? "private" : "group"];
+  const day = studioDateKey(session.starts_at);
 
   return (
-    <ul>
-      {items.map((item) => (
-        <li key={`${item.starts_at}-${item.trainer_name}`} className="rule-b py-4">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="figures text-ink text-sm">
-              {formatTimeRange(item.starts_at, item.ends_at)}
-            </span>
-            <Availability isFull={item.is_full} />
+    <div className="border-copper/40 bg-paper hidden rounded-sm border p-6 sm:p-7 lg:block">
+      <p className="label-micro text-copper">Buổi bạn chọn</p>
+      <div className="mt-3 flex items-end justify-between gap-4">
+        <p className="figures-display text-ink text-[2.75rem] leading-none">
+          {formatTime(session.starts_at)}
+        </p>
+        <Availability isFull={session.is_full} className="pb-1" />
+      </div>
+      <dl className="mt-5">
+        {[
+          ["Ngày", dayLabel(day, null)],
+          [
+            "Hình thức",
+            `${formatName(session.class_type)} · ${formatRatio(session.class_type)}`,
+          ],
+          ["Người dạy", session.trainer_name],
+          [
+            "Thời lượng",
+            `${formatTimeRange(session.starts_at, session.ends_at)} · ${minutesBetween(session.starts_at, session.ends_at)} phút`,
+          ],
+        ].map(([term, value]) => (
+          <div
+            key={term}
+            className="rule-t last:border-rule flex items-baseline justify-between gap-4 py-2.5 text-sm last:border-b"
+          >
+            <dt className="text-ink-2">{term}</dt>
+            <dd className="text-ink text-right">{value}</dd>
           </div>
-          <p className="text-ink mt-1 text-sm">
-            {item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"}
-          </p>
-          <p className="text-ink-2 mt-0.5 text-xs">{item.trainer_name}</p>
-        </li>
-      ))}
-    </ul>
-  );
-}
+        ))}
+      </dl>
 
-/**
- * Two states, not three. The public endpoint returns `is_full` and nothing
- * else on purpose: a seat count tells a stranger which 6am class has one woman
- * in it. "Sắp đầy" needed that count, so it is gone with it.
- */
-function Availability({ isFull }: { isFull: boolean }) {
-  return isFull ? (
-    <StatusBadge tone="critical">Hết chỗ</StatusBadge>
-  ) : (
-    <StatusBadge tone="positive">Còn chỗ</StatusBadge>
+      {session.is_full ? (
+        <>
+          <p className="text-ink-2 mt-5 text-sm">
+            Buổi này đã đủ người. Studio có thể xếp bạn vào một buổi gần nhất còn chỗ.
+          </p>
+          <Button asChild variant="secondary" size="lg" fullWidth className="mt-4">
+            <Link to="/dat-tu-van?tu=lich-tap">Hỏi studio buổi khác</Link>
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button asChild size="lg" fullWidth className="mt-6">
+            <Link to={LOGIN_TO_BOOK}>Đăng nhập để đặt buổi này</Link>
+          </Button>
+          <ul className="text-ink-2 mt-4 flex flex-col gap-1.5 text-sm">
+            <li>Cần gói {isPrivate ? "lớp riêng" : "lớp nhóm"} còn buổi và còn hạn.</li>
+            <li>Đặt thành công trừ 1 buổi; hủy trước {hours} giờ được hoàn buổi.</li>
+            <li>Sau khi đăng nhập, bạn chọn lại buổi này trong mục Lớp học.</li>
+          </ul>
+        </>
+      )}
+    </div>
   );
 }
