@@ -1,17 +1,25 @@
+import { CalendarCheck, Download, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
 import { useReportExport, useTrainerReport } from "~/features/reports/queries";
+import { ReportRangeToolbar, ReportSwitcher } from "~/features/reports/report-frame";
 import type { TrainerStatsResponse } from "~/lib/api/schema";
-import { formatDate, formatNumber, studioDateKey } from "~/lib/format";
+import { formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Field, Input } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
-import { FilterBar, PageHeader } from "~/ui/layout";
+import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
+import {
+  Kpi,
+  Panel,
+  PanelFooter,
+  PanelHeader,
+  PersonCell,
+  WorkspacePage,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/report-trainers";
 
@@ -30,10 +38,6 @@ function currentMonth(): { from: string; to: string } {
   // Day 0 of the next month is the last day of this one.
   const last = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
   return { from: `${key.slice(0, 7)}-01`, to: last };
-}
-
-function dayLabel(dateKey: string): string {
-  return formatDate(`${dateKey}T00:00:00+07:00`);
 }
 
 /** Most classes first; then most bookings; then Vietnamese collation by name. */
@@ -60,36 +64,34 @@ export default function StaffReportTrainers() {
   const query = useTrainerReport(params);
   const download = useReportExport("trainers");
 
-  const rangeError =
-    range.from > range.to ? "Phải cùng ngày hoặc sau ngày bắt đầu." : undefined;
-
-  const rows = query.data;
-  const classTotal = (rows ?? []).reduce((sum, row) => sum + row.scheduled_sessions, 0);
-
   return (
-    <div className="gutter py-6">
+    <WorkspacePage>
       <PageHeader
+        eyebrow={
+          <Link to="/studio/bao-cao" className="hover:text-copper">
+            Tất cả báo cáo
+          </Link>
+        }
         title="Báo cáo huấn luyện viên"
-        description="Mỗi huấn luyện viên dạy bao nhiêu lớp trong khoảng ngày, và lớp của họ được lấp đầy tới đâu."
+        description="Số lớp đã xếp, lớp đã hủy và lượt đăng ký của từng huấn luyện viên trong khoảng ngày."
         actions={
           <>
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/studio/bao-cao">Tất cả báo cáo</Link>
-            </Button>
             {/* The file comes from the server's own query, not from the rows
                 on screen: same period, same filters, and nothing lost to
                 whatever this table happens to have fetched. */}
             <Button
-              size="sm"
               variant="secondary"
+              className="max-md:min-h-11"
+              icon={<Download className="size-4" aria-hidden="true" />}
               pending={download.isPending}
               onClick={() => download.mutate({ ...params, format: "csv" })}
             >
               Xuất CSV
             </Button>
             <Button
-              size="sm"
               variant="secondary"
+              className="max-md:min-h-11"
+              icon={<Download className="size-4" aria-hidden="true" />}
               pending={download.isPending}
               onClick={() => download.mutate({ ...params, format: "xlsx" })}
             >
@@ -97,138 +99,161 @@ export default function StaffReportTrainers() {
             </Button>
           </>
         }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Khoảng ngày</dt>
-              <dd>
-                <Figures className="text-ink">{dayLabel(range.from)}</Figures>
-                <span className="mx-1">–</span>
-                <Figures className="text-ink">{dayLabel(range.to)}</Figures>
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Huấn luyện viên</dt>
-              <dd>
-                {rows ? (
-                  <Figures className="text-ink">{formatNumber(rows.length)}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Tổng số lớp</dt>
-              <dd>
-                {rows ? (
-                  <Figures className="text-ink">{formatNumber(classTotal)}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Từ ngày" className="w-full sm:w-44">
-          {({ id }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.from}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, from: event.target.value }))
-              }
-            />
-          )}
-        </Field>
+      <ReportSwitcher />
 
-        <Field label="Đến ngày" error={rangeError} className="w-full sm:w-44">
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              type="date"
-              value={range.to}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              onChange={(event) =>
-                setRange((current) => ({ ...current, to: event.target.value }))
-              }
-            />
-          )}
-        </Field>
-      </FilterBar>
+      <ReportRangeToolbar
+        range={range}
+        onChange={setRange}
+        fetching={query.isFetching && !query.isPending}
+      />
 
-      <p className="measure-wide text-ink-2 mb-3 text-xs">
-        Sắp xếp theo số lớp đã xếp, nhiều nhất trước. Lớp đã hủy được đếm riêng, không trừ
-        vào cột số lớp.
-      </p>
+      {/* One block, so the boundary's refresh hairline sits on the content
+          rather than taking a gap of the page's own. */}
+      <div>
+        <QueryBoundary
+          query={query}
+          skeletonRows={6}
+          isEmpty={(report) => report.length === 0}
+          emptyTitle="Không có huấn luyện viên nào dạy trong khoảng ngày này"
+          emptyDescription="Chưa có lớp nào được phân công trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem phân công."
+          emptyAction={
+            <Button asChild variant="secondary">
+              <Link to="/studio/lich">Mở lịch tuần</Link>
+            </Button>
+          }
+          errorDescription="Không tải được báo cáo huấn luyện viên."
+          showErrorDetail
+        >
+          {(report) => {
+            const rows = [...report].sort(byTeachingLoad);
+            const classTotal = rows.reduce((sum, row) => sum + row.scheduled_sessions, 0);
 
-      <DemoDataNotice className="mb-3" />
+            return (
+              <div className="flex flex-col gap-5 md:gap-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Kpi
+                    label="Huấn luyện viên"
+                    icon={<UserRound aria-hidden="true" />}
+                    value={formatNumber(rows.length)}
+                    unit="người"
+                  />
+                  <Kpi
+                    label="Tổng số lớp"
+                    icon={<CalendarCheck aria-hidden="true" />}
+                    value={formatNumber(classTotal)}
+                    unit="lớp"
+                    context="Cộng cột “Lớp đã xếp” ở bảng dưới."
+                  />
+                </div>
 
-      <QueryBoundary
-        query={query}
-        skeletonRows={6}
-        isEmpty={(report) => report.length === 0}
-        emptyTitle="Không có huấn luyện viên nào dạy trong khoảng ngày này"
-        emptyDescription="Chưa có lớp nào được phân công trong khoảng ngày đang chọn. Kiểm tra lại khoảng ngày, hoặc mở lịch tuần để xem phân công."
-        emptyAction={
-          <Button asChild variant="secondary">
-            <Link to="/studio/lich">Mở lịch tuần</Link>
-          </Button>
-        }
-        errorDescription="Không tải được báo cáo huấn luyện viên."
-        showErrorDetail
-      >
-        {(report) => (
-          <DataTable
-            caption="Số lớp và tỉ lệ lấp đầy theo huấn luyện viên"
-            minWidth="44rem"
-          >
-            <thead>
-              <tr>
-                <Th>Huấn luyện viên</Th>
-                <Th numeric>Lớp đã xếp</Th>
-                <Th numeric>Lớp đã hủy</Th>
-                <Th numeric>Lượt đăng ký</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...report].sort(byTeachingLoad).map((row) => (
-                <Tr key={row.trainer_id}>
-                  <Td>
-                    {/* Names wrap; a Vietnamese name is never truncated and
-                        never hidden behind a hover title. */}
-                    <Link
-                      to={`/studio/huan-luyen-vien/${row.trainer_id}`}
-                      className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+                <Panel>
+                  <PanelHeader
+                    title="Theo huấn luyện viên"
+                    description="Sắp xếp theo số lớp đã xếp, nhiều nhất trước. Lớp đã hủy được đếm riêng, không trừ vào cột số lớp."
+                  />
+
+                  <ul className="sm:hidden">
+                    {rows.map((row) => (
+                      <li key={row.trainer_id} className="rule-b px-4 py-4 last:border-b-0">
+                        <PersonCell
+                          avatarName={row.trainer_name}
+                          name={
+                            <Link
+                              to={`/studio/huan-luyen-vien/${row.trainer_id}`}
+                              className="decoration-rule-2 hover:text-copper underline underline-offset-[6px]"
+                            >
+                              {row.trainer_name}
+                            </Link>
+                          }
+                        />
+                        <dl className="mt-3 grid grid-cols-3 gap-3">
+                          {(
+                            [
+                              ["Lớp đã xếp", row.scheduled_sessions],
+                              ["Lớp đã hủy", row.cancelled_sessions],
+                              ["Lượt đăng ký", row.total_bookings],
+                            ] as const
+                          ).map(([label, value]) => (
+                            <div key={label}>
+                              <dt className="text-ink-2 text-xs">{label}</dt>
+                              <dd className="mt-1 text-xl">
+                                <Figures className="text-ink">
+                                  {formatNumber(value)}
+                                </Figures>
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="hidden sm:block">
+                    <DataTable
+                      caption="Lớp đã xếp, lớp đã hủy và lượt đăng ký theo huấn luyện viên"
+                      minWidth="36rem"
                     >
-                      {row.trainer_name}
-                    </Link>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.scheduled_sessions)}</Figures>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.cancelled_sessions)}</Figures>
-                  </Td>
-                  <Td numeric>
-                    <Figures>{formatNumber(row.total_bookings)}</Figures>
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </DataTable>
-        )}
-      </QueryBoundary>
+                      <thead>
+                        <tr>
+                          <Th>Huấn luyện viên</Th>
+                          <Th numeric>Lớp đã xếp</Th>
+                          <Th numeric>Lớp đã hủy</Th>
+                          <Th numeric>Lượt đăng ký</Th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row) => (
+                          <Tr key={row.trainer_id}>
+                            <Td>
+                              {/* The person first (ADR 0006). The table scrolls
+                                in its own box rather than squeezing this cell,
+                                so a Vietnamese name is never cut short. */}
+                              <PersonCell
+                                avatarName={row.trainer_name}
+                                name={
+                                  <Link
+                                    to={`/studio/huan-luyen-vien/${row.trainer_id}`}
+                                    className="decoration-rule-2 hover:text-copper underline-offset-[6px] hover:underline"
+                                  >
+                                    {row.trainer_name}
+                                  </Link>
+                                }
+                              />
+                            </Td>
+                            <Td numeric>
+                              <Figures className="text-base">
+                                {formatNumber(row.scheduled_sessions)}
+                              </Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures className="text-ink-2 text-base">
+                                {formatNumber(row.cancelled_sessions)}
+                              </Figures>
+                            </Td>
+                            <Td numeric>
+                              <Figures className="text-base">
+                                {formatNumber(row.total_bookings)}
+                              </Figures>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </tbody>
+                    </DataTable>
+                  </div>
+
+                  <PanelFooter className="text-xs">
+                    Tệp được sinh ở máy chủ từ đúng truy vấn của bảng này, nên con số trong
+                    tệp và con số trên màn hình luôn khớp. Chọn CSV để mở nhanh bằng Excel,
+                    hoặc Excel để giữ định dạng cột.
+                  </PanelFooter>
+                </Panel>
+              </div>
+            );
+          }}
+        </QueryBoundary>
+      </div>
 
       <LiveRegion
         message={
@@ -239,27 +264,6 @@ export default function StaffReportTrainers() {
               : null
         }
       />
-
-      <p className="rule-t measure-wide text-ink-2 mt-8 pt-4 text-xs">
-        Tệp được sinh ở máy chủ từ đúng truy vấn của bảng này, nên con số trong tệp và con
-        số trên màn hình luôn khớp. Chọn CSV để mở nhanh bằng Excel, hoặc Excel để giữ định
-        dạng cột.
-      </p>
-    </div>
-  );
-}
-
-/**
- * An absent value. The dash is decoration, so it is hidden from assistive
- * technology and the meaning is written out instead.
- */
-function Placeholder() {
-  return (
-    <>
-      <span aria-hidden="true" className="text-ink-2">
-        —
-      </span>
-      <span className="sr-only">chưa có</span>
-    </>
+    </WorkspacePage>
   );
 }

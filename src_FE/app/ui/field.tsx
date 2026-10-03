@@ -17,7 +17,7 @@ import { cn } from "~/lib/cn";
  */
 
 const CONTROL = cn(
-  "w-full rounded-sm border border-rule-2 bg-paper px-3 text-sm text-ink",
+  "w-full min-w-0 rounded-sm border border-rule-2 bg-paper px-3 text-base md:text-sm text-ink",
   // Placeholders are real text and must meet contrast; ink-3 does not.
   "placeholder:text-ink-2",
   "transition-colors duration-200 ease-measure",
@@ -44,6 +44,8 @@ export interface FieldProps {
    * staff screen that is filled forty times a day.
    */
   size?: "md" | "lg";
+  /** A link that belongs beside the label, e.g. "Quên mật khẩu?". */
+  labelAside?: ReactNode;
 }
 
 export function Field({
@@ -54,6 +56,7 @@ export function Field({
   children,
   className,
   size = "md",
+  labelAside,
 }: FieldProps) {
   const large = size === "lg";
   const id = useId();
@@ -62,26 +65,34 @@ export function Field({
   const describedBy =
     [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
+  const labelElement = (
+    <LabelPrimitive.Root htmlFor={id} className="text-ink text-sm font-medium">
+      {label}
+      {required ? (
+        <>
+          {/* Deliberately not chromatic. Red in a form should mean exactly one
+            thing — something is wrong — and spending the one chromatic mark
+            on a required marker made "fill this in" and "this is invalid"
+            read as the same signal at 12px. */}
+          <span aria-hidden="true" className="text-ink-2 ml-1">
+            *
+          </span>
+          <span className="sr-only"> (bắt buộc)</span>
+        </>
+      ) : null}
+    </LabelPrimitive.Root>
+  );
+
   return (
     <div className={cn("flex flex-col", large ? "gap-2" : "gap-1.5", className)}>
-      <LabelPrimitive.Root
-        htmlFor={id}
-        className={cn("text-ink font-medium", large ? "text-sm" : "text-xs")}
-      >
-        {label}
-        {required ? (
-          <>
-            {/* Deliberately not chromatic. Red in a form should mean exactly one
-                thing — something is wrong — and spending the one chromatic mark
-                on a required marker made "fill this in" and "this is invalid"
-                read as the same signal at 12px. */}
-            <span aria-hidden="true" className="text-ink-2 ml-1">
-              *
-            </span>
-            <span className="sr-only"> (bắt buộc)</span>
-          </>
-        ) : null}
-      </LabelPrimitive.Root>
+      {labelAside ? (
+        <div className="flex items-baseline justify-between gap-3">
+          {labelElement}
+          {labelAside}
+        </div>
+      ) : (
+        labelElement
+      )}
 
       {hint ? (
         <p id={hintId} className={cn("measure text-ink-2", large ? "text-sm" : "text-xs")}>
@@ -101,7 +112,7 @@ export function Field({
 }
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(CONTROL, "h-10", className)} {...props} />;
+  return <input className={cn(CONTROL, "h-11", className)} {...props} />;
 }
 
 export function Textarea({
@@ -129,7 +140,7 @@ export function Select({
 }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={cn(CONTROL, "h-10 appearance-none pr-9", className)} {...props}>
+      <select className={cn(CONTROL, "h-11 appearance-none pr-9", className)} {...props}>
         {children}
       </select>
       <svg

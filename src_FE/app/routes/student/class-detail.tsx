@@ -11,6 +11,7 @@ import {
 import { useStudentPackages } from "~/features/commerce/queries";
 import { formatDate, formatLeadTime, formatTimeRange, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
+import { DetailList, DetailRow as Row } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { ErrorState, LiveRegion, Skeleton } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
@@ -130,10 +131,7 @@ export default function ClassDetail() {
         </p>
       </header>
 
-      <dl className="rule-t mt-6">
-        <Row label="Hình thức">
-          {item.class_type === "PRIVATE" ? "Lớp riêng (1 kèm 1)" : "Lớp nhóm"}
-        </Row>
+      <DetailList className="mt-6">
         <Row label="Huấn luyện viên">{item.trainer_name}</Row>
         {/* `seats_left` reaches a student as 1 or 0 — room or no room. It is
             not a count, and printing it as one would say how empty the class
@@ -146,14 +144,14 @@ export default function ClassDetail() {
           )}
         </Row>
         <Row label="Bắt đầu sau">{formatLeadTime(item.starts_at)}</Row>
-      </dl>
+      </DetailList>
 
       {/* The consequence, before the action — and only before it. Once the seat
           is held, a forecast of a balance that has already moved is noise. */}
       {booked ? null : (
         <section className="rule-t mt-8 pt-5">
           <h2 className="text-ink text-sm font-medium">Khi bạn đặt lớp này</h2>
-          <dl className="mt-3">
+          <DetailList className="mt-3">
             <Row label="Trừ vào gói">
               <Figures>{cost}</Figures> buổi
             </Row>
@@ -175,7 +173,7 @@ export default function ClassDetail() {
             <Row label="Hạn hủy">
               hiện trong <Link to="/hv/lich-cua-toi">Lịch của tôi</Link> sau khi đặt
             </Row>
-          </dl>
+          </DetailList>
         </section>
       )}
 
@@ -267,11 +265,3 @@ export default function ClassDetail() {
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="rule-b grid grid-cols-[9rem_1fr] items-baseline gap-3 py-3 last:border-b-0">
-      <dt className="text-ink-2 text-xs">{label}</dt>
-      <dd className="text-ink text-sm">{children}</dd>
-    </div>
-  );
-}

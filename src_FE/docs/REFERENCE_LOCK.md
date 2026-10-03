@@ -50,8 +50,8 @@ tourism imagery, influencer fitness photography, or another branch's pictures.
 
 **Temporary exception, 2026-10-03 (ADR 0005):** six AI-generated concept
 frames in `public/images/concept/` stand in for the shoot so the owner can judge
-the composition. Each page's first concept frame carries an "Ảnh minh họa" note,
-the footer discloses once, the trainers page uses none, and
+the composition. Following the owner's request to remove documentary captions,
+the footer discloses once; photographs carry no overlaid labels. The trainers page uses none, and
 `npm run check:release` fails while any is referenced. The replacement brief is
 in the owner-review canvas; recheck every focal point after the swap.
 
@@ -89,7 +89,9 @@ Full palette and measured contrast ratios: `docs/DESIGN_SYSTEM.md`.
 
 ## Composition principles
 
-1. Rules, not cards. A border-box needs a reason beyond "grouping".
+1. Rules organise editorial content and operational tables. A bounded price
+   option is justified when customers compare its credits, price and validity
+   as one decision. Avoid requiring a label-to-value jump across the page.
 2. Sections open on a hairline with a numeral and a sentence-case label.
 3. Twelve-column grid; content is offset, not centred, unless centring is the point.
    Public sections split 4 (heading rail) / 8 (content). Only photographs leave
@@ -99,6 +101,34 @@ Full palette and measured contrast ratios: `docs/DESIGN_SYSTEM.md`.
 6. Square corners for structure; 2–3px only on controls; pills only for avatars
    and status dots.
 7. Elevation only for dialog, popover and sheet.
+
+### Comprehension correction — 2026-10-03
+
+The cluster audit found public price rows separating a plan from its price,
+single-record detail lists imposing a fixed label column on narrow phones, and
+mobile staff navigation hiding most destinations in an undifferentiated strip.
+The owner's instruction explicitly calls for correcting these patterns.
+
+- Independent record facts: label directly above value, grouped by purpose.
+- Plan comparisons: one coherent option per bounded column; one column on
+  phones, two on tablets, four only when each option has enough width.
+- Session lists: when → class → trainer → availability → action. Tables remain
+  appropriate for staff reconciliation and comparing many records.
+- Mobile staff navigation: a labelled dialog with the same task groups as the
+  desktop rail. All groups and logout remain reachable.
+- UI small text is 14px, supporting text 13px, dense auxiliary text 12px.
+  Existing token roles are retained. Control labels use the UI text tier.
+
+These are task-based decisions, not evidence that vertical reading is always
+superior. See `docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CUM_UI.md` at the
+repository root for sources, route coverage and verification evidence.
+
+### Operational workspace — 2026-10-03
+
+The staff area groups work in bordered `paper` panels (radius 8px, no shadow),
+under a dark `ink-deep` rail with icons and queue counts; status is a filled
+wash with a dot. Principles 6 and 7 above hold for the public site; the staff
+area follows `docs/adr/0006-operational-workspace.md`.
 
 ## Interaction principles
 
@@ -111,8 +141,8 @@ operational surface responds instantly and gets out of the way.
 
 |                | Public                                                                 | Application        |
 | -------------- | ---------------------------------------------------------------------- | ------------------ |
-| Ground         | `sand`                                                                 | `chalk` / `paper`  |
-| Display serif  | Headlines and editorial                                                | Figures only       |
+| Ground         | `sand`                                                                 | `sand` + `paper` panels (staff, ADR 0006); `chalk` elsewhere |
+| Display serif  | Headlines and editorial                                                | Figures and page titles |
 | Density        | Editorial, generous                                                    | Compact, scannable |
 | Primary action | `copper`                                                               | `ink`              |
 | Motion         | Reveals allowed                                                        | Feedback only      |

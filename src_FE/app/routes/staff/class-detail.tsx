@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { ChevronRight, Clock, Info, Plus, UserRound, UserRoundCog, X } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router";
 
 import { useClassRoster, type RosterRow } from "~/features/roster/queries";
@@ -20,17 +21,35 @@ import {
   formatPhone,
   formatTime,
   formatTimeRange,
+  minutesBetween,
   telHref,
   weekdayLong,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { Field, FormActions, Select, Textarea } from "~/ui/field";
-import { LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
+import { DataTable, Td, Th, Tr } from "~/ui/data-table";
+import {
+  EmptyState,
+  ErrorState,
+  LiveRegion,
+  RefreshingRule,
+  Skeleton,
+  SkeletonRows,
+} from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
-import { CapacityMeter, StatusBadge, type StatusTone } from "~/ui/status";
+import { StatusBadge, type StatusTone } from "~/ui/status";
+import {
+  InlineNote,
+  Meter,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  PersonCell,
+  WorkspacePage,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/class-detail";
 
@@ -72,17 +91,16 @@ export default function StaffClassDetail() {
   const session = useClassSession(sessionId);
   const roster = useClassRoster(sessionId);
   const [notice, setNotice] = useState<string | null>(null);
+  // An open place on a class that is already over is not an invitation to
+  // anyone, so the open-seats row is for classes still to come.
+  const upcoming =
+    session.data !== undefined &&
+    session.data.status === "SCHEDULED" &&
+    new Date(session.data.ends_at).getTime() > new Date().getTime();
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
+    <WorkspacePage>
       <LiveRegion message={notice} />
-
-      <Link
-        to="/studio/lich"
-        className="text-ink-2 decoration-rule-2 hover:text-ink text-xs underline underline-offset-[6px]"
-      >
-        Lịch &amp; lớp học
-      </Link>
 
       <QueryBoundary
         query={session}
@@ -91,47 +109,100 @@ export default function StaffClassDetail() {
         showErrorDetail
         errorDescription="Không mở được lớp này. Lớp có thể đã bị xóa hoặc đường dẫn không còn đúng."
       >
-        {(item) => <ClassBody session={item} onNotice={setNotice} />}
+        {(item) => <ClassHeader session={item} onNotice={setNotice} />}
       </QueryBoundary>
 
-      <section className="mt-8">
-        <h2 className="flex items-baseline gap-2">
-          <span className="text-ink text-sm font-medium">Học viên đã đăng ký</span>
-          <Figures className="text-ink-2 text-xs">{roster.data?.length ?? ""}</Figures>
-        </h2>
+      <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Panel className="overflow-hidden">
+          <PanelHeader
+            title={
+              <span className="flex items-baseline gap-2">
+                Học viên đã đăng ký
+                <Figures className="text-ink-2 text-sm font-normal">
+                  {roster.data?.length ?? ""}
+                </Figures>
+              </span>
+            }
+            description={
+              session.data ? (
+                <>
+                  <Figures>{session.data.booked_count}</Figures> trên{" "}
+                  <Figures>{session.data.capacity}</Figures> chỗ đã giữ · điểm danh do huấn
+                  luyện viên làm sau khi lớp kết thúc
+                </>
+              ) : undefined
+            }
+            actions={
+              session.data && session.data.capacity > 0 ? (
+                <Meter
+                  className="w-32"
+                  value={session.data.booked_count}
+                  max={session.data.capacity}
+                  tone={session.data.seats_left === 0 ? "attention" : "neutral"}
+                />
+              ) : null
+            }
+          />
 
-        <div className="mt-3">
-          <QueryBoundary
-            query={roster}
-            skeletonRows={4}
-            emptyTitle="Chưa có học viên nào"
-            emptyDescription="Chưa có ai đăng ký buổi này."
-            errorDescription="Không tải được danh sách đăng ký."
-            showErrorDetail
-          >
-            {(rows) => (
-              <ul className="rule-t">
-                {rows.map((row) => (
-                  <li key={row.bookingId} className="rule-b">
-                    <BookedRow row={row} />
-                  </li>
+          {/* The four states by hand rather than through QueryBoundary: its
+              empty and error blocks carry no inset, and here they sit inside a
+              panel whose table runs edge to edge. */}
+          <RefreshingRule active={roster.isFetching && !roster.isPending} />
+          {roster.isPending ? (
+            <PanelBody>
+              <SkeletonRows rows={4} />
+            </PanelBody>
+          ) : roster.isError ? (
+            <PanelBody>
+              <ErrorState
+                description="Không tải được danh sách đăng ký."
+                detail={roster.error.message}
+                onRetry={() => void roster.refetch()}
+              />
+            </PanelBody>
+          ) : roster.data.length === 0 ? (
+            <PanelBody>
+              <EmptyState
+                className="py-6"
+                title="Chưa có học viên nào"
+                description="Chưa có ai đăng ký buổi này. Học viên tự đặt trong ứng dụng; studio không đặt thay."
+              />
+            </PanelBody>
+          ) : (
+            <DataTable caption="Học viên đã đăng ký lớp này" minWidth="30rem">
+              <thead>
+                <tr>
+                  <Th>Học viên</Th>
+                  <Th>Đăng ký lúc</Th>
+                  <Th>Trạng thái</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {roster.data.map((row) => (
+                  <BookedRow key={row.bookingId} row={row} />
                 ))}
-              </ul>
-            )}
-          </QueryBoundary>
-        </div>
+                {upcoming && session.data && session.data.seats_left > 0 ? (
+                  <OpenSeatsRow seats={session.data.seats_left} />
+                ) : null}
+              </tbody>
+            </DataTable>
+          )}
+        </Panel>
 
-        <p className="rule-t text-ink-2 measure mt-6 pt-3 text-xs">
-          Chỉ học viên tự đăng ký, hủy và đổi lớp của mình — đây là quy tắc đã chốt, không
-          phải tính năng còn thiếu. Nếu cần hủy cho cả lớp, dùng “Hủy lớp”: mọi lượt đăng ký
-          được hoàn buổi, bất kể còn hạn hủy hay không.
-        </p>
-      </section>
-    </div>
+        <div className="flex flex-col gap-5 md:gap-6">
+          {session.data ? <ClassFacts session={session.data} /> : null}
+          <InlineNote icon={<Info aria-hidden="true" />}>
+            Chỉ học viên tự đăng ký, hủy và đổi lớp của mình — đây là quy tắc đã chốt, không
+            phải tính năng còn thiếu. Nếu cần hủy cho cả lớp, dùng “Hủy lớp”: mọi lượt đăng
+            ký được hoàn buổi, bất kể còn hạn hủy hay không.
+          </InlineNote>
+        </div>
+      </div>
+    </WorkspacePage>
   );
 }
 
-function ClassBody({
+function ClassHeader({
   session,
   onNotice,
 }: {
@@ -147,59 +218,68 @@ function ClassBody({
   return (
     <>
       <PageHeader
-        className="mt-4"
-        title={CLASS_TYPE[session.class_type]}
-        description={`${weekdayLong(session.starts_at)}, ${formatDate(session.starts_at)} · ${formatTimeRange(session.starts_at, session.ends_at)}`}
+        eyebrow={
+          <nav aria-label="Đường dẫn" className="flex flex-wrap items-center gap-1.5">
+            <Link
+              to="/studio/lich"
+              className="decoration-rule-2 hover:text-ink underline underline-offset-[6px]"
+            >
+              Lịch &amp; lớp học
+            </Link>
+            <ChevronRight className="size-3.5" aria-hidden="true" />
+            <span aria-current="page">
+              {weekdayLong(session.starts_at)},{" "}
+              <Figures>{formatDate(session.starts_at)}</Figures>
+            </span>
+          </nav>
+        }
+        title={`${CLASS_TYPE[session.class_type]} · ${formatTime(session.starts_at)}`}
         actions={
           live ? (
             <>
-              <Button size="sm" variant="secondary" onClick={() => setReassigning(true)}>
+              <Button
+                variant="secondary"
+                icon={<UserRoundCog className="size-4" aria-hidden="true" />}
+                onClick={() => setReassigning(true)}
+              >
                 Đổi huấn luyện viên
               </Button>
-              <Button size="sm" variant="danger" onClick={() => setCancelling(true)}>
+              <Button
+                variant="danger"
+                icon={<X className="size-4" aria-hidden="true" />}
+                onClick={() => setCancelling(true)}
+              >
                 Hủy lớp
               </Button>
             </>
           ) : null
         }
         meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Huấn luyện viên</dt>
-              <dd className="text-ink">{session.trainer_name}</dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Chỗ đã giữ</dt>
-              <dd>
-                <CapacityMeter booked={session.booked_count} capacity={session.capacity} />
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Trạng thái</dt>
-              <dd>
-                {session.status === "CANCELLED" ? (
-                  <StatusBadge tone="critical">Đã hủy</StatusBadge>
-                ) : session.seats_left === 0 ? (
-                  <StatusBadge tone="attention">Đủ chỗ</StatusBadge>
-                ) : (
-                  <StatusBadge tone="positive">Còn chỗ</StatusBadge>
-                )}
-              </dd>
-            </div>
+          <div className="text-ink-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-4" aria-hidden="true" />
+              <Figures className="text-ink">
+                {formatTimeRange(session.starts_at, session.ends_at)}
+              </Figures>
+              · <Figures>{minutesBetween(session.starts_at, session.ends_at)}</Figures> phút
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <UserRound className="size-4" aria-hidden="true" />
+              <span className="sr-only">Huấn luyện viên: </span>
+              <span className="text-ink">{session.trainer_name}</span>
+            </span>
+            <SessionStatus session={session} />
             {session.recurrence_id ? (
-              <div className="flex items-baseline gap-2">
-                <dt>Thuộc lịch lặp</dt>
-                <dd className="text-ink">Có</dd>
-              </div>
+              <StatusBadge tone="neutral">Lớp định kỳ</StatusBadge>
             ) : null}
-          </dl>
+          </div>
         }
       />
 
       {session.cancel_reason ? (
-        <p className="rule-t text-ink-2 measure mt-4 pt-3 text-sm">
+        <InlineNote className="bg-danger-wash/70">
           Lý do hủy: <span className="text-ink">{session.cancel_reason}</span>
-        </p>
+        </InlineNote>
       ) : null}
 
       <ReassignTrainerDialog
@@ -217,6 +297,57 @@ function ClassBody({
         onDone={onNotice}
       />
     </>
+  );
+}
+
+/** Seats as the backend states them: `seats_left` is its count, not ours. */
+function SessionStatus({ session }: { session: ClassSessionDetailResponse }) {
+  if (session.status === "CANCELLED") {
+    return <StatusBadge tone="critical">Đã hủy</StatusBadge>;
+  }
+  if (session.seats_left === 0) {
+    return <StatusBadge tone="attention">Đủ chỗ</StatusBadge>;
+  }
+  return <StatusBadge tone="positive">Còn {session.seats_left} chỗ</StatusBadge>;
+}
+
+/**
+ * The class as a definition, beside the roster. Every value is a field of the
+ * session; the refund deadline the canvas showed is not one of them (the staff
+ * view of a class carries no cancellation terms), so it is not shown.
+ */
+function ClassFacts({ session }: { session: ClassSessionDetailResponse }) {
+  return (
+    <Panel>
+      <PanelHeader title="Thông tin lớp" />
+      <PanelBody>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <Fact label="Hình thức">{CLASS_TYPE[session.class_type]}</Fact>
+          <Fact label="Sức chứa">
+            <Figures>{session.capacity}</Figures> chỗ
+          </Fact>
+          <Fact label="Huấn luyện viên">{session.trainer_name}</Fact>
+          <Fact label="Chỗ đã giữ">
+            <Figures>
+              {session.booked_count}/{session.capacity}
+            </Figures>
+          </Fact>
+          <Fact label="Thuộc lịch lặp">{session.recurrence_id ? "Có" : "Không"}</Fact>
+          <Fact label="Trạng thái">
+            {session.status === "CANCELLED" ? "Đã hủy" : "Đã lên lịch"}
+          </Fact>
+        </dl>
+      </PanelBody>
+    </Panel>
+  );
+}
+
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-ink-2 text-xs">{label}</dt>
+      <dd className="text-ink mt-0.5 text-sm wrap-anywhere">{children}</dd>
+    </div>
   );
 }
 
@@ -418,40 +549,76 @@ function BookedRow({ row }: { row: RosterRow }) {
   const status = BOOKING_STATUS[row.status];
 
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 py-3.5">
-      {/* Names wrap; a Vietnamese name is never truncated (AGENTS P5). */}
-      <span className="min-w-0 flex-1">
-        <Link
-          to={`/studio/hoc-vien/${row.studentId}`}
-          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
-        >
-          {row.studentName}
-        </Link>
-        {row.phone ? (
-          <a
-            href={telHref(row.phone)}
-            className="figures text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper mt-0.5 block w-fit text-xs underline underline-offset-[5px]"
-          >
-            {formatPhone(row.phone)}
-          </a>
-        ) : null}
-        <span className="text-ink-2 mt-0.5 block text-xs">
-          Đăng ký <Figures>{formatDate(row.createdAt)}</Figures>{" "}
-          <Figures>{formatTime(row.createdAt)}</Figures>
-        </span>
-      </span>
+    <Tr>
+      <Td>
+        <PersonCell
+          avatarName={row.studentName}
+          name={
+            <Link
+              to={`/studio/hoc-vien/${row.studentId}`}
+              className="decoration-rule-2 hover:text-copper hover:decoration-copper underline-offset-[6px] hover:underline"
+            >
+              {row.studentName}
+            </Link>
+          }
+          detail={
+            row.phone ? (
+              <a
+                href={telHref(row.phone)}
+                className="figures decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[5px]"
+              >
+                {formatPhone(row.phone)}
+              </a>
+            ) : null
+          }
+        />
+      </Td>
+      <Td className="text-ink-2 whitespace-nowrap">
+        <Figures>{formatDate(row.createdAt)}</Figures>{" "}
+        <Figures>{formatTime(row.createdAt)}</Figures>
+      </Td>
+      <Td>
+        <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+      </Td>
+    </Tr>
+  );
+}
 
-      <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
-    </div>
+/**
+ * The places still open, as a row of the roster. It says who fills them, so
+ * the empty space is not read as a missing "add student" control.
+ */
+function OpenSeatsRow({ seats }: { seats: number }) {
+  return (
+    <Tr>
+      <Td colSpan={3} className="bg-chalk">
+        <span className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="border-rule-2 text-ink-3 grid size-9 shrink-0 place-items-center rounded-full border border-dashed"
+          >
+            <Plus className="size-3.5" />
+          </span>
+          <span className="flex min-w-0 flex-col">
+            <span className="text-ink-2 text-sm">
+              <Figures>{seats}</Figures> chỗ trống
+            </span>
+            <span className="text-ink-2 text-xs">
+              Học viên tự đặt trong ứng dụng; studio không đặt thay.
+            </span>
+          </span>
+        </span>
+      </Td>
+    </Tr>
   );
 }
 
 function DetailSkeleton() {
   return (
-    <div className="mt-4">
-      <Skeleton className="h-6 w-48" />
-      <Skeleton className="mt-3 h-3 w-72 max-w-full" />
-      <SkeletonRows rows={3} className="mt-6" />
+    <div>
+      <Skeleton className="h-3 w-56 max-w-full" />
+      <Skeleton className="mt-3 h-8 w-64 max-w-full" />
+      <Skeleton className="mt-3 h-3 w-80 max-w-full" />
       <span className="sr-only">Đang tải chi tiết lớp</span>
     </div>
   );

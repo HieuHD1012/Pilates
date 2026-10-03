@@ -95,14 +95,15 @@ context. A bare `{count}` inside a table cell, metric or price is a bug.
 
 ### Scale
 
-`text-2xs` 11 · `text-xs` 12 · `text-sm` 13 · `text-base` 15 · `text-lg` 17 ·
+`text-2xs` 12 · `text-xs` 13 · `text-sm` 14 · `text-base` 15 · `text-lg` 17 ·
 `text-xl` 20 · `text-2xl` 24 · `text-3xl` 30, plus fluid display sizes
 `text-d1` / `text-d2` / `text-d3` and `text-lede`.
 
 ## Radius
 
 `none` 0 (structure) · `xs` 2px (badges) · `sm` 3px (buttons, inputs) ·
-`md` 5px (dialogs) · `full` (avatars and status dots only).
+`md` 5px (dialogs) · `lg` 8px (staff panels only, ADR 0006) · `full` (avatars,
+status dots and status pills).
 
 ## Elevation
 
@@ -111,9 +112,16 @@ not floating above the page, it gets a rule or a surface change instead.
 
 ## Motion
 
-`--ease-measure: cubic-bezier(0.2, 0.7, 0.2, 1)` is the only curve.
-`rule-draw` and `fade-rise` are the only two keyframes. Reduced motion is
-handled once, globally, in the base layer.
+`--ease-measure: cubic-bezier(0.2, 0.7, 0.2, 1)` is the curve for everything a
+person does. `--ease-draw: cubic-bezier(0.45, 0.05, 0.25, 1)` is the second and
+last: scroll reveals only, where `--ease-measure` front-loads 70% of its travel
+and a 0.9s draw read as a pop.
+`rule-draw` and `fade-rise` are the reveal keyframes; `fade-in` (content replaced
+in place) and `rise-in` (a bar arriving at a phone edge) are the two interaction
+keyframes. Scroll reveals exist only on the narrative pages, on desktop, for a
+section hairline and the method photograph — see `app/features/public/motion.tsx` and
+`docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CHUYEN_DONG.md` at the
+repository root. Reduced motion is handled once, globally, in the base layer.
 
 ## Utilities worth knowing
 
@@ -132,6 +140,11 @@ handled once, globally, in the base layer.
 CapacityMeter, Skeleton, SkeletonRows, EmptyState, ErrorState, LiveRegion,
 RefreshingRule, Section, Rule, PageHeader, FilterBar, Metric, TickRule,
 PublicPageHeader, ArtDirectedImage, PendingFact.
+
+The staff workspace (`app/ui/workspace.tsx`, ADR 0006): WorkspacePage, Panel,
+PanelHeader, PanelBody, PanelFooter, Toolbar, SegmentFilter, Avatar,
+PersonCell, Meter, Kpi, InlineNote, RowMenu. Staff screens group work in
+panels on the sand ground; the public site does not use them.
 
 Radix primitives are implementation infrastructure. No Radix default styling
 ships. Do not add a component library.
@@ -168,9 +181,10 @@ are now utilities and inline tracking is not permitted:
 Display tracking is negative and lives in the type tokens. `text-xl` carries
 `-0.01em` so the operational page title needs no inline value.
 
-## One easing curve
+## Two easing curves, each with one job
 
-`--ease-measure` is the only curve. Tailwind's stock `animate-pulse` ships its
+`--ease-measure` is the curve for every interaction; `--ease-draw` exists only
+for the public scroll reveals (see Motion above). Tailwind's stock `animate-pulse` ships its
 own cubic-bezier, which is how a second curve entered a system documenting one —
 so the skeleton has its own declared animation, `animate-skeleton`, on our curve.
 **Never use `animate-pulse`.**

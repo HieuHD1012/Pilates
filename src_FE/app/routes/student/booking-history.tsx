@@ -114,7 +114,7 @@ function HistoryRow({ entry }: { entry: MyScheduleItem }) {
 
   return (
     <li className="rule-b py-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col items-start gap-2">
         {/* min-w-0 and no truncation: a Vietnamese trainer name wraps rather
             than losing its diacritics to an ellipsis. */}
         <div className="min-w-0">

@@ -1,21 +1,34 @@
+import { Phone, RefreshCw, Search, UserPlus, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { useCreateStudent, useStudents } from "~/features/people/queries";
 import { StudentForm } from "~/features/people/student-form";
 import type { StudentResponse, StudentStatus } from "~/lib/api/schema";
-import { formatDate, formatPhone } from "~/lib/format";
+import { formatDate, formatPhone, telHref } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { Dialog, DialogContent } from "~/ui/dialog";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Field, Input, Select } from "~/ui/field";
+import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
+import { Input } from "~/ui/field";
 import { Figures } from "~/ui/figure";
-import { FilterBar, PageHeader } from "~/ui/layout";
-import { Absent } from "~/ui/absent";
+import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge, type StatusTone } from "~/ui/status";
+import {
+  Avatar,
+  Panel,
+  PanelFooter,
+  PersonCell,
+  RowMenu,
+  RowMenuItem,
+  SegmentFilter,
+  Toolbar,
+  WorkspacePage,
+  type SegmentOption,
+} from "~/ui/workspace";
 
 import type { Route } from "./+types/students";
 
@@ -34,6 +47,44 @@ const STATUS: Record<StudentStatus, { label: string; tone: StatusTone }> = {
 };
 
 const STATUS_ORDER: StudentStatus[] = ["ACTIVE", "INACTIVE"];
+
+/** The list asks for at most this many rows; see `segmentOptions`. */
+const LIMIT = 200;
+
+/**
+ * Counts on the status filter, only where the loaded rows prove them.
+ *
+ * The list is fetched per status, so an unfiltered response can count both
+ * states while a filtered one only knows its own. A response that hit the row
+ * limit, or that is still the previous filter's rows shown as placeholder, is
+ * not a count of anything — so it shows none rather than a wrong one. With a
+ * search typed in, every count is a count of the matching students.
+ */
+function segmentOptions(
+  status: StudentStatus | "all",
+  items: StudentResponse[] | undefined,
+  trustworthy: boolean,
+): SegmentOption<StudentStatus | "all">[] {
+  const known = trustworthy && items !== undefined && items.length < LIMIT;
+  const countFor = (value: StudentStatus | "all"): number | undefined => {
+    if (!known) return undefined;
+    if (status === "all") {
+      return value === "all"
+        ? items.length
+        : items.filter((item) => item.status === value).length;
+    }
+    return value === status ? items.length : undefined;
+  };
+
+  return [
+    { value: "all", label: "Tất cả", count: countFor("all") },
+    ...STATUS_ORDER.map((value) => ({
+      value,
+      label: STATUS[value].label,
+      count: countFor(value),
+    })),
+  ];
+}
 
 /**
  * The student list.
@@ -61,25 +112,30 @@ export default function StaffStudents() {
   const query = useStudents({
     q: search.trim() === "" ? undefined : search.trim(),
     status: status === "all" ? undefined : status,
-    limit: 200,
+    limit: LIMIT,
   });
   const items = query.data;
-  const activeCount = (items ?? []).filter((s) => s.status === "ACTIVE").length;
   const filtered = search.trim() !== "" || status !== "all";
+  const options = segmentOptions(status, items, !query.isPlaceholderData);
 
   function clearFilters() {
     setSearch("");
     setStatus("all");
   }
 
-  /** The row navigates; the name link inside it handles its own click. */
+  /**
+   * The row navigates; the link and the menu inside it handle their own clicks.
+   * React bubbles events out of portals, so a click inside the row menu's
+   * popover reaches this handler too — `contains` keeps it from navigating.
+   */
   function openStudent(event: React.MouseEvent<HTMLTableRowElement>, id: number) {
-    if ((event.target as HTMLElement).closest("a")) return;
+    const target = event.target as HTMLElement;
+    if (!event.currentTarget.contains(target) || target.closest("a, button")) return;
     void navigate(`/studio/hoc-vien/${id}`);
   }
 
   return (
-    <div className="gutter py-6">
+    <WorkspacePage>
       <LiveRegion message={createdName ? `Đã tạo hồ sơ cho ${createdName}.` : null} />
 
       <PageHeader
@@ -87,163 +143,164 @@ export default function StaffStudents() {
         description="Danh sách học viên của studio. Gói tập và số buổi còn lại nằm trong hồ sơ từng người."
         actions={
           <>
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/studio/gia-han">Danh sách cần gia hạn</Link>
+            <Button asChild variant="secondary">
+              <Link to="/studio/gia-han">
+                <RefreshCw className="size-4" aria-hidden="true" />
+                <span>Danh sách cần gia hạn</span>
+              </Link>
             </Button>
-            <Button size="sm" onClick={() => setCreating(true)}>
+            <Button
+              icon={<UserPlus className="size-4" aria-hidden="true" />}
+              onClick={() => setCreating(true)}
+            >
               Tạo học viên
             </Button>
           </>
         }
-        meta={
-          <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-xs">
-            <div className="flex items-baseline gap-2">
-              <dt>Đang hiển thị</dt>
-              <dd>
-                {items ? (
-                  <Figures className="text-ink">{items.length}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <dt>Đang học</dt>
-              <dd>
-                {items ? (
-                  <Figures className="text-ink">{activeCount}</Figures>
-                ) : (
-                  <Placeholder />
-                )}
-              </dd>
-            </div>
-          </dl>
-        }
       />
 
-      <FilterBar
-        trailing={
-          <span className="text-ink-2 text-xs">
-            {query.isFetching && !query.isPending ? "Đang cập nhật" : null}
-          </span>
-        }
-      >
-        <Field label="Tìm học viên" className="w-full sm:w-72">
-          {({ id }) => (
+      <Panel aria-label="Danh sách học viên">
+        <Toolbar
+          trailing={
+            <>
+              {query.isFetching && !query.isPending ? (
+                <span className="text-ink-2 text-xs">Đang cập nhật</span>
+              ) : null}
+              <DemoDataNotice />
+            </>
+          }
+        >
+          <SegmentFilter
+            label="Lọc theo trạng thái"
+            options={options}
+            value={status}
+            onChange={setStatus}
+          />
+          <div className="relative w-full sm:w-72">
+            <Search
+              className="text-ink-2 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+              aria-hidden="true"
+            />
             <Input
-              id={id}
               type="search"
+              aria-label="Tìm học viên"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Tên hoặc số điện thoại"
               autoComplete="off"
+              className="pl-9"
             />
-          )}
-        </Field>
+          </div>
+        </Toolbar>
 
-        <Field label="Trạng thái" className="w-full sm:w-48">
-          {({ id }) => (
-            <Select
-              id={id}
-              value={status}
-              onChange={(event) => setStatus(event.target.value as StudentStatus | "all")}
-            >
-              <option value="all">Tất cả</option>
-              {STATUS_ORDER.map((value) => (
-                <option key={value} value={value}>
-                  {STATUS[value].label}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </FilterBar>
-
-      <DemoDataNotice className="mb-3" />
-
-      <QueryBoundary
-        query={query}
-        skeletonRows={8}
-        emptyTitle={filtered ? "Không có học viên nào khớp bộ lọc" : "Chưa có học viên nào"}
-        emptyDescription={
-          filtered
-            ? "Thử bỏ bớt từ khoá tìm kiếm hoặc chọn lại trạng thái."
-            : "Học viên sẽ xuất hiện ở đây sau khi được ghi nhận trong hệ thống của studio."
-        }
-        emptyAction={
-          filtered ? (
-            <Button variant="secondary" onClick={clearFilters}>
-              Bỏ bộ lọc
-            </Button>
-          ) : null
-        }
-        errorDescription="Không tải được danh sách học viên."
-        showErrorDetail
-      >
-        {(students) => (
-          <>
-            {/* 1440 / 1024: the columns staff scan down. */}
-            <div className="hidden lg:block">
-              <DataTable caption="Danh sách học viên" minWidth="52rem">
-                <thead>
-                  <tr>
-                    <Th>Tên</Th>
-                    <Th>Điện thoại</Th>
-                    <Th>Email</Th>
-                    <Th numeric>Vào studio</Th>
-                    <Th>Trạng thái</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map((student) => (
-                    <Tr
-                      key={student.id}
-                      onClick={(event) => openStudent(event, student.id)}
-                    >
-                      <Td>
-                        {/* A real link: the row click is a convenience, not the
-                            only way in. Names wrap — they are never truncated. */}
-                        <Link
-                          to={`/studio/hoc-vien/${student.id}`}
-                          className="text-ink decoration-rule-2 underline-offset-[6px] hover:underline"
+        <div className="px-4 md:px-5">
+          <QueryBoundary
+            query={query}
+            skeletonRows={8}
+            emptyTitle={
+              filtered ? "Không có học viên nào khớp bộ lọc" : "Chưa có học viên nào"
+            }
+            emptyDescription={
+              filtered
+                ? "Thử bỏ bớt từ khoá tìm kiếm hoặc chọn lại trạng thái."
+                : "Học viên sẽ xuất hiện ở đây sau khi được ghi nhận trong hệ thống của studio."
+            }
+            emptyAction={
+              filtered ? (
+                <Button variant="secondary" onClick={clearFilters}>
+                  Bỏ bộ lọc
+                </Button>
+              ) : null
+            }
+            errorDescription="Không tải được danh sách học viên."
+            showErrorDetail
+          >
+            {(students) => (
+              <div className="-mx-4 md:-mx-5">
+                {/* 1440 / 1024: the columns staff scan down. */}
+                <div className="hidden lg:block">
+                  <DataTable caption="Danh sách học viên" minWidth="52rem">
+                    <thead>
+                      <tr>
+                        <Th>Học viên</Th>
+                        <Th>Email</Th>
+                        <Th numeric>Vào studio</Th>
+                        <Th>Trạng thái</Th>
+                        <Th>
+                          <span className="sr-only">Thao tác</span>
+                        </Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student) => (
+                        <Tr
+                          key={student.id}
+                          onClick={(event) => openStudent(event, student.id)}
                         >
-                          {student.full_name}
-                        </Link>
-                      </Td>
-                      <Td>
-                        <Figures className="text-ink-2 whitespace-nowrap">
-                          {formatPhone(student.phone)}
-                        </Figures>
-                      </Td>
-                      <Td>{student.email ?? <Absent>Chưa ghi</Absent>}</Td>
-                      <Td numeric>
-                        <Figures className="whitespace-nowrap">
-                          {formatDate(student.created_at)}
-                        </Figures>
-                      </Td>
-                      <Td>
-                        <StatusBadge tone={STATUS[student.status].tone}>
-                          {STATUS[student.status].label}
-                        </StatusBadge>
-                      </Td>
-                    </Tr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </div>
+                          <Td>
+                            {/* A real link: the row click is a convenience, not
+                                the only way in. */}
+                            <PersonCell
+                              avatarName={student.full_name}
+                              name={
+                                <Link
+                                  to={`/studio/hoc-vien/${student.id}`}
+                                  className="hover:text-copper"
+                                >
+                                  {student.full_name}
+                                </Link>
+                              }
+                              detail={
+                                <Figures className="whitespace-nowrap">
+                                  {formatPhone(student.phone)}
+                                </Figures>
+                              }
+                            />
+                          </Td>
+                          <Td className="text-ink-2">
+                            {student.email ?? <Absent>Chưa ghi</Absent>}
+                          </Td>
+                          <Td numeric>
+                            <Figures className="whitespace-nowrap">
+                              {formatDate(student.created_at)}
+                            </Figures>
+                          </Td>
+                          <Td>
+                            <StatusBadge tone={STATUS[student.status].tone}>
+                              {STATUS[student.status].label}
+                            </StatusBadge>
+                          </Td>
+                          <Td className="w-14 text-right">
+                            <StudentMenu student={student} />
+                          </Td>
+                        </Tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
+                </div>
 
-            {/* Below lg the table becomes ruled rows — a studio phone is not
-                asked to render a six-column grid (docs/RESPONSIVE.md). */}
-            <ul className="rule-t lg:hidden">
-              {students.map((student) => (
-                <li key={student.id} className="rule-b">
-                  <StudentRow student={student} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </QueryBoundary>
+                {/* Below lg the table becomes ruled rows — a studio phone is not
+                    asked to render a five-column grid (docs/RESPONSIVE.md). */}
+                <ul className="lg:hidden">
+                  {students.map((student) => (
+                    <li key={student.id} className="rule-b last:border-b-0">
+                      <StudentRow student={student} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </QueryBoundary>
+        </div>
+
+        {items && items.length > 0 ? (
+          <PanelFooter>
+            <span>
+              Đang hiển thị <Figures className="text-ink">{items.length}</Figures> học viên
+            </span>
+          </PanelFooter>
+        ) : null}
+      </Panel>
 
       <CreateStudentDialog
         open={creating}
@@ -256,7 +313,34 @@ export default function StaffStudents() {
           void navigate(`/studio/hoc-vien/${student.id}`);
         }}
       />
-    </div>
+    </WorkspacePage>
+  );
+}
+
+/**
+ * The row's overflow menu (ADR 0006, decision 7). No row on this list needs
+ * handling, so there is no button at the edge — only the menu.
+ */
+function StudentMenu({ student }: { student: StudentResponse }) {
+  const navigate = useNavigate();
+
+  return (
+    <RowMenu label={`Thao tác cho ${student.full_name}`}>
+      <RowMenuItem
+        icon={<UserRound aria-hidden="true" />}
+        onClick={() => void navigate(`/studio/hoc-vien/${student.id}`)}
+      >
+        Mở hồ sơ
+      </RowMenuItem>
+      <RowMenuItem
+        icon={<Phone aria-hidden="true" />}
+        onClick={() => window.location.assign(telHref(student.phone))}
+      >
+        <span>
+          Gọi <span className="figures">{formatPhone(student.phone)}</span>
+        </span>
+      </RowMenuItem>
+    </RowMenu>
   );
 }
 
@@ -307,46 +391,31 @@ function CreateStudentDialog({
   );
 }
 
+/** A phone row: the whole row is the link, so it is one large touch target. */
 function StudentRow({ student }: { student: StudentResponse }) {
   return (
     <Link
       to={`/studio/hoc-vien/${student.id}`}
-      className="hover:bg-sand-deep/50 active:bg-sand-deep flex items-start justify-between gap-4 py-3.5 transition-colors duration-200"
+      className="hover:bg-sand/70 active:bg-sand-deep flex items-start gap-3 px-4 py-3.5 transition-colors duration-200 md:px-5"
     >
-      <span className="min-w-0">
-        <span className="text-ink block text-sm">{student.full_name}</span>
-        <Figures className="text-ink-2 mt-1 block text-xs">
-          {formatPhone(student.phone)}
-        </Figures>
-        <span className="text-ink-2 mt-1 block text-xs">
+      <Avatar name={student.full_name} />
+
+      <span className="min-w-0 flex-1">
+        <span className="flex items-start justify-between gap-3">
+          <span className="text-ink text-sm font-medium">{student.full_name}</span>
+          <StatusBadge tone={STATUS[student.status].tone} className="shrink-0">
+            {STATUS[student.status].label}
+          </StatusBadge>
+        </span>
+        <Figures className="text-ink-2 block text-xs">{formatPhone(student.phone)}</Figures>
+        <span className="text-ink-2 mt-0.5 block text-xs wrap-anywhere">
           {student.email ?? <Absent>Chưa ghi email</Absent>}
         </span>
-      </span>
-
-      <span className="flex shrink-0 flex-col items-end gap-1.5">
-        <StatusBadge tone={STATUS[student.status].tone}>
-          {STATUS[student.status].label}
-        </StatusBadge>
-        <span className="text-ink-2 text-xs">
+        <span className="text-ink-2 mt-0.5 block text-xs">
           Vào studio{" "}
           <Figures className="text-ink">{formatDate(student.created_at)}</Figures>
         </span>
       </span>
     </Link>
-  );
-}
-
-/**
- * An absent value. The dash is decoration, so it is hidden from assistive
- * technology and the meaning is written out instead — never the string "null".
- */
-function Placeholder() {
-  return (
-    <>
-      <span aria-hidden="true" className="text-ink-2">
-        —
-      </span>
-      <span className="sr-only">chưa có</span>
-    </>
   );
 }

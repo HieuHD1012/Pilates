@@ -7,7 +7,7 @@ import { ArtDirectedImage } from "~/ui/art-directed-image";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { SectionRail } from "~/ui/public-page";
+import { CheckList, SectionRail } from "~/ui/public-page";
 
 import type { Route } from "./+types/services";
 
@@ -60,7 +60,6 @@ export default function Services() {
                 <ArtDirectedImage
                   photo="group"
                   priority
-                  disclose
                   sizes="(min-width: 1024px) 55vw, 100vw"
                   imgClassName="object-[40%_50%]"
                 />
@@ -92,8 +91,10 @@ export default function Services() {
           </SectionRail>
           <div className="lg:col-span-8">
             <ComparisonTable />
-            <p className="text-ink-2 mt-5 text-sm">
-              Hủy sau mốc trên thì buổi không được hoàn và không đổi được giờ.
+            <p className="measure text-ink-2 mt-5 text-base">
+              Giống nhau ở cả hai: mỗi buổi <Figures>{SESSION_MINUTES}</Figures> phút, một
+              huấn luyện viên phụ trách từ đầu đến cuối, mỗi gói gắn với một hình thức. Hủy
+              sau mốc trên thì buổi không được hoàn và không đổi được giờ.
             </p>
           </div>
         </div>
@@ -121,25 +122,17 @@ export default function Services() {
 function FormatCopy({ format }: { format: ClassFormat }) {
   return (
     <div className="mt-8">
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="label-micro text-copper">{format.sub}</p>
-        <span className="figures-display text-copper-bright text-[2rem] leading-none">
+      <p className="label-micro text-copper">{format.sub}</p>
+      <h2 className="mt-2 flex items-baseline gap-3">
+        <span className="font-display text-d2 text-ink font-light">{format.name}</span>
+        <span className="figures-display text-copper-bright text-[1.75rem] leading-none">
           {format.ratio}
         </span>
-      </div>
-      <h2 className="font-display text-d2 text-ink mt-2 font-light">{format.name}</h2>
+      </h2>
       <p className="text-ink mt-2 text-sm font-medium">{format.size}</p>
       <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
-      <ul className="mt-6 max-w-[36em]">
-        {format.forWho.map((item) => (
-          <li
-            key={item}
-            className="rule-b text-ink first:border-rule py-3 text-base first:border-t"
-          >
-            {item}
-          </li>
-        ))}
-      </ul>
+      <p className="text-ink-2 mt-6 text-sm">Phù hợp với</p>
+      <CheckList items={format.forWho} className="mt-3" />
       {/* Soul's best shortcut: each format opens the timetable already
           filtered to it, instead of making the visitor filter again. */}
       <div className="mt-4">
@@ -151,6 +144,11 @@ function FormatCopy({ format }: { format: ClassFormat }) {
   );
 }
 
+/**
+ * Only what differs. A comparison row whose two cells say the same thing makes
+ * the reader compare two identical strings to learn nothing; shared terms are
+ * stated once beneath the table.
+ */
 const ROWS: { label: string; group: ReactNode; private: ReactNode }[] = [
   {
     label: "Sĩ số",
@@ -158,19 +156,14 @@ const ROWS: { label: string; group: ReactNode; private: ReactNode }[] = [
     private: PRIVATE.size,
   },
   {
-    label: "Thời lượng",
-    group: `${SESSION_MINUTES} phút mỗi buổi`,
-    private: `${SESSION_MINUTES} phút mỗi buổi`,
-  },
-  {
     label: "Bài tập",
     group: "Cùng một bài, chỉnh riêng từng người",
     private: "Dựng theo tình trạng và mục tiêu của bạn",
   },
   {
-    label: "Người dạy",
-    group: "Một huấn luyện viên phụ trách buổi",
-    private: "Một huấn luyện viên phụ trách buổi",
+    label: "Phù hợp nhất khi",
+    group: GROUP.forWho[0] ?? "",
+    private: PRIVATE.forWho[0] ?? "",
   },
   {
     label: "Hủy để được hoàn buổi",
@@ -184,11 +177,6 @@ const ROWS: { label: string; group: ReactNode; private: ReactNode }[] = [
         Trước giờ học ít nhất <Figures>{CANCELLATION_POLICY.private}</Figures> giờ
       </>
     ),
-  },
-  {
-    label: "Gói tập",
-    group: "Gói lớp nhóm: số buổi và thời hạn",
-    private: "Gói lớp riêng: số buổi và thời hạn",
   },
 ];
 

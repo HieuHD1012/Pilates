@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "~/lib/cn";
@@ -65,5 +66,39 @@ export function SectionRail({
       </h2>
       {children}
     </div>
+  );
+}
+
+/**
+ * A short list of qualities ("phù hợp với…"). Each item is a check and a
+ * phrase, packed close: three short phrases do not need a full-width ruled row
+ * each, which stretched them into a table and pushed everything below away.
+ */
+export function CheckList({ items, className }: { items: string[]; className?: string }) {
+  return (
+    <ul className={cn("flex flex-col gap-2.5", className)}>
+      {items.map((item) => (
+        <li key={item} className="text-ink flex items-start gap-3 text-base">
+          <Check aria-hidden="true" className="text-copper mt-1 size-4 shrink-0" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Opening hours are stored as "days · times". Breaking at the separator keeps
+ * each half whole; letting the line wrap anywhere split "07:30 –" from "19:30".
+ */
+export function HoursText({ value }: { value: string }) {
+  return (
+    <>
+      {value.split(" · ").map((part) => (
+        <span key={part} className="block whitespace-nowrap">
+          {part}
+        </span>
+      ))}
+    </>
   );
 }

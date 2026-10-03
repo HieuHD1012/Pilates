@@ -129,3 +129,15 @@ copied: another city's address, phone or map link is a wrong door, not a policy.
 | Opening hours Mon–Sat 07:30–19:30              | Soul footer                                                                      | `STUDIO.openingHours`                           | Nha Trang hours.                                                |
 | Private cancellation window 1 hour (was 8)     | **Not Soul** — matches what the backend enforces; Soul publishes both 12h and 3h | `CANCELLATION_POLICY.private`                   | Owner picks one window per format; backend and copy must agree. |
 | Demo catalogue 5/10/20/30 packs at Soul prices | Soul /packages                                                                   | `app/mocks/fixtures.ts` (DEMO, dev only)        | Real packages and prices are entered by staff.                  |
+
+## Staff workspace: what the redesign canvas showed but the API does not serve (03/10/2026)
+
+The approved staff redesign (ADR 0006) drew a few things no endpoint provides.
+They are **not built**; each needs a backend answer first.
+
+| Canvas element                                  | Needs                                                                 |
+| ----------------------------------------------- | --------------------------------------------------------------------- |
+| Global search in a top bar (students, leads)    | One endpoint that searches names and phones across both.              |
+| Notification bell                               | A notification model. None exists.                                    |
+| Calendar cells with booked/capacity per class   | Already in the week payload for staff; confirm it stays there.        |
+| "Nhắn Zalo" on a lead                           | Whether the studio uses a Zalo OA or a personal number.               |

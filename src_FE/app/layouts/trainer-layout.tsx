@@ -19,9 +19,12 @@ export default function TrainerLayout() {
     <RoleGate allow={["TRAINER"]}>
       <div className="bg-chalk flex min-h-dvh flex-col">
         <header className="rule-b bg-sand/95 sticky top-0 z-(--z-nav) backdrop-blur-[2px]">
-          <div className="gutter mx-auto flex h-14 max-w-(--container-page) items-center justify-between gap-4">
+          <div className="gutter mx-auto flex max-w-(--container-page) flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 md:min-h-14 md:flex-nowrap">
             <span className="wordmark text-ink text-base">SOUL</span>
-            <nav aria-label="Điều hướng huấn luyện viên">
+            <nav
+              aria-label="Điều hướng huấn luyện viên"
+              className="order-3 w-full md:order-none md:w-auto"
+            >
               <ul className="flex items-center gap-5">
                 {TRAINER_NAV.map((item) => (
                   <li key={item.to}>
@@ -29,8 +32,10 @@ export default function TrainerLayout() {
                       to={item.to}
                       className={({ isActive }) =>
                         cn(
-                          "py-2 text-sm transition-colors",
-                          isActive ? "text-ink" : "text-ink-2 hover:text-ink",
+                          "inline-flex min-h-11 items-center border-b-2 text-sm transition-colors",
+                          isActive
+                            ? "border-copper text-ink"
+                            : "text-ink-2 hover:text-ink border-transparent",
                         )
                       }
                     >
@@ -45,7 +50,7 @@ export default function TrainerLayout() {
                 type="button"
                 onClick={() => logout.mutate()}
                 disabled={logout.isPending}
-                className="text-ink-2 hover:text-ink active:text-ink text-xs disabled:cursor-not-allowed"
+                className="text-ink-2 hover:text-ink active:text-ink min-h-11 text-sm disabled:cursor-not-allowed"
               >
                 Đăng xuất
               </button>

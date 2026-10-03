@@ -41,8 +41,10 @@ function StudentHeader() {
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "py-2 text-sm transition-colors",
-                      isActive ? "text-ink" : "text-ink-2 hover:text-ink",
+                      "inline-flex min-h-11 items-center border-b-2 text-sm transition-colors",
+                      isActive
+                        ? "border-copper text-ink"
+                        : "text-ink-2 hover:text-ink border-transparent",
                     )
                   }
                 >
@@ -53,7 +55,11 @@ function StudentHeader() {
           </ul>
         </nav>
 
-        {user ? <span className="text-ink-2 text-xs">{user.full_name}</span> : null}
+        {user ? (
+          <span className="text-ink-2 max-w-[45%] text-right text-xs">
+            {user.full_name}
+          </span>
+        ) : null}
       </div>
     </header>
   );

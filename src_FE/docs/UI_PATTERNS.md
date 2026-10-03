@@ -29,10 +29,15 @@ Ruled rows, no borders around the outside, no zebra striping.
 Below `md`, dense tables become ruled lists (`WeekList` beside `WeekGrid`).
 Never shrink a desktop table onto a phone.
 
+On staff screens a table sits flush inside a `Panel`, under a `Toolbar` whose
+first control is a `SegmentFilter` with counts. A row about a person starts
+with `PersonCell`. A row shows one button only when it needs handling; every
+other action is in its `RowMenu` (docs/adr/0006-operational-workspace.md).
+
 ## Status
 
-`<StatusBadge tone="neutral | positive | attention | critical | info">` always
-carries a written label; the dot is a redundant cue. Colour alone never conveys
+`<StatusBadge tone="neutral | positive | attention | critical | info">` is a filled
+pill that always carries a written label; the dot is a redundant cue. Colour alone never conveys
 state.
 
 `<CapacityMeter booked capacity>` writes the fraction and draws a hairline meter

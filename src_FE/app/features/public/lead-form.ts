@@ -74,9 +74,11 @@ export function useLeadContext(): LeadContext | null {
 
 export function useLeadMutation({
   context = null,
+  packageName = null,
   setError,
 }: {
   context?: LeadContext | null;
+  packageName?: string | null;
   setError: UseFormSetError<LeadFormValues>;
 }) {
   return useMutation({
@@ -93,7 +95,9 @@ export function useLeadMutation({
           : parsed.preferredClassType === "private"
             ? "Quan tâm lớp riêng."
             : null;
-      const asked = context ? `Hỏi về: ${LEAD_CONTEXTS[context]}.` : null;
+      const asked = packageName
+        ? `Hỏi về gói: ${packageName}.`
+        : context ? `Hỏi về: ${LEAD_CONTEXTS[context]}.` : null;
       const need = [asked, preference, parsed.need?.trim() ?? ""].filter(Boolean).join(" ");
 
       return publicApi.createLead({

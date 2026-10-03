@@ -69,7 +69,7 @@ export default function StudentPackages() {
 
               return (
                 <li key={item.id} className="rule-b py-5">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col items-start gap-2">
                     <div>
                       <p className="text-ink text-base">{item.name_snapshot}</p>
                       <p className="text-ink-2 mt-1 text-xs">
@@ -80,7 +80,7 @@ export default function StudentPackages() {
                     <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
                   </div>
 
-                  <div className="mt-4 flex items-baseline gap-6">
+                  <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
                     <p className="text-ink-2 flex items-baseline gap-2 text-xs">
                       <span>Còn lại</span>
                       <Figures display className="text-ink text-2xl">

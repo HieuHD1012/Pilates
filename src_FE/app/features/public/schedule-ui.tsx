@@ -90,6 +90,18 @@ export function spokenDate(dateKey: string): string {
   return `${Number(dateKey.slice(8))} tháng ${Number(dateKey.slice(5, 7))}`;
 }
 
+/** Sessions in date order, bucketed by studio day. */
+export function groupSessionsByDay(
+  sessions: PublicClassSession[],
+): [string, PublicClassSession[]][] {
+  const days = new Map<string, PublicClassSession[]>();
+  for (const session of sessions) {
+    const key = studioDateKey(session.starts_at);
+    days.set(key, [...(days.get(key) ?? []), session]);
+  }
+  return [...days];
+}
+
 export function dayLabel(dateKey: string, today: string | null): string {
   const iso = `${dateKey}T00:00:00+07:00`;
   const prefix =
@@ -193,7 +205,7 @@ export function FormatSwitch({
 }) {
   return (
     <div
-      role="radiogroup"
+      role="group"
       aria-label="Hình thức lớp"
       className="border-rule-2 bg-paper inline-flex rounded-sm border p-1"
     >
@@ -203,11 +215,10 @@ export function FormatSwitch({
           <button
             key={filter.value}
             type="button"
-            role="radio"
-            aria-checked={checked}
+            aria-pressed={checked}
             onClick={() => onChange(filter.value)}
             className={cn(
-              "ease-measure h-9 rounded-xs px-4 text-sm transition-colors duration-200",
+              "ease-measure min-h-11 rounded-xs px-3 text-sm transition-colors duration-200",
               checked ? "bg-ink text-sand" : "text-ink-2 hover:text-ink",
             )}
           >
@@ -245,6 +256,11 @@ function SessionTime({
   );
 }
 
+/**
+ * What the class is, who teaches it and whether it has room — one left-aligned
+ * cluster read top to bottom. Availability used to sit at the far right edge of
+ * the row, a long horizontal jump away from the class it describes.
+ */
 function SessionWhat({ session }: { session: PublicClassSession }) {
   return (
     <span className="flex min-w-0 flex-col">
@@ -254,7 +270,8 @@ function SessionWhat({ session }: { session: PublicClassSession }) {
           {formatRatio(session.class_type)}
         </span>
       </span>
-      <span className="text-ink-2 mt-0.5 truncate text-sm">{session.trainer_name}</span>
+      <span className="text-ink-2 mt-0.5 text-sm wrap-anywhere">{session.trainer_name}</span>
+      <Availability isFull={session.is_full} className="mt-2" />
     </span>
   );
 }
@@ -275,7 +292,7 @@ export function SessionOption({
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        "group grid w-full grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-x-4 rounded-sm border px-4 py-4 text-left sm:grid-cols-[5rem_minmax(0,1fr)_auto] sm:px-5",
+        "group grid w-full grid-cols-[4.5rem_minmax(0,1fr)_auto] items-start gap-x-4 rounded-sm border px-4 py-4 text-left sm:grid-cols-[5.25rem_minmax(0,1fr)_auto] sm:px-5",
         "ease-measure transition-[background-color,border-color,box-shadow] duration-200",
         selected
           ? "border-copper bg-copper-wash/55 ring-copper ring-1"
@@ -288,38 +305,24 @@ export function SessionOption({
         <SessionTime session={session} />
       </span>
       <SessionWhat session={session} />
-      <span className="flex items-center gap-3">
-        <Availability isFull={session.is_full} />
-        <ChevronRight
-          aria-hidden="true"
-          className={cn(
-            "hidden size-4 shrink-0 transition-transform duration-200 sm:block",
-            selected ? "text-copper" : "text-ink-3 group-hover:translate-x-0.5",
-          )}
-        />
-      </span>
+      {/* Only the affordance stays at the edge: it belongs to the whole card. */}
+      <ChevronRight
+        aria-hidden="true"
+        className={cn(
+          "mt-1.5 size-5 shrink-0 transition-transform duration-200",
+          selected ? "text-copper" : "text-ink-3 group-hover:translate-x-0.5",
+        )}
+      />
     </button>
   );
 }
 
-/** A read-only session line, for the homepage preview. */
-export function SessionLine({
-  session,
-  today,
-}: {
-  session: PublicClassSession;
-  today: string | null;
-}) {
-  const day = studioDateKey(session.starts_at);
-  const iso = `${day}T00:00:00+07:00`;
+/** A read-only session line, for the homepage preview (grouped by day there). */
+export function SessionLine({ session }: { session: PublicClassSession }) {
   return (
-    <div className="rule-b grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-x-4 py-4 sm:grid-cols-[7rem_5rem_minmax(0,1fr)_auto]">
-      <span className="text-ink-2 col-span-3 text-xs sm:col-span-1 sm:text-sm">
-        {day === today ? "Hôm nay" : `${weekdayShort(iso)} · ${spokenDate(day)}`}
-      </span>
+    <div className="rule-b grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-x-4 py-4 sm:grid-cols-[5.25rem_minmax(0,1fr)]">
       <SessionTime session={session} size="md" />
       <SessionWhat session={session} />
-      <Availability isFull={session.is_full} />
     </div>
   );
 }

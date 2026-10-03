@@ -92,7 +92,7 @@ export default function MySchedule() {
           <ul className="rule-t">
             {items.map((item) => (
               <li key={item.booking_id} className="rule-b py-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col items-start gap-2">
                   <div className="min-w-0">
                     <p className="text-ink-2 text-xs">
                       {weekdayLong(item.starts_at)} · {formatDate(item.starts_at)}
@@ -127,14 +127,14 @@ export default function MySchedule() {
                     <button
                       type="button"
                       onClick={() => setChanging(item)}
-                      className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
+                      className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper min-h-11 py-2 text-sm underline underline-offset-[6px]"
                     >
                       Đổi buổi
                     </button>
                     <button
                       type="button"
                       onClick={() => setCancelling(item)}
-                      className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
+                      className="text-ink-2 decoration-rule-2 hover:text-copper hover:decoration-copper min-h-11 py-2 text-sm underline underline-offset-[6px]"
                     >
                       Hủy buổi
                     </button>

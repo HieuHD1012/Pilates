@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { ChevronRight, Phone, UserPlus, UserRound } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router";
 import { z } from "zod";
@@ -16,6 +17,7 @@ import { Field, Select, Textarea } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge, type StatusTone } from "~/ui/status";
+import { Avatar, Panel, PanelBody, PanelHeader, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/lead-detail";
 
@@ -27,9 +29,10 @@ export function meta(_: Route.MetaArgs) {
 }
 
 /**
- * One enquiry, and the one thing staff do with it: record what happened on the
- * call. Everything above the form is the record; the form is the only ask on
- * the screen (P2).
+ * One enquiry, and the one thing staff do with it: call back, then record what
+ * happened on the call. The record panel opens on the person and how to reach
+ * them; the outcome form is the only ask on the screen (P2) and sits in its own
+ * panel — beside the record on a wide screen, under it on a phone.
  *
  * The status vocabulary is duplicated from leads.tsx on purpose — two screens is
  * not yet a pattern. It moves into ~/features/leads when a third surface needs it.
@@ -65,113 +68,155 @@ const SOURCE_LABEL: Record<string, string> = {
   referral: "Người quen giới thiệu",
 };
 
+function sourceLabel(source: string | null): string {
+  if (source === null || source.trim() === "") return "Không rõ nguồn";
+  return SOURCE_LABEL[source] ?? source;
+}
+
 export default function StaffLeadDetail() {
   const { leadId = "" } = useParams();
   const query = useLead(Number(leadId));
 
   return (
-    <div className="gutter max-w-(--container-column) py-6">
-      <Link
-        to="/studio/khach-quan-tam"
-        className="text-ink-2 decoration-rule-2 hover:text-ink text-xs underline underline-offset-[6px]"
-      >
-        Khách quan tâm
-      </Link>
+    <WorkspacePage>
+      <nav aria-label="Đường dẫn" className="text-ink-2 flex items-center gap-1.5 text-sm">
+        <Link
+          to="/studio/khach-quan-tam"
+          className="decoration-rule-2 hover:text-ink underline underline-offset-[6px]"
+        >
+          Khách quan tâm
+        </Link>
+        {query.data ? (
+          <>
+            <ChevronRight className="size-3.5 shrink-0" aria-hidden="true" />
+            <span aria-current="page" className="min-w-0 truncate">
+              {query.data.full_name}
+            </span>
+          </>
+        ) : null}
+      </nav>
 
       <QueryBoundary
         query={query}
         showErrorDetail
         errorDescription="Không mở được hồ sơ khách quan tâm này. Hồ sơ có thể đã bị xóa, hoặc đường dẫn không còn đúng."
         loading={
-          <div className="mt-4">
-            <Skeleton className="h-6 w-56" />
-            <Skeleton className="mt-3 h-3 w-32" />
-            <SkeletonRows rows={6} className="mt-6" />
+          <Panel as="div" className="px-4 py-5 md:px-6 md:py-6">
+            <div className="flex items-center gap-4">
+              <Skeleton className="size-12 rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="h-6 w-56" />
+                <Skeleton className="mt-3 h-3 w-32" />
+              </div>
+            </div>
+            <SkeletonRows rows={5} className="mt-6" />
             <span className="sr-only">Đang tải hồ sơ khách quan tâm</span>
-          </div>
+          </Panel>
         }
       >
         {(lead) => <LeadBody lead={lead} />}
       </QueryBoundary>
-    </div>
+    </WorkspacePage>
   );
 }
 
 function LeadBody({ lead }: { lead: LeadResponse }) {
   const [converting, setConverting] = useState(false);
+  const hasNeed = lead.need !== null && lead.need.trim() !== "";
 
   return (
     <>
-      <header className="mt-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0">
-          <h1 className="text-ink text-xl font-medium">{lead.full_name}</h1>
-          <p className="mt-1.5">
-            <a
-              href={telHref(lead.phone)}
-              className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-sm underline underline-offset-[6px]"
-            >
-              {formatPhone(lead.phone)}
-            </a>
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <StatusBadge tone={STATUS_TONE[lead.status]}>
-            {STATUS_LABEL[lead.status]}
-          </StatusBadge>
-          {lead.converted_student_id !== null ? (
-            <Link
-              to={`/studio/hoc-vien/${lead.converted_student_id}`}
-              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper text-xs underline underline-offset-[6px]"
-            >
-              Xem hồ sơ học viên
-            </Link>
-          ) : (
-            <Button size="sm" variant="secondary" onClick={() => setConverting(true)}>
-              Chuyển thành học viên
+      <div className="grid items-start gap-5 md:gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+        <Panel aria-labelledby="lead-name">
+          <div className="flex items-start gap-4 px-4 pt-5 md:px-6 md:pt-6">
+            <Avatar name={lead.full_name} size="lg" />
+            <div className="min-w-0 flex-1">
+              <h1
+                id="lead-name"
+                className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em]"
+              >
+                {lead.full_name}
+              </h1>
+              <p className="text-ink-2 mt-1 text-sm">
+                {sourceLabel(lead.source)}
+                <span className="mx-1.5" aria-hidden="true">
+                  ·
+                </span>
+                <Figures>{formatDate(lead.created_at)}</Figures> lúc{" "}
+                <Figures>{formatTime(lead.created_at)}</Figures>
+              </p>
+            </div>
+            <StatusBadge tone={STATUS_TONE[lead.status]} className="mt-1 shrink-0">
+              {STATUS_LABEL[lead.status]}
+            </StatusBadge>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 px-4 py-5 md:px-6">
+            {/* Calling back is the contact action, so it is copper (ADR 0006,
+                decision 9); the screen's ask stays the ink "Lưu kết quả". */}
+            <Button asChild variant="copper">
+              <a href={telHref(lead.phone)}>
+                <Phone className="size-4" aria-hidden="true" />
+                <span>
+                  Gọi <span className="figures">{formatPhone(lead.phone)}</span>
+                </span>
+              </a>
             </Button>
-          )}
-        </div>
-      </header>
+            {lead.converted_student_id !== null ? (
+              <Button asChild variant="secondary">
+                <Link to={`/studio/hoc-vien/${lead.converted_student_id}`}>
+                  <UserRound className="size-4" aria-hidden="true" />
+                  <span>Xem hồ sơ học viên</span>
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                icon={<UserPlus className="size-4" aria-hidden="true" />}
+                onClick={() => setConverting(true)}
+              >
+                Chuyển thành học viên
+              </Button>
+            )}
+          </div>
 
-      <DetailList className="mt-6">
-        <DetailRow label="Nhu cầu" labelWidth="10rem">
-          {lead.need === null || lead.need.trim() === "" ? (
-            <Absent>Chưa ghi nhu cầu</Absent>
-          ) : (
-            lead.need
-          )}
-        </DetailRow>
-        <DetailRow label="Nguồn" labelWidth="10rem">
-          {lead.source === null ? (
-            <Absent>Không rõ nguồn</Absent>
-          ) : (
-            (SOURCE_LABEL[lead.source] ?? lead.source)
-          )}
-        </DetailRow>
-        <DetailRow label="Nhận lúc" labelWidth="10rem">
-          <Figures>{formatDate(lead.created_at)}</Figures>{" "}
-          <Figures>{formatTime(lead.created_at)}</Figures>
-        </DetailRow>
-        <DetailRow label="Người phụ trách" labelWidth="10rem">
-          {lead.assigned_to === null ? (
-            <Absent>Chưa giao cho ai</Absent>
-          ) : (
-            `Tài khoản #${lead.assigned_to}`
-          )}
-        </DetailRow>
-        {lead.converted_student_id !== null ? (
-          <DetailRow label="Hồ sơ học viên" labelWidth="10rem">
-            <Link
-              to={`/studio/hoc-vien/${lead.converted_student_id}`}
-              className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
-            >
-              Mở hồ sơ học viên
-            </Link>
-          </DetailRow>
-        ) : null}
-      </DetailList>
+          <div className="rule-t px-4 py-5 md:px-6">
+            <h2 className="text-ink-2 text-sm">Khách để lại</h2>
+            {hasNeed ? (
+              <blockquote className="bg-sand text-ink mt-2 rounded-md px-4 py-3 text-base">
+                “{lead.need}”
+              </blockquote>
+            ) : (
+              <p className="mt-2 text-sm">
+                <Absent>Chưa ghi nhu cầu</Absent>
+              </p>
+            )}
 
-      <OutcomeForm lead={lead} />
+            <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              <Fact label="Nguồn">
+                {lead.source === null ? (
+                  <Absent>Không rõ nguồn</Absent>
+                ) : (
+                  (SOURCE_LABEL[lead.source] ?? lead.source)
+                )}
+              </Fact>
+              <Fact label="Nhận lúc">
+                <Figures>{formatDate(lead.created_at)}</Figures>{" "}
+                <Figures>{formatTime(lead.created_at)}</Figures>
+              </Fact>
+              <Fact label="Người phụ trách">
+                {lead.assigned_to === null ? (
+                  <Absent>Chưa giao cho ai</Absent>
+                ) : (
+                  `Tài khoản #${lead.assigned_to}`
+                )}
+              </Fact>
+            </dl>
+          </div>
+        </Panel>
+
+        <OutcomeForm lead={lead} />
+      </div>
 
       <Dialog
         open={converting}
@@ -187,6 +232,16 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** A fact of the record: label above value, no rule between them. */
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-ink-2 text-sm">{label}</dt>
+      <dd className="text-ink mt-1 text-sm wrap-anywhere">{children}</dd>
+    </div>
   );
 }
 
@@ -224,7 +279,7 @@ function OutcomeForm({ lead }: { lead: LeadResponse }) {
   });
 
   return (
-    <section className="rule-t mt-10 pt-5">
+    <Panel aria-labelledby="outcome-heading">
       <LiveRegion
         message={
           update.isSuccess
@@ -235,75 +290,75 @@ function OutcomeForm({ lead }: { lead: LeadResponse }) {
         }
       />
 
-      <h2 className="text-ink text-sm font-medium">Ghi nhận kết quả liên hệ</h2>
-      <p className="measure text-ink-2 mt-1 text-xs">
-        Lưu sẽ cập nhật trạng thái của khách và ghi đè phần ghi chú. Tên và số điện thoại
-        khách để lại không bị thay đổi.
-      </p>
+      <PanelHeader
+        title={<span id="outcome-heading">Ghi nhận kết quả liên hệ</span>}
+        description="Lưu sẽ cập nhật trạng thái của khách và ghi đè phần ghi chú. Tên và số điện thoại khách để lại không bị thay đổi."
+      />
 
-      <form
-        noValidate
-        className="mt-5"
-        onSubmit={handleSubmit((values) =>
-          update
-            .mutateAsync({
-              status: values.status,
-              need: values.need === "" ? null : values.need,
-            })
-            .catch(() => {}),
-        )}
-      >
-        <div className="grid gap-4 sm:gap-5">
-          <Field label="Trạng thái sau khi liên hệ" error={errors.status?.message}>
-            {({ id, describedBy, invalid }) => (
-              <Select
-                id={id}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                {...register("status")}
-              >
-                {OUTCOME_STATUSES.map((value) => (
-                  <option key={value} value={value}>
-                    {STATUS_LABEL[value]}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+      <PanelBody className="md:py-5">
+        <form
+          noValidate
+          onSubmit={handleSubmit((values) =>
+            update
+              .mutateAsync({
+                status: values.status,
+                need: values.need === "" ? null : values.need,
+              })
+              .catch(() => {}),
+          )}
+        >
+          <div className="grid gap-4 sm:gap-5">
+            <Field label="Trạng thái sau khi liên hệ" error={errors.status?.message}>
+              {({ id, describedBy, invalid }) => (
+                <Select
+                  id={id}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  {...register("status")}
+                >
+                  {OUTCOME_STATUSES.map((value) => (
+                    <option key={value} value={value}>
+                      {STATUS_LABEL[value]}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
 
-          <Field
-            label="Ghi chú"
-            hint="Nhu cầu khách nói, kết quả cuộc gọi, hẹn lại khi nào."
-            error={errors.need?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <Textarea
-                id={id}
-                rows={4}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                {...register("need")}
-              />
-            )}
-          </Field>
-        </div>
+            <Field
+              label="Ghi chú"
+              hint="Nhu cầu khách nói, kết quả cuộc gọi, hẹn lại khi nào."
+              error={errors.need?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <Textarea
+                  id={id}
+                  rows={4}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  {...register("need")}
+                />
+              )}
+            </Field>
+          </div>
 
-        {update.isError ? (
-          <p role="alert" className="text-danger mt-4 text-sm">
-            Chưa lưu được kết quả liên hệ. Vui lòng thử lại.
-          </p>
-        ) : null}
-
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Button type="submit" pending={update.isPending}>
-            Lưu kết quả
-          </Button>
-          {update.isSuccess && !update.isPending ? (
-            <p className="text-ink-2 text-xs">Đã lưu.</p>
+          {update.isError ? (
+            <p role="alert" className="text-danger mt-4 text-sm">
+              Chưa lưu được kết quả liên hệ. Vui lòng thử lại.
+            </p>
           ) : null}
-        </div>
-      </form>
-    </section>
+
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+            {update.isSuccess && !update.isPending ? (
+              <p className="text-ink-2 text-xs">Đã lưu.</p>
+            ) : null}
+            <Button type="submit" pending={update.isPending}>
+              Lưu kết quả
+            </Button>
+          </div>
+        </form>
+      </PanelBody>
+    </Panel>
   );
 }
 

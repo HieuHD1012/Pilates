@@ -11,7 +11,12 @@ import {
   type LeadFormValues,
 } from "~/features/public/lead-form";
 import { usePublicSchedule } from "~/features/public/queries";
-import { SessionLine, useStudioToday } from "~/features/public/schedule-ui";
+import {
+  SessionLine,
+  dayLabel,
+  groupSessionsByDay,
+  useStudioToday,
+} from "~/features/public/schedule-ui";
 import { addDays } from "~/lib/format";
 import { ArrowLink } from "~/ui/arrow-link";
 import { ArtDirectedImage } from "~/ui/art-directed-image";
@@ -21,7 +26,7 @@ import { EmptyState, ErrorState, LiveRegion, SkeletonRows } from "~/ui/feedback"
 import { Field, Input } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { Section } from "~/ui/layout";
-import { SectionRail } from "~/ui/public-page";
+import { CheckList, SectionRail } from "~/ui/public-page";
 
 import type { Route } from "./+types/home";
 
@@ -77,7 +82,6 @@ function Hero() {
             <ArtDirectedImage
               photo="hero"
               priority
-              disclose
               sizes="(min-width: 1024px) 50vw, 100vw"
               imgClassName="object-[60%_50%] lg:object-[57%_50%]"
             />
@@ -106,10 +110,10 @@ function Hero() {
               ].map(([term, value]) => (
                 <div
                   key={term}
-                  className="rule-t last:border-rule grid grid-cols-[6rem_1fr] gap-3 py-3 last:border-b sm:block sm:border-0 sm:py-0 sm:last:border-0"
+                  className="rule-t last:border-rule py-3 last:border-b sm:border-0 sm:py-0 sm:last:border-0"
                 >
                   <dt className="text-ink-2 text-xs">{term}</dt>
-                  <dd className="text-ink text-base sm:mt-1">{value}</dd>
+                  <dd className="text-ink mt-0.5 text-base sm:mt-1">{value}</dd>
                 </div>
               ))}
             </dl>
@@ -151,27 +155,22 @@ function Formats() {
                 : "rule-t lg:border-rule pt-12 lg:col-span-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:col-span-4"
             }
           >
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="label-micro text-copper">{format.sub}</p>
-              <span className="figures-display text-copper-bright text-[1.75rem] leading-none">
+            <p className="label-micro text-copper">{format.sub}</p>
+            {/* The ratio qualifies the name, so it sits beside it — not at the
+                far edge of the card, a full column away. */}
+            <h3 className="mt-2 flex items-baseline gap-3">
+              <span className="font-display text-d3 text-ink font-light">
+                {format.name}
+              </span>
+              <span className="figures-display text-copper-bright text-[1.5rem] leading-none">
                 {format.ratio}
               </span>
-            </div>
-            <h3 className="font-display text-d3 text-ink mt-2 font-light">{format.name}</h3>
+            </h3>
             <p className="text-ink mt-1 text-sm font-medium">{format.size}</p>
             <p className="measure text-ink-2 mt-4 text-base">{format.body}</p>
 
-            <p className="text-ink-2 mt-8 text-sm">Phù hợp với</p>
-            <ul className="mt-2">
-              {format.forWho.map((item) => (
-                <li
-                  key={item}
-                  className="rule-b text-ink first:border-rule py-3 text-base first:border-t"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <p className="text-ink-2 mt-7 text-sm">Phù hợp với</p>
+            <CheckList items={format.forWho} className="mt-3" />
             <p className="text-ink-2 mt-5 text-sm">
               Hủy trước <Figures>{CANCELLATION_POLICY[format.id]}</Figures> giờ để được hoàn
               buổi.
@@ -201,7 +200,10 @@ function Method() {
   return (
     <Section index="02" label="Phương pháp" tone="deep">
       <div className="grid grid-cols-1 gap-y-10 pb-20 md:pb-28 lg:grid-cols-12 lg:gap-x-6">
-        <div className="bleed-x lg:bleed-l aspect-4/3 lg:col-span-6 lg:mr-0 lg:aspect-5/4">
+        <div
+          data-reveal="image"
+          className="bleed-x lg:bleed-l aspect-4/3 lg:col-span-6 lg:mr-0 lg:aspect-5/4"
+        >
           <ArtDirectedImage
             photo="craft"
             sizes="(min-width: 1024px) 50vw, 100vw"
@@ -220,14 +222,12 @@ function Method() {
             Đó là lý do lớp được giữ nhỏ.
           </p>
 
-          <dl className="mt-9">
+          {/* Three principles, each a word and its sentence read together. */}
+          <dl className="mt-9 flex flex-col gap-5">
             {METHOD_NOTES.map(({ term, def }) => (
-              <div
-                key={term}
-                className="border-rule-2 grid gap-1 border-t py-4 last:border-b sm:grid-cols-[8rem_1fr] sm:gap-5"
-              >
+              <div key={term}>
                 <dt className="text-ink text-base font-medium">{term}</dt>
-                <dd className="text-ink-2 text-base">{def}</dd>
+                <dd className="text-ink-2 mt-0.5 text-base">{def}</dd>
               </div>
             ))}
           </dl>
@@ -290,13 +290,22 @@ function ThisWeek() {
               <div className="mb-3 flex justify-end">
                 <DemoDataNotice />
               </div>
-              <div className="rule-t">
-                {query.data.slice(0, 6).map((session) => (
-                  <SessionLine
-                    key={`${session.starts_at}-${session.trainer_name}`}
-                    session={session}
-                    today={today}
-                  />
+              {/* Grouped by day under a heading, so the day is read once and the
+                  rows below it are only time, class and room — instead of a
+                  four-column line that repeats the day on every row. */}
+              <div className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
+                {groupSessionsByDay(query.data.slice(0, 6)).map(([day, sessions]) => (
+                  <section key={day} aria-label={dayLabel(day, today)}>
+                    <h3 className="border-rule-2 text-ink border-b pb-2 text-base font-medium">
+                      {dayLabel(day, today)}
+                    </h3>
+                    {sessions.map((session) => (
+                      <SessionLine
+                        key={`${session.starts_at}-${session.trainer_name}`}
+                        session={session}
+                      />
+                    ))}
+                  </section>
                 ))}
               </div>
               <div className="mt-6">
@@ -388,7 +397,7 @@ function Closing() {
             }
           />
           {submitted ? (
-            <div>
+            <div className="animate-[fade-in_200ms_var(--ease-measure)]">
               <h3 className="font-display text-ink text-2xl font-light">
                 Đã nhận được thông tin của bạn.
               </h3>
