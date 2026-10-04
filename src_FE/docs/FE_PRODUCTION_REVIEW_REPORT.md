@@ -119,3 +119,36 @@ for every route, dialog, zoom level and long-content condition.
 No push, merge or production deployment is implied by local test success.
 The next release decision must be based on these remaining receipts, not on
 historical “all delivered” statements or the number of passing fixture tests.
+
+## Portable local setup follow-up — 2026-10-04
+
+The owner authorized merging the reviewed FE into main and fixing fresh-machine
+startup. Strict install reproduction returned `ERESOLVE`: ESLint 10.8.1 was
+outside `eslint-plugin-jsx-a11y`'s supported peer range. The existing
+`legacy-peer-deps=true` hid that conflict. `.nvmrc` selected Node 22.12.0 although
+jsdom 30 requires 22.22.2 / 24.15 or newer supported releases.
+
+- Align ESLint and `@eslint/js` to 9.39.5, preserving accessibility checks and
+  architectural lint rules. ESLint 9 emits a support/deprecation warning;
+  migration to 10 requires an accessibility plugin that declares compatibility.
+- Enable strict engines and normal peer resolution. Declare the full Node
+  requirement, recommend Node 24 LTS, and add portable install/dev/build runtime
+  diagnostics. No globally installed Vite or React Router is needed.
+- Rebuild the npm lockfile with ordinary resolution. Apply compatible transitive
+  patches to brace-expansion and undici. Production audit remains zero; the
+  installed Vitest 4 toolchain retains three moderate development advisories.
+  A Vitest major migration is a separate tested change, not a forced install.
+- Correct README setup and `.env.example`: default FE demo requires no backend
+  or `.env`; real API mode needs an absolute API URL/CORS or a configured proxy.
+
+Verification used a new source snapshot including the repository's API docs,
+with no existing node_modules, build artifacts or local environment file:
+`npm ci` passed; `npm ls --all` returned zero; `npm run verify` passed all 108
+unit/component tests and build gates. A focused fresh-install E2E run passed
+21 tests against the built public artifact and the npm-started development
+server (public, deep links, login route and staff receipt/ledger behavior).
+This was verified on Windows with Node 24.19.0/npm 10.9.0. Linux remains covered
+by the committed CI jobs when they execute; it was not run locally here.
+
+The requested main merge does not close the remaining production release gates
+listed above.
