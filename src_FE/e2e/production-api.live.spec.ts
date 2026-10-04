@@ -1,10 +1,5 @@
-import { expect, test, type APIRequestContext } from "@playwright/test";
-
-// Run only against the disposable CI database, never a customer's environment.
-test.skip(
-  process.env.RUN_LIVE_API !== "true",
-  "Requires an explicitly provisioned disposable API/database",
-);
+import { type APIRequestContext } from "@playwright/test";
+import { expect, test } from "./helpers/live";
 
 const base = process.env.LIVE_API_URL ?? "http://127.0.0.1:8000";
 const password = "ci-disposable-password-2026";

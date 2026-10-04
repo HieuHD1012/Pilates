@@ -6,6 +6,7 @@ import { roots } from "./query-keys";
 // A balance affects both eligibility and the renewal queue. Attendance and
 // cancellations also affect reports; public capacity is still API-owned.
 const affected = {
+  announcement: [roots.announcements, ["public", "announcements"]],
   booking: [
     roots.bookings,
     roots.classes,

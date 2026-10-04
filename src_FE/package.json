@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
+    "e2e:live": "node scripts/run-live-e2e.mjs",
     "e2e:install": "playwright install --with-deps chromium",
     "check:build-contract": "node scripts/check-build-contract.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",

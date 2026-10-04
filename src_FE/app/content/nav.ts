@@ -88,6 +88,7 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
     label: "Báo cáo & hệ thống",
     items: [
       { to: "/studio/bao-cao", label: "Báo cáo" },
+      { to: "/studio/thong-bao", label: "Thông báo" },
       // Accounts are ADMIN-only on the backend; showing the entry to STAFF
       // offers a door that answers 403.
       { to: "/studio/tai-khoan", label: "Tài khoản", roles: ["ADMIN"] },

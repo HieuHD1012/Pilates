@@ -84,6 +84,7 @@ export default [
       route("bao-cao/huan-luyen-vien", "routes/staff/report-trainers.tsx"),
 
       route("tai-khoan", "routes/staff/accounts.tsx"),
+      route("thong-bao", "routes/staff/announcements.tsx"),
     ]),
   ]),
 

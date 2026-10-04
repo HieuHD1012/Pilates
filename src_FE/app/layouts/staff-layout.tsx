@@ -7,6 +7,7 @@ import {
   Inbox,
   LogOut,
   Menu,
+  Megaphone,
   Package,
   RefreshCw,
   ShieldCheck,
@@ -60,6 +61,7 @@ const ICON: Record<string, LucideIcon> = {
   "/studio/gia-han": RefreshCw,
   "/studio/bao-cao": ChartColumn,
   "/studio/tai-khoan": ShieldCheck,
+  "/studio/thong-bao": Megaphone,
 };
 
 const ROLE_LABEL: Record<Role, string> = {

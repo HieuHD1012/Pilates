@@ -47,6 +47,11 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
     env:
       DATABASE_URL: postgresql+psycopg://pilates:pilates@localhost:5434/pilates_fe_test
       JWT_SECRET: ci-only-disposable-jwt-secret-0123456789
@@ -56,6 +61,13 @@ jobs:
       SEED_ADMIN_PASSWORD: ci-disposable-admin-password
       VITE_API_BASE_URL: http://127.0.0.1:8000
       RUN_LIVE_API: "true"
+      LIVE_API_URL: http://127.0.0.1:8000
+      MAILPIT_URL: http://127.0.0.1:8025
+      SMTP_HOST: localhost
+      SMTP_PORT: "1025"
+      EMAIL_FROM: studio@example.com
+      PASSWORD_RESET_URL_TEMPLATE: http://localhost:4173/dat-lai-mat-khau?token={token}
+      STORAGE_DIR: /tmp/pilates-live-storage
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -66,31 +78,51 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: src_FE/package-lock.json
-      - name: Provision disposable API
-        working-directory: src_BE
+      - name: Install backend and frontend dependencies
         run: |
-          uv sync --frozen
-          uv run alembic upgrade head
-          uv run python -m scripts.seed_admin
-          uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/pilates-api.log 2>&1 &
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8000/openapi.json > /dev/null; then exit 0; fi
-            sleep 1
+          cd src_BE && uv sync --frozen
+          cd ../src_FE && npm ci && npm run e2e:install
+      - name: Live browser suite twice on fresh databases
+        shell: bash
+        run: |
+          set -euo pipefail
+          for round in 1 2; do
+            cd "$GITHUB_WORKSPACE/src_BE"
+            uv run python -m scripts.live_e2e reset
+            uv run alembic upgrade head
+            uv run alembic check
+            uv run python -m scripts.seed_admin
+            uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/pilates-api.log 2>&1 &
+            api_pid=$!
+            trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+            ready=false
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent http://127.0.0.1:8000/health > /dev/null; then ready=true; break; fi
+              sleep 1
+            done
+            if [ "$ready" != true ]; then cat /tmp/pilates-api.log; exit 1; fi
+            cd "$GITHUB_WORKSPACE/src_FE"
+            result=0
+            npm run e2e:live || result=$?
+            mkdir -p "visual-qa/live/run-$round"
+            cp -R playwright-report test-results "visual-qa/live/run-$round/"
+            cp /tmp/pilates-api.log "visual-qa/live/run-$round/backend.log"
+            ../src_BE/.venv/bin/python ../scripts/redact_live_artifacts.py "visual-qa/live/run-$round/test-results" "visual-qa/live/run-$round/playwright-report"
+            cd "$GITHUB_WORKSPACE/src_BE"
+            uv run python -m scripts.live_e2e reconcile
+            kill "$api_pid" 2>/dev/null || true
+            wait "$api_pid" 2>/dev/null || true
+            trap - EXIT
+            if [ "$result" -ne 0 ]; then exit "$result"; fi
           done
-          cat /tmp/pilates-api.log
-          exit 1
-      - working-directory: src_FE
-        run: npm ci && npm run build && npm run check:build-contract && npm run e2e:install
-      - working-directory: src_FE
-        run: npm run e2e -- --project=live
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: frontend-live-api
           path: |
+            src_FE/visual-qa/live
             src_FE/playwright-report
             src_FE/test-results
-            /tmp/pilates-api.log
 
   backend:
     name: Backend — lint & test

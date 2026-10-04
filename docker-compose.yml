@@ -37,6 +37,23 @@ services:
       timeout: 5s
       retries: 20
 
+  db_e2e:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pilates
+      POSTGRES_PASSWORD: pilates
+      POSTGRES_DB: pilates_fe_test
+      TZ: UTC
+    ports:
+      - "5435:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pilates -d pilates_fe_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   # Bắt mọi email của luồng đặt lại mật khẩu ở DEV, không gửi ra ngoài.
   mailpit:
     image: axllent/mailpit:latest

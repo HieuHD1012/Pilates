@@ -1,0 +1,48 @@
+import { spawnSync } from "node:child_process";
+
+for (const key of [
+  "LIVE_API_URL",
+  "DATABASE_URL",
+  "SEED_ADMIN_EMAIL",
+  "SEED_ADMIN_PASSWORD",
+  "JWT_SECRET",
+]) {
+  if (!process.env[key])
+    throw new Error(`Missing ${key}; run the isolated live API setup first.`);
+}
+if (
+  process.env.ENVIRONMENT !== "test" ||
+  !process.env.DATABASE_URL.endsWith("/pilates_fe_test")
+)
+  throw new Error("Live E2E only runs on ENVIRONMENT=test /pilates_fe_test.");
+const env = {
+  ...process.env,
+  RUN_LIVE_API: "true",
+  VITE_ENABLE_MSW: "false",
+  VITE_API_BASE_URL: process.env.LIVE_API_URL,
+};
+const npm = process.env.npm_execpath;
+if (!npm) throw new Error("Use npm run e2e:live");
+const build = spawnSync(process.execPath, [npm, "run", "build"], { stdio: "inherit", env });
+if (build.status !== 0) process.exit(build.status ?? 1);
+const result = spawnSync(
+  process.execPath,
+  [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config=playwright.live.config.ts",
+    ...process.argv.slice(2),
+  ],
+  { stdio: "inherit", env },
+);
+const python =
+  process.env.LIVE_PYTHON ??
+  (process.platform === "win32"
+    ? "../src_BE/.venv/Scripts/python.exe"
+    : "../src_BE/.venv/bin/python");
+const redact = spawnSync(
+  python,
+  ["../scripts/redact_live_artifacts.py", "test-results", "playwright-report"],
+  { stdio: "inherit", env },
+);
+process.exit(result.status === 0 && redact.status === 0 ? 0 : 1);
