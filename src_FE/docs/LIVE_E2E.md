@@ -70,7 +70,7 @@ coverage gate correctly fails if required consumers were not exercised.
 
 ## Gates and evidence
 
-1. `npm run verify`: type generation/typecheck, lint, unit tests, format,
+1. `npm run verify`: type generation/typecheck, lint, unit tests,
    production build, prerender/fallback and product-content contract.
 2. Backend lint, full pytest, controlled time/concurrency/authorization tests,
    migrations to head and `alembic check`, and time-sensitive tests under the

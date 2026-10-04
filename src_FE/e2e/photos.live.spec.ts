@@ -79,10 +79,18 @@ test("student uploads a private photo; assigned trainer reads it; ADMIN deletes;
   await page.goto(`/studio/hoc-vien/${data.student.id}`);
   await page.getByRole("tab", { name: "Ảnh tiến trình", exact: true }).click();
   await page.getByRole("button", { name: "Xóa ảnh tiến trình", exact: true }).click();
+  const removed = page.waitForResponse(
+    (response) =>
+      response.url() ===
+        `${API}/students/${data.student.id}/progress-photos/${photos[0]!.id}` &&
+      response.request().method() === "DELETE",
+  );
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Xóa ảnh", exact: true })
     .click();
+  expect((await removed).status()).toBe(204);
+  await expect(page.getByRole("dialog")).toBeHidden();
   await expect(picture).toHaveCount(0);
   expect(
     (

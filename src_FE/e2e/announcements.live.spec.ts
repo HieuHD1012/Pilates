@@ -36,7 +36,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   await visitor.goto("/khuyen-mai");
   expect(
     ((await (await publicRead).json()) as PublicAnnouncement[]).some(
-      (item) => item.id === row.id,
+      (item) => item.title === title,
     ),
   ).toBe(false);
   await expect(visitor.locator(".animate-skeleton")).toHaveCount(0);
@@ -62,7 +62,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   await visitor.reload();
   expect(
     ((await (await publicRead).json()) as PublicAnnouncement[]).some(
-      (item) => item.id === row.id,
+      (item) => item.title === title,
     ),
   ).toBe(true);
   await expect(visitor.getByRole("heading", { name: title, exact: true })).toBeVisible();
@@ -79,7 +79,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   await visitor.reload();
   expect(
     ((await (await publicRead).json()) as PublicAnnouncement[]).some(
-      (item) => item.id === row.id,
+      (item) => item.title === title,
     ),
   ).toBe(false);
   await expect(visitor.locator(".animate-skeleton")).toHaveCount(0);
