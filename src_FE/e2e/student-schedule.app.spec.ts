@@ -10,7 +10,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function asStudent(page: Page, path: string) {
   await page.goto("/");
-  await page.evaluate(() => localStorage.removeItem("soul:demo-role"));
+  await page.evaluate(() => localStorage.setItem("soul:demo-role", "STUDENT"));
   await page.goto(path);
 }
 
@@ -24,23 +24,23 @@ async function bookSomething(page: Page) {
 
   // The list shows one day at a time, and today's remaining buổi may be full.
   // Walk the day strip until a row the list itself calls bookable turns up.
-  const days = page.locator("button, [role='tab']").filter({ hasText: /^T[2-7]|^CN/ });
+  const days = page.getByRole("group", { name: "Chọn ngày" }).getByRole("button");
   const dayCount = await days.count();
   let bookable = page
     .locator("a[href^='/hv/lop-hoc/']")
-    .filter({ hasText: /Còn \d+ chỗ/ })
+    .filter({ hasText: /Đặt được/ })
     .first();
   for (let i = 0; i < dayCount && (await bookable.count()) === 0; i += 1) {
     await days.nth(i).click();
     await page.waitForTimeout(400);
     bookable = page
       .locator("a[href^='/hv/lop-hoc/']")
-      .filter({ hasText: /Còn \d+ chỗ/ })
+      .filter({ hasText: /Đặt được/ })
       .first();
   }
   await expect(bookable).toBeVisible();
   await bookable.click();
-  await expect(page).toHaveURL(/\/hv\/lop-hoc\/c-/);
+  await expect(page).toHaveURL(/\/hv\/lop-hoc\/\d+/);
 
   const book = page.getByRole("button", { name: "Đặt lớp này" });
   await expect(book).toBeEnabled();

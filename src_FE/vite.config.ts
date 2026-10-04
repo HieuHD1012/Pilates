@@ -8,7 +8,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   build: {
-    // Fail loudly rather than silently shipping an oversized public bundle.
+    // Advisory only; scripts/check-bundle-budget.mjs enforces gzip budgets.
     chunkSizeWarningLimit: 400,
   },
 });

@@ -25,6 +25,17 @@ export const SCHEDULE_HORIZON_DAYS = 14;
 
 const noSubscription = () => () => {};
 
+function subscribeStudioDate(listener: () => void) {
+  const interval = window.setInterval(listener, 30_000);
+  window.addEventListener("focus", listener);
+  document.addEventListener("visibilitychange", listener);
+  return () => {
+    window.clearInterval(interval);
+    window.removeEventListener("focus", listener);
+    document.removeEventListener("visibilitychange", listener);
+  };
+}
+
 /**
  * Today's studio date, or `null` during the pre-rendered pass and hydration.
  * The public pages are built ahead of time, so a date read at render would be
@@ -33,7 +44,7 @@ const noSubscription = () => () => {};
  */
 export function useStudioToday(): string | null {
   return useSyncExternalStore(
-    noSubscription,
+    subscribeStudioDate,
     () => studioDateKey(new Date()),
     () => null,
   );
@@ -270,7 +281,9 @@ function SessionWhat({ session }: { session: PublicClassSession }) {
           {formatRatio(session.class_type)}
         </span>
       </span>
-      <span className="text-ink-2 mt-0.5 text-sm wrap-anywhere">{session.trainer_name}</span>
+      <span className="text-ink-2 mt-0.5 text-sm wrap-anywhere">
+        {session.trainer_name}
+      </span>
       <Availability isFull={session.is_full} className="mt-2" />
     </span>
   );

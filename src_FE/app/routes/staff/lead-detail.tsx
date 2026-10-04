@@ -224,12 +224,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
           if (!next) setConverting(false);
         }}
       >
-        <DialogContent
-          title="Chuyển thành học viên"
-          description="Hồ sơ học viên được tạo từ chính thông tin khách đã để lại — không phải gõ lại tên và số điện thoại. Khách này sẽ được đánh dấu đã chuyển; gói tập và thanh toán ghi sau, trên hồ sơ mới."
-        >
-          <ConvertLead lead={lead} onCancel={() => setConverting(false)} />
-        </DialogContent>
+        <ConvertLead lead={lead} onCancel={() => setConverting(false)} />
       </Dialog>
     </>
   );
@@ -375,41 +370,52 @@ function ConvertLead({ lead, onCancel }: { lead: LeadResponse; onCancel: () => v
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-4">
-      <DetailList>
-        <DetailRow label="Họ và tên" labelWidth="9rem">
-          {lead.full_name}
-        </DetailRow>
-        <DetailRow label="Số điện thoại" labelWidth="9rem">
-          <Figures>{formatPhone(lead.phone)}</Figures>
-        </DetailRow>
-      </DetailList>
+    <DialogContent
+      busy={convert.isPending}
+      title="Chuyển thành học viên"
+      description="Hồ sơ học viên được tạo từ chính thông tin khách đã để lại — không phải gõ lại tên và số điện thoại. Khách này sẽ được đánh dấu đã chuyển; gói tập và thanh toán ghi sau, trên hồ sơ mới."
+    >
+      <div className="flex flex-col gap-4">
+        <DetailList>
+          <DetailRow label="Họ và tên" labelWidth="9rem">
+            {lead.full_name}
+          </DetailRow>
+          <DetailRow label="Số điện thoại" labelWidth="9rem">
+            <Figures>{formatPhone(lead.phone)}</Figures>
+          </DetailRow>
+        </DetailList>
 
-      {convert.isError ? (
-        <p role="alert" className="text-danger text-sm">
-          {/* The common refusal is a phone number already on a student record;
+        {convert.isError ? (
+          <p role="alert" className="text-danger text-sm">
+            {/* The common refusal is a phone number already on a student record;
               the backend says so in words written for the person reading. */}
-          Chưa tạo được hồ sơ học viên. Vui lòng kiểm tra lại số điện thoại.
-        </p>
-      ) : null}
+            Chưa tạo được hồ sơ học viên. Vui lòng kiểm tra lại số điện thoại.
+          </p>
+        ) : null}
 
-      <div className="flex flex-wrap justify-end gap-3">
-        <Button variant="secondary" size="sm" onClick={onCancel}>
-          Quay lại
-        </Button>
-        <Button
-          size="sm"
-          pending={convert.isPending}
-          onClick={() => {
-            convert
-              .mutateAsync()
-              .then((student) => navigate(`/studio/hoc-vien/${student.id}`))
-              .catch(() => {});
-          }}
-        >
-          Tạo hồ sơ học viên
-        </Button>
+        <div className="flex flex-wrap justify-end gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={convert.isPending}
+            onClick={onCancel}
+          >
+            Quay lại
+          </Button>
+          <Button
+            size="sm"
+            pending={convert.isPending}
+            onClick={() => {
+              convert
+                .mutateAsync()
+                .then((student) => navigate(`/studio/hoc-vien/${student.id}`))
+                .catch(() => {});
+            }}
+          >
+            Tạo hồ sơ học viên
+          </Button>
+        </div>
       </div>
-    </div>
+    </DialogContent>
   );
 }

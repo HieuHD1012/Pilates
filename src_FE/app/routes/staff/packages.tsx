@@ -125,12 +125,7 @@ export default function StaffPackages() {
       <LiveRegion message={notice} />
 
       <Dialog open={creating} onOpenChange={setCreating}>
-        <DialogContent
-          title="Thêm gói vào danh mục"
-          description="Gói mới xuất hiện ở màn hình bán gói và trên trang công khai nếu để trạng thái đang bán."
-        >
-          <PackageTypeForm onDone={() => setCreating(false)} />
-        </DialogContent>
+        <PackageTypeForm onDone={() => setCreating(false)} />
       </Dialog>
     </WorkspacePage>
   );
@@ -404,109 +399,121 @@ function PackageTypeForm({ onDone }: { onDone: () => void }) {
   });
 
   return (
-    <form
-      noValidate
-      onSubmit={handleSubmit((values) =>
-        create
-          .mutateAsync({
-            name: values.name,
-            credits: Number(values.credits),
-            duration_days: Number(values.duration_days),
-            // A blank price is `null` — "not set yet" — and never 0, which
-            // would say the studio gives this package away.
-            price: values.price === "" ? null : values.price,
-            class_type: values.class_type,
-          })
-          .then(onDone)
-          .catch(() => {}),
-      )}
-      className="flex flex-col gap-4"
+    <DialogContent
+      busy={create.isPending}
+      title="Thêm gói vào danh mục"
+      description="Gói mới xuất hiện ở màn hình bán gói và trên trang công khai nếu để trạng thái đang bán."
     >
-      <LiveRegion message={create.isSuccess ? "Đã thêm gói." : null} />
-
-      <Field label="Tên gói" required error={errors.name?.message}>
-        {({ id, describedBy, invalid }) => (
-          <Input
-            id={id}
-            aria-describedby={describedBy}
-            aria-invalid={invalid}
-            {...register("name")}
-          />
+      <form
+        noValidate
+        onSubmit={handleSubmit((values) =>
+          create
+            .mutateAsync({
+              name: values.name,
+              credits: Number(values.credits),
+              duration_days: Number(values.duration_days),
+              // A blank price is `null` — "not set yet" — and never 0, which
+              // would say the studio gives this package away.
+              price: values.price === "" ? null : values.price,
+              class_type: values.class_type,
+            })
+            .then(onDone)
+            .catch(() => {}),
         )}
-      </Field>
+        className="flex flex-col gap-4"
+      >
+        <LiveRegion message={create.isSuccess ? "Đã thêm gói." : null} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Số buổi" required error={errors.credits?.message}>
+        <Field label="Tên gói" required error={errors.name?.message}>
           {({ id, describedBy, invalid }) => (
             <Input
               id={id}
-              inputMode="numeric"
               aria-describedby={describedBy}
               aria-invalid={invalid}
-              {...register("credits")}
+              {...register("name")}
             />
           )}
         </Field>
 
-        <Field label="Thời hạn (ngày)" required error={errors.duration_days?.message}>
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              inputMode="numeric"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("duration_days")}
-            />
-          )}
-        </Field>
-      </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Số buổi" required error={errors.credits?.message}>
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                inputMode="numeric"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("credits")}
+              />
+            )}
+          </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Giá"
-          hint="Bỏ trống nếu studio chưa chốt giá."
-          error={errors.price?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <Input
-              id={id}
-              inputMode="numeric"
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("price")}
-            />
-          )}
-        </Field>
+          <Field label="Thời hạn (ngày)" required error={errors.duration_days?.message}>
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                inputMode="numeric"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("duration_days")}
+              />
+            )}
+          </Field>
+        </div>
 
-        <Field label="Hình thức lớp" required error={errors.class_type?.message}>
-          {({ id, describedBy, invalid }) => (
-            <Select
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              {...register("class_type")}
-            >
-              <option value="GROUP">Lớp nhóm</option>
-              <option value="PRIVATE">Lớp riêng</option>
-            </Select>
-          )}
-        </Field>
-      </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Giá"
+            hint="Bỏ trống nếu studio chưa chốt giá."
+            error={errors.price?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <Input
+                id={id}
+                inputMode="numeric"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("price")}
+              />
+            )}
+          </Field>
 
-      {create.isError ? (
-        <p role="alert" className="text-danger text-sm">
-          Chưa thêm được gói. Vui lòng kiểm tra lại thông tin.
-        </p>
-      ) : null}
+          <Field label="Hình thức lớp" required error={errors.class_type?.message}>
+            {({ id, describedBy, invalid }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                {...register("class_type")}
+              >
+                <option value="GROUP">Lớp nhóm</option>
+                <option value="PRIVATE">Lớp riêng</option>
+              </Select>
+            )}
+          </Field>
+        </div>
 
-      <FormActions>
-        <Button variant="secondary" size="sm" type="button" onClick={onDone}>
-          Quay lại
-        </Button>
-        <Button type="submit" size="sm" pending={create.isPending}>
-          Thêm gói
-        </Button>
-      </FormActions>
-    </form>
+        {create.isError ? (
+          <p role="alert" className="text-danger text-sm">
+            Chưa thêm được gói. Vui lòng kiểm tra lại thông tin.
+          </p>
+        ) : null}
+
+        <FormActions>
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            disabled={create.isPending}
+            onClick={onDone}
+          >
+            Quay lại
+          </Button>
+          <Button type="submit" size="sm" pending={create.isPending}>
+            Thêm gói
+          </Button>
+        </FormActions>
+      </form>
+    </DialogContent>
   );
 }

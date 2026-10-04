@@ -30,6 +30,8 @@ import {
   type SegmentOption,
 } from "~/ui/workspace";
 
+import { PageControls } from "~/ui/page-controls";
+
 import type { Route } from "./+types/students";
 
 export function meta(_: Route.MetaArgs) {
@@ -106,6 +108,7 @@ export default function StaffStudents() {
   const [creating, setCreating] = useState(false);
   const [createdName, setCreatedName] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<StudentStatus | "all">("all");
   const navigate = useNavigate();
 
@@ -113,12 +116,14 @@ export default function StaffStudents() {
     q: search.trim() === "" ? undefined : search.trim(),
     status: status === "all" ? undefined : status,
     limit: LIMIT,
+    offset,
   });
   const items = query.data;
   const filtered = search.trim() !== "" || status !== "all";
-  const options = segmentOptions(status, items, !query.isPlaceholderData);
+  const options = segmentOptions(status, items, !query.isPlaceholderData && offset === 0);
 
   function clearFilters() {
+    setOffset(0);
     setSearch("");
     setStatus("all");
   }
@@ -174,7 +179,10 @@ export default function StaffStudents() {
             label="Lọc theo trạng thái"
             options={options}
             value={status}
-            onChange={setStatus}
+            onChange={(next) => {
+              setOffset(0);
+              setStatus(next);
+            }}
           />
           <div className="relative w-full sm:w-72">
             <Search
@@ -185,7 +193,10 @@ export default function StaffStudents() {
               type="search"
               aria-label="Tìm học viên"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setOffset(0);
+                setSearch(event.target.value);
+              }}
               placeholder="Tên hoặc số điện thoại"
               autoComplete="off"
               className="pl-9"
@@ -300,6 +311,13 @@ export default function StaffStudents() {
             </span>
           </PanelFooter>
         ) : null}
+        <PageControls
+          offset={offset}
+          limit={LIMIT}
+          count={query.data?.length ?? 0}
+          pending={query.isFetching}
+          onChange={setOffset}
+        />
       </Panel>
 
       <CreateStudentDialog
@@ -372,6 +390,7 @@ function CreateStudentDialog({
       }}
     >
       <DialogContent
+        busy={create.isPending}
         title="Tạo học viên"
         description="Hồ sơ mới chưa có gói tập. Gán gói và ghi nhận thanh toán ở bước sau."
       >

@@ -19,7 +19,7 @@ import {
   useStudentPackages,
   useVoidPayment,
 } from "~/features/commerce/queries";
-import { useStudents } from "~/features/people/queries";
+import { useStudentDirectory } from "~/features/people/queries";
 import { errorMessage } from "~/lib/api/client";
 import type {
   PaymentMethod,
@@ -58,6 +58,8 @@ import {
   WorkspacePage,
   type SegmentOption,
 } from "~/ui/workspace";
+
+import { PageControls } from "~/ui/page-controls";
 
 import type { Route } from "./+types/payments";
 
@@ -109,6 +111,7 @@ const METHOD: Record<PaymentMethod, { label: string; icon: ReactNode }> = {
 };
 
 export default function StaffPayments() {
+  const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<PaymentStatus | "all">("all");
   const [studentId, setStudentId] = useState<number | null>(null);
   const [recording, setRecording] = useState(false);
@@ -117,12 +120,13 @@ export default function StaffPayments() {
   const record = useRecordPayment();
   // The roster for the filter and the picker, fetched up front so the dialog
   // opens with its options already there. It is a small, long-cached list.
-  const roster = useStudents({ limit: 200 });
+  const roster = useStudentDirectory();
 
   const query = usePayments({
     status: status === "all" ? undefined : status,
     student_id: studentId ?? undefined,
     limit: 200,
+    offset,
   });
   const items = query.data;
 
@@ -230,15 +234,19 @@ export default function StaffPayments() {
             label="Trạng thái"
             options={segments}
             value={status}
-            onChange={setStatus}
+            onChange={(next) => {
+              setOffset(0);
+              setStatus(next);
+            }}
           />
           <div className="w-full sm:w-60">
             <Select
               aria-label="Học viên"
               value={studentId === null ? "" : String(studentId)}
-              onChange={(event) =>
-                setStudentId(event.target.value === "" ? null : Number(event.target.value))
-              }
+              onChange={(event) => {
+                setOffset(0);
+                setStudentId(event.target.value === "" ? null : Number(event.target.value));
+              }}
             >
               <option value="">Tất cả học viên</option>
               {(roster.data ?? []).map((entry) => (
@@ -271,6 +279,7 @@ export default function StaffPayments() {
                 <Button
                   variant="secondary"
                   onClick={() => {
+                    setOffset(0);
                     setStatus("all");
                     setStudentId(null);
                   }}
@@ -305,6 +314,13 @@ export default function StaffPayments() {
             }}
           </QueryBoundary>
         </div>
+        <PageControls
+          offset={offset}
+          limit={200}
+          count={items?.length ?? 0}
+          pending={query.isFetching}
+          onChange={setOffset}
+        />
       </Panel>
 
       <InlineNote icon={<Info aria-hidden="true" />}>
@@ -332,6 +348,7 @@ export default function StaffPayments() {
         }}
       >
         <DialogContent
+          busy={record.isPending}
           title="Ghi nhận khoản thu"
           description="Số tiền studio đã nhận, gắn với gói học viên đã mua. Ghi sai thì hủy phiếu kèm lý do, không sửa lại phiếu cũ."
         >
@@ -577,7 +594,7 @@ function VoidDialog({
 }) {
   const [reason, setReason] = useState("");
   const voidPayment = useVoidPayment();
-  const tooShort = reason.trim().length < 6;
+  const tooShort = reason.trim().length < 3;
 
   return (
     <Dialog
@@ -590,6 +607,7 @@ function VoidDialog({
       }}
     >
       <DialogContent
+        busy={voidPayment.isPending}
         title="Hủy phiếu thu"
         description={`${formatVnd(payment.amount)}. Phiếu vẫn nằm trong sổ, được đánh dấu đã hủy kèm lý do — số tiền này sẽ không còn vào doanh thu.`}
       >
@@ -614,7 +632,12 @@ function VoidDialog({
           ) : null}
 
           <FormActions>
-            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={voidPayment.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Không hủy
             </Button>
             <Button

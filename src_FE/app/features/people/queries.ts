@@ -7,6 +7,7 @@ import {
   studentsApi,
   trainersApi,
 } from "~/lib/api/endpoints";
+import { invalidateChange } from "~/lib/api/invalidation";
 import { queryKeys, roots } from "~/lib/api/query-keys";
 import type {
   AccountCreateRequest,
@@ -22,6 +23,14 @@ import type {
 } from "~/lib/api/schema";
 
 /* ── Students ───────────────────────────────────────────────────────────── */
+
+export function useStudentDirectory() {
+  return useQuery({
+    queryKey: queryKeys.students.directory(),
+    queryFn: () => studentsApi.all(),
+    staleTime: 30_000,
+  });
+}
 
 export function useStudents(params: StudentListParams) {
   return useQuery({
@@ -63,7 +72,7 @@ export function useCreateStudent() {
     // Phone is the studio's identity key; a duplicate answers 409
     // STUDENT_PHONE_TAKEN, which the form shows against the phone field.
     mutationFn: (input: StudentCreateRequest) => studentsApi.create(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.students }),
+    onSuccess: () => invalidateChange(queryClient, "student"),
   });
 }
 
@@ -71,7 +80,7 @@ export function useUpdateStudent(studentId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: StudentUpdateRequest) => studentsApi.update(studentId, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.students }),
+    onSuccess: () => invalidateChange(queryClient, "student"),
   });
 }
 
@@ -101,8 +110,9 @@ export function useProgressPhotos(studentId: number | null, enabled = true) {
 export function useProgressPhotoFile(studentId: number, photoId: number | null) {
   return useQuery({
     queryKey: queryKeys.students.photoFile(studentId, photoId ?? 0),
-    async queryFn() {
+    async queryFn({ signal }) {
       const blob = await progressPhotosApi.fileBlob(studentId, photoId as number);
+      signal.throwIfAborted();
       return URL.createObjectURL(blob);
     },
     enabled: photoId !== null,
@@ -126,8 +136,14 @@ export function useDeleteProgressPhoto(studentId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (photoId: number) => progressPhotosApi.remove(studentId, photoId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.students.photos(studentId) }),
+    onSuccess: async (_, photoId) => {
+      queryClient.removeQueries({
+        queryKey: queryKeys.students.photoFile(studentId, photoId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.students.photos(studentId),
+      });
+    },
   });
 }
 
@@ -137,6 +153,14 @@ export function useTrainers(params: TrainerListParams = {}) {
   return useQuery({
     queryKey: queryKeys.trainers.list(params),
     queryFn: () => trainersApi.list(params),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useTrainerDirectory() {
+  return useQuery({
+    queryKey: queryKeys.trainers.directory(),
+    queryFn: () => trainersApi.all(),
     staleTime: 5 * 60_000,
   });
 }
@@ -179,8 +203,9 @@ export function useUpdateTrainer(trainerId: number) {
 export function useTrainerPhoto(trainerId: number | null, hasPhoto: boolean) {
   return useQuery({
     queryKey: queryKeys.trainers.photo(trainerId ?? 0),
-    async queryFn() {
+    async queryFn({ signal }) {
       const blob = await trainersApi.photoBlob(trainerId as number);
+      signal.throwIfAborted();
       return URL.createObjectURL(blob);
     },
     enabled: trainerId !== null && hasPhoto,
@@ -252,7 +277,7 @@ export function useUpdateAccount(accountId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: AccountUpdateRequest) => accountsApi.update(accountId, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.accounts }),
+    onSuccess: () => invalidateChange(queryClient, "account"),
   });
 }
 

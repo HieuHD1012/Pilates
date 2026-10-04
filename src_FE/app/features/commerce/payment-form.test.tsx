@@ -108,16 +108,45 @@ describe("PaymentForm", () => {
     expect(await screen.findByText(/42\.500\.000/)).toBeInTheDocument();
   });
 
-  it("refuses an implausible amount before it reaches the backend", async () => {
+  it("refuses an amount that JavaScript cannot represent exactly", async () => {
     const { onSubmit, user } = setup();
 
     await pickStudentAndPackage(user);
-    await user.type(amount(), "9000000000");
+    await user.type(amount(), "9007199254740992");
     await user.click(submit());
 
-    expect(await screen.findByText("Số tiền vượt mức hợp lý")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Số tiền quá lớn để ghi nhận chính xác"),
+    ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
+
+  it.each(["-100", "1.5", "1e6", "100abc", "+100"])(
+    "does not silently turn %s into another amount",
+    async (value) => {
+      const { onSubmit, user } = setup();
+      await pickStudentAndPackage(user);
+      await user.type(amount(), value);
+      await user.click(submit());
+      expect(await screen.findByText(/không có dấu âm hoặc phần lẻ/)).toBeInTheDocument();
+      expect(onSubmit).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["0", "9000000000"])(
+    "accepts backend-valid %s without an invented price cap",
+    async (value) => {
+      const { onSubmit, user } = setup();
+      await pickStudentAndPackage(user);
+      await user.type(amount(), value);
+      await user.click(submit());
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({ amount: Number(value) }),
+        ),
+      );
+    },
+  );
 
   it("will not record money against nobody", async () => {
     const { onSubmit, user } = setup();

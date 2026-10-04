@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router";
 
 import { HydrateFallback } from "~/root";
 import type { Role } from "~/lib/api/schema";
+import { ErrorState } from "~/ui/feedback";
 
 import { ROLE_HOME, useSession } from "./use-session";
 
@@ -16,11 +17,23 @@ import { ROLE_HOME, useSession } from "./use-session";
  */
 export function RoleGate({ allow, children }: { allow: Role[]; children: ReactNode }) {
   const location = useLocation();
-  const { data: user, isPending, isError } = useSession();
+  const { data: user, isPending, isError, refetch } = useSession();
 
   if (isPending) return <HydrateFallback />;
 
-  if (isError || !user) {
+  if (isError) {
+    return (
+      <main className="gutter mx-auto max-w-(--container-page) py-12">
+        <ErrorState
+          title="Chưa kiểm tra được phiên đăng nhập"
+          description="Kết nối đang gián đoạn. Vui lòng thử lại để tiếp tục."
+          onRetry={() => void refetch()}
+        />
+      </main>
+    );
+  }
+
+  if (!user) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
     return <Navigate to={`/dang-nhap?next=${next}`} replace />;
   }

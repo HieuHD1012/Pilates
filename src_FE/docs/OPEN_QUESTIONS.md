@@ -1,24 +1,25 @@
 # Open questions
 
-Ten of the fifteen confirmation questions in the workbook are unanswered, and
-the Nha Trang branch has supplied no studio facts. Nothing here has been
-invented; each item names how the code behaves until it is answered.
+Reconciled on 2026-10-04. Historical unanswered workbook cells do not imply
+that the current API has no policy. Backend source resolves the implemented
+behavior below; studio facts and release acceptance remain separate decisions.
 
-## Business rules
+## Business decisions and current contracts
 
-| #   | Question                                                                                                       | Current handling                                                                                                                                                                                                                                                                                                                                                                                       |
-| --- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Q5  | Can students self-serve booking/cancel/reschedule, and can staff and trainers act for them?                    | Treated as **yes** — the function list explicitly assigns "Đăng ký thay học viên" to studio, staff and trainers. Recorded here because the answer cell is blank.                                                                                                                                                                                                                                       |
-| Q7  | On a freed seat, auto-promote the first person on the waitlist, or wait for staff confirmation?                | `Booking.waitlistAutoPromote: boolean \| null`. `null` → neutral copy, no promise. **Discrepancy:** the function list also describes staff "chuyển người chờ" manually, which points at manual promotion. Do not resolve this in code.                                                                                                                                                                 |
-| Q8  | Deduct the session at booking and refund on an on-time cancellation?                                           | Assumed yes ("trừ buổi an toàn" in the function list). `eligibility.sessionCost` and `booking.sessionsCharged` come from the backend, so a different answer needs no redesign.                                                                                                                                                                                                                         |
-| Q9  | Cash/transfer recorded by staff only, no online payment?                                                       | Assumed yes. Staff record a receipt with an amount, a method and a status; nothing takes money online. A receipt carries no package reference, because Q-commercial (packages and prices) is unanswered.                                                                                                                                                                                               |
-| Q10 | Is a reminder to staff enough at 6 sessions / 15 days, with no automatic message?                              | Assumed yes. `renewalDue` surfaces as a note; nothing is sent.                                                                                                                                                                                                                                                                                                                                         |
-| Q11 | Zalo/WhatsApp buttons only, no automated messaging?                                                            | Assumed yes. Contact links only.                                                                                                                                                                                                                                                                                                                                                                       |
-| Q14 | Are the basic reports sufficient for phase one?                                                                | Reporting is phase 7 and unbuilt.                                                                                                                                                                                                                                                                                                                                                                      |
-| Q18 | Does the studio need a real `.xlsx`, or is a CSV that Excel opens enough?                                      | **Assumed enough.** The trainer report exports CSV with a UTF-8 BOM and semicolon delimiters, so Excel reads Vietnamese correctly and splits the columns. A true `.xlsx` means adding a library for one report; say the word and it is a small change.                                                                                                                                                 |
-| Q17 | When the studio cancels a class, what happens to the sessions already charged to the students who were booked? | **Unanswered, and it matters.** Q8 covers a student cancelling on time; a studio cancellation is a different case, and charging students for a class the studio called off is indefensible. Nothing is refunded in the mock because no per-booking record exists there to refund — the backend owns this. The cancel dialog states the number of students affected and that the studio must tell them. |
-| Q16 | May a manual adjustment take a session balance below zero, and if so what happens?                             | **Unanswered.** The form shows the resulting balance before saving and says plainly that a negative one has no rule behind it; nothing blocks it, because inventing a floor would be inventing a business rule. Needs a decision before launch.                                                                                                                                                        |
-| Q15 | Store student progress photos, and who may view them?                                                          | **Blocking.** Not implemented. Personal photographs need a confirmed retention and access rule before any code is written.                                                                                                                                                                                                                                                                             |
+| Item                    | Current implementation                                                                                           | Remaining decision/evidence                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Q5 Booking authority    | STUDENT self-service only; no booking-on-behalf endpoint                                                         | Owner acceptance of this scope                                       |
+| Q7 Waitlist             | Excluded from the current product; legacy fields are not active scope                                            | A future feature requires an explicit backend/product decision       |
+| Q8 Deduction/refund     | Deduct 1 on booking, refund on timely cancellation, atomic change                                                | Staging cutoff/concurrency cases                                     |
+| Q9 Commerce             | Cash/transfer receipts linked to packages, confirmed-only revenue, guarded VOID                                  | Owner reconciliation workflow and launch catalogue                   |
+| Q10 Renewals            | Backend flags <=6 credits OR <=15 days; contact outcomes are recorded                                            | Messaging/workflow acceptance                                        |
+| Q11 Messaging           | Contact links, no automatic messages                                                                             | Actual Zalo/contact details                                          |
+| Q14 Reports             | Summary/revenue/classes/trainers screens and endpoints implemented                                               | Studio acceptance and real-data/export verification                  |
+| Q18 Spreadsheet         | Backend CSV and XLSX export options exist; no FE spreadsheet library needed                                      | Verify required export scope, encoding and formula safety on staging |
+| Q17 Studio cancellation | Refunds held bookings; refuses classes with recorded attendance                                                  | Real-API ledger reconciliation                                       |
+| Q16 Negative balance    | Backend rejects a negative closing balance                                                                       | No FE negative-balance override                                      |
+| Q15 Progress photos     | Protected endpoints and authorized FE view exist; ADMIN/assigned TRAINER/self access, STAFF denied, ADMIN delete | Consent, retention and production permission tests                   |
+| Cancellation window     | GROUP 4h, PRIVATE 1h, exact deadline included by current server                                                  | Owner confirmation that public copy and deployed API agree           |
 
 ## Gaps found when wiring the real API (18/09/2026)
 
@@ -59,9 +60,11 @@ forward as backend-side notes:
   the address and `email-validator` rejects the special-use domain. Whatever
   writes a user should hold to the same rule as whatever reads one.
 
-## Studio facts (all null in `app/content/studio.ts`)
+## Studio facts
 
-Address · map link · phone · Zalo · WhatsApp · Instagram · email · opening hours.
+Address, map link, phone and Zalo are still required. Email, WhatsApp and
+Instagram are optional. Opening hours are provisional owner-authorized copy;
+see the dated table below.
 
 Rendered by `<PendingFact>` as "Đang cập nhật". **The Đà Nẵng studio's address,
 phone and opening hours must not be copied across.**
@@ -75,7 +78,7 @@ phone and opening hours must not be copied across.**
 
 ## Brand assets
 
-- Logo files, real photography (five briefs in `app/content/photography.ts`),
+- Logo files, real photography (six active slots; briefs in `app/content/photography.ts`),
   and confirmed trainer profiles.
 - **Q12/Q13:** whether the studio supplies brand assets and seeds initial data by
   Excel — both unanswered.
@@ -106,8 +109,8 @@ items are listed so they are not "re-discovered"; open items are work.
 
 **Open**
 
-- The staff calendar has no create/edit class action (Phase 6) and its sidebar
-  has two entries. The earlier attempt is materially more complete here.
+- Historical calendar-create gap is closed. Class time/capacity editing is
+  excluded by the current API, not an unfinished frontend action.
 - The demo fixtures seed a group capacity of `4`. Nha Trang has confirmed no
   capacity, so this number is arbitrary and must not reach public copy —
   see the class-capacity item above.
@@ -135,9 +138,9 @@ copied: another city's address, phone or map link is a wrong door, not a policy.
 The approved staff redesign (ADR 0006) drew a few things no endpoint provides.
 They are **not built**; each needs a backend answer first.
 
-| Canvas element                                  | Needs                                                                 |
-| ----------------------------------------------- | --------------------------------------------------------------------- |
-| Global search in a top bar (students, leads)    | One endpoint that searches names and phones across both.              |
-| Notification bell                               | A notification model. None exists.                                    |
-| Calendar cells with booked/capacity per class   | Already in the week payload for staff; confirm it stays there.        |
-| "Nhắn Zalo" on a lead                           | Whether the studio uses a Zalo OA or a personal number.               |
+| Canvas element                               | Needs                                                                                                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Global search in a top bar (students, leads) | One endpoint that searches names and phones across both.                                                                                     |
+| Notification bell                            | A notification model. None exists.                                                                                                           |
+| Calendar booked/capacity counts              | Implemented through held bookings; at the 500-booking cap, FE reads authoritative class detail counts. Week payload itself has no occupancy. |
+| "Nhắn Zalo" on a lead                        | Whether the studio uses a Zalo OA or a personal number.                                                                                      |

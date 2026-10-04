@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "react-router build && node scripts/remove-dev-worker.mjs",
     "preview": "vite preview",
     "typecheck": "react-router typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
@@ -20,8 +20,9 @@
     "e2e": "playwright test",
     "e2e:install": "playwright install --with-deps chromium",
     "check:build-contract": "node scripts/check-build-contract.mjs",
+    "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:content": "node scripts/check-content-placeholders.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run test && npm run build && npm run check:build-contract && npm run check:content",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build && npm run check:build-contract && npm run check:bundle && npm run check:content",
     "check:release": "node scripts/check-content-placeholders.mjs --release"
   },
   "dependencies": {

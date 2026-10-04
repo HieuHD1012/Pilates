@@ -13,7 +13,9 @@ async function prepare(): Promise<void> {
   // On by default in development so a fresh clone renders real screens with no
   // backend. Set VITE_ENABLE_MSW=false to hit a real API instead — the same
   // flag hides `<DemoDataNotice>`, so the two can never disagree.
-  if (!MOCKS_ENABLED) return;
+  // Keep DEV directly at the import site so the build eliminates the entire
+  // dependency graph, rather than relying on a cross-module constant fold.
+  if (!import.meta.env.DEV || !MOCKS_ENABLED) return;
 
   const { worker } = await import("./mocks/browser");
   await worker.start({

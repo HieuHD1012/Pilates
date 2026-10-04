@@ -30,12 +30,15 @@ const schema = z.object({
     .min(1, "Nhập số buổi")
     .refine((value) => /^\d+$/.test(value), "Chỉ nhập số buổi, là số nguyên")
     .refine((value) => Number(value) > 0, "Số buổi phải lớn hơn 0")
-    .refine((value) => Number(value) <= 100, "Số buổi vượt mức hợp lý"),
+    .refine(
+      (value) => Number.isSafeInteger(Number(value)),
+      "Số buổi quá lớn để ghi nhận chính xác",
+    ),
   reason: z
     .string()
     .trim()
-    .min(6, "Nêu lý do đủ rõ để người khác đọc lại còn hiểu")
-    .max(200, "Lý do quá dài"),
+    .min(3, "Nêu lý do đủ rõ để người khác đọc lại còn hiểu")
+    .max(500, "Lý do quá dài"),
 });
 
 export type SessionAdjustmentFormValues = z.input<typeof schema>;
@@ -171,7 +174,7 @@ export function SessionAdjustmentForm({
       ) : null}
 
       <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
+        <Button variant="secondary" size="sm" disabled={pending} onClick={onCancel}>
           Huỷ
         </Button>
         <Button type="submit" size="sm" pending={pending}>

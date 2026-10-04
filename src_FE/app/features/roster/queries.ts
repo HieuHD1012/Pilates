@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { bookingsApi, classesApi, studentsApi } from "~/lib/api/endpoints";
-import { queryKeys, roots } from "~/lib/api/query-keys";
+import { invalidateChange } from "~/lib/api/invalidation";
+import { queryKeys } from "~/lib/api/query-keys";
 import type { AttendanceStatus, BookingStatus } from "~/lib/api/schema";
 
 /**
@@ -29,17 +30,16 @@ export interface RosterRow {
  * The staff roster, with names.
  *
  * `GET /bookings` answers with `student_id` only, so the names come from
- * `GET /students` and are joined here. One request for the class and one for
- * the roll is the whole cost; the alternative — a request per row — is how a
- * twelve-person class becomes thirteen round trips.
+ * `GET /students` and are joined here. Offset pages are read until complete so
+ * a student outside the first 200 rows still has their real name.
  */
 export function useClassRoster(sessionId: number) {
   return useQuery({
-    queryKey: queryKeys.bookings.list({ class_session_id: sessionId }),
+    queryKey: queryKeys.bookings.roster(sessionId),
     async queryFn(): Promise<RosterRow[]> {
       const [bookings, students] = await Promise.all([
         bookingsApi.list({ class_session_id: sessionId, limit: 500 }),
-        studentsApi.list({ limit: 200 }),
+        studentsApi.all(),
       ]);
       const byId = new Map(students.map((student) => [student.id, student]));
 
@@ -48,8 +48,7 @@ export function useClassRoster(sessionId: number) {
         return {
           bookingId: booking.id,
           studentId: booking.student_id,
-          // A student outside the first page of the roll still gets a row: the
-          // booking is the fact, the name is the decoration.
+          // Preserve the booking if a profile is unavailable to this role.
           studentName: student?.full_name ?? `Học viên #${booking.student_id}`,
           phone: student?.phone ?? null,
           status: booking.status,
@@ -79,21 +78,13 @@ export function useAttendanceRoster(sessionId: number) {
  * allowed — the backend records who marked it and when, and the credit balance
  * does not move either way.
  */
-export function useMarkAttendance(sessionId: number) {
+export function useMarkAttendance(_sessionId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ bookingId, status }: { bookingId: number; status: AttendanceStatus }) =>
       bookingsApi.markAttendance(bookingId, { status }),
     async onSuccess() {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.classes.attendance(sessionId),
-        }),
-        queryClient.invalidateQueries({ queryKey: roots.bookings }),
-        // A marked booking can no longer be cancelled, so the student's own
-        // schedule is stale the moment this succeeds.
-        queryClient.invalidateQueries({ queryKey: roots.mySchedule }),
-      ]);
+      await invalidateChange(queryClient, "attendance");
     },
   });
 }

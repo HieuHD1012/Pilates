@@ -32,7 +32,7 @@ this file wins.
    (`build/client/__spa-fallback.html`) and must survive a hard refresh and a
    pasted deep link.
 6. **The backend is authoritative** for authentication, authorization, booking
-   eligibility, capacity, waitlist order, payment state, session deduction,
+   eligibility, capacity, payment state, session deduction,
    package validity, schedule conflicts, and refund eligibility.
 7. **No frontend BFF, no custom SSR, no Server Actions** without an accepted ADR.
 8. **Mutable backend state belongs to TanStack Query.** Nothing else caches it.
@@ -42,7 +42,7 @@ this file wins.
     mutable domain.** Pick one; for anything mutable, pick TanStack Query.
 11. **`useEffect` + `fetch` is not the data strategy.** ESLint rejects it.
 12. **Do not re-implement a backend business rule in the frontend.** Render what
-    the backend returns (`eligibility`, `cancellation`, `waitlistAutoPromote`).
+    the backend returns (`can_cancel`, `refund_if_cancelled_now`, eligible class IDs).
 13. **Search before you abstract.** `rg` the repo; the pattern usually exists.
 14. **Reuse the design-system primitives in `app/ui/`.** Do not restyle Radix
     defaults inline, and do not add a component library.
@@ -58,9 +58,9 @@ this file wins.
     unknown. Use `app/content/studio.ts` + `<PendingFact>` and record the gap in
     `docs/OPEN_QUESTIONS.md`.
 20. **`<PendingFact>` and `<Absent>` are not interchangeable.** PendingFact means
-    *the studio owes us this and will supply it* — it renders "Đang cập nhật" and
-    it belongs to `CONTENT_DEBT`. `<Absent>` means *this record legitimately has
-    nothing here*: a student with no package, an optional email nobody recorded.
+    _the studio owes us this and will supply it_ — it renders "Đang cập nhật" and
+    it belongs to `CONTENT_DEBT`. `<Absent>` means _this record legitimately has
+    nothing here_: a student with no package, an optional email nobody recorded.
     Using PendingFact for the second tells staff to wait for something that is
     never coming.
 21. **Run `npm run verify` before declaring anything done** — typecheck, lint,

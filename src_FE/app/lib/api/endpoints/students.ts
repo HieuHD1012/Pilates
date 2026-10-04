@@ -1,4 +1,5 @@
 import { api } from "../client";
+import { collectPages } from "../pagination";
 import type {
   StudentCreateRequest,
   StudentListParams,
@@ -12,6 +13,8 @@ import type {
  * student gets only their own row from the same URL staff use.
  */
 export const studentsApi = {
+  /** Complete directory for profile joins and selectors; never a partial roll. */
+  all: () => collectPages((page) => studentsApi.list(page)),
   /** `GET /students` */
   list: (params: StudentListParams = {}) =>
     api.get<StudentResponse[]>("/students", { searchParams: params }),

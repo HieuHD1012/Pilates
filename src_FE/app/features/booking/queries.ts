@@ -1,12 +1,9 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { bookingsApi, classesApi, myScheduleApi } from "~/lib/api/endpoints";
-import { queryKeys, roots } from "~/lib/api/query-keys";
+import { ApiError } from "~/lib/api/client";
+import { invalidateChange } from "~/lib/api/invalidation";
+import { queryKeys } from "~/lib/api/query-keys";
 import type {
   ClassSessionResponse,
   ClassType,
@@ -41,8 +38,8 @@ export interface BookableClass extends ClassSessionResponse {
  */
 export function useBookableClasses(filters: StudentClassFilters) {
   const params = {
-    starts_from: `${filters.from}T00:00:00`,
-    starts_to: `${addDays(filters.to, 1)}T00:00:00`,
+    starts_from: `${filters.from}T00:00:00+07:00`,
+    starts_to: `${addDays(filters.to, 1)}T00:00:00+07:00`,
     class_type: filters.classType === "all" ? undefined : filters.classType,
     status: "SCHEDULED" as const,
     limit: 300,
@@ -55,6 +52,8 @@ export function useBookableClasses(filters: StudentClassFilters) {
         classesApi.list(params),
         myScheduleApi.bookable({ starts_to: params.starts_to, limit: 300 }),
       ]);
+      assertUncapped(bookableIds, 300);
+      assertUncapped(sessions, params.limit);
       const bookable = new Set(bookableIds);
       return sessions.map((session) => ({ ...session, canBook: bookable.has(session.id) }));
     },
@@ -77,9 +76,26 @@ export function useBookableIds() {
   const params = { limit: 300 } as const;
   return useQuery({
     queryKey: queryKeys.mySchedule.bookable(params),
-    queryFn: () => myScheduleApi.bookable(params),
+    queryFn: async () => {
+      const ids = await myScheduleApi.bookable(params);
+      assertUncapped(ids, params.limit);
+      return ids;
+    },
     staleTime: 15_000,
   });
+}
+
+/** Missing IDs in a capped result cannot prove that a student is ineligible. */
+function assertUncapped(rows: unknown[], limit: number) {
+  if (rows.length >= limit)
+    throw new ApiError(
+      0,
+      {
+        code: "result_limit_reached",
+        message: "Danh sách đạt giới hạn trả về. Cần kiểm tra phạm vi với studio.",
+      },
+      "Incomplete eligibility response",
+    );
 }
 
 // A student's packages and their credit ledger live in `features/commerce`:
@@ -92,10 +108,11 @@ export function useBookableIds() {
  * There is no separate history endpoint: past and cancelled bookings come from
  * here with `include_cancelled`, and the screen splits them by `starts_at`.
  */
-export function useMySchedule(params: MyScheduleParams = {}) {
+export function useMySchedule(params: MyScheduleParams = {}, enabled = true) {
   return useQuery({
     queryKey: queryKeys.mySchedule.list(params),
     queryFn: () => myScheduleApi.list(params),
+    enabled,
     staleTime: 15_000,
   });
 }
@@ -105,14 +122,6 @@ export function useMySchedule(params: MyScheduleParams = {}) {
  * whose seat it took, the package the credit came out of, and the rosters staff
  * are looking at.
  */
-function invalidateBooking(queryClient: QueryClient) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: roots.mySchedule }),
-    queryClient.invalidateQueries({ queryKey: roots.classes }),
-    queryClient.invalidateQueries({ queryKey: roots.bookings }),
-    queryClient.invalidateQueries({ queryKey: roots.packages }),
-  ]);
-}
 
 /**
  * Booking spends a credit, so there is NO optimistic update. Showing a seat
@@ -127,7 +136,7 @@ export function useBookClass() {
   return useMutation({
     mutationFn: (classSessionId: number) =>
       bookingsApi.create({ class_session_id: classSessionId }),
-    onSuccess: () => invalidateBooking(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "booking"),
   });
 }
 
@@ -140,7 +149,7 @@ export function useCancelBooking() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: number) => bookingsApi.cancel(bookingId),
-    onSuccess: () => invalidateBooking(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "booking"),
   });
 }
 
@@ -159,6 +168,6 @@ export function useChangeBooking() {
       bookingId: number;
       newClassSessionId: number;
     }) => bookingsApi.change(bookingId, { new_class_session_id: newClassSessionId }),
-    onSuccess: () => invalidateBooking(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "booking"),
   });
 }

@@ -418,6 +418,7 @@ function LedgerBody({
         }}
       >
         <DialogContent
+          busy={adjust.isPending}
           title="Điều chỉnh buổi"
           description={`${packageName}. Bút toán này không xóa được; sửa sai bằng một bút toán ngược lại.`}
         >

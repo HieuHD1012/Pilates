@@ -1,85 +1,86 @@
-# Business rules
+# Current business and API rules
 
-The backend owns every rule below. This document records what the studio has
-confirmed so the UI can _explain_ the rules — never so the frontend can compute
-them.
+Reconciled on 2026-10-04 against the backend in the same checkout. These are
+implemented contracts, not new owner approvals. Historical workbook proposals
+must not override the current API. A policy change requires a backend decision.
 
-## Classes
+## Roles and transactions
 
-- Two types: `group`, `private`. There is no Duo. _(Q3)_
-- One trainer per class. Reassignment must not double-book a trainer. _(Q4)_
-  Intervals are half-open: a class ending 07:20 and one starting 07:20 do not
-  collide, because back-to-back is how a studio runs. A cancelled class holds no
-  trainer and is never a conflict.
-- Capacity may not be reduced below the number already booked. Not a studio rule —
-  arithmetic: the alternative is evicting someone silently.
-- A weekly pattern is checked one occurrence at a time. A clash skips that date
-  and the studio is told which; it never refuses the whole pattern, and it never
-  drops a date silently. Horizon capped at 26 weeks — a guard, not a studio rule.
-- Rescheduling carries the session already charged: one buổi out, one buổi in. It
-  is not a cancel-and-rebook and never costs a second buổi.
-- Staff acting for a student meet the same rules the student does. There is no
-  override, because the studio has not said there is one. _(Q5)_
-- A student may move or cancel their own booking only inside the cancellation
-  window; past it, staff can still act. Moving out of a buổi that would not be
-  refunded is the same decision as cancelling it.
-- Nobody sets another person's password. Creating an account sends an invitation.
-- A cancelled class stays cancelled and carries its own `cancellationReason`,
-  separate from the studio's note about the buổi. Re-running it is a new class.
-  _(Assumed; see Q17.)_
-- Capacity is set per class by the studio. **It is not a brand claim** — the Đà
-  Nẵng studio's 1:3 is that studio's number and must not appear in Nha Trang copy.
+- Roles are `ADMIN`, `STAFF`, `TRAINER`, `STUDENT`. Frontend role gates are UX;
+  backend role and object permissions remain the security boundary.
+- Booking, cancellation and rescheduling are student self-service endpoints.
+  Staff can inspect rosters; there is no supported booking-on-behalf action.
+- One trainer per class. Overlapping assignments are rejected by the backend;
+  back-to-back half-open intervals are permitted.
+- `GROUP` and `PRIVATE` are API types. Internal Duo is `PRIVATE` with capacity 2,
+  not a third public format. Public ratios/capacity still need owner acceptance.
+- Existing class time and capacity have no update endpoint. Staff can create,
+  assign a trainer and cancel a class; changing time means a new class.
+- Recurrence previews all occurrences. Commit recomputes conflicts and omits
+  unavailable occurrences; the remaining set is atomic. A write-time overlap
+  rolls that set back.
+  Limit: 104 occurrences, weekdays Monday 0 through Sunday 6, duration 1–480
+  minutes. There is no 26-week horizon policy; omission is server-owned.
+- No waitlist is exposed by the current product. Legacy model/response fields
+  do not authorize a waitlist UI.
 
-## Packages and sessions
+Sources: `src_BE/app/api/bookings.py`, `services/scheduling.py`,
+`services/recurrence.py`, `schemas/scheduling.py`, `domain/rules.py`.
+Paths in this document are relative to the repository root.
 
-- A package has a session count, a start date and an expiry date.
-- `sessionsRemaining` is authoritative and equals the sum of the session ledger.
-  The frontend never derives a balance by subtraction.
-- Every change is a signed ledger entry with a reason and an actor.
-- Manual adjustments require a reason.
-- Renewal is flagged at **6 sessions or 15 days** remaining; the backend returns
-  `renewalDue`. The frontend does not recompute the threshold.
+## Booking, cancellation and credits
 
-## Booking
+- `GET /my-schedule/bookable` returns eligible class IDs. Missing IDs are not
+  trustworthy negative answers when a response reaches its limit of 300.
+- The server selects a valid package, normally the one expiring first. Booking
+  deducts one credit in the same transaction. The UI does not subtract balances
+  or promise a particular package before server acceptance.
+- The cancellation deadline is start minus 4 hours for Group, minus 1 hour for
+  Private. The current server includes the exact deadline (`now <= deadline`).
+  After it, student cancellation/rescheduling is refused.
+- Render `can_cancel`, `refund_if_cancelled_now` and `cancel_deadline` from
+  `/my-schedule`; changing a booking is an atomic cancel-and-book transaction.
+- Studio class cancellation refunds held `BOOKED` records atomically. A class
+  with recorded attendance cannot be cancelled through this operation.
+- Ledger entries carry reason and actor. Adjustments require a reason; the
+  backend rejects a negative closing balance. Attendance does not deduct again.
+- Renewal queues use the backend threshold: <=6 credits OR <=15 days remaining.
 
-- Eligibility is a backend decision returned as
-  `{ canBook, canJoinWaitlist, reasons[], sessionCost }`.
-- `app/features/booking/eligibility-copy.ts` maps each code to Vietnamese the
-  student can act on. **Unknown codes must still produce a sentence** — a
-  disabled button with no explanation is the worst outcome of a rule we did not
-  model.
-- A `409` from the booking endpoint is a business refusal, not an error. Render
-  it with the same copy map.
-- Bookings are never optimistic (see DATA_OWNERSHIP.md).
+Sources: `src_BE/app/domain/rules.py`, `services/booking_service.py`,
+`services/credit_ledger.py`, `services/scheduling.py`, `api/my_schedule.py`.
 
-## Cancellation
+## Packages and payments
 
-- Confirmed policy: refund if cancelled **more than 4 hours** before a group
-  class, **more than 8 hours** before a private class. _(Q6)_
-- Those numbers live in `app/content/studio.ts` for public copy only. Every
-  actual decision comes from `booking.cancellation`:
-  `{ cancellable, refundable, deadlineAt, policyHours }`. If the studio changes
-  the policy, no frontend release is required.
+- Sold packages freeze catalogue snapshots; later catalogue edits do not rewrite
+  previously sold packages. Balances and validity remain server-owned.
+- Receipts belong to a student package, use CASH or TRANSFER, and start PENDING.
+  CONFIRMED receipts contribute to revenue. This application does not take
+  online payments.
+- VOID retains its audit row and reason. The server refuses voiding consumed
+  credits, packages with other live receipts or credits from other sources.
+  Where permitted, voiding also reverses package credits atomically.
+- Money responses are decimal strings. The payment UI accepts nonnegative whole
+  VND with valid separators; it never removes a minus sign to make a valid amount.
+- State is always stated in text as well as tone; uncertain writes are not
+  automatically retried.
 
-## Waitlist
+Sources: `src_BE/app/services/payments.py`, `services/package_sales.py`,
+`services/credit_ledger.py`, `models/money.py`.
 
-- Order must be explicit and capacity must never be exceeded.
-- **Unresolved:** whether a freed seat auto-promotes the first person or waits
-  for staff confirmation _(Q7)_. Modelled as `waitlistAutoPromote: boolean | null`.
-  When `null`, the UI stays neutral and promises nothing.
+## Authentication and private media
 
-## Payments
+- Login uses email. Reset/new passwords require at least 10 characters.
+  Forgot-password confirmation does not reveal whether an email exists.
+- Account creation normally omits a password and sends an activation invitation;
+  the API also permits an initial password. The staff UI uses invitations.
+- Logout revokes all server sessions. Local credentials/cache are discarded
+  immediately even if the server is unreachable; offline server revocation
+  cannot be promised.
+- Progress photos: ADMIN, the assigned trainer and the student themselves can
+  read/upload; deletion is ADMIN only. STAFF cannot access these bytes.
+  Private files require authenticated API access and no-store responses.
+- Photo consent/retention, studio contacts and commercial facts still require
+  owner decisions. Technical access controls do not settle these decisions.
 
-- Recorded by staff: cash or bank transfer, with a status.
-- Reports count confirmed transactions only.
-- Payment state is never communicated by colour alone.
-- A wrong record is **voided with a stated reason**, never edited into looking
-  right, and never deleted — the row stays in the log carrying its reason. A
-  confirmed record cannot be moved back to pending. _(Assumed; see Q9.)_
-
-## Accounts
-
-- Roles: `student`, `trainer`, `staff`, `owner`.
-- Password reset links are single-use and expire.
-- "Forgot password" returns the same confirmation whether or not the account
-  exists — telling a visitor that a number is unregistered leaks the member list.
+Sources: `src_BE/app/api/auth.py`, `api/accounts.py`, `api/progress_photos.py`,
+`core/permissions.py`; FE `app/lib/api/endpoints/auth.ts`.

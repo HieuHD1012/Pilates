@@ -179,8 +179,8 @@ describe("ClassForm", () => {
     );
   });
 
-  it("refuses a duration below the studio floor", async () => {
-    const { onSubmit, user } = setup({ defaultValues: { durationMinutes: "10" } });
+  it("refuses a duration below the backend minimum", async () => {
+    const { onSubmit, user } = setup({ defaultValues: { durationMinutes: "0" } });
 
     await user.selectOptions(screen.getByLabelText(/Huấn luyện viên/), "1");
     await user.type(screen.getByLabelText(/^Ngày/), "2026-08-25");
@@ -188,7 +188,7 @@ describe("ClassForm", () => {
     await user.type(screen.getByLabelText(/Sức chứa/), "6");
     await user.click(submit());
 
-    expect(await screen.findByText(/tối thiểu 15 phút/)).toBeInTheDocument();
+    expect(await screen.findByText(/1 đến 480 phút/)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

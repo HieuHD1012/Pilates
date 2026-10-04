@@ -23,6 +23,8 @@ import {
   useStudentPackages,
 } from "~/features/commerce/queries";
 import { useMySchedule } from "~/features/booking/queries";
+import { HistoryMonthPicker, useHistoryMonth } from "~/features/booking/history-range";
+import { PageControls } from "~/ui/page-controls";
 import {
   useProgressPhotos,
   useStudent,
@@ -240,35 +242,25 @@ export default function StaffStudentDetail() {
                 if (!next) setEditing(false);
               }}
             >
-              <DialogContent
-                title="Sửa hồ sơ học viên"
-                description="Số điện thoại là khóa nhận diện của studio, nên mỗi số chỉ thuộc về một hồ sơ."
-              >
-                <EditStudentForm
-                  student={student}
-                  onCancel={() => setEditing(false)}
-                  onSaved={(name) => {
-                    setEditing(false);
-                    setSaved(`Đã lưu hồ sơ của ${name}.`);
-                  }}
-                />
-              </DialogContent>
+              <EditStudentForm
+                student={student}
+                onCancel={() => setEditing(false)}
+                onSaved={(name) => {
+                  setEditing(false);
+                  setSaved(`Đã lưu hồ sơ của ${name}.`);
+                }}
+              />
             </Dialog>
 
             <Dialog open={selling} onOpenChange={setSelling}>
-              <DialogContent
-                title="Bán gói cho học viên"
-                description="Bán gói tạo gói và cộng buổi ngay trong một giao dịch. Tiền ghi nhận ở bước sau."
-              >
-                <SellPackageForm
-                  student={student}
-                  onCancel={() => setSelling(false)}
-                  onSold={(name) => {
-                    setSelling(false);
-                    setSaved(`Đã bán gói ${name} cho ${student.full_name}.`);
-                  }}
-                />
-              </DialogContent>
+              <SellPackageForm
+                student={student}
+                onCancel={() => setSelling(false)}
+                onSold={(name) => {
+                  setSelling(false);
+                  setSaved(`Đã bán gói ${name} cho ${student.full_name}.`);
+                }}
+              />
             </Dialog>
 
             <Dialog
@@ -278,19 +270,14 @@ export default function StaffStudentDetail() {
               }}
             >
               {renewing ? (
-                <DialogContent
-                  title="Gia hạn gói"
-                  description={`${renewing.name}. Buổi gia hạn ghi vào sổ như một bút toán riêng, nên vẫn phân biệt được với lần bán đầu.`}
-                >
-                  <RenewPackageForm
-                    target={renewing}
-                    onCancel={() => setRenewing(null)}
-                    onRenewed={() => {
-                      setRenewing(null);
-                      setSaved(`Đã gia hạn gói ${renewing.name}.`);
-                    }}
-                  />
-                </DialogContent>
+                <RenewPackageForm
+                  target={renewing}
+                  onCancel={() => setRenewing(null)}
+                  onRenewed={() => {
+                    setRenewing(null);
+                    setSaved(`Đã gia hạn gói ${renewing.name}.`);
+                  }}
+                />
               ) : null}
             </Dialog>
           </>
@@ -660,9 +647,10 @@ function CommerceTab({
   onRenew: (target: RenewTarget) => void;
 }) {
   const [recording, setRecording] = useState(false);
+  const [offset, setOffset] = useState(0);
 
   const packages = useStudentPackages({ student_id: student.id });
-  const payments = usePayments({ student_id: student.id, limit: 200 });
+  const payments = usePayments({ student_id: student.id, limit: 200, offset });
   const record = useRecordPayment();
 
   return (
@@ -727,6 +715,13 @@ function CommerceTab({
                 {(items) => <PaymentList payments={items} />}
               </QueryBoundary>
             </div>
+            <PageControls
+              offset={offset}
+              limit={200}
+              count={payments.data?.length ?? 0}
+              pending={payments.isFetching}
+              onChange={setOffset}
+            />
           </Panel>
         }
       />
@@ -741,6 +736,7 @@ function CommerceTab({
         }}
       >
         <DialogContent
+          busy={record.isPending}
           title="Ghi nhận khoản thu"
           description="Số tiền studio đã nhận, gắn với gói học viên đã mua."
         >
@@ -770,16 +766,26 @@ function CommerceTab({
  * this person's.
  */
 function HistoryTab({ studentId }: { studentId: number }) {
-  const query = useMySchedule({
-    student_id: studentId,
-    include_cancelled: true,
-    limit: 500,
-  });
+  const history = useHistoryMonth();
+  const query = useMySchedule(
+    {
+      ...history.params,
+      student_id: studentId,
+      include_cancelled: true,
+      limit: 500,
+    },
+    history.params !== null,
+  );
 
   return (
     <Panel>
       <PanelHeader title="Lịch sử lớp" description="Mới nhất trước, gồm cả buổi đã hủy." />
       <div className="px-4 md:px-5">
+        <HistoryMonthPicker
+          month={history.month}
+          onChange={history.setMonth}
+          capped={query.data?.length === 500}
+        />
         <QueryBoundary
           query={query}
           skeletonRows={5}
@@ -1052,23 +1058,29 @@ function EditStudentForm({
   const update = useUpdateStudent(student.id);
 
   return (
-    <StudentForm
-      defaultValues={{
-        fullName: student.full_name,
-        phone: student.phone,
-        email: student.email ?? "",
-        note: student.note ?? "",
-      }}
-      submitLabel="Lưu hồ sơ"
-      pending={update.isPending}
-      error={update.error}
-      onCancel={onCancel}
-      onSubmit={async (input) => {
-        const saved = await update.mutateAsync(input);
-        onSaved(saved.full_name);
-        return saved;
-      }}
-    />
+    <DialogContent
+      busy={update.isPending}
+      title="Sửa hồ sơ học viên"
+      description="Số điện thoại là khóa nhận diện của studio, nên mỗi số chỉ thuộc về một hồ sơ."
+    >
+      <StudentForm
+        defaultValues={{
+          fullName: student.full_name,
+          phone: student.phone,
+          email: student.email ?? "",
+          note: student.note ?? "",
+        }}
+        submitLabel="Lưu hồ sơ"
+        pending={update.isPending}
+        error={update.error}
+        onCancel={onCancel}
+        onSubmit={async (input) => {
+          const saved = await update.mutateAsync(input);
+          onSaved(saved.full_name);
+          return saved;
+        }}
+      />
+    </DialogContent>
   );
 }
 
@@ -1090,81 +1102,92 @@ function SellPackageForm({
   const chosen = (types.data ?? []).find((item) => String(item.id) === typeId);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Field label="Gói tập" required>
-        {({ id }) => (
-          <Select
-            id={id}
-            value={typeId}
-            disabled={types.isPending}
-            onChange={(event) => setTypeId(event.target.value)}
-          >
-            <option value="">
-              {types.isPending ? "Đang tải danh mục…" : "— Chọn gói —"}
-            </option>
-            {(types.data ?? []).map((item) => (
-              <option key={item.id} value={String(item.id)}>
-                {item.name} · {item.credits} buổi · {item.duration_days} ngày
+    <DialogContent
+      busy={sell.isPending}
+      title="Bán gói cho học viên"
+      description="Bán gói tạo gói và cộng buổi ngay trong một giao dịch. Tiền ghi nhận ở bước sau."
+    >
+      <div className="flex flex-col gap-4">
+        <Field label="Gói tập" required>
+          {({ id }) => (
+            <Select
+              id={id}
+              value={typeId}
+              disabled={types.isPending}
+              onChange={(event) => setTypeId(event.target.value)}
+            >
+              <option value="">
+                {types.isPending ? "Đang tải danh mục…" : "— Chọn gói —"}
               </option>
-            ))}
-          </Select>
-        )}
-      </Field>
-
-      <Field label="Ngày bắt đầu" required hint="Hạn dùng tính từ ngày này.">
-        {({ id }) => (
-          <Input
-            id={id}
-            type="date"
-            value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
-          />
-        )}
-      </Field>
-
-      {chosen ? (
-        <p className="text-ink-2 text-xs">
-          Cộng ngay <Figures className="text-ink">{chosen.credits}</Figures> buổi cho{" "}
-          {student.full_name}
-          {chosen.price === null ? null : (
-            <>
-              , giá niêm yết{" "}
-              <Figures className="text-ink">{formatVnd(chosen.price)}</Figures>
-            </>
+              {(types.data ?? []).map((item) => (
+                <option key={item.id} value={String(item.id)}>
+                  {item.name} · {item.credits} buổi · {item.duration_days} ngày
+                </option>
+              ))}
+            </Select>
           )}
-          .
-        </p>
-      ) : null}
+        </Field>
 
-      {sell.isError ? (
-        <p role="alert" className="text-danger text-sm">
-          {errorMessage(sell.error, "Chưa bán được gói. Vui lòng thử lại.")}
-        </p>
-      ) : null}
+        <Field label="Ngày bắt đầu" required hint="Hạn dùng tính từ ngày này.">
+          {({ id }) => (
+            <Input
+              id={id}
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+            />
+          )}
+        </Field>
 
-      <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
-          Huỷ
-        </Button>
-        <Button
-          size="sm"
-          pending={sell.isPending}
-          disabled={typeId === ""}
-          onClick={() => {
-            sell.mutate(
-              {
-                student_id: student.id,
-                package_type_id: Number(typeId),
-                start_date: startDate,
-              },
-              { onSuccess: (sold) => onSold(sold.name_snapshot) },
-            );
-          }}
-        >
-          Bán gói
-        </Button>
-      </FormActions>
-    </div>
+        {chosen ? (
+          <p className="text-ink-2 text-xs">
+            Cộng ngay <Figures className="text-ink">{chosen.credits}</Figures> buổi cho{" "}
+            {student.full_name}
+            {chosen.price === null ? null : (
+              <>
+                , giá niêm yết{" "}
+                <Figures className="text-ink">{formatVnd(chosen.price)}</Figures>
+              </>
+            )}
+            .
+          </p>
+        ) : null}
+
+        {sell.isError ? (
+          <p role="alert" className="text-danger text-sm">
+            {errorMessage(sell.error, "Chưa bán được gói. Vui lòng thử lại.")}
+          </p>
+        ) : null}
+
+        <FormActions>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={sell.isPending}
+            onClick={onCancel}
+          >
+            Huỷ
+          </Button>
+          <Button
+            size="sm"
+            pending={sell.isPending}
+            disabled={typeId === ""}
+            onClick={() => {
+              sell.mutate(
+                {
+                  student_id: student.id,
+                  package_type_id: Number(typeId),
+                  start_date: startDate,
+                },
+                { onSuccess: (sold) => onSold(sold.name_snapshot) },
+              );
+            }}
+          >
+            Bán gói
+          </Button>
+        </FormActions>
+      </div>
+    </DialogContent>
   );
 }
 
@@ -1184,63 +1207,74 @@ function RenewPackageForm({
   const nothingToDo = days.trim() === "" && credits.trim() === "";
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Cộng thêm buổi" hint="Bỏ trống nếu chỉ gia hạn ngày.">
-          {({ id }) => (
-            <Input
-              id={id}
-              inputMode="numeric"
-              value={credits}
-              onChange={(event) => setCredits(event.target.value)}
-            />
-          )}
-        </Field>
+    <DialogContent
+      busy={renew.isPending}
+      title="Gia hạn gói"
+      description={`${target.name}. Buổi gia hạn ghi vào sổ như một bút toán riêng, nên vẫn phân biệt được với lần bán đầu.`}
+    >
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Cộng thêm buổi" hint="Bỏ trống nếu chỉ gia hạn ngày.">
+            {({ id }) => (
+              <Input
+                id={id}
+                inputMode="numeric"
+                value={credits}
+                onChange={(event) => setCredits(event.target.value)}
+              />
+            )}
+          </Field>
 
-        <Field label="Cộng thêm ngày" hint="Bỏ trống nếu chỉ cộng buổi.">
-          {({ id }) => (
-            <Input
-              id={id}
-              inputMode="numeric"
-              value={days}
-              onChange={(event) => setDays(event.target.value)}
-            />
-          )}
-        </Field>
-      </div>
+          <Field label="Cộng thêm ngày" hint="Bỏ trống nếu chỉ cộng buổi.">
+            {({ id }) => (
+              <Input
+                id={id}
+                inputMode="numeric"
+                value={days}
+                onChange={(event) => setDays(event.target.value)}
+              />
+            )}
+          </Field>
+        </div>
 
-      <p className="text-ink-2 text-xs">
-        Hiện còn <Figures className="text-ink">{target.balance}</Figures> buổi, hạn{" "}
-        <Figures className="text-ink">{dateOnly(target.endDate)}</Figures>.
-      </p>
-
-      {renew.isError ? (
-        <p role="alert" className="text-danger text-sm">
-          {errorMessage(renew.error, "Chưa gia hạn được gói. Vui lòng thử lại.")}
+        <p className="text-ink-2 text-xs">
+          Hiện còn <Figures className="text-ink">{target.balance}</Figures> buổi, hạn{" "}
+          <Figures className="text-ink">{dateOnly(target.endDate)}</Figures>.
         </p>
-      ) : null}
 
-      <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
-          Huỷ
-        </Button>
-        <Button
-          size="sm"
-          pending={renew.isPending}
-          disabled={nothingToDo}
-          onClick={() => {
-            renew.mutate(
-              {
-                extra_credits: credits.trim() === "" ? 0 : Number(credits),
-                extra_days: days.trim() === "" ? 0 : Number(days),
-              },
-              { onSuccess: () => onRenewed() },
-            );
-          }}
-        >
-          Gia hạn
-        </Button>
-      </FormActions>
-    </div>
+        {renew.isError ? (
+          <p role="alert" className="text-danger text-sm">
+            {errorMessage(renew.error, "Chưa gia hạn được gói. Vui lòng thử lại.")}
+          </p>
+        ) : null}
+
+        <FormActions>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={renew.isPending}
+            onClick={onCancel}
+          >
+            Huỷ
+          </Button>
+          <Button
+            size="sm"
+            pending={renew.isPending}
+            disabled={nothingToDo}
+            onClick={() => {
+              renew.mutate(
+                {
+                  extra_credits: credits.trim() === "" ? 0 : Number(credits),
+                  extra_days: days.trim() === "" ? 0 : Number(days),
+                },
+                { onSuccess: () => onRenewed() },
+              );
+            }}
+          >
+            Gia hạn
+          </Button>
+        </FormActions>
+      </div>
+    </DialogContent>
   );
 }

@@ -65,7 +65,7 @@ describe("StudentForm", () => {
     setup({
       error: new ApiError(
         409,
-        { code: "phone_taken", message: "phone taken in db" },
+        { code: "STUDENT_PHONE_TAKEN", message: "phone taken in db" },
         "fallback",
       ),
     });

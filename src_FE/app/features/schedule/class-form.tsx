@@ -11,7 +11,7 @@ import type {
   RecurrenceRequest,
   TrainerResponse,
 } from "~/lib/api/schema";
-import { addDays, formatDate } from "~/lib/format";
+import { addDays } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Field, FormActions, Input, Select } from "~/ui/field";
 import { Figures } from "~/ui/figure";
@@ -55,9 +55,6 @@ const WEEKDAYS: Array<{ value: number; short: string; long: string }> = [
   { value: 6, short: "CN", long: "Chủ nhật" },
 ];
 
-/** Not a studio rule — a guard. A pattern is a plan, not a permanent timetable. */
-const MAX_HORIZON_DAYS = 26 * 7;
-
 const schema = z.object({
   type: z.enum(["GROUP", "PRIVATE"]),
   trainerId: z.string().min(1, "Chọn huấn luyện viên"),
@@ -65,11 +62,14 @@ const schema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Chọn giờ bắt đầu"),
   durationMinutes: z
     .string()
-    .refine((v) => /^\d+$/.test(v) && Number(v) >= 15, "Thời lượng tối thiểu 15 phút"),
+    .refine(
+      (v) => /^\d+$/.test(v) && Number(v) > 0 && Number(v) <= 480,
+      "Thời lượng từ 1 đến 480 phút",
+    ),
   capacity: z
     .string()
     .refine((v) => /^\d+$/.test(v) && Number(v) >= 1, "Sức chứa tối thiểu 1 người")
-    .refine((v) => Number(v) <= 40, "Sức chứa vượt mức hợp lý"),
+    .refine((v) => Number.isSafeInteger(Number(v)), "Sức chứa quá lớn"),
   /** Only read when the form is in recurring mode. */
   repeatUntil: z.string(),
 });
@@ -161,13 +161,9 @@ export function ClassForm({
 
   const dateField = String(useWatch({ control, name: "date" }) ?? "");
   const repeatUntil = String(useWatch({ control, name: "repeatUntil" }) ?? "");
-  const horizonEnd = /^\d{4}-\d{2}-\d{2}$/.test(dateField)
-    ? addDays(dateField, MAX_HORIZON_DAYS)
-    : "";
   /**
    * How many buổi the pattern will try to create. A count, not a promise: any
-   * occurrence that clashes with the trainer's calendar is skipped, and the
-   * result lists which — the studio should not be surprised by either number.
+   * occurrence that clashes is reported and omitted; the available set commits atomically.
    */
   const plannedCount =
     recurring &&
@@ -419,11 +415,7 @@ export function ClassForm({
             <Field
               label="Lặp đến ngày"
               required
-              hint={
-                horizonEnd
-                  ? `Tối đa 26 tuần, tới ${formatDate(`${horizonEnd}T00:00:00+07:00`)}.`
-                  : "Tối đa 26 tuần."
-              }
+              hint="Xem trước để kiểm tra các buổi và xung đột."
               error={errors.repeatUntil?.message}
             >
               {({ id, describedBy, invalid }) => (
@@ -431,7 +423,6 @@ export function ClassForm({
                   id={id}
                   type="date"
                   min={dateField || undefined}
-                  max={horizonEnd || undefined}
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
                   {...register("repeatUntil")}
@@ -473,7 +464,7 @@ export function ClassForm({
       ) : null}
 
       <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
+        <Button variant="secondary" size="sm" disabled={pending} onClick={onCancel}>
           Huỷ
         </Button>
         <Button type="submit" size="sm" pending={pending}>

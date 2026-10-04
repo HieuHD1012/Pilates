@@ -1,9 +1,10 @@
 /**
  * Where the session's two tokens live.
  *
- * `localStorage`, not memory: rule 5 in AGENTS.md says every `/hv`, `/hlv` and
- * `/studio` URL must survive a hard refresh and a pasted deep link, and a
- * session held only in a module variable does not survive either.
+ * The current bearer-token contract persists credentials in localStorage for
+ * reloads. This is a security tradeoff, not a requirement of SPA routing.
+ * Migrating to HttpOnly cookies needs coordinated backend/CSRF changes.
+ * Legacy storage keys preserve existing sessions during the brand migration.
  *
  * Reads and writes are wrapped because storage throws outright in a locked-down
  * browser, and because this module is imported during the build-time prerender
@@ -27,6 +28,13 @@ const listeners = new Set<Listener>();
  * durable copy; this is the one the request path reads on every call.
  */
 let cache: SessionTokens | null | undefined;
+// Sign-in/sign-out boundaries, distinct from an access-token rotation.
+let sessionVersion = 0;
+let persistenceAvailable = true;
+
+export function getSessionVersion(): number {
+  return sessionVersion;
+}
 
 function storage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -55,11 +63,44 @@ export function getTokens(): SessionTokens | null {
   return cache;
 }
 
+/** Refresh/request boundaries also check storage, covering a suspended tab. */
+export function syncTokensFromStorage(): void {
+  const store = storage();
+  if (!store || !persistenceAvailable) return;
+  const previous = getTokens();
+  let current: SessionTokens | null;
+  try {
+    const access = store.getItem(ACCESS_KEY);
+    const refresh = store.getItem(REFRESH_KEY);
+    current = access !== null && refresh !== null ? { access, refresh } : null;
+  } catch {
+    return;
+  }
+  if (previous?.access === current?.access && previous?.refresh === current?.refresh)
+    return;
+  cache = current;
+  sessionVersion++;
+  for (const listener of listeners) listener(current);
+}
+
 export function getAccessToken(): string | null {
   return getTokens()?.access ?? null;
 }
 
 export function setTokens(tokens: SessionTokens | null): void {
+  if (tokens === null && getTokens() === null) return;
+  sessionVersion++;
+  persistTokens(tokens);
+}
+
+/** A refresh may only replace credentials belonging to the requesting session. */
+export function rotateSessionTokens(tokens: SessionTokens, version: number): boolean {
+  if (version !== sessionVersion || getTokens() === null) return false;
+  persistTokens(tokens);
+  return true;
+}
+
+function persistTokens(tokens: SessionTokens | null): void {
   cache = tokens;
 
   const store = storage();
@@ -72,7 +113,9 @@ export function setTokens(tokens: SessionTokens | null): void {
         store.setItem(ACCESS_KEY, tokens.access);
         store.setItem(REFRESH_KEY, tokens.refresh);
       }
+      persistenceAvailable = true;
     } catch {
+      persistenceAvailable = false;
       // A browser that refuses to persist still gets a working session for as
       // long as the tab lives — the in-memory cache above is already set.
     }
@@ -94,4 +137,16 @@ export function subscribeTokens(listener: Listener): () => void {
 /** Test seam. Drops the mirror so the next read goes back to storage. */
 export function resetTokenCache(): void {
   cache = undefined;
+  sessionVersion++;
+  persistenceAvailable = true;
+}
+
+// Another tab's logout/account change must also discard this tab's mirror.
+// Both legacy keys remain readable so an existing deployed session survives.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.storageArea !== storage()) return;
+    if (event.key !== null && event.key !== ACCESS_KEY && event.key !== REFRESH_KEY) return;
+    syncTokensFromStorage();
+  });
 }
