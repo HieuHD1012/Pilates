@@ -1,4 +1,4 @@
-import { Check, Info, Phone, Users } from "lucide-react";
+import { Check, Phone, Users } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router";
 
@@ -10,14 +10,13 @@ import {
 import type { RenewalCandidateResponse } from "~/lib/api/schema";
 import { formatDate, formatNumber, formatPhone, formatTime, telHref } from "~/lib/format";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { LiveRegion } from "~/ui/feedback";
 import { Field, Input } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge, type StatusTone } from "~/ui/status";
-import { InlineNote, Panel, PersonCell, WorkspacePage } from "~/ui/workspace";
+import { Panel, PersonCell, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/renewals";
 
@@ -29,9 +28,11 @@ export function meta(_: Route.MetaArgs) {
  * The call list — students the studio should contact before their package runs out.
  *
  * The winning subject is the person: one card per student, their name the only
- * link, and one ask per card (P2) — the call, in copper because it is the
- * contact action (ADR 0006). The thresholds are named on the screen because
- * staff are asked to trust the list, but they are named, not recalculated:
+ * link, and one ask per card (P2) — the call. It is a secondary button carrying
+ * the number, not copper: the same action on every card of a list is not the
+ * screen's single contact action (docs/UI_QUALITY.md). The thresholds are named
+ * in the purpose line because staff are asked to trust the list, but they are
+ * named, not recalculated:
  * `reasons` is the backend's own flag list and the frontend never recomputes it
  * (AGENTS.md rule 12, docs/BUSINESS_RULES.md).
  *
@@ -58,9 +59,9 @@ const REASON_LABEL: Record<string, string> = {
 };
 
 /**
- * Attention, never critical: every card carries the copper call button, and
- * copper never shares a context with danger (docs/DESIGN_SYSTEM.md). "Never
- * contacted" is a fact about the history, not a threshold, so it stays neutral.
+ * Attention, never critical: a card that reaches the list is due a call, not
+ * in trouble. "Never contacted" is a fact about the history, not a threshold,
+ * so it stays neutral.
  */
 function reasonTone(reason: string): StatusTone {
   return reason === "never_contacted" ? "neutral" : "attention";
@@ -82,9 +83,11 @@ export default function StaffRenewals() {
           announced here rather than in a per-card region no one hears. */}
       <LiveRegion message={announcement} />
 
+      {/* The confirmed threshold is part of the purpose line rather than a
+          line of its own: it is what "cần được gọi" means. */}
       <PageHeader
         title="Gia hạn"
-        description="Học viên cần được gọi trước khi gói hết buổi hoặc hết hạn. Danh sách do hệ thống của studio đánh dấu."
+        description="Học viên có gói còn 6 buổi hoặc 15 ngày, do hệ thống đánh dấu, cần được gọi."
         actions={
           <Button asChild variant="secondary" className="max-md:min-h-11">
             <Link to="/studio/hoc-vien">
@@ -94,33 +97,22 @@ export default function StaffRenewals() {
           </Button>
         }
         meta={
-          <div className="flex flex-col gap-2">
-            <p className="measure-wide text-ink-2 text-xs">
-              Ngưỡng đã xác nhận: còn <Figures className="text-ink">6</Figures> buổi hoặc{" "}
-              <Figures className="text-ink">15</Figures> ngày.
-            </p>
-            <dl className="text-ink-2 flex flex-wrap items-baseline gap-x-8 gap-y-2 text-sm">
-              {/* Head-count only — this board sits where customers can see
-                  the screen, so there is no money on it by design. */}
-              <SummaryFigure label="Cần liên hệ" value={summary.data?.needing_contact} />
-              <SummaryFigure label="Sắp hết buổi" value={summary.data?.low_credits} />
-              <SummaryFigure label="Sắp hết hạn" value={summary.data?.expiring_soon} />
-              <SummaryFigure
-                label="Chưa liên hệ lần nào"
-                value={summary.data?.never_contacted}
-              />
-            </dl>
-            <DemoDataNotice className="self-start" />
-          </div>
+          <dl
+            aria-label="Số học viên theo lý do"
+            className="text-ink-2 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm"
+          >
+            {/* Head-count only — this board sits where customers can see
+                the screen, so there is no money on it by design. */}
+            <SummaryFigure label="Cần liên hệ" value={summary.data?.needing_contact} />
+            <SummaryFigure label="Sắp hết buổi" value={summary.data?.low_credits} />
+            <SummaryFigure label="Sắp hết hạn" value={summary.data?.expiring_soon} />
+            <SummaryFigure
+              label="Chưa liên hệ lần nào"
+              value={summary.data?.never_contacted}
+            />
+          </dl>
         }
       />
-
-      {/* The consequence, stated once for every card rather than per button. */}
-      <InlineNote icon={<Info aria-hidden="true" />}>
-        “Đã liên hệ” ghi thêm một dòng vào lịch sử liên hệ của học viên, kèm nội dung bạn
-        nhập và ngày trong ô “Hẹn lại”; bỏ trống ô đó nghĩa là không hẹn lại. Lịch sử chỉ
-        thêm, không sửa dòng cũ. Số buổi còn lại và hạn dùng của gói không thay đổi.
-      </InlineNote>
 
       {/* One block, so the boundary's refresh hairline sits on the content
           rather than taking a gap of the page's own. */}
@@ -148,13 +140,21 @@ export default function StaffRenewals() {
             );
 
             return (
-              <ul className="flex flex-col gap-4">
-                {sorted.map((candidate) => (
-                  <li key={candidate.student_package_id}>
-                    <RenewalCard candidate={candidate} onAnnounce={setAnnouncement} />
-                  </li>
-                ))}
-              </ul>
+              <>
+                {/* The consequence of "Đã liên hệ", stated once above the cards
+                    rather than per button, and only when there are cards. */}
+                <p className="text-ink-2 mb-3 text-sm">
+                  “Đã liên hệ” chỉ thêm một dòng vào lịch sử liên hệ; số buổi và hạn dùng
+                  của gói không đổi.
+                </p>
+                <ul className="flex flex-col gap-4">
+                  {sorted.map((candidate) => (
+                    <li key={candidate.student_package_id}>
+                      <RenewalCard candidate={candidate} onAnnounce={setAnnouncement} />
+                    </li>
+                  ))}
+                </ul>
+              </>
             );
           }}
         </QueryBoundary>
@@ -234,7 +234,6 @@ function RenewalCard({
               {candidate.student_name}
             </Link>
           }
-          detail={<Figures>{formatPhone(candidate.student_phone)}</Figures>}
         />
         <div className="mt-3 flex flex-wrap gap-1.5 md:pl-15">
           {candidate.reasons.map((reason) => (
@@ -289,21 +288,19 @@ function RenewalCard({
         )}
       </div>
 
-      <div className="md:min-w-36 md:justify-self-end">
-        <Button
-          asChild
-          variant="copper"
-          fullWidth
-          aria-label={`Gọi ${candidate.student_name}`}
-        >
+      {/* The number is shown once, as the call itself. Secondary, not copper:
+          the same action repeats on every card of a list. */}
+      <div className="md:justify-self-end">
+        <Button asChild variant="secondary" className="max-md:min-h-11 max-md:w-full">
           <a href={telHref(candidate.student_phone)}>
             <Phone className="size-4" aria-hidden="true" />
-            Gọi
+            Gọi <Figures>{formatPhone(candidate.student_phone)}</Figures>
           </a>
         </Button>
       </div>
 
-      {/* The log form is its own block: what happened on the call and when to
+      {/* The log form is its own block under a hairline, not a box nested in
+          the card: what happened on the call and when to
           call again. The follow-up date is rendered once, by the control that
           owns it: the field is pre-filled with `next_contact_date`, so saving
           keeps the date the studio already agreed unless someone changes it.
@@ -312,7 +309,7 @@ function RenewalCard({
       <div
         role="group"
         aria-label={`Ghi liên hệ với ${candidate.student_name}`}
-        className="border-rule bg-chalk rounded-md border p-4 md:col-span-2 md:px-5 xl:col-span-4"
+        className="rule-t pt-4 md:col-span-2 xl:col-span-4"
       >
         <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end md:gap-4">
           <Field label="Kết quả" className="min-w-0 md:min-w-64 md:flex-1">
@@ -364,8 +361,10 @@ function RenewalCard({
 
 /**
  * One of the two quantities a renewal is about, set large. `hot` marks the one
- * the backend's flag names. There is no "of N" and no meter: the candidate
- * carries the remaining count, not the package's size.
+ * the backend's flag names: it stays in ink and the other recedes, so the
+ * emphasis is weight, not a second colour beside the flag's own badge. There
+ * is no "of N" and no meter: the candidate carries the remaining count, not
+ * the package's size.
  */
 function BigFigure({
   value,
@@ -394,7 +393,7 @@ function BigFigure({
       {/* The size sits on the wrapper: tailwind-merge reads `text-d3` as a
           colour and would drop it beside the figure's own colour class. */}
       <dd className="text-d3 order-1 leading-none">
-        <Figures display className={hot ? "text-copper" : "text-ink"}>
+        <Figures display className={hot ? "text-ink" : "text-ink-2"}>
           {formatNumber(value)}
         </Figures>
       </dd>

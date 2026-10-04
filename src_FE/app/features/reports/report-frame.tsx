@@ -1,10 +1,7 @@
-import { CalendarDays, UserRound, Wallet } from "lucide-react";
-import type { ReactNode } from "react";
 import { NavLink } from "react-router";
 
 import { cn } from "~/lib/cn";
 import { formatDate } from "~/lib/format";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Field, Input } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { Panel, Toolbar } from "~/ui/workspace";
@@ -18,84 +15,56 @@ import { Panel, Toolbar } from "~/ui/workspace";
 export const REPORTS: {
   to: string;
   name: string;
-  /** One line, for the switcher at the top of each report. */
-  short: string;
   question: string;
-  icon: ReactNode;
 }[] = [
   {
     to: "/studio/bao-cao/doanh-thu",
     name: "Doanh thu",
-    short: "Studio đã thu bao nhiêu",
     question:
       "Studio đã thu được bao nhiêu trong khoảng ngày này, và bao nhiêu đến từ tiền mặt so với chuyển khoản.",
-    icon: <Wallet aria-hidden="true" />,
   },
   {
     to: "/studio/bao-cao/lop-hoc",
     name: "Lớp học",
-    short: "Lớp được lấp đầy tới đâu",
     question:
       "Đã xếp bao nhiêu lớp, có bao nhiêu lượt đăng ký, và lớp được lấp đầy tới đâu.",
-    icon: <CalendarDays aria-hidden="true" />,
   },
   {
     to: "/studio/bao-cao/huan-luyen-vien",
     name: "Huấn luyện viên",
-    short: "Ai dạy bao nhiêu lớp",
     question:
       "Mỗi huấn luyện viên được xếp bao nhiêu lớp, hủy bao nhiêu lớp và có bao nhiêu lượt đăng ký.",
-    icon: <UserRound aria-hidden="true" />,
   },
 ];
 
 /**
- * The three reports as a row of selectable cards at the top of each report.
- * Navigation, not a filter: each card is a link, and the current one carries
- * `aria-current="page"` (NavLink sets it).
+ * The three reports as compact tabs at the top of each report. Once someone is
+ * inside a report the switcher is orientation, so it is names on a hairline,
+ * not cards: the index page is where a report is chosen by its question.
+ * Navigation, not a filter: each tab is a link, and the current one carries
+ * `aria-current="page"` (NavLink sets it) and the copper stroke the rail uses
+ * for the open page.
  */
 export function ReportSwitcher() {
   return (
-    <nav aria-label="Các báo cáo">
-      <ul className="grid grid-cols-3 gap-2 lg:flex lg:flex-wrap">
+    <nav aria-label="Các báo cáo" className="rule-b overflow-x-auto">
+      <ul className="flex gap-1">
         {REPORTS.map((report) => (
-          <li key={report.to} className="flex">
+          <li key={report.to} className="shrink-0">
             <NavLink
               to={report.to}
               end
               className={({ isActive }) =>
                 cn(
-                  // On a phone the three sit side by side as names only; the
-                  // icon and the one-line question return from sm up.
-                  "bg-paper flex min-h-11 w-full items-center justify-center gap-3 rounded-lg border px-2 py-2 text-center",
-                  "sm:justify-start sm:py-2.5 sm:pr-4 sm:pl-3 sm:text-left",
+                  "flex min-h-11 items-center border-b-2 px-3 text-sm whitespace-nowrap",
                   "ease-measure transition-colors duration-200",
                   isActive
-                    ? "border-copper ring-copper ring-1"
-                    : "border-rule hover:border-rule-2",
+                    ? "border-copper text-ink font-medium"
+                    : "text-ink-2 hover:text-ink border-transparent",
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={cn(
-                      "hidden size-8 shrink-0 place-items-center rounded-md sm:grid [&_svg]:size-4",
-                      isActive ? "bg-copper-wash text-copper" : "bg-sand-deep text-ink-2",
-                    )}
-                  >
-                    {report.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="text-ink block text-sm font-medium">
-                      {report.name}
-                    </span>
-                    <span className="text-ink-2 hidden text-xs sm:block">
-                      {report.short}
-                    </span>
-                  </span>
-                </>
-              )}
+              {report.name}
             </NavLink>
           </li>
         ))}
@@ -137,10 +106,7 @@ export function ReportRangeToolbar({
       <Toolbar
         className="border-b-0! py-3.5 md:px-5"
         trailing={
-          <>
-            <span className="text-ink-2 text-xs">{fetching ? "Đang cập nhật" : null}</span>
-            <DemoDataNotice />
-          </>
+          <span className="text-ink-2 text-xs">{fetching ? "Đang cập nhật" : null}</span>
         }
       >
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-start">

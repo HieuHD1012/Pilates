@@ -9,7 +9,6 @@ import { formatDate, formatPhone, telHref } from "~/lib/format";
 import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
 import { Input } from "~/ui/field";
@@ -167,12 +166,9 @@ export default function StaffStudents() {
       <Panel aria-label="Danh sách học viên">
         <Toolbar
           trailing={
-            <>
-              {query.isFetching && !query.isPending ? (
-                <span className="text-ink-2 text-xs">Đang cập nhật</span>
-              ) : null}
-              <DemoDataNotice />
-            </>
+            query.isFetching && !query.isPending ? (
+              <span className="text-ink-2 text-xs">Đang cập nhật</span>
+            ) : null
           }
         >
           <SegmentFilter

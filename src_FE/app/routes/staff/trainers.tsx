@@ -4,9 +4,9 @@ import { Link } from "react-router";
 import { useTrainerDirectory } from "~/features/people/queries";
 import { TrainerEditor } from "~/features/people/trainer-editor";
 import type { TrainerResponse } from "~/lib/api/schema";
-import { formatPhone } from "~/lib/format";
+import { formatPhone, telHref } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { PendingFact } from "~/ui/pending-fact";
@@ -27,8 +27,9 @@ export function meta(_: Route.MetaArgs) {
  * column anyone reads down, and a person reads better as a person — initials,
  * name, phone, then the two states the studio acts on. Specialties are one
  * free-text line on the backend, read and never filtered on, so they are the
- * sentence the trainer wrote. Nothing here is invented: a specialty or phone
- * the studio has not supplied renders as a pending fact.
+ * sentence the trainer wrote. Nothing here is invented: a specialty the studio
+ * has not supplied renders as a pending fact. A phone nobody recorded is not
+ * owed content, so it reads as absent (AGENTS rule 20).
  *
  * The month's figures live on the profile, not here: the list endpoint does
  * not carry them, and one stats request per card would be a query per person
@@ -50,12 +51,11 @@ export default function StaffTrainers() {
         description="Ai đang dạy, chuyên môn của từng người, và hồ sơ nào đã hiện trên trang công khai."
         actions={
           <>
-            <DemoDataNotice />
             <TrainerEditor />
             <Button asChild variant="secondary">
               <Link to="/studio/bao-cao/huan-luyen-vien">
                 <ChartColumn className="size-4" aria-hidden="true" />
-                So sánh giữa các huấn luyện viên
+                Báo cáo huấn luyện viên
               </Link>
             </Button>
           </>
@@ -136,9 +136,14 @@ function TrainerCard({ trainer }: { trainer: TrainerResponse }) {
           </h2>
           <p className="text-ink-2 mt-0.5 text-sm">
             {trainer.phone ? (
-              formatPhone(trainer.phone)
+              <a
+                href={telHref(trainer.phone)}
+                className="figures decoration-rule-2 hover:text-copper hover:decoration-copper relative inline-flex min-h-11 items-center underline underline-offset-[6px] md:min-h-0"
+              >
+                {formatPhone(trainer.phone)}
+              </a>
             ) : (
-              <PendingFact label="Số điện thoại huấn luyện viên" />
+              <Absent>Chưa ghi số điện thoại</Absent>
             )}
           </p>
         </div>

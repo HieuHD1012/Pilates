@@ -26,20 +26,24 @@ import { useLeads } from "~/features/leads/queries";
 import { useDashboard } from "~/features/reports/queries";
 import type { Role } from "~/lib/api/schema";
 import { cn } from "~/lib/cn";
+import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { Avatar } from "~/ui/workspace";
 
 /**
- * The operational shell (docs/adr/0006-operational-workspace.md). Desktop-first:
- * a studio manager works at 1440 or 1024 with the tab open all day. A dark rail
- * that holds the full height of the window, an icon per destination, and a
- * count on the three queues that hold waiting work. Below lg the rail becomes a
- * slim top bar whose menu opens the same groups in a dialog.
+ * The operational shell (docs/adr/0006-operational-workspace.md, as amended by
+ * docs/UI_QUALITY.md). Desktop-first: a studio manager works at 1440 or 1024
+ * with the tab open all day, so the shell recedes and the work advances — a
+ * light rail on linen, ink-2 labels, the open page on paper with a copper
+ * stroke, and neutral counts on the three queues that hold waiting work. The
+ * sample-data tag lives here, once, because every screen behind it reads the
+ * same source. Below lg the rail becomes a slim top bar whose menu opens the
+ * same groups in a dialog.
  */
 export default function StaffLayout() {
   return (
     <RoleGate allow={["ADMIN", "STAFF"]}>
-      <div className="bg-sand min-h-dvh lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div className="bg-sand min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
         <StaffRail />
         <main className="min-w-0">
           <Outlet />
@@ -110,29 +114,17 @@ function StaffRail() {
     })),
   ];
 
-  const nav = (tone: Tone, onNavigate?: () => void) => (
+  const nav = (onNavigate?: () => void) => (
     <div className="flex flex-col gap-5">
       {groups.map((group) => (
         <div key={group.label ?? "home"}>
           {group.label ? (
-            <p
-              className={cn(
-                "mb-1.5 px-3 text-xs font-medium",
-                tone === "dark" ? "text-sand/60" : "text-ink-2",
-              )}
-            >
-              {group.label}
-            </p>
+            <p className="text-ink-2 mb-1 px-3 text-xs">{group.label}</p>
           ) : null}
-          <ul className="flex flex-col gap-0.5">
+          <ul className="flex flex-col gap-px">
             {group.items.map((item) => (
               <li key={item.to}>
-                <RailLink
-                  tone={tone}
-                  item={item}
-                  count={counts[item.to]}
-                  onNavigate={onNavigate}
-                />
+                <RailLink item={item} count={counts[item.to]} onNavigate={onNavigate} />
               </li>
             ))}
           </ul>
@@ -141,60 +133,50 @@ function StaffRail() {
     </div>
   );
 
+  const userBlock = user ? (
+    <UserBlock
+      name={user.full_name}
+      role={ROLE_LABEL[user.role]}
+      pending={logout.isPending}
+      onLogout={() => logout.mutate()}
+    />
+  ) : null;
+
   return (
     <>
       {/* Below lg: a slim bar. The menu opens every group, and logout. */}
-      <div className="bg-ink-deep text-sand sticky top-0 z-(--z-nav) flex h-14 items-center gap-3 px-3 lg:hidden">
+      <div className="bg-sand border-rule sticky top-0 z-(--z-nav) flex h-14 items-center gap-3 border-b px-3 lg:hidden">
         <button
           type="button"
           aria-label="Menu studio"
           onClick={() => setMenuOpen(true)}
-          className="grid size-11 place-items-center rounded-md hover:bg-white/10"
+          className="text-ink hover:bg-sand-deep grid size-11 place-items-center rounded-md"
         >
           <Menu className="size-5" aria-hidden="true" />
         </button>
         <StudioMark />
+        <DemoDataNotice compact className="ml-auto" />
       </div>
 
       <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
         <DialogContent title="Điều hướng studio">
           <nav aria-label="Điều hướng studio trên điện thoại">
-            {nav("light", () => setMenuOpen(false))}
+            {nav(() => setMenuOpen(false))}
           </nav>
-          {user ? (
-            <div className="rule-t mt-5 pt-4">
-              <UserBlock
-                tone="light"
-                name={user.full_name}
-                role={ROLE_LABEL[user.role]}
-                pending={logout.isPending}
-                onLogout={() => logout.mutate()}
-              />
-            </div>
-          ) : null}
+          {userBlock ? <div className="rule-t mt-5 pt-4">{userBlock}</div> : null}
         </DialogContent>
       </Dialog>
 
-      <aside
-        data-field="dark"
-        className="bg-ink-deep text-sand hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:px-3.5 lg:pt-5 lg:pb-4"
-      >
-        <div className="border-rule-dark border-b px-2.5 pb-5">
+      <aside className="bg-sand-deep/55 border-rule hidden border-r lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:px-3 lg:pt-5 lg:pb-3">
+        <div className="flex flex-col gap-3 px-3 pb-5">
           <StudioMark subtitle />
+          <DemoDataNotice compact className="self-start" />
         </div>
-        <nav aria-label="Điều hướng studio" className="min-h-0 flex-1 overflow-y-auto pt-5">
-          {nav("dark")}
+        <nav aria-label="Điều hướng studio" className="min-h-0 flex-1 overflow-y-auto">
+          {nav()}
         </nav>
-        {user ? (
-          <div className="border-rule-dark border-t px-1 pt-3">
-            <UserBlock
-              tone="dark"
-              name={user.full_name}
-              role={ROLE_LABEL[user.role]}
-              pending={logout.isPending}
-              onLogout={() => logout.mutate()}
-            />
-          </div>
+        {userBlock ? (
+          <div className="border-rule border-t px-1 pt-3">{userBlock}</div>
         ) : null}
       </aside>
     </>
@@ -206,29 +188,25 @@ function StudioMark({ subtitle = false }: { subtitle?: boolean }) {
     <div className="flex items-center gap-3">
       <span
         aria-hidden="true"
-        className="bg-copper text-sand font-display grid size-9 shrink-0 place-items-center rounded-md text-lg"
+        className="bg-copper text-sand font-display grid size-8 shrink-0 place-items-center rounded-md text-base"
       >
         J
       </span>
       <span className="flex flex-col">
-        <span className="wordmark text-base">J PILATES</span>
+        <span className="wordmark text-ink text-base">J PILATES</span>
         {subtitle ? (
-          <span className="text-sand/60 mt-1 text-xs">Nha Trang · Vận hành</span>
+          <span className="text-ink-2 mt-1 text-xs">Nha Trang · Vận hành</span>
         ) : null}
       </span>
     </div>
   );
 }
 
-type Tone = "dark" | "light";
-
 function RailLink({
-  tone,
   item,
   count,
   onNavigate,
 }: {
-  tone: Tone;
   item: NavItem;
   count: number | undefined;
   onNavigate?: () => void;
@@ -245,27 +223,20 @@ function RailLink({
       aria-describedby={showCount ? countId : undefined}
       className={({ isActive }) =>
         cn(
-          "relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors lg:min-h-10",
-          // The active stroke is a 3px bar on the leading edge, not a shadow.
-          isActive &&
-            "before:bg-copper-bright font-medium before:absolute before:inset-y-2 before:left-0 before:w-0.75 before:rounded-full",
-          tone === "dark" &&
-            (isActive
-              ? "bg-white/10 text-white"
-              : "text-sand/85 hover:bg-white/5 hover:text-white"),
-          tone === "light" &&
-            (isActive ? "bg-sand-deep text-ink" : "text-ink hover:bg-sand"),
+          "relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors lg:min-h-9",
+          isActive
+            ? // The open page sits on paper; the 3px copper bar is its only colour.
+              "bg-paper text-ink before:bg-copper font-medium before:absolute before:inset-y-2 before:left-0 before:w-0.75 before:rounded-full"
+            : "text-ink-2 hover:bg-paper/60 hover:text-ink",
         )
       }
     >
-      {Icon ? <Icon className="size-4.5 shrink-0" aria-hidden="true" /> : null}
+      {Icon ? <Icon className="size-4 shrink-0" aria-hidden="true" /> : null}
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {showCount ? (
         <>
-          <span
-            aria-hidden="true"
-            className="bg-copper figures grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-xs text-white"
-          >
+          {/* A neutral figure: the count is information, not an alarm. */}
+          <span aria-hidden="true" className="figures text-ink text-xs">
             {count}
           </span>
           {/* `hidden`, not sr-only: text inside the link would join its name
@@ -281,13 +252,11 @@ function RailLink({
 }
 
 function UserBlock({
-  tone,
   name,
   role,
   pending,
   onLogout,
 }: {
-  tone: Tone;
   name: string | null;
   role: string;
   pending: boolean;
@@ -295,15 +264,12 @@ function UserBlock({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <Avatar
-        name={name}
-        className={tone === "dark" ? "text-sand bg-white/12" : undefined}
-      />
+      <Avatar name={name} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-medium">{name ?? "Tài khoản studio"}</span>
-        <span className={cn("text-xs", tone === "dark" ? "text-sand/60" : "text-ink-2")}>
-          {role}
+        <span className="text-ink truncate text-sm font-medium">
+          {name ?? "Tài khoản studio"}
         </span>
+        <span className="text-ink-2 text-xs">{role}</span>
       </span>
       <button
         type="button"
@@ -311,12 +277,7 @@ function UserBlock({
         disabled={pending}
         aria-label="Đăng xuất"
         title="Đăng xuất"
-        className={cn(
-          "grid size-11 place-items-center rounded-md disabled:cursor-not-allowed lg:size-10",
-          tone === "dark"
-            ? "text-sand/70 hover:bg-white/10 hover:text-white"
-            : "text-ink-2 hover:bg-sand hover:text-ink",
-        )}
+        className="text-ink-2 hover:bg-paper hover:text-ink grid size-11 place-items-center rounded-md disabled:cursor-not-allowed lg:size-9"
       >
         <LogOut className="size-4" aria-hidden="true" />
       </button>

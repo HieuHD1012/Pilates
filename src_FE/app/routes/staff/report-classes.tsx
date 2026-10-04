@@ -1,4 +1,3 @@
-import { Armchair, CalendarCheck, Gauge, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -8,13 +7,14 @@ import {
   useReportExport,
 } from "~/features/reports/queries";
 import { ReportRangeToolbar, ReportSwitcher } from "~/features/reports/report-frame";
+import { cn } from "~/lib/cn";
 import { formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
-import { Kpi, Meter, Panel, PanelHeader, WorkspacePage } from "~/ui/workspace";
+import { Meter, Panel, PanelHeader, Stat, StatGroup, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/report-classes";
 
@@ -116,10 +116,10 @@ export default function StaffReportClasses() {
 
             return (
               <div className="flex flex-col gap-5 md:gap-6">
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  <Kpi
+                {/* Four figures of one period, so one panel, not four cards. */}
+                <StatGroup label="Số liệu lớp trong khoảng ngày">
+                  <Stat
                     label="Lớp đã xếp"
-                    icon={<CalendarCheck aria-hidden="true" />}
                     value={formatNumber(report.scheduled_sessions)}
                     unit="lớp"
                     context={
@@ -129,30 +129,32 @@ export default function StaffReportClasses() {
                       </>
                     }
                   />
-                  <Kpi
+                  <Stat
                     label="Lượt đăng ký"
-                    icon={<Users aria-hidden="true" />}
                     value={formatNumber(report.total_bookings)}
                     unit="lượt"
                   />
-                  <Kpi
+                  <Stat
                     label="Sức chứa"
-                    icon={<Armchair aria-hidden="true" />}
                     value={formatNumber(report.total_capacity)}
                     unit="chỗ"
                   />
-                  <Kpi
+                  <Stat
                     label="Tỉ lệ lấp đầy"
-                    icon={<Gauge aria-hidden="true" />}
                     value={overall === null ? <Placeholder /> : overall}
                     unit={overall === null ? undefined : "%"}
-                    context="Lượt đăng ký chia cho sức chứa."
-                  >
-                    {overall === null ? null : (
-                      <Meter value={overall} max={100} className="mt-1.5" />
-                    )}
-                  </Kpi>
-                </div>
+                    context={
+                      <>
+                        Lượt đăng ký chia cho sức chứa.
+                        {/* Under the context line, so the four figures'
+                            first lines read across the panel. */}
+                        {overall === null ? null : (
+                          <Meter value={overall} max={100} className="mt-2.5" />
+                        )}
+                      </>
+                    }
+                  />
+                </StatGroup>
 
                 <Panel>
                   <PanelHeader
@@ -196,28 +198,33 @@ export default function StaffReportClasses() {
                               {row.trainer_name}
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.size_1)}</Figures>
+                              <Count value={row.size_1} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.size_2)}</Figures>
+                              <Count value={row.size_2} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.size_3)}</Figures>
+                              <Count value={row.size_3} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.size_4)}</Figures>
+                              <Count value={row.size_4} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.size_5)}</Figures>
+                              <Count value={row.size_5} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.sessions_over_max)}</Figures>
+                              <Count value={row.sessions_over_max} />
                             </Td>
                             <Td numeric>
-                              <Figures>{formatNumber(row.sessions_empty)}</Figures>
+                              <Count value={row.sessions_empty} />
                             </Td>
                             <Td numeric>
-                              <Figures className="text-base font-medium">
+                              <Figures
+                                className={cn(
+                                  "text-base font-medium",
+                                  row.total_sessions === 0 && "text-ink-2",
+                                )}
+                              >
                                 {formatNumber(row.total_sessions)}
                               </Figures>
                             </Td>
@@ -233,6 +240,20 @@ export default function StaffReportClasses() {
         </QueryBoundary>
       </div>
     </WorkspacePage>
+  );
+}
+
+/**
+ * A count in the class-size table. Most cells of a small studio's table are
+ * zero, and a zero set in ink weighs as much as a real figure; it recedes so
+ * the classes that did run are the ones the eye finds. Still written out — a
+ * zero is a measured count, not an absent one.
+ */
+function Count({ value }: { value: number }) {
+  return (
+    <Figures className={value === 0 ? "text-ink-2" : "text-ink"}>
+      {formatNumber(value)}
+    </Figures>
   );
 }
 

@@ -1,40 +1,31 @@
-import { TrainerPhotoUpload } from "~/features/people/photo-gallery";
 import { TrainerEditor } from "~/features/people/trainer-editor";
-import {
-  CalendarCheck,
-  CalendarPlus,
-  CalendarX,
-  ChartColumn,
-  ChevronRight,
-  Info,
-  LockKeyhole,
-  Phone,
-  Users,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { CalendarPlus, ChevronRight, ImageUp, LockKeyhole, Phone } from "lucide-react";
+import { useRef, type ReactNode } from "react";
 import { Link, useParams } from "react-router";
 
 import {
   useTrainer,
   useTrainerMonthStats,
   useTrainerPhoto,
+  useUploadTrainerPhoto,
 } from "~/features/people/queries";
+import { errorMessage } from "~/lib/api/client";
 import type { TrainerResponse } from "~/lib/api/schema";
 import { formatDate, formatNumber, formatPhone, telHref } from "~/lib/format";
+import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
-import { Skeleton, SkeletonRows } from "~/ui/feedback";
+import { LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { PendingFact } from "~/ui/pending-fact";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { StatusBadge } from "~/ui/status";
 import {
   Avatar,
-  InlineNote,
-  Kpi,
   Panel,
   PanelBody,
   PanelHeader,
+  Stat,
+  StatGroup,
   WorkspacePage,
 } from "~/ui/workspace";
 
@@ -50,15 +41,15 @@ export function meta(_: Route.MetaArgs) {
 /**
  * One trainer, as a record.
  *
- * A read screen: the profile panel says who this is and how to reach them, the
- * month's figures sit under it, and the facts the studio has supplied — or has
- * not, as `<PendingFact>` — sit in the record beside them. The figures are
+ * The profile panel says who this is and how to reach them; under it, the
+ * public profile (introduction, specialties) is the work, with the month's
+ * figures above it and the portrait at the side. The figures are
  * `GET /classes/trainer-stats`, which is the **same function the trainer
  * report uses** — two screens saying "classes taught" must not run two
  * different queries, or one of them is wrong and nobody knows which.
  *
- * Assigning classes lives on the calendar, so this screen states where that
- * happens instead of growing a second subject.
+ * Assigning classes lives on the calendar, so this screen links there from the
+ * figure it would change instead of growing a second subject.
  */
 export default function StaffTrainerDetail() {
   const { trainerId = "" } = useParams();
@@ -109,7 +100,8 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
       <Breadcrumb current={trainer.full_name} />
 
       {/* The profile header, as on a student's record: who, how to reach them,
-          and the two states the studio acts on. */}
+          and the two states the studio acts on. The number is itself the call
+          (docs/UI_QUALITY.md, phone numbers): no second "Gọi" beside it. */}
       <Panel aria-labelledby="trainer-name">
         <div className="flex flex-wrap items-start gap-x-5 gap-y-4 px-4 py-5 md:px-6 md:py-6">
           <Portrait trainer={trainer} />
@@ -121,18 +113,21 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
             >
               {trainer.full_name}
             </h1>
-            <p className="text-ink-2 mt-1 text-sm">
-              Hồ sơ huấn luyện viên và mức độ hoạt động trong tháng này.
-            </p>
 
-            <ul className="text-ink-2 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <ul className="text-ink-2 mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
               <li className="inline-flex items-center gap-1.5">
                 <Phone className="size-4" aria-hidden="true" />
                 <span className="sr-only">Điện thoại: </span>
                 {trainer.phone ? (
-                  <span className="text-ink">{formatPhone(trainer.phone)}</span>
+                  <a
+                    href={telHref(trainer.phone)}
+                    className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper inline-flex min-h-11 items-center underline underline-offset-[6px] md:min-h-0"
+                  >
+                    {formatPhone(trainer.phone)}
+                  </a>
                 ) : (
-                  <PendingFact label="Số điện thoại huấn luyện viên" />
+                  // A number nobody recorded, not one the studio owes us.
+                  <Absent>Chưa ghi số điện thoại</Absent>
                 )}
               </li>
               <li className="inline-flex items-center gap-1.5">
@@ -148,7 +143,7 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
               </li>
             </ul>
 
-            <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               {trainer.is_active ? (
                 <StatusBadge tone="positive">Đang dạy</StatusBadge>
               ) : (
@@ -159,33 +154,19 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
               ) : (
                 <StatusBadge tone="neutral">Chưa công khai</StatusBadge>
               )}
-              <DemoDataNotice />
             </div>
           </div>
 
-          {/* Calling is the contact action, so it is copper (ADR 0006, 9).
-              With no number on file there is nothing to call. */}
           <TrainerEditor trainer={trainer} />
-          {trainer.phone ? (
-            <Button asChild variant="copper">
-              <a href={telHref(trainer.phone)}>
-                <Phone className="size-4" aria-hidden="true" />
-                Gọi
-              </a>
-            </Button>
-          ) : null}
         </div>
       </Panel>
 
-      <div className="grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:items-start">
+      <div className="grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-5 md:gap-6">
           <MonthStats trainerId={trainer.id} />
-          <Panel>
-            <PanelBody>
-              <TrainerPhotoUpload trainerId={trainer.id} />
-            </PanelBody>
-          </Panel>
 
+          {/* Whether the profile is public is already the badge above; this
+              panel holds only what the public page prints. */}
           <Panel>
             <PanelHeader
               title="Giới thiệu và chuyên môn"
@@ -199,37 +180,12 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
                 <Fact label="Chuyên môn">
                   {trainer.specialties ?? <PendingFact label="Chuyên môn" />}
                 </Fact>
-                <Fact label="Trang công khai">
-                  {trainer.is_public
-                    ? "Đã hiện trên trang huấn luyện viên"
-                    : "Chưa hiện trên trang huấn luyện viên"}
-                </Fact>
               </dl>
             </PanelBody>
           </Panel>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
-          <Panel>
-            <PanelHeader
-              title="So sánh giữa các huấn luyện viên"
-              description="Báo cáo huấn luyện viên đặt số lớp và lượt đăng ký của cả studio trên cùng một khoảng thời gian."
-            />
-            <PanelBody>
-              <Button asChild size="sm" variant="secondary">
-                <Link to="/studio/bao-cao/huan-luyen-vien">
-                  <ChartColumn className="size-4" aria-hidden="true" />
-                  Mở báo cáo huấn luyện viên
-                </Link>
-              </Button>
-            </PanelBody>
-          </Panel>
-
-          <InlineNote icon={<Info aria-hidden="true" />}>
-            Màn hình này chỉ để xem hồ sơ. Việc xếp lớp cho huấn luyện viên nằm ở màn hình
-            lịch &amp; lớp học.
-          </InlineNote>
-        </div>
+        <PortraitUpload trainer={trainer} />
       </div>
     </>
   );
@@ -286,6 +242,82 @@ function Portrait({ trainer }: { trainer: TrainerResponse }) {
 }
 
 /**
+ * The public portrait and the one action on it. Picking a file is the upload —
+ * the same `useUploadTrainerPhoto` mutation the trainer's own profile uses —
+ * so there is no second "save" step and no raw browser file control on the
+ * page. The input stays in the DOM, labelled, for assistive technology and
+ * for tests that set files on it; the button is what a person clicks.
+ *
+ * The preview reads the same cached photo query as the header portrait, so it
+ * costs no second request.
+ */
+function PortraitUpload({ trainer }: { trainer: TrainerResponse }) {
+  const upload = useUploadTrainerPhoto(trainer.id);
+  const photo = useTrainerPhoto(trainer.id, trainer.photo_key !== null);
+  const input = useRef<HTMLInputElement>(null);
+  const hasPhoto = trainer.photo_key !== null;
+
+  return (
+    <Panel aria-labelledby="portrait-title">
+      <PanelBody className="flex items-center gap-4">
+        {photo.data ? (
+          <img
+            src={photo.data}
+            alt=""
+            decoding="async"
+            className="border-rule size-20 shrink-0 rounded-md border object-cover"
+          />
+        ) : (
+          <Avatar name={trainer.full_name} size="xl" className="size-20 rounded-md" />
+        )}
+
+        <div className="flex min-w-0 flex-col items-start gap-2">
+          <div>
+            <h2 id="portrait-title" className="text-ink text-sm font-medium">
+              Ảnh trên trang công khai
+            </h2>
+            <p className="text-ink-2 text-xs">JPEG, PNG hoặc WebP, tối đa 8 MB.</p>
+          </div>
+
+          <input
+            ref={input}
+            type="file"
+            aria-label="Ảnh huấn luyện viên"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={upload.isPending}
+            className="sr-only"
+            tabIndex={-1}
+            onChange={(event) => {
+              const target = event.currentTarget;
+              const file = target.files?.[0];
+              if (!file) return;
+              upload.mutate(file, { onSettled: () => (target.value = "") });
+            }}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            className="max-sm:min-h-11"
+            pending={upload.isPending}
+            icon={<ImageUp className="size-4" aria-hidden="true" />}
+            onClick={() => input.current?.click()}
+          >
+            {hasPhoto ? "Đổi ảnh" : "Tải ảnh"}
+          </Button>
+        </div>
+      </PanelBody>
+
+      {upload.isError ? (
+        <p role="alert" className="text-danger rule-t px-4 py-3 text-sm md:px-5">
+          {errorMessage(upload.error, "Chưa tải được ảnh. Vui lòng thử lại.")}
+        </p>
+      ) : null}
+      <LiveRegion message={upload.isSuccess ? "Đã lưu ảnh huấn luyện viên." : null} />
+    </Panel>
+  );
+}
+
+/**
  * This calendar month, counted in studio time. The month boundary matters: read
  * in the container's timezone, a 06:00 class on the 1st falls into the previous
  * month — which is why the backend takes a year and a month rather than a range.
@@ -303,37 +335,44 @@ function MonthStats({ trainerId }: { trainerId: number }) {
     <section aria-labelledby="month-stats" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 id="month-stats" className="text-ink text-base font-semibold">
-          Tháng này
-        </h2>
-        <p className="text-ink-2 text-sm">
           Tháng{" "}
           <Figures>
             {month}/{year}
-          </Figures>{" "}
-          · tính theo giờ studio, cùng cách tính với báo cáo huấn luyện viên
+          </Figures>
+        </h2>
+        {/* The claim and the place to check it, in one line. */}
+        <p className="text-ink-2 text-sm">
+          Theo giờ studio, cùng cách tính với{" "}
+          <Link
+            to="/studio/bao-cao/huan-luyen-vien"
+            className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
+          >
+            báo cáo huấn luyện viên
+          </Link>
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3 md:gap-4">
-        <Kpi
+      <StatGroup label={`Số liệu tháng ${month}/${year}`}>
+        <Stat
           label="Lớp đã xếp"
-          icon={<CalendarCheck />}
           value={figure(query.data?.scheduled_sessions)}
           unit="lớp"
+          context={
+            <Link
+              to="/studio/lich"
+              className="decoration-rule-2 hover:text-copper hover:decoration-copper inline-flex min-h-11 items-center underline underline-offset-[5px] md:min-h-0"
+            >
+              Xếp lớp ở Lịch &amp; lớp học
+            </Link>
+          }
         />
-        <Kpi
-          label="Lượt đăng ký"
-          icon={<Users />}
-          value={figure(query.data?.total_bookings)}
-          unit="lượt"
-        />
-        <Kpi
+        <Stat label="Lượt đăng ký" value={figure(query.data?.total_bookings)} unit="lượt" />
+        <Stat
           label="Lớp đã hủy"
-          icon={<CalendarX />}
           value={figure(query.data?.cancelled_sessions)}
           unit="lớp"
         />
-      </div>
+      </StatGroup>
     </section>
   );
 }

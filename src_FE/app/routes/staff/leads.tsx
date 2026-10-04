@@ -5,7 +5,6 @@ import { useLeads } from "~/features/leads/queries";
 import type { LeadResponse, LeadStatus } from "~/lib/api/schema";
 import { formatDate, formatPhone, formatTime, telHref } from "~/lib/format";
 import { Button } from "~/ui/button";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
@@ -133,8 +132,7 @@ export default function StaffLeads() {
     <WorkspacePage>
       <PageHeader
         title="Khách quan tâm"
-        description="Người để lại thông tin tư vấn, mới nhất trước. Mở một khách để gọi lại và ghi nhận kết quả liên hệ."
-        actions={<DemoDataNotice />}
+        description="Người để lại thông tin tư vấn, mới nhất trước. Mở một khách để gọi lại và ghi kết quả."
       />
 
       <Panel aria-label="Danh sách khách quan tâm">

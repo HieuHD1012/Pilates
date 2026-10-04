@@ -73,7 +73,10 @@ test("ADMIN creates and edits student, invites linked account, edits and locks/u
   ).find((item) => item.email === email)!;
   expect(created.student_id).toBe(id);
   expect(created.status).toBe("PENDING_ACTIVATION");
-  await row.getByRole("button", { name: "Sửa tài khoản", exact: true }).click();
+  // Editing is not the row's one action, so it lives in the row menu, which
+  // opens outside the row (docs/UI_QUALITY.md).
+  await row.getByRole("button", { name: /^Thao tác/ }).click();
+  await page.getByRole("button", { name: "Sửa tài khoản", exact: true }).click();
   dialog = page.getByRole("dialog");
   await dialog.getByLabel("Họ và tên", { exact: true }).fill(`${name} sửa`);
   await dialog.getByRole("button", { name: "Lưu tài khoản", exact: true }).click();

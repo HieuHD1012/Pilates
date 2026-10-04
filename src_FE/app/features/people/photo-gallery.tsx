@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useSession } from "~/features/auth/use-session";
 import { errorMessage } from "~/lib/api/client";
+import { cn } from "~/lib/cn";
 import { formatDate } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Dialog, DialogContent } from "~/ui/dialog";
-import { Field, FormActions, Input } from "~/ui/field";
+import { Field, FormActions } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { Panel, PanelBody, PanelHeader } from "~/ui/workspace";
@@ -15,6 +16,51 @@ import {
   useUploadProgressPhoto,
   useUploadTrainerPhoto,
 } from "./queries";
+
+/**
+ * A file field that speaks the page's language. The native control prints the
+ * browser's own words ("Choose File · No file chosen", in English on most
+ * machines) and cannot be styled. The input stays in the page, visually
+ * hidden but focusable and labelled, so keyboards, screen readers and
+ * `setInputFiles` reach it exactly as before; a styled label opens it.
+ */
+function PhotoPicker({
+  id,
+  file,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  file: File | null;
+  disabled: boolean;
+  onChange: (file: File | null) => void;
+}) {
+  return (
+    <span className="flex min-w-0 flex-wrap items-center gap-3">
+      <input
+        id={id}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        disabled={disabled}
+        className="peer sr-only"
+        onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+      />
+      <label
+        htmlFor={id}
+        className={cn(
+          "border-rule-2 text-ink bg-paper inline-flex min-h-11 cursor-pointer items-center rounded-sm border px-4 text-sm font-medium",
+          "hover:border-ink peer-focus-visible:outline-copper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2",
+          "peer-disabled:text-ink-3 peer-disabled:cursor-not-allowed",
+        )}
+      >
+        Chọn ảnh
+      </label>
+      <span className="text-ink-2 min-w-0 truncate text-sm">
+        {file ? file.name : "Chưa chọn ảnh nào"}
+      </span>
+    </span>
+  );
+}
 
 export function TrainerPhotoUpload({ trainerId }: { trainerId: number }) {
   const upload = useUploadTrainerPhoto(trainerId);
@@ -36,13 +82,7 @@ export function TrainerPhotoUpload({ trainerId }: { trainerId: number }) {
     >
       <Field label="Ảnh huấn luyện viên" hint="Ảnh JPEG, PNG hoặc WebP, tối đa 8 MB.">
         {({ id }) => (
-          <Input
-            id={id}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={upload.isPending}
-            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-          />
+          <PhotoPicker id={id} file={file} disabled={upload.isPending} onChange={setFile} />
         )}
       </Field>
       {upload.isError ? (
@@ -93,12 +133,11 @@ export function ProgressGallery({ studentId }: { studentId: number }) {
         >
           <Field label="Ảnh tiến trình mới" hint="Ảnh JPEG, PNG hoặc WebP, tối đa 8 MB.">
             {({ id }) => (
-              <Input
+              <PhotoPicker
                 id={id}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
+                file={file}
                 disabled={upload.isPending}
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                onChange={setFile}
               />
             )}
           </Field>

@@ -319,47 +319,63 @@ export function Meter({
 }
 
 /**
- * A dashboard or report figure as a panel: label (with an optional icon),
- * the figure with its unit, and one line of context or a link to the work.
+ * Figures that describe one period or one object, as one unit
+ * (docs/UI_QUALITY.md: relationships before containers). One panel; the
+ * figures are separated by hairlines, side by side from sm up and stacked on a
+ * phone. Not one card per number, and no icon tiles: the label names it.
  */
-export function Kpi({
+export function StatGroup({
+  children,
   label,
-  icon,
+  className,
+}: {
+  children: ReactNode;
+  /** Accessible name for the group, e.g. "Số liệu tháng này". */
+  label?: string;
+  className?: string;
+}) {
+  return (
+    <Panel
+      as="div"
+      role={label ? "group" : undefined}
+      aria-label={label}
+      className={cn(
+        "divide-rule grid grid-cols-1 divide-y sm:auto-cols-fr sm:grid-flow-col sm:divide-x sm:divide-y-0",
+        className,
+      )}
+    >
+      {children}
+    </Panel>
+  );
+}
+
+export function Stat({
+  label,
   value,
   unit,
   context,
   children,
   className,
 }: {
-  label: string;
-  icon?: ReactNode;
+  label: ReactNode;
   value: ReactNode;
   unit?: string;
+  /** One quiet line under the figure: what it counts, or a link to the work. */
   context?: ReactNode;
   /** Extra content under the figure, e.g. a Meter. */
   children?: ReactNode;
   className?: string;
 }) {
   return (
-    <Panel as="div" className={cn("flex flex-col gap-1.5 px-5 py-4", className)}>
-      <span className="text-ink-2 flex items-center gap-2.5 text-sm">
-        {icon ? (
-          <span
-            aria-hidden="true"
-            className="bg-sand-deep text-copper grid size-8 shrink-0 place-items-center rounded-md [&_svg]:size-4"
-          >
-            {icon}
-          </span>
-        ) : null}
-        {label}
-      </span>
-      <span className="mt-1 flex items-baseline gap-1.5">
-        <span className="figures-display text-ink text-d3 leading-none">{value}</span>
+    <div className={cn("flex min-w-0 flex-col gap-1 px-5 py-4", className)}>
+      <span className="text-ink-2 text-sm">{label}</span>
+      <span className="flex items-baseline gap-1.5">
+        <span className="figures-display text-ink text-3xl leading-tight">{value}</span>
         {unit ? <span className="text-ink-2 text-sm">{unit}</span> : null}
       </span>
       {children}
       {context ? <span className="text-ink-2 text-xs">{context}</span> : null}
-    </Panel>
+    </div>
   );
 }
 

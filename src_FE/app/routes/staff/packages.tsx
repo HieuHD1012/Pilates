@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, Plus, RotateCcw, X } from "lucide-react";
+import { Plus, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,7 +14,6 @@ import { decimalToNumber, formatNumber, formatVnd } from "~/lib/format";
 import { cn } from "~/lib/cn";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { Field, FormActions, Input, Select } from "~/ui/field";
 import { LiveRegion } from "~/ui/feedback";
@@ -22,15 +21,7 @@ import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { PendingFact } from "~/ui/pending-fact";
 import { QueryBoundary } from "~/ui/query-boundary";
-import { StatusBadge } from "~/ui/status";
-import {
-  InlineNote,
-  Panel,
-  PanelHeader,
-  RowMenu,
-  RowMenuItem,
-  WorkspacePage,
-} from "~/ui/workspace";
+import { Panel, PanelHeader, RowMenu, RowMenuItem, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/packages";
 
@@ -69,15 +60,12 @@ export default function StaffPackages() {
         title="Gói tập"
         description="Danh mục gói studio đang bán: số buổi, thời hạn sử dụng và giá niêm yết."
         actions={
-          <>
-            <DemoDataNotice />
-            <Button
-              onClick={() => setCreating(true)}
-              icon={<Plus className="size-4" aria-hidden="true" />}
-            >
-              Thêm gói
-            </Button>
-          </>
+          <Button
+            onClick={() => setCreating(true)}
+            icon={<Plus className="size-4" aria-hidden="true" />}
+          >
+            Thêm gói
+          </Button>
         }
       />
 
@@ -116,11 +104,6 @@ export default function StaffPackages() {
           }}
         </QueryBoundary>
       </div>
-
-      <InlineNote icon={<Info aria-hidden="true" />}>
-        Ngừng bán chỉ ẩn gói khỏi danh sách bán mới. Gói học viên đã mua giữ nguyên tên, giá
-        và số buổi của lúc mua, nên đổi giá ở đây không viết lại lịch sử.
-      </InlineNote>
 
       <LiveRegion message={notice} />
 
@@ -212,8 +195,13 @@ function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: 
         update.isPending && "opacity-60",
       )}
     >
-      <div className="-mt-1 -mr-1.5 mb-2 flex items-center justify-between gap-2">
-        <StatusBadge tone="positive">Đang bán</StatusBadge>
+      {/* No status pill: every card here is on sale, so "Đang bán" would
+          distinguish nothing (docs/UI_QUALITY.md, status). What has stopped
+          selling is the table below. */}
+      <div className="-mt-1.5 -mr-2 flex items-start justify-between gap-2">
+        <h3 id={titleId} className="text-ink pt-1.5 text-base font-medium">
+          {item.name}
+        </h3>
         <RowMenu label={`Thao tác cho ${item.name}`}>
           <RowMenuItem onClick={() => setEditing(true)}>Sửa gói</RowMenuItem>
           <RowMenuItem
@@ -227,10 +215,6 @@ function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: 
           </RowMenuItem>
         </RowMenu>
       </div>
-
-      <h3 id={titleId} className="text-ink text-base font-medium">
-        {item.name}
-      </h3>
 
       {/* `null` is a price the studio has not entered, not a free package. It
           renders as a waiting slot, and so does the per-session line it would
@@ -250,7 +234,7 @@ function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: 
               the price the studio charges for one session is not a field the
               backend owns, it is this quotient. */}
           {item.credits > 0 ? (
-            <p className="text-copper-2 text-sm">
+            <p className="text-ink-2 text-sm">
               <Figures>{formatVnd(Math.round(price / item.credits))}</Figures> / buổi
             </p>
           ) : null}

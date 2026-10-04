@@ -18,21 +18,20 @@ export function meta(_: Route.MetaArgs) {
 /**
  * The reports index.
  *
- * Three cards, three questions. Each card leads with the sentence it answers,
- * not an icon: a report is chosen by reading the question, and the icon only
- * repeats it. The routes here are the routes in app/routes.ts — an index that
- * links to a path that does not exist is worse than no index at all.
+ * Three cards, three questions. Each card leads with the report's name and the
+ * sentence it answers, with no icon tile: a report is chosen by reading the
+ * question, and an icon only repeated it. This is the one place the reports
+ * are cards; inside a report the switcher is compact tabs. The routes here are
+ * the routes in app/routes.ts — an index that links to a path that does not
+ * exist is worse than no index at all.
  */
-const ICON_TILE =
-  "bg-sand-deep text-copper grid size-9 shrink-0 place-items-center rounded-md [&_svg]:size-4.5";
-
 export default function StaffReports() {
   const pending = useUnconfirmedPayments();
   return (
     <WorkspacePage>
       <PageHeader
         title="Báo cáo"
-        description="Ba báo cáo, mỗi báo cáo trả lời một câu hỏi. Khoảng ngày được chọn ngay trong từng báo cáo."
+        description="Ba báo cáo, mỗi báo cáo trả lời một câu hỏi; khoảng ngày chọn ngay trong từng báo cáo."
       />
 
       <ul className="grid gap-4 md:grid-cols-3">
@@ -41,14 +40,13 @@ export default function StaffReports() {
             <Link
               to={report.to}
               className={cn(
-                "group border-rule bg-paper flex w-full flex-col gap-3 rounded-lg border p-5",
+                "group border-rule bg-paper flex w-full flex-col gap-2 rounded-lg border p-5",
                 "hover:border-copper ease-measure transition-colors duration-200",
               )}
             >
-              <span className={ICON_TILE}>{report.icon}</span>
               <span className="text-ink text-base font-semibold">{report.name}</span>
               <span className="text-ink-2 text-sm">{report.question}</span>
-              <span className="text-copper group-hover:text-copper-2 mt-auto inline-flex items-center gap-1.5 pt-2 text-sm">
+              <span className="text-copper group-hover:text-copper-2 mt-auto inline-flex items-center gap-1.5 pt-3 text-sm">
                 Mở báo cáo
                 <ArrowRight className="size-3.5" aria-hidden="true" />
               </span>
@@ -62,51 +60,52 @@ export default function StaffReports() {
           description="Gói đã được cộng buổi nhưng khoản thu chưa được xác nhận. Kiểm tra lại với người phụ trách trước khi xác nhận tiền."
         />
         <PanelBody>
+          {/* A secondary panel: when nothing is overdue it says so in one
+              line rather than a full empty state. */}
           <QueryBoundary
             query={pending}
-            emptyTitle="Không có khoản thu quá hạn xác nhận"
+            isEmpty={() => false}
             errorDescription="Chưa tải được khoản thu cần kiểm tra."
           >
-            {(items) => (
-              <ul className="divide-rule divide-y">
-                {items.map((item) => (
-                  <li
-                    key={item.payment_id}
-                    className="flex flex-wrap justify-between gap-3 py-3"
-                  >
-                    <div>
-                      <Link
-                        to={`/studio/hoc-vien/${item.student_id}`}
-                        className="text-ink text-sm underline underline-offset-4"
-                      >
-                        {item.student_name}
-                      </Link>
-                      <p className="text-ink-2 text-sm">
-                        {item.package_name} · {formatVnd(item.amount)}
-                      </p>
-                      <p className="text-ink-2 text-xs">
-                        Ghi nhận {formatDate(item.recorded_at)} · chờ {item.days_pending}{" "}
-                        ngày
-                      </p>
-                    </div>
-                    <Link
-                      to="/studio/thanh-toan"
-                      className="text-copper text-sm underline underline-offset-4"
+            {(items) =>
+              items.length === 0 ? (
+                <p className="text-ink-2 text-sm">Không có khoản thu quá hạn xác nhận.</p>
+              ) : (
+                <ul className="divide-rule -my-3 divide-y">
+                  {items.map((item) => (
+                    <li
+                      key={item.payment_id}
+                      className="flex flex-wrap justify-between gap-3 py-3"
                     >
-                      Mở thanh toán
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+                      <div>
+                        <Link
+                          to={`/studio/hoc-vien/${item.student_id}`}
+                          className="text-ink text-sm underline underline-offset-4"
+                        >
+                          {item.student_name}
+                        </Link>
+                        <p className="text-ink-2 text-sm">
+                          {item.package_name} · {formatVnd(item.amount)}
+                        </p>
+                        <p className="text-ink-2 text-xs">
+                          Ghi nhận {formatDate(item.recorded_at)} · chờ {item.days_pending}{" "}
+                          ngày
+                        </p>
+                      </div>
+                      <Link
+                        to="/studio/thanh-toan"
+                        className="text-copper text-sm underline underline-offset-4"
+                      >
+                        Mở thanh toán
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
           </QueryBoundary>
         </PanelBody>
       </Panel>
-
-      <p className="measure-wide text-ink-2 text-xs">
-        Chọn báo cáo để xem số liệu theo khoảng ngày. Báo cáo huấn luyện viên có thể tải
-        dưới dạng CSV hoặc Excel.
-      </p>
     </WorkspacePage>
   );
 }

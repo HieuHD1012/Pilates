@@ -1,10 +1,11 @@
-import { CalendarCheck, Download, UserRound } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
 import { useReportExport, useTrainerReport } from "~/features/reports/queries";
 import { ReportRangeToolbar, ReportSwitcher } from "~/features/reports/report-frame";
 import type { TrainerStatsResponse } from "~/lib/api/schema";
+import { cn } from "~/lib/cn";
 import { formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
@@ -13,11 +14,12 @@ import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { QueryBoundary } from "~/ui/query-boundary";
 import {
-  Kpi,
   Panel,
   PanelFooter,
   PanelHeader,
   PersonCell,
+  Stat,
+  StatGroup,
   WorkspacePage,
 } from "~/ui/workspace";
 
@@ -132,21 +134,19 @@ export default function StaffReportTrainers() {
 
             return (
               <div className="flex flex-col gap-5 md:gap-6">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Kpi
+                <StatGroup label="Số liệu huấn luyện viên trong khoảng ngày">
+                  <Stat
                     label="Huấn luyện viên"
-                    icon={<UserRound aria-hidden="true" />}
                     value={formatNumber(rows.length)}
                     unit="người"
                   />
-                  <Kpi
+                  <Stat
                     label="Tổng số lớp"
-                    icon={<CalendarCheck aria-hidden="true" />}
                     value={formatNumber(classTotal)}
                     unit="lớp"
                     context="Cộng cột “Lớp đã xếp” ở bảng dưới."
                   />
-                </div>
+                </StatGroup>
 
                 <Panel>
                   <PanelHeader
@@ -179,7 +179,9 @@ export default function StaffReportTrainers() {
                             <div key={label}>
                               <dt className="text-ink-2 text-xs">{label}</dt>
                               <dd className="mt-1 text-xl">
-                                <Figures className="text-ink">
+                                <Figures
+                                  className={value === 0 ? "text-ink-2" : "text-ink"}
+                                >
                                   {formatNumber(value)}
                                 </Figures>
                               </dd>
@@ -223,7 +225,14 @@ export default function StaffReportTrainers() {
                               />
                             </Td>
                             <Td numeric>
-                              <Figures className="text-base">
+                              {/* A zero recedes, as on the class report: a
+                                  measured count, not a figure to find. */}
+                              <Figures
+                                className={cn(
+                                  "text-base",
+                                  row.scheduled_sessions === 0 && "text-ink-2",
+                                )}
+                              >
                                 {formatNumber(row.scheduled_sessions)}
                               </Figures>
                             </Td>
@@ -233,7 +242,12 @@ export default function StaffReportTrainers() {
                               </Figures>
                             </Td>
                             <Td numeric>
-                              <Figures className="text-base">
+                              <Figures
+                                className={cn(
+                                  "text-base",
+                                  row.total_bookings === 0 && "text-ink-2",
+                                )}
+                              >
                                 {formatNumber(row.total_bookings)}
                               </Figures>
                             </Td>
@@ -244,9 +258,8 @@ export default function StaffReportTrainers() {
                   </div>
 
                   <PanelFooter className="text-xs">
-                    Tệp được sinh ở máy chủ từ đúng truy vấn của bảng này, nên con số trong
-                    tệp và con số trên màn hình luôn khớp. Chọn CSV để mở nhanh bằng Excel,
-                    hoặc Excel để giữ định dạng cột.
+                    Tệp xuất ra lấy từ đúng truy vấn của bảng này, nên số trong tệp khớp với
+                    màn hình.
                   </PanelFooter>
                 </Panel>
               </div>

@@ -137,13 +137,17 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
               >
                 {lead.full_name}
               </h1>
+              {/* Where and when the enquiry came in. Said once, here — the facts
+                  below hold only what this line does not. */}
               <p className="text-ink-2 mt-1 text-sm">
                 {sourceLabel(lead.source)}
                 <span className="mx-1.5" aria-hidden="true">
                   ·
                 </span>
-                <Figures>{formatDate(lead.created_at)}</Figures> lúc{" "}
-                <Figures>{formatTime(lead.created_at)}</Figures>
+                <span className="whitespace-nowrap">
+                  <Figures>{formatDate(lead.created_at)}</Figures> lúc{" "}
+                  <Figures>{formatTime(lead.created_at)}</Figures>
+                </span>
               </p>
             </div>
             <StatusBadge tone={STATUS_TONE[lead.status]} className="mt-1 shrink-0">
@@ -192,18 +196,7 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
               </p>
             )}
 
-            <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              <Fact label="Nguồn">
-                {lead.source === null ? (
-                  <Absent>Không rõ nguồn</Absent>
-                ) : (
-                  (SOURCE_LABEL[lead.source] ?? lead.source)
-                )}
-              </Fact>
-              <Fact label="Nhận lúc">
-                <Figures>{formatDate(lead.created_at)}</Figures>{" "}
-                <Figures>{formatTime(lead.created_at)}</Figures>
-              </Fact>
+            <dl className="mt-5">
               <Fact label="Người phụ trách">
                 {lead.assigned_to === null ? (
                   <Absent>Chưa giao cho ai</Absent>
@@ -287,7 +280,7 @@ function OutcomeForm({ lead }: { lead: LeadResponse }) {
 
       <PanelHeader
         title={<span id="outcome-heading">Ghi nhận kết quả liên hệ</span>}
-        description="Lưu sẽ cập nhật trạng thái của khách và ghi đè phần ghi chú. Tên và số điện thoại khách để lại không bị thay đổi."
+        description="Lưu sẽ đổi trạng thái và ghi đè ghi chú cũ."
       />
 
       <PanelBody className="md:py-5">

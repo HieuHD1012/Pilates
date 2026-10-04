@@ -142,7 +142,7 @@ PublicPageHeader, ArtDirectedImage, PendingFact.
 
 The staff workspace (`app/ui/workspace.tsx`, ADR 0006): WorkspacePage, Panel,
 PanelHeader, PanelBody, PanelFooter, Toolbar, SegmentFilter, Avatar,
-PersonCell, Meter, Kpi, InlineNote, RowMenu. Staff screens group work in
+PersonCell, Meter, StatGroup, Stat, InlineNote, RowMenu. Staff screens group work in
 panels on the sand ground; the public site does not use them.
 
 Radix primitives are implementation infrastructure. No Radix default styling

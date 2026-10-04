@@ -1,13 +1,5 @@
-import {
-  ArrowRight,
-  Ban,
-  CalendarCheck,
-  Package,
-  PencilLine,
-  RefreshCw,
-  Undo2,
-} from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { ArrowRight, PencilLine } from "lucide-react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 
 import {
@@ -37,7 +29,6 @@ import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
 import { Dialog, DialogContent } from "~/ui/dialog";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { EmptyState, LiveRegion } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
@@ -84,39 +75,6 @@ const REASON_LABEL: Record<LedgerReasonCode, string> = {
 };
 
 /**
- * The kind of entry, as a tinted tag. The tint only groups the kinds (money in,
- * a class, a correction); the word is the information. A manual adjustment is
- * warning-toned rather than copper because the legend sets it beside the
- * danger-toned voided payment, and copper never shares a context with danger.
- */
-const REASON_STYLE: Record<LedgerReasonCode, { className: string; icon: ReactNode }> = {
-  PACKAGE_SOLD: {
-    className: "bg-success-wash text-success",
-    icon: <Package aria-hidden="true" />,
-  },
-  PACKAGE_RENEWED: {
-    className: "bg-success-wash text-success",
-    icon: <RefreshCw aria-hidden="true" />,
-  },
-  BOOKING_DEDUCT: {
-    className: "bg-sand-deep text-ink-2",
-    icon: <CalendarCheck aria-hidden="true" />,
-  },
-  CANCEL_REFUND: {
-    className: "bg-info-wash text-info",
-    icon: <Undo2 aria-hidden="true" />,
-  },
-  ADMIN_ADJUST: {
-    className: "bg-warning-wash text-warning",
-    icon: <PencilLine aria-hidden="true" />,
-  },
-  PAYMENT_VOID: {
-    className: "bg-danger-wash text-danger",
-    icon: <Ban aria-hidden="true" />,
-  },
-};
-
-/**
  * What each kind of entry does to the balance, in the order a package lives
  * through them. Written as what the entry records, not as the rule that
  * produced it — whether a cancellation is refunded is the backend's decision.
@@ -148,8 +106,10 @@ function dateKeyToIso(dateKey: string): string {
   return `${dateKey}T00:00:00+07:00`;
 }
 
+// One line of purpose. "The balance equals the sum" is not repeated here: the
+// ledger's own total row states it where it can be checked.
 const PAGE_DESCRIPTION =
-  "Mỗi gói tập có một sổ riêng. Mọi lần cộng hoặc trừ buổi đều ghi một dòng, kèm lý do và người thực hiện. Số dư luôn bằng tổng các dòng.";
+  "Mỗi lần cộng hoặc trừ buổi của một gói tập, kèm lý do và người thực hiện.";
 
 export default function StaffSessionLedger() {
   const [searchParams] = useSearchParams();
@@ -185,48 +145,45 @@ export default function StaffSessionLedger() {
 /**
  * The nav item lands here. There is no endpoint that lists every package in the
  * studio, so the screen cannot offer a picker; it gives the route to a package
- * instead, and the one link that starts it.
+ * instead, and the one link that starts it. The legend of entry kinds waits for
+ * an open ledger: with no entries on screen it explains nothing.
  */
 function NoPackageChosen() {
   return (
-    <div className="grid gap-5 md:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
-      <Panel>
-        <PanelHeader
-          title="Chưa chọn gói nào"
-          description="Sổ buổi mở theo từng gói tập, không phải theo toàn studio."
-        />
-        <PanelBody>
-          <ol className="flex flex-col gap-3">
-            {[
-              "Mở danh sách học viên và chọn người cần xem.",
-              "Trong hồ sơ, chuyển sang tab “Gói & thanh toán”.",
-              "Bấm “Sổ buổi” ở gói cần đối chiếu.",
-            ].map((step, index) => (
-              <li key={step} className="flex items-start gap-3 text-sm">
-                <span
-                  aria-hidden="true"
-                  className="bg-sand-deep text-copper-2 figures grid size-7 shrink-0 place-items-center rounded-full text-xs"
-                >
-                  {index + 1}
-                </span>
-                <span className="text-ink pt-1">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </PanelBody>
-        <PanelFooter>
-          <span>Sổ mở ra sẽ ghi tên học viên và gói ở đầu trang.</span>
-          <Button asChild variant="secondary" size="sm" className="max-md:min-h-11">
-            <Link to="/studio/hoc-vien">
-              Danh sách học viên
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
-        </PanelFooter>
-      </Panel>
-
-      <ReasonLegend />
-    </div>
+    <Panel className="max-w-2xl">
+      <PanelHeader
+        title="Chưa chọn gói nào"
+        description="Sổ buổi mở theo từng gói tập, không phải theo toàn studio."
+      />
+      <PanelBody>
+        <ol className="flex flex-col gap-3">
+          {[
+            "Mở danh sách học viên và chọn người cần xem.",
+            "Trong hồ sơ, chuyển sang tab “Gói & thanh toán”.",
+            "Bấm “Sổ buổi” ở gói cần đối chiếu.",
+          ].map((step, index) => (
+            <li key={step} className="flex items-start gap-3 text-sm">
+              <span
+                aria-hidden="true"
+                className="bg-sand-deep text-copper-2 figures grid size-7 shrink-0 place-items-center rounded-full text-xs"
+              >
+                {index + 1}
+              </span>
+              <span className="text-ink pt-1">{step}</span>
+            </li>
+          ))}
+        </ol>
+      </PanelBody>
+      <PanelFooter>
+        <span>Sổ mở ra sẽ ghi tên học viên và gói ở đầu trang.</span>
+        <Button asChild variant="secondary" size="sm" className="max-md:min-h-11">
+          <Link to="/studio/hoc-vien">
+            Danh sách học viên
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </Button>
+      </PanelFooter>
+    </Panel>
   );
 }
 
@@ -342,17 +299,12 @@ function LedgerBody({
             <dt className="text-ink text-sm font-medium">Gói</dt>
             <dd className="mt-2 flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1">
               <span className="text-ink text-sm font-medium">{packageName}</span>
+              {/* The dates live once, in the balance panel beside the figure
+                  they bound. */}
               {thisPackage ? (
-                <>
-                  <span className="text-ink-2 text-xs">
-                    <Figures>{formatDate(dateKeyToIso(thisPackage.start_date))}</Figures>
-                    <span className="mx-1">–</span>
-                    <Figures>{formatDate(dateKeyToIso(thisPackage.end_date))}</Figures>
-                  </span>
-                  <StatusBadge tone={PACKAGE_STATUS[thisPackage.status].tone}>
-                    {PACKAGE_STATUS[thisPackage.status].label}
-                  </StatusBadge>
-                </>
+                <StatusBadge tone={PACKAGE_STATUS[thisPackage.status].tone}>
+                  {PACKAGE_STATUS[thisPackage.status].label}
+                </StatusBadge>
               ) : null}
             </dd>
           </div>
@@ -380,7 +332,6 @@ function LedgerBody({
                 dòng
               </>
             }
-            actions={<DemoDataNotice />}
           />
           {ledger.entries.length === 0 ? (
             <EmptyState
@@ -401,11 +352,7 @@ function LedgerBody({
         </Panel>
 
         <div className="flex flex-col gap-5 md:gap-6">
-          <BalancePanel
-            balance={ledger.closing_balance}
-            thisPackage={thisPackage}
-            studentId={studentId}
-          />
+          <BalancePanel balance={ledger.closing_balance} thisPackage={thisPackage} />
           <ReasonLegend />
         </div>
       </div>
@@ -450,16 +397,15 @@ function LedgerBody({
  * The balance as the panel's one figure. "Trên N" and the meter need the
  * package's own session count, so they appear only once the package is known
  * (the link from the student profile carries it); the expiry is the package's
- * stored date, not a countdown this screen works out.
+ * stored date, not a countdown this screen works out. The way back to the
+ * student is their name at the top of the page, not a second link here.
  */
 function BalancePanel({
   balance,
   thisPackage,
-  studentId,
 }: {
   balance: number;
   thisPackage: StudentPackageResponse | undefined;
-  studentId: number | null;
 }) {
   return (
     <Panel>
@@ -507,32 +453,18 @@ function BalancePanel({
           </>
         ) : null}
       </PanelBody>
-      {studentId !== null ? (
-        <PanelFooter>
-          <Link
-            to={`/studio/hoc-vien/${studentId}`}
-            className="text-copper hover:text-copper-2 inline-flex min-h-11 items-center gap-1.5 md:min-h-0"
-          >
-            Mở hồ sơ học viên
-            <ArrowRight className="size-3.5" aria-hidden="true" />
-          </Link>
-        </PanelFooter>
-      ) : null}
     </Panel>
   );
 }
 
+/**
+ * The kind of entry, as a neutral tag. Every kind looks the same on purpose:
+ * the signed figure in the change column already says which way the balance
+ * moved, and six tints only made the kinds compete with it.
+ */
 function ReasonTag({ reason }: { reason: LedgerReasonCode }) {
-  const style = REASON_STYLE[reason];
   return (
-    <span
-      className={cn(
-        "inline-flex min-h-6 items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap",
-        "[&>svg]:size-3.5 [&>svg]:shrink-0",
-        style.className,
-      )}
-    >
-      {style.icon}
+    <span className="bg-sand-deep text-ink inline-flex min-h-6 items-center rounded-md px-2 py-0.5 text-xs whitespace-nowrap">
       {REASON_LABEL[reason]}
     </span>
   );

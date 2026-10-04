@@ -12,7 +12,7 @@ import {
   useStaffCalendar,
   useStudioTrainers,
 } from "~/features/schedule/use-staff-calendar";
-import { WeekGrid, WeekList } from "~/features/schedule/week-grid";
+import { TYPE_STRIPE, WeekGrid, WeekList } from "~/features/schedule/week-grid";
 import { errorMessage } from "~/lib/api/client";
 import type {
   ClassCreateRequest,
@@ -459,33 +459,25 @@ export default function StaffCalendar() {
 }
 
 /**
- * The key to the grid's tints. The type is also written in every block, so
- * this explains the colour rather than carrying the meaning.
+ * The key to the stripe each class carries, in the grid and the list alike.
+ * Solid bars, not outlined squares: a key that looks like a row of checkboxes
+ * invites a click that does nothing. The type is also written in every block,
+ * so this explains the colour rather than carrying the meaning.
  */
 function Legend() {
+  const items = [
+    { label: "Lớp nhóm", stripe: TYPE_STRIPE.GROUP },
+    { label: "Lớp riêng", stripe: TYPE_STRIPE.PRIVATE },
+    { label: "Đã kết thúc", stripe: TYPE_STRIPE.ENDED },
+  ];
   return (
     <ul className="text-ink-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-      <li className="flex items-center gap-1.5">
-        <span
-          aria-hidden="true"
-          className="bg-copper-wash border-copper-bright/40 size-3 rounded-xs border"
-        />
-        Lớp nhóm
-      </li>
-      <li className="flex items-center gap-1.5">
-        <span
-          aria-hidden="true"
-          className="bg-info-wash border-info/25 size-3 rounded-xs border"
-        />
-        Lớp riêng
-      </li>
-      <li className="flex items-center gap-1.5">
-        <span
-          aria-hidden="true"
-          className="bg-chalk border-rule-2 size-3 rounded-xs border"
-        />
-        Đã kết thúc
-      </li>
+      {items.map((item) => (
+        <li key={item.label} className="flex items-center gap-1.5">
+          <span aria-hidden="true" className={`h-3.5 w-1 rounded-full ${item.stripe}`} />
+          {item.label}
+        </li>
+      ))}
     </ul>
   );
 }

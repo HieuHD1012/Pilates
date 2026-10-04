@@ -165,7 +165,9 @@ scripts/       Build-contract, content inventory, static server, screenshot capt
 
 ## The three reference screens
 
-Before inventing a pattern, read the nearest one:
+Before judging or changing a screen, apply `docs/UI_QUALITY.md` (start from
+meaning, rank, compose, subtract, calibrate, stress-test). Before inventing a
+pattern, read the nearest one:
 
 | Screen                    | File                                  | Establishes                                          |
 | ------------------------- | ------------------------------------- | ---------------------------------------------------- |

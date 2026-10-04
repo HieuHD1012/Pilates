@@ -1,4 +1,4 @@
-# ADR 0006 — The operational workspace: panels, a dark rail, and page titles in the serif
+# ADR 0006 — The operational workspace: panels, a quiet rail, and page titles in the serif
 
 **Status:** Accepted. Defines staff workspace panels and navigation alongside
 `docs/REFERENCE_LOCK.md`. Shared primitives also serve student/trainer screens.
@@ -18,8 +18,8 @@ operational composition uses panels on a warm ground and a dark navigation rail.
    line, actions at its edge) and footer.
 2. **Ground.** The workspace ground is `sand`; panels are `paper`. No new
    chromatic token.
-3. **The rail is dark.** `ink-deep` ground, `sand` text, `rule-dark` hairlines,
-   `amber` for the active stroke. Every destination has an icon (lucide, already
+3. **The rail recedes** (amended 2026-10-04, below). A light rail on linen,
+   `ink-2` labels, the open page on paper with a copper stroke. Every destination has an icon (lucide, already
    a dependency) and the three queues that hold waiting work carry a count:
    new leads, unconfirmed payments, renewals due. Counts come from the
    dashboard endpoint and the lead list the studio already loads; nothing is
@@ -51,3 +51,23 @@ operational composition uses panels on a warm ground and a dark navigation rail.
 - No backend contract changes. Global search and notifications are not supported
   by the current API and are not built
   (`docs/OPEN_QUESTIONS.md`).
+
+## Amendment — 2026-10-04: the quality pass
+
+Applying `docs/UI_QUALITY.md` to all twenty staff screens found that the first
+version added treatment the work had not earned. The resulting grammar is the
+table at the end of that document. Changed:
+
+- **The rail is light.** The dark rail was the highest-contrast mass on every
+  screen: chrome advancing over the work. Queue counts are neutral figures.
+- **The sample-data tag lives in the shell, once**, instead of in a different
+  place on every page.
+- **Figures of one period or object share one panel** (`StatGroup`/`Stat`),
+  separated by hairlines. `Kpi` — one card per number with a tinted icon
+  tile — is retired.
+- **Copper is the single contact or money action of a screen**; in lists the
+  same action is a secondary button, and a shown phone number is itself the
+  `tel:` link.
+- **Status only where it distinguishes**; roles are neutral text.
+- **Secondary empty states and notes are one line**, placed beside the
+  decision they explain.

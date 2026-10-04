@@ -16,7 +16,14 @@ import { MOCKS_ENABLED } from "~/lib/mocks";
  * A quiet dashed tag, not a warning bar: it labels the data beside it and must
  * not compete with it.
  */
-export function DemoDataNotice({ className }: { className?: string }) {
+export function DemoDataNotice({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  /** The staff shell's form: it labels the whole workspace, so two words do. */
+  compact?: boolean;
+}) {
   if (!MOCKS_ENABLED) return null;
 
   return (
@@ -27,7 +34,7 @@ export function DemoDataNotice({ className }: { className?: string }) {
       )}
     >
       <span aria-hidden="true" className="bg-warning size-1.5 rounded-full" />
-      Dữ liệu mẫu · không phải lịch thật của studio
+      {compact ? "Dữ liệu mẫu" : "Dữ liệu mẫu · không phải lịch thật của studio"}
     </p>
   );
 }

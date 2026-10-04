@@ -1,13 +1,4 @@
-import {
-  ArrowRight,
-  CalendarDays,
-  ChevronRight,
-  CreditCard,
-  Phone,
-  RefreshCw,
-  Users,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { CalendarDays, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
 
 import { useSession } from "~/features/auth/use-session";
@@ -25,11 +16,11 @@ import {
   weekdayShort,
 } from "~/lib/format";
 import { Button } from "~/ui/button";
-import { EmptyState, ErrorState, SkeletonRows } from "~/ui/feedback";
+import { ErrorState, SkeletonRows } from "~/ui/feedback";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
 import { StatusBadge } from "~/ui/status";
-import { Kpi, Meter, Panel, PanelBody, PanelHeader, WorkspacePage } from "~/ui/workspace";
+import { Meter, Panel, PanelHeader, Stat, StatGroup, WorkspacePage } from "~/ui/workspace";
 
 import type { Route } from "./+types/dashboard";
 
@@ -50,30 +41,27 @@ export function meta(_: Route.MetaArgs) {
  *  - **A number may be `null`,** meaning not measured. The figure is then a
  *    dash that says so; "0" would be a measurement, and a wrong one.
  *
+ * The numbers have no strip of their own: each is read where it is acted on
+ * (docs/UI_QUALITY.md, principle 4). Today's classes and seats head the
+ * "Lớp hôm nay" timeline; renewals and unconfirmed payments are queues in
+ * "Việc cần làm", beside new leads and the classes awaiting attendance. A
+ * number this board has no place for is still shown, below both, unlinked.
+ *
  * `detail_path` on each number is an **API** path, not a route. The link on a
- * figure is the studio screen that answers the same question, chosen by `key`;
- * a number whose screen does not exist yet is shown without a link rather than
- * pointing at a page that is not there.
+ * queue is the studio screen that lists the same rows, chosen here by `key`.
  */
 
-/** Dashboard number keys → the studio screen that shows those rows. */
-const DETAIL_ROUTE: Record<string, string> = {
-  sessions_today: "/studio/lich",
-  bookings_today: "/studio/lich",
-  // The fixtures say `renewals_due`; the backend says `renewals_needing_contact`.
-  renewals_due: "/studio/gia-han",
-  renewals_needing_contact: "/studio/gia-han",
-  unconfirmed_payments: "/studio/thanh-toan",
-};
+/** Dashboard number keys, by where the board reads them. */
+const SESSIONS_TODAY = ["sessions_today"];
+const BOOKINGS_TODAY = ["bookings_today"];
+// The fixtures say `renewals_due`; the backend says `renewals_needing_contact`.
+const RENEWALS = ["renewals_due", "renewals_needing_contact"];
+const PAYMENTS = ["unconfirmed_payments"];
+const PLACED = new Set([...SESSIONS_TODAY, ...BOOKINGS_TODAY, ...RENEWALS, ...PAYMENTS]);
 
-/** What each figure counts, written beside it. Unknown keys get no unit. */
-const PRESENTATION: Record<string, { icon: ReactNode; unit?: string }> = {
-  sessions_today: { icon: <CalendarDays />, unit: "lớp" },
-  bookings_today: { icon: <Users />, unit: "chỗ" },
-  renewals_due: { icon: <RefreshCw />, unit: "học viên" },
-  renewals_needing_contact: { icon: <RefreshCw />, unit: "học viên" },
-  unconfirmed_payments: { icon: <CreditCard />, unit: "khoản" },
-};
+function findNumber(numbers: DashboardNumber[], keys: string[]) {
+  return numbers.find((number) => keys.includes(number.key));
+}
 
 export default function StaffDashboard() {
   const query = useDashboard();
@@ -93,7 +81,7 @@ export default function StaffDashboard() {
           ) : null
         }
         title={name ? `Xin chào, ${name}` : "Tổng quan"}
-        description="Bốn con số của hôm nay, lịch trong ngày, việc đang chờ, và những lớp đã kết thúc còn chờ điểm danh."
+        description="Việc đang chờ và lớp của hôm nay."
         actions={
           <Button asChild variant="secondary">
             <Link to="/studio/lich">
@@ -116,24 +104,16 @@ export default function StaffDashboard() {
 
       {query.isSuccess ? (
         <>
-          <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
-            {query.data.numbers.map((number) => (
-              <NumberPanel
-                key={number.key}
-                number={number}
-                sessionsToday={query.data.sessions_today}
-              />
-            ))}
+          {/* The queues first: they are what the front desk came here for, and
+              on a phone they are the first thing on screen. */}
+          <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-2">
+            <TasksPanel
+              numbers={query.data.numbers}
+              attendance={query.data.sessions_needing_attention}
+            />
+            <TodayPanel sessions={query.data.sessions_today} numbers={query.data.numbers} />
           </div>
-
-          <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <TodayPanel sessions={query.data.sessions_today} today={today} />
-
-            <div className="flex flex-col gap-5 md:gap-6">
-              <TasksPanel numbers={query.data.numbers} />
-              <AttendancePanel sessions={query.data.sessions_needing_attention} />
-            </div>
-          </div>
+          <OtherNumbers numbers={query.data.numbers} />
         </>
       ) : null}
     </WorkspacePage>
@@ -141,98 +121,200 @@ export default function StaffDashboard() {
 }
 
 /**
- * One dashboard number as a panel. The whole panel is the link to the screen
- * that lists the same rows, so the target is the size of the thing read.
+ * The work waiting on the front desk, one row per queue, each row the link to
+ * the screen that works it. Every count is one the backend returned — two
+ * dashboard numbers, the length of the new-lead list and of the attendance
+ * list — so nothing here is a rule re-derived in the browser. A queue with
+ * nothing in it stays listed, quietly, so the rows never change places.
  */
-function NumberPanel({
-  number,
-  sessionsToday,
+function TasksPanel({
+  numbers,
+  attendance,
 }: {
-  number: DashboardNumber;
-  sessionsToday: SessionRowResponse[];
+  numbers: DashboardNumber[];
+  attendance: SessionRowResponse[];
 }) {
-  const route = DETAIL_ROUTE[number.key];
-  const presentation = PRESENTATION[number.key];
-  const value =
-    number.value === null ? (
-      <Placeholder />
-    ) : (
-      <Figures display>{formatNumber(number.value)}</Figures>
-    );
+  const newLeads = useLeads({ status: "NEW" });
+  // A key the board does not return is a number nobody measured.
+  const valueOf = (keys: string[]) => findNumber(numbers, keys)?.value ?? null;
 
-  // Seats are read against the places today's running classes offer — the
-  // same sum the calendar prints for its week. A cancelled class offers none.
-  const capacityToday = sessionsToday
-    .filter((session) => session.status !== "CANCELLED")
-    .reduce((sum, session) => sum + session.capacity, 0);
+  const tasks: Task[] = [
+    {
+      key: "leads",
+      title: "Khách mới chờ gọi",
+      count: newLeads.data?.length ?? (newLeads.isError ? null : undefined),
+      to: "/studio/khach-quan-tam",
+    },
+    {
+      key: "payments",
+      title: "Khoản thu chờ xác nhận",
+      count: valueOf(PAYMENTS),
+      to: "/studio/thanh-toan",
+    },
+    {
+      key: "renewals",
+      title: "Học viên cần gia hạn",
+      count: valueOf(RENEWALS),
+      to: "/studio/gia-han",
+    },
+  ];
+  const waiting =
+    tasks.filter((task) => (task.count ?? 0) > 0).length + (attendance.length > 0 ? 1 : 0);
 
-  let context: ReactNode = null;
-  let extra: ReactNode = null;
-  let unit = presentation?.unit;
-
-  if (number.key === "sessions_today" && number.value !== null) {
-    context =
-      sessionsToday.length > 0 ? (
-        <Figures>
-          {sessionsToday
-            .slice(0, 4)
-            .map((session) => formatTime(session.starts_at))
-            .join(" · ")}
-          {sessionsToday.length > 4 ? " …" : ""}
-        </Figures>
-      ) : (
-        "Không có lớp nào"
-      );
-  } else if (
-    number.key === "bookings_today" &&
-    number.value !== null &&
-    capacityToday > 0
-  ) {
-    unit = `/ ${formatNumber(capacityToday)} chỗ`;
-    extra = <Meter value={number.value} max={capacityToday} className="mt-2" />;
-  } else if (route && number.key !== "bookings_today") {
-    context = (
-      <span className="text-copper inline-flex items-center gap-1">
-        {number.key === "unconfirmed_payments" ? "Mở để xác nhận" : "Mở danh sách"}
-        <ArrowRight className="size-3.5" aria-hidden="true" />
-      </span>
-    );
-  }
-
-  const panel = (
-    <Kpi
-      label={number.label}
-      icon={presentation?.icon}
-      value={value}
-      unit={number.value === null ? undefined : unit}
-      context={context}
-      className={cn("h-full", route && "group-hover:border-rule-2 transition-colors")}
-    >
-      {extra}
-    </Kpi>
-  );
-
-  return route ? (
-    <Link
-      to={route}
-      className="group focus-visible:outline-ink block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
-      {panel}
-    </Link>
-  ) : (
-    panel
+  return (
+    <Panel>
+      <PanelHeader
+        title="Việc cần làm"
+        description={
+          waiting > 0 ? (
+            <>
+              <Figures className="text-ink">{waiting}</Figures> việc đang chờ
+            </>
+          ) : (
+            "Không có việc nào đang chờ"
+          )
+        }
+      />
+      <ul>
+        {tasks.map((task) => (
+          <TaskRow key={task.key} task={task} />
+        ))}
+        <AttendanceRow sessions={attendance} />
+      </ul>
+    </Panel>
   );
 }
 
-/** Today as a timeline: the hour in the serif, the class, its seats. */
+interface Task {
+  key: string;
+  /** Names what the count counts, so the figure needs no unit beside it. */
+  title: string;
+  /** `undefined` while loading, `null` when not measured. */
+  count: number | null | undefined;
+  to: string;
+}
+
+function TaskRow({ task }: { task: Task }) {
+  const waiting = (task.count ?? 0) > 0;
+  return (
+    <li className="rule-b last:border-b-0">
+      <Link
+        to={task.to}
+        className="hover:bg-sand/60 flex min-h-11 items-center gap-3 px-4 py-3 md:px-5"
+      >
+        <TaskTitle waiting={waiting}>{task.title}</TaskTitle>
+        <TaskCount count={task.count} waiting={waiting} />
+        <ChevronRight className="text-ink-2 size-4 shrink-0" aria-hidden="true" />
+      </Link>
+    </li>
+  );
+}
+
+/**
+ * Classes that ended without a trainer marking attendance. No studio screen
+ * lists them, so the queue carries its own rows, each one the class itself.
+ * Staff cannot mark attendance; the one line says what they can do instead.
+ */
+function AttendanceRow({ sessions }: { sessions: SessionRowResponse[] }) {
+  const waiting = sessions.length > 0;
+  return (
+    <li className="rule-b last:border-b-0">
+      <div className="flex min-h-11 items-center gap-3 px-4 py-3 md:px-5">
+        <span className="flex min-w-0 flex-1 flex-col">
+          <TaskTitle waiting={waiting}>Lớp chờ điểm danh</TaskTitle>
+          {waiting ? (
+            <span className="text-ink-2 text-xs">
+              Chỉ huấn luyện viên phụ trách điểm danh được — nhắc họ mở lớp.
+            </span>
+          ) : null}
+        </span>
+        <TaskCount count={sessions.length} waiting={waiting} />
+        {/* Holds the chevron's width so this count lines up with the others. */}
+        <span className="size-4 shrink-0" aria-hidden="true" />
+      </div>
+      {waiting ? (
+        <ul className="pb-2">
+          {sessions.map((session) => (
+            <li key={session.class_session_id}>
+              <Link
+                to={`/studio/lich/${session.class_session_id}`}
+                className="hover:bg-sand/60 flex min-h-11 items-center gap-3 py-2 pr-4 pl-7 md:pr-5 md:pl-8"
+              >
+                {/* Outside today's list a time alone is ambiguous, so the day
+                    comes with it. */}
+                <span className="text-ink-2 w-24 shrink-0 text-xs">
+                  {weekdayShort(session.starts_at)}{" "}
+                  <Figures>{formatDayMonth(session.starts_at)}</Figures>{" "}
+                  <Figures className="text-ink">{formatTime(session.starts_at)}</Figures>
+                </span>
+                <span className="text-ink min-w-0 flex-1 text-sm">
+                  {session.trainer_name}
+                </span>
+                <ChevronRight className="text-ink-2 size-4 shrink-0" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function TaskTitle({ waiting, children }: { waiting: boolean; children: string }) {
+  return (
+    <span
+      className={cn(
+        "min-w-0 flex-1 text-sm",
+        waiting ? "text-ink font-medium" : "text-ink-2",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** A queue's count. A zero recedes with its row; it is still a measurement. */
+function TaskCount({
+  count,
+  waiting,
+}: {
+  count: number | null | undefined;
+  waiting: boolean;
+}) {
+  return (
+    <span className="w-14 shrink-0 text-right text-base">
+      {count === undefined ? (
+        <span className="text-ink-2 text-xs">Đang tải</span>
+      ) : count === null ? (
+        <Placeholder />
+      ) : (
+        <Figures className={waiting ? "text-ink" : "text-ink-2"}>
+          {formatNumber(count)}
+        </Figures>
+      )}
+    </span>
+  );
+}
+
+/**
+ * Today as a timeline: the hour in the serif, the class, its seats. The day's
+ * two dashboard numbers head it; seats are read against the places today's
+ * running classes offer — the same sum the calendar prints for its week.
+ */
 function TodayPanel({
   sessions,
-  today,
+  numbers,
 }: {
   sessions: SessionRowResponse[];
-  today: string | null;
+  numbers: DashboardNumber[];
 }) {
   const sorted = [...sessions].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const classCount = findNumber(numbers, SESSIONS_TODAY);
+  const booked = findNumber(numbers, BOOKINGS_TODAY);
+  // A cancelled class offers no places.
+  const capacityToday = sessions
+    .filter((session) => session.status !== "CANCELLED")
+    .reduce((sum, session) => sum + session.capacity, 0);
 
   return (
     <Panel>
@@ -240,25 +322,30 @@ function TodayPanel({
         title="Lớp hôm nay"
         description={
           <>
-            {today ? (
+            {/* Without the number, the list itself is the count. */}
+            {classCount === undefined ? (
+              <Figures className="text-ink">{sessions.length}</Figures>
+            ) : (
+              <Measured value={classCount.value} />
+            )}{" "}
+            lớp
+            {booked ? (
               <>
-                {weekdayLong(`${today}T00:00:00+07:00`)},{" "}
-                <Figures>{formatDate(`${today}T00:00:00+07:00`)}</Figures>
                 {" · "}
+                <Measured value={booked.value} />
+                {booked.value !== null && capacityToday > 0 ? (
+                  <Figures className="text-ink">/{formatNumber(capacityToday)}</Figures>
+                ) : null}{" "}
+                chỗ đã đặt
               </>
             ) : null}
-            <Figures>{sessions.length}</Figures> lớp
           </>
         }
       />
       {sorted.length === 0 ? (
-        <PanelBody>
-          <EmptyState
-            className="py-6"
-            title="Hôm nay không có lớp"
-            description="Không có buổi nào được xếp cho ngày hôm nay."
-          />
-        </PanelBody>
+        <p className="text-ink-2 px-4 py-4 text-sm md:px-5">
+          Không có buổi nào được xếp cho hôm nay.
+        </p>
       ) : (
         <ol>
           {sorted.map((session) => (
@@ -303,171 +390,32 @@ function TodayPanel({
 }
 
 /**
- * The work waiting on the front desk, one row per queue. Every count is one
- * the backend returned — two dashboard numbers and the length of the new-lead
- * list — so nothing here is a rule re-derived in the browser. A queue with
- * nothing in it stays listed, quietly, so the rows never change places.
+ * A dashboard number this board has no place for — a key added after this
+ * screen was written. It is shown rather than dropped, and without a link:
+ * no studio screen is known to list its rows.
  */
-function TasksPanel({ numbers }: { numbers: DashboardNumber[] }) {
-  const newLeads = useLeads({ status: "NEW" });
-  const valueOf = (...keys: string[]) => {
-    const found = numbers.find((number) => keys.includes(number.key));
-    return found === undefined ? undefined : found.value;
-  };
-
-  const tasks: Task[] = [
-    {
-      key: "leads",
-      icon: <Phone />,
-      tone: "info",
-      title: "Gọi khách mới",
-      count: newLeads.data?.length ?? (newLeads.isError ? null : undefined),
-      detail: (n) => `${formatNumber(n)} khách chưa được liên hệ`,
-      done: "Không có khách mới đang chờ",
-      to: "/studio/khach-quan-tam",
-      linkLabel: "Mở khách quan tâm",
-    },
-    {
-      key: "payments",
-      icon: <CreditCard />,
-      tone: "attention",
-      title: "Xác nhận khoản thu",
-      count: valueOf("unconfirmed_payments"),
-      detail: (n) => `${formatNumber(n)} khoản chờ xác nhận`,
-      done: "Không có khoản nào chờ xác nhận",
-      to: "/studio/thanh-toan",
-      linkLabel: "Mở thanh toán",
-    },
-    {
-      key: "renewals",
-      icon: <RefreshCw />,
-      tone: "copper",
-      title: "Gọi gia hạn",
-      count: valueOf("renewals_needing_contact", "renewals_due"),
-      detail: (n) => `${formatNumber(n)} học viên cần liên hệ`,
-      done: "Không có học viên nào cần gọi",
-      to: "/studio/gia-han",
-      linkLabel: "Mở gia hạn",
-    },
-  ];
-  const waiting = tasks.filter((task) => (task.count ?? 0) > 0).length;
-
+function OtherNumbers({ numbers }: { numbers: DashboardNumber[] }) {
+  const rest = numbers.filter((number) => !PLACED.has(number.key));
+  if (rest.length === 0) return null;
   return (
-    <Panel>
-      <PanelHeader
-        title="Việc cần làm"
-        actions={
-          waiting > 0 ? (
-            <span className="bg-copper-wash text-copper-2 figures inline-grid h-6 min-w-6 place-items-center rounded-full px-2 text-xs">
-              {waiting}
-            </span>
-          ) : null
-        }
-      />
-      <ul>
-        {tasks.map((task) => (
-          <TaskRow key={task.key} task={task} />
-        ))}
-      </ul>
-    </Panel>
+    <StatGroup label="Số liệu khác">
+      {rest.map((number) => (
+        <Stat
+          key={number.key}
+          label={number.label}
+          value={number.value === null ? <Placeholder /> : formatNumber(number.value)}
+        />
+      ))}
+    </StatGroup>
   );
 }
 
-interface Task {
-  key: string;
-  icon: ReactNode;
-  tone: "info" | "attention" | "copper";
-  title: string;
-  /** `undefined` while loading or absent, `null` when not measured. */
-  count: number | null | undefined;
-  detail: (count: number) => string;
-  done: string;
-  to: string;
-  linkLabel: string;
-}
-
-function TaskRow({ task }: { task: Task }) {
-  const waiting = task.count !== null && task.count !== undefined && task.count > 0;
-  const line =
-    task.count === undefined
-      ? "Đang tải"
-      : task.count === null
-        ? "Chưa có số liệu"
-        : task.count > 0
-          ? task.detail(task.count)
-          : task.done;
-
-  return (
-    <li className="rule-b flex items-center gap-3 px-4 py-3.5 last:border-b-0 md:px-5">
-      <span
-        aria-hidden="true"
-        className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-md [&_svg]:size-4",
-          !waiting && "bg-sand-deep text-ink-2",
-          waiting && task.tone === "info" && "bg-info-wash text-info",
-          waiting && task.tone === "attention" && "bg-warning-wash text-warning",
-          waiting && task.tone === "copper" && "bg-copper-wash text-copper",
-        )}
-      >
-        {task.icon}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className={cn("text-sm font-medium", waiting ? "text-ink" : "text-ink-2")}>
-          {task.title}
-        </span>
-        <span className="text-ink-2 text-xs">{line}</span>
-      </span>
-      {waiting ? (
-        <Button asChild size="sm" variant="secondary" className="max-md:min-h-11">
-          <Link to={task.to} aria-label={task.linkLabel}>
-            Mở
-          </Link>
-        </Button>
-      ) : null}
-    </li>
-  );
-}
-
-function AttendancePanel({ sessions }: { sessions: SessionRowResponse[] }) {
-  return (
-    <Panel tone={sessions.length > 0 ? "attention" : "paper"}>
-      <PanelHeader
-        title="Chờ điểm danh"
-        description="Lớp đã kết thúc mà huấn luyện viên chưa điểm danh. Chỉ huấn luyện viên phụ trách mới điểm danh được — nhắc họ mở lớp của mình."
-      />
-      {sessions.length === 0 ? (
-        <PanelBody>
-          <EmptyState
-            className="py-2"
-            title="Không có lớp nào chờ điểm danh"
-            description="Mọi lớp đã kết thúc đều đã được điểm danh."
-          />
-        </PanelBody>
-      ) : (
-        <ul>
-          {sessions.map((session) => (
-            <li key={session.class_session_id} className="rule-b last:border-b-0">
-              <Link
-                to={`/studio/lich/${session.class_session_id}`}
-                className="hover:bg-paper/70 flex min-h-11 items-center gap-3 px-4 py-3 md:px-5"
-              >
-                {/* Outside today's list a time alone is ambiguous, so the day
-                    comes with it. */}
-                <span className="text-ink-2 w-24 shrink-0 text-xs">
-                  {weekdayShort(session.starts_at)}{" "}
-                  <Figures>{formatDayMonth(session.starts_at)}</Figures>{" "}
-                  <Figures className="text-ink">{formatTime(session.starts_at)}</Figures>
-                </span>
-                <span className="text-ink min-w-0 flex-1 text-sm">
-                  {session.trainer_name}
-                </span>
-                <ChevronRight className="text-ink-2 size-4 shrink-0" aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Panel>
+/** A number in running text: the figure, or the dash that says it was not measured. */
+function Measured({ value }: { value: number | null }) {
+  return value === null ? (
+    <Placeholder />
+  ) : (
+    <Figures className="text-ink">{formatNumber(value)}</Figures>
   );
 }
 

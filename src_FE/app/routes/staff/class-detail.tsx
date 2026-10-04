@@ -1,5 +1,5 @@
-import { ChevronRight, Clock, Info, Plus, UserRound, UserRoundCog, X } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { ChevronRight, Clock, RefreshCw, UserRound, UserRoundCog } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { useClassRoster, type RosterRow } from "~/features/roster/queries";
@@ -46,6 +46,7 @@ import {
   Meter,
   Panel,
   PanelBody,
+  PanelFooter,
   PanelHeader,
   PersonCell,
   WorkspacePage,
@@ -91,12 +92,8 @@ export default function StaffClassDetail() {
   const session = useClassSession(sessionId);
   const roster = useClassRoster(sessionId);
   const [notice, setNotice] = useState<string | null>(null);
-  // An open place on a class that is already over is not an invitation to
-  // anyone, so the open-seats row is for classes still to come.
-  const upcoming =
-    session.data !== undefined &&
-    session.data.status === "SCHEDULED" &&
-    new Date(session.data.ends_at).getTime() > new Date().getTime();
+  const [cancelling, setCancelling] = useState(false);
+  const live = session.data?.status === "SCHEDULED";
 
   return (
     <WorkspacePage>
@@ -112,96 +109,115 @@ export default function StaffClassDetail() {
         {(item) => <ClassHeader session={item} onNotice={setNotice} />}
       </QueryBoundary>
 
-      <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <Panel className="overflow-hidden">
-          <PanelHeader
-            title={
-              <span className="flex items-baseline gap-2">
-                Học viên đã đăng ký
-                <Figures className="text-ink-2 text-sm font-normal">
-                  {roster.data?.length ?? ""}
-                </Figures>
-              </span>
-            }
-            description={
-              session.data ? (
-                <>
-                  <Figures>{session.data.booked_count}</Figures> trên{" "}
-                  <Figures>{session.data.capacity}</Figures> chỗ đã giữ · điểm danh do huấn
-                  luyện viên làm sau khi lớp kết thúc
-                </>
-              ) : undefined
-            }
-            actions={
-              session.data && session.data.capacity > 0 ? (
-                <Meter
-                  className="w-32"
-                  value={session.data.booked_count}
-                  max={session.data.capacity}
-                  tone={session.data.seats_left === 0 ? "attention" : "neutral"}
-                />
-              ) : null
-            }
-          />
-
-          {/* The four states by hand rather than through QueryBoundary: its
-              empty and error blocks carry no inset, and here they sit inside a
-              panel whose table runs edge to edge. */}
-          <RefreshingRule active={roster.isFetching && !roster.isPending} />
-          {roster.isPending ? (
-            <PanelBody>
-              <SkeletonRows rows={4} />
-            </PanelBody>
-          ) : roster.isError ? (
-            <PanelBody>
-              <ErrorState
-                description="Không tải được danh sách đăng ký."
-                detail={roster.error.message}
-                onRetry={() => void roster.refetch()}
+      <Panel className="overflow-hidden">
+        <PanelHeader
+          title={
+            <span className="flex items-baseline gap-2">
+              Học viên đã đăng ký
+              <Figures className="text-ink-2 text-sm font-normal">
+                {roster.data?.length ?? ""}
+              </Figures>
+            </span>
+          }
+          description={
+            // The one place the screen states capacity. `seats_left` is the
+            // backend's count, not ours.
+            session.data ? (
+              <>
+                <Figures className="text-ink">
+                  {session.data.booked_count}/{session.data.capacity}
+                </Figures>{" "}
+                chỗ đã giữ
+                {live && session.data.seats_left === 0 ? " · đủ chỗ" : null}
+              </>
+            ) : undefined
+          }
+          actions={
+            session.data && session.data.capacity > 0 ? (
+              <Meter
+                className="w-32"
+                value={session.data.booked_count}
+                max={session.data.capacity}
+                tone={session.data.seats_left === 0 ? "attention" : "neutral"}
               />
-            </PanelBody>
-          ) : roster.data.length === 0 ? (
-            <PanelBody>
-              <EmptyState
-                className="py-6"
-                title="Chưa có học viên nào"
-                description="Chưa có ai đăng ký buổi này. Học viên tự đặt trong ứng dụng; studio không đặt thay."
-              />
-            </PanelBody>
-          ) : (
-            <DataTable caption="Học viên đã đăng ký lớp này" minWidth="30rem">
-              <thead>
-                <tr>
-                  <Th>Học viên</Th>
-                  <Th>Đăng ký lúc</Th>
-                  <Th>Trạng thái</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {roster.data.map((row) => (
-                  <BookedRow key={row.bookingId} row={row} />
-                ))}
-                {upcoming && session.data && session.data.seats_left > 0 ? (
-                  <OpenSeatsRow seats={session.data.seats_left} />
-                ) : null}
-              </tbody>
-            </DataTable>
-          )}
-        </Panel>
+            ) : null
+          }
+        />
 
-        <div className="flex flex-col gap-5 md:gap-6">
-          {session.data ? <ClassFacts session={session.data} /> : null}
-          <InlineNote icon={<Info aria-hidden="true" />}>
-            Chỉ học viên tự đăng ký, hủy và đổi lớp của mình — đây là quy tắc đã chốt, không
-            phải tính năng còn thiếu. Nếu cần hủy cho cả lớp, dùng “Hủy lớp”: mọi lượt đăng
-            ký được hoàn buổi, bất kể còn hạn hủy hay không.
-          </InlineNote>
-        </div>
-      </div>
+        {/* The four states by hand rather than through QueryBoundary: its
+            empty and error blocks carry no inset, and here they sit inside a
+            panel whose table runs edge to edge. */}
+        <RefreshingRule active={roster.isFetching && !roster.isPending} />
+        {roster.isPending ? (
+          <PanelBody>
+            <SkeletonRows rows={4} />
+          </PanelBody>
+        ) : roster.isError ? (
+          <PanelBody>
+            <ErrorState
+              description="Không tải được danh sách đăng ký."
+              detail={roster.error.message}
+              onRetry={() => void roster.refetch()}
+            />
+          </PanelBody>
+        ) : roster.data.length === 0 ? (
+          <PanelBody>
+            <EmptyState
+              className="py-6"
+              title="Chưa có học viên nào"
+              description="Học viên tự đặt trong ứng dụng; studio không đặt thay."
+            />
+          </PanelBody>
+        ) : (
+          <DataTable caption="Học viên đã đăng ký lớp này" minWidth="30rem">
+            <thead>
+              <tr>
+                <Th>Học viên</Th>
+                <Th>Đăng ký lúc</Th>
+                <Th>Trạng thái</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {roster.data.map((row) => (
+                <BookedRow key={row.bookingId} row={row} />
+              ))}
+            </tbody>
+          </DataTable>
+        )}
+
+        {/* The rare action sits under the bookings it refunds, quiet, with
+            the one line that says what it does to them. */}
+        {session.data && live ? (
+          <PanelFooter>
+            <span>Hủy lớp hoàn buổi cho mọi lượt đăng ký, kể cả khi đã quá hạn hủy.</span>
+            <Button
+              variant="ghost"
+              className="text-danger hover:text-danger active:text-danger decoration-danger/30 hover:decoration-danger active:decoration-danger px-2"
+              onClick={() => setCancelling(true)}
+            >
+              Hủy lớp
+            </Button>
+          </PanelFooter>
+        ) : null}
+      </Panel>
+
+      {session.data ? (
+        <CancelClassDialog
+          session={session.data}
+          open={cancelling}
+          onOpenChange={setCancelling}
+          onDone={setNotice}
+        />
+      ) : null}
     </WorkspacePage>
   );
 }
 
+/**
+ * Where the class sits and who teaches it. Format and hour are the title;
+ * status appears only when it says something the rest does not — a cancelled
+ * class — and the seats are the roster's, so they are not repeated here.
+ */
 function ClassHeader({
   session,
   onNotice,
@@ -210,7 +226,6 @@ function ClassHeader({
   onNotice: (message: string) => void;
 }) {
   const [reassigning, setReassigning] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
   const trainers = useStudioTrainers();
 
   const live = session.status === "SCHEDULED";
@@ -236,22 +251,13 @@ function ClassHeader({
         title={`${CLASS_TYPE[session.class_type]} · ${formatTime(session.starts_at)}`}
         actions={
           live ? (
-            <>
-              <Button
-                variant="secondary"
-                icon={<UserRoundCog className="size-4" aria-hidden="true" />}
-                onClick={() => setReassigning(true)}
-              >
-                Đổi huấn luyện viên
-              </Button>
-              <Button
-                variant="danger"
-                icon={<X className="size-4" aria-hidden="true" />}
-                onClick={() => setCancelling(true)}
-              >
-                Hủy lớp
-              </Button>
-            </>
+            <Button
+              variant="secondary"
+              icon={<UserRoundCog className="size-4" aria-hidden="true" />}
+              onClick={() => setReassigning(true)}
+            >
+              Đổi huấn luyện viên
+            </Button>
           ) : null
         }
         meta={
@@ -268,9 +274,15 @@ function ClassHeader({
               <span className="sr-only">Huấn luyện viên: </span>
               <span className="text-ink">{session.trainer_name}</span>
             </span>
-            <SessionStatus session={session} />
+            {/* A category, not a state: plain text. */}
             {session.recurrence_id ? (
-              <StatusBadge tone="neutral">Lớp định kỳ</StatusBadge>
+              <span className="inline-flex items-center gap-1.5">
+                <RefreshCw className="size-4" aria-hidden="true" />
+                Lớp định kỳ
+              </span>
+            ) : null}
+            {session.status === "CANCELLED" ? (
+              <StatusBadge tone="critical">Đã hủy</StatusBadge>
             ) : null}
           </div>
         }
@@ -289,65 +301,7 @@ function ClassHeader({
         onOpenChange={setReassigning}
         onDone={onNotice}
       />
-
-      <CancelClassDialog
-        session={session}
-        open={cancelling}
-        onOpenChange={setCancelling}
-        onDone={onNotice}
-      />
     </>
-  );
-}
-
-/** Seats as the backend states them: `seats_left` is its count, not ours. */
-function SessionStatus({ session }: { session: ClassSessionDetailResponse }) {
-  if (session.status === "CANCELLED") {
-    return <StatusBadge tone="critical">Đã hủy</StatusBadge>;
-  }
-  if (session.seats_left === 0) {
-    return <StatusBadge tone="attention">Đủ chỗ</StatusBadge>;
-  }
-  return <StatusBadge tone="positive">Còn {session.seats_left} chỗ</StatusBadge>;
-}
-
-/**
- * The class as a definition, beside the roster. Every value is a field of the
- * session; the refund deadline the canvas showed is not one of them (the staff
- * view of a class carries no cancellation terms), so it is not shown.
- */
-function ClassFacts({ session }: { session: ClassSessionDetailResponse }) {
-  return (
-    <Panel>
-      <PanelHeader title="Thông tin lớp" />
-      <PanelBody>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-          <Fact label="Hình thức">{CLASS_TYPE[session.class_type]}</Fact>
-          <Fact label="Sức chứa">
-            <Figures>{session.capacity}</Figures> chỗ
-          </Fact>
-          <Fact label="Huấn luyện viên">{session.trainer_name}</Fact>
-          <Fact label="Chỗ đã giữ">
-            <Figures>
-              {session.booked_count}/{session.capacity}
-            </Figures>
-          </Fact>
-          <Fact label="Thuộc lịch lặp">{session.recurrence_id ? "Có" : "Không"}</Fact>
-          <Fact label="Trạng thái">
-            {session.status === "CANCELLED" ? "Đã hủy" : "Đã lên lịch"}
-          </Fact>
-        </dl>
-      </PanelBody>
-    </Panel>
-  );
-}
-
-function Fact({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-ink-2 text-xs">{label}</dt>
-      <dd className="text-ink mt-0.5 text-sm wrap-anywhere">{children}</dd>
-    </div>
   );
 }
 
@@ -595,35 +549,6 @@ function BookedRow({ row }: { row: RosterRow }) {
       </Td>
       <Td>
         <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
-      </Td>
-    </Tr>
-  );
-}
-
-/**
- * The places still open, as a row of the roster. It says who fills them, so
- * the empty space is not read as a missing "add student" control.
- */
-function OpenSeatsRow({ seats }: { seats: number }) {
-  return (
-    <Tr>
-      <Td colSpan={3} className="bg-chalk">
-        <span className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="border-rule-2 text-ink-3 grid size-9 shrink-0 place-items-center rounded-full border border-dashed"
-          >
-            <Plus className="size-3.5" />
-          </span>
-          <span className="flex min-w-0 flex-col">
-            <span className="text-ink-2 text-sm">
-              <Figures>{seats}</Figures> chỗ trống
-            </span>
-            <span className="text-ink-2 text-xs">
-              Học viên tự đặt trong ứng dụng; studio không đặt thay.
-            </span>
-          </span>
-        </span>
       </Td>
     </Tr>
   );

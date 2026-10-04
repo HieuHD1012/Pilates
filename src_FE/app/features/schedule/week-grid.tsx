@@ -27,11 +27,24 @@ const MIN_VISIBLE_HOURS = 8;
  *
  * The hour ruler on the left is a measured edge against which blocks are read.
  * A block is tinted by class type — the copper wash for a group class, the
- * cool wash for a private one — and the type is still written inside it, so the
- * tint is a second cue and never the only one. A class that has ended or been
- * cancelled recedes to an untinted block, and a cancelled one says so in words. Today's column is
- * tinted and carries a line at the current time.
+ * cool wash for a private one — and its leading edge is a solid stripe in the
+ * type's colour, the same stripe a row carries in the list and the calendar's
+ * legend shows (`TYPE_STRIPE`). The type is still written inside it, so colour
+ * is a second cue and never the only one. A class that has ended or been
+ * cancelled recedes to an untinted block with a neutral stripe, and a cancelled
+ * one says so in words. Today's column is tinted and carries a line at the
+ * current time.
  */
+
+/**
+ * The stripe colour per state, shared by the grid, the list and the legend so
+ * the key can never drift from what it explains.
+ */
+export const TYPE_STRIPE = {
+  GROUP: "bg-copper-bright",
+  PRIVATE: "bg-info/40",
+  ENDED: "bg-rule-2",
+} as const;
 export interface WeekViewProps {
   days: string[];
   items: ClassSessionResponse[];
@@ -172,7 +185,7 @@ export function WeekGrid({
                     onClick={() => onSelect(item)}
                     aria-pressed={selectedId === item.id}
                     className={cn(
-                      "absolute flex flex-col items-start gap-1 overflow-hidden rounded-md border px-2 py-1.5 text-left",
+                      "absolute flex flex-col items-start gap-1 overflow-hidden rounded-md border py-1.5 pr-2 pl-3 text-left",
                       "transition-colors duration-200 hover:z-10",
                       // Past and cancelled classes lose the tint rather than
                       // fading: opacity would take the small secondary text
@@ -191,6 +204,15 @@ export function WeekGrid({
                       width: `calc(${100 / lane.count}% - 8px)`,
                     }}
                   >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute inset-y-0 left-0 w-1",
+                        ended || cancelled
+                          ? TYPE_STRIPE.ENDED
+                          : TYPE_STRIPE[item.class_type],
+                      )}
+                    />
                     <Figures className="text-ink text-xs leading-tight font-medium">
                       {formatTimeRange(item.starts_at, item.ends_at)}
                     </Figures>
@@ -275,11 +297,7 @@ export function WeekList({
                           aria-hidden="true"
                           className={cn(
                             "w-1 self-stretch rounded-full",
-                            ended
-                              ? "bg-rule-2"
-                              : item.class_type === "PRIVATE"
-                                ? "bg-info/40"
-                                : "bg-copper-bright",
+                            ended ? TYPE_STRIPE.ENDED : TYPE_STRIPE[item.class_type],
                           )}
                         />
                         <span className="flex min-w-0 flex-1 flex-col gap-0.5">

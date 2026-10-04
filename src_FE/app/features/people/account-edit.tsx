@@ -7,31 +7,32 @@ import { Field, FormActions, Input } from "~/ui/field";
 import { QueryBoundary } from "~/ui/query-boundary";
 import { useAccount, useUpdateAccount } from "./queries";
 
-export function AccountEdit({ accountId }: { accountId: number }) {
-  const [open, setOpen] = useState(false);
+/**
+ * Name and phone of a login. Opened from the accounts table's row menu: the
+ * menu closes on click, so the screen owns whether this is mounted and the
+ * dialog only reports that it wants to close. Role and login email are not
+ * editable here; the description says so.
+ */
+export function AccountEditDialog({
+  accountId,
+  onClose,
+}: {
+  accountId: number;
+  onClose: () => void;
+}) {
   const update = useUpdateAccount(accountId);
   return (
-    <>
-      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-        Sửa tài khoản
-      </Button>
-      <Dialog
-        open={open}
-        onOpenChange={(value) => {
-          if (!update.isPending) setOpen(value);
-        }}
-      >
-        {open ? (
-          <AccountDetail
-            accountId={accountId}
-            update={update}
-            onDone={() => setOpen(false)}
-          />
-        ) : null}
-      </Dialog>
-    </>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !update.isPending) onClose();
+      }}
+    >
+      <AccountDetail accountId={accountId} update={update} onDone={onClose} />
+    </Dialog>
   );
 }
+
 function AccountDetail({
   accountId,
   update,

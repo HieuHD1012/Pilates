@@ -1,19 +1,9 @@
-import { AccountEdit } from "~/features/people/account-edit";
-import {
-  CalendarDays,
-  Eye,
-  Lock,
-  LockOpen,
-  Send,
-  ShieldCheck,
-  UserPlus,
-  UserRound,
-  Users,
-} from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { Eye, Lock, LockOpen, PencilLine, Send, UserPlus } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { RoleGate } from "~/features/auth/role-gate";
+import { AccountEditDialog } from "~/features/people/account-edit";
 import { AccountForm } from "~/features/people/account-form";
 import {
   useAccounts,
@@ -27,7 +17,6 @@ import { formatDate, formatPhone, formatTime } from "~/lib/format";
 import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { DetailList, DetailRow } from "~/ui/detail-list";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
@@ -38,7 +27,6 @@ import { StatusBadge } from "~/ui/status";
 import {
   InlineNote,
   Panel,
-  PanelFooter,
   PersonCell,
   RowMenu,
   RowMenuItem,
@@ -73,8 +61,12 @@ export function meta(_: Route.MetaArgs) {
  *
  * No copper on this screen on purpose: a locked account renders a `danger`
  * badge, and copper must never share a context with danger
- * (docs/DESIGN_SYSTEM.md). The role tags use the neutral and info washes for
- * the same reason.
+ * (docs/DESIGN_SYSTEM.md).
+ *
+ * A role is a category, not a state, so it is plain text: four tints made four
+ * kinds of person compete with the two states that need handling. What each
+ * role can reach is explained once, where it is chosen — the create dialog's
+ * role field — rather than in a strip of cards above the list.
  */
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -82,31 +74,6 @@ const ROLE_LABEL: Record<Role, string> = {
   TRAINER: "Huấn luyện viên",
   STAFF: "Nhân viên",
   ADMIN: "Quản trị",
-};
-
-/** Highest access first, the order the role strip reads in. */
-const ROLE_ORDER: Role[] = ["ADMIN", "STAFF", "TRAINER", "STUDENT"];
-
-/** One line per role, shortened from the account form's own explanation. */
-const ROLE_REACH: Record<Role, string> = {
-  ADMIN: "Vận hành, cộng quản lý tài khoản",
-  STAFF: "Toàn bộ phần vận hành studio",
-  TRAINER: "Lịch dạy và điểm danh lớp mình",
-  STUDENT: "Đặt và hủy buổi của mình",
-};
-
-const ROLE_TINT: Record<Role, string> = {
-  ADMIN: "bg-ink text-sand",
-  STAFF: "bg-info-wash text-info",
-  TRAINER: "bg-sand-deep text-ink",
-  STUDENT: "border-rule-2 text-ink-2 border",
-};
-
-const ROLE_ICON: Record<Role, ReactNode> = {
-  ADMIN: <ShieldCheck aria-hidden="true" />,
-  STAFF: <Users aria-hidden="true" />,
-  TRAINER: <UserRound aria-hidden="true" />,
-  STUDENT: <CalendarDays aria-hidden="true" />,
 };
 
 type Access = "all" | "active" | "pending" | "locked";
@@ -151,6 +118,8 @@ function AccountsScreen() {
   const [target, setTarget] = useState<AccountResponse | null>(null);
   /** The last confirmed outcome, kept so the screen states what it did. */
   const [result, setResult] = useState<Result | null>(null);
+  /** The account whose name and phone are being edited, from its row menu. */
+  const [editing, setEditing] = useState<number | null>(null);
 
   // The lock mutation belongs to the account being confirmed, so it is created
   // for that id rather than taking one as an argument.
@@ -214,7 +183,7 @@ function AccountsScreen() {
 
       <PageHeader
         title="Tài khoản"
-        description="Những người đăng nhập được vào hệ thống của studio, với vai trò và quyền truy cập của từng người."
+        description="Ai đăng nhập được vào hệ thống của studio, với vai trò và quyền truy cập của từng người."
         actions={
           <Button
             className="max-md:min-h-11"
@@ -225,50 +194,6 @@ function AccountsScreen() {
           </Button>
         }
       />
-
-      {/* Who holds which role, counted from the list already on screen. */}
-      {query.data ? (
-        <ul
-          aria-label="Số tài khoản theo vai trò trong trang này"
-          className="grid grid-cols-2 gap-3 xl:grid-cols-4"
-        >
-          {ROLE_ORDER.map((role) => (
-            <li key={role}>
-              <Panel as="div" className="flex h-full items-center gap-3 px-4 py-3.5">
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "hidden size-9 shrink-0 place-items-center rounded-md sm:grid [&_svg]:size-4",
-                    ROLE_TINT[role],
-                  )}
-                >
-                  {ROLE_ICON[role]}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="text-ink block text-sm font-medium">
-                    {ROLE_LABEL[role]}
-                  </span>
-                  <span className="text-ink-2 hidden text-xs sm:block">
-                    {ROLE_REACH[role]}
-                  </span>
-                </span>
-                <span className="text-2xl leading-none">
-                  <Figures className="text-ink">
-                    {accounts.filter((account) => account.role === role).length}
-                  </Figures>
-                </span>
-                <PageControls
-                  offset={offset}
-                  limit={200}
-                  count={accounts.length}
-                  pending={query.isFetching}
-                  onChange={setOffset}
-                />
-              </Panel>
-            </li>
-          ))}
-        </ul>
-      ) : null}
 
       {result ? (
         <InlineNote
@@ -291,7 +216,7 @@ function AccountsScreen() {
       ) : null}
 
       <Panel>
-        <Toolbar trailing={<DemoDataNotice />}>
+        <Toolbar>
           <SegmentFilter<Access>
             label="Lọc theo quyền truy cập"
             value={access}
@@ -375,9 +300,7 @@ function AccountsScreen() {
                               <Absent>Chưa ghi</Absent>
                             )}
                           </Td>
-                          <Td>
-                            <RoleTag role={account.role} />
-                          </Td>
+                          <Td className="whitespace-nowrap">{ROLE_LABEL[account.role]}</Td>
                           <Td>
                             <AccountStatus account={account} />
                           </Td>
@@ -393,6 +316,7 @@ function AccountsScreen() {
                             <RowActions
                               account={account}
                               onAsk={ask}
+                              onEdit={setEditing}
                               onAnnounce={setAnnouncement}
                             />
                           </Td>
@@ -413,8 +337,16 @@ function AccountsScreen() {
                     >
                       <AccountPerson account={account} />
 
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <RoleTag role={account.role} />
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm">
+                        <span className="text-ink">{ROLE_LABEL[account.role]}</span>
+                        {/* Two plain words in a row read as one phrase, so
+                            working access is set off by a dot; a badge
+                            separates itself. */}
+                        {accessOf(account) === "active" ? (
+                          <span className="text-ink-2" aria-hidden="true">
+                            ·
+                          </span>
+                        ) : null}
                         <AccountStatus account={account} />
                       </div>
 
@@ -438,6 +370,7 @@ function AccountsScreen() {
                       <RowActions
                         account={account}
                         onAsk={ask}
+                        onEdit={setEditing}
                         onAnnounce={setAnnouncement}
                         stacked
                       />
@@ -449,16 +382,16 @@ function AccountsScreen() {
           }}
         </QueryBoundary>
 
-        <PanelFooter>
-          <span>
-            <Figures className="text-ink">{accounts.length}</Figures> tài khoản trong trang
-            này
-          </span>
-          <span className="measure-wide text-xs">
-            Khóa tài khoản thu hồi luôn mọi phiên đang mở, không chỉ chặn lần đăng nhập sau.
-            Studio không đặt mật khẩu thay ai — “Gửi lại liên kết” để người đó tự đặt.
-          </span>
-        </PanelFooter>
+        {/* The count is the filter's "Tất cả"; locking states its consequence
+            in the menu and its dialog, and the create dialog says the studio
+            never sets a password. So the panel closes on its paging only. */}
+        <PageControls
+          offset={offset}
+          limit={200}
+          count={accounts.length}
+          pending={query.isFetching}
+          onChange={setOffset}
+        />
       </Panel>
 
       <Dialog open={target !== null} onOpenChange={(open) => (open ? null : close())}>
@@ -555,6 +488,14 @@ function AccountsScreen() {
           />
         </DialogContent>
       </Dialog>
+
+      {editing !== null ? (
+        <AccountEditDialog
+          key={editing}
+          accountId={editing}
+          onClose={() => setEditing(null)}
+        />
+      ) : null}
     </WorkspacePage>
   );
 }
@@ -570,39 +511,30 @@ function AccountPerson({ account }: { account: AccountResponse }) {
   );
 }
 
-function RoleTag({ role }: { role: Role }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex min-h-6 items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap",
-        ROLE_TINT[role],
-      )}
-    >
-      {ROLE_LABEL[role]}
-    </span>
-  );
-}
-
 /**
  * Two independent facts, not one status. `is_active` is whether the studio has
  * locked the account; `status` is whether the person has finished setting a
  * password. A locked account that never activated is both, and collapsing them
  * into one badge would hide whichever came second.
+ *
+ * Only the two states that need handling are badges. Working access is what
+ * most rows have, so it is plain text: a green pill on nearly every row
+ * distinguished nothing.
  */
 function AccountStatus({ account }: { account: AccountResponse }) {
   if (!account.is_active) return <StatusBadge tone="critical">Đã khóa</StatusBadge>;
   if (account.status === "PENDING_ACTIVATION") {
     return <StatusBadge tone="attention">Chưa đặt mật khẩu</StatusBadge>;
   }
-  return <StatusBadge tone="positive">Đang hoạt động</StatusBadge>;
+  return <span className="text-ink-2 text-sm whitespace-nowrap">Đang hoạt động</span>;
 }
 
 /**
  * The row's edge. Only a row that needs handling shows a button: a locked
  * account offers to reopen it, an unanswered invitation offers to send it
- * again. Locking — destructive, and confirmed in a dialog — and re-sending a
- * link to someone who already has a password live in the menu, the lock with
- * its consequence written under it.
+ * again. Editing the name and phone, locking — destructive, and confirmed in
+ * a dialog — and re-sending a link to someone who already has a password live
+ * in the menu, the lock with its consequence written under it.
  *
  * Re-sending the set-your-password link: the token only ever travels by email —
  * it is never returned to this screen, so there is nothing here to copy.
@@ -610,11 +542,13 @@ function AccountStatus({ account }: { account: AccountResponse }) {
 function RowActions({
   account,
   onAsk,
+  onEdit,
   onAnnounce,
   stacked = false,
 }: {
   account: AccountResponse;
   onAsk: (account: AccountResponse) => void;
+  onEdit: (accountId: number) => void;
   onAnnounce: (message: string) => void;
   stacked?: boolean;
 }) {
@@ -668,6 +602,12 @@ function RowActions({
 
   const menu = (
     <RowMenu label={`Thao tác cho ${name}`}>
+      <RowMenuItem
+        icon={<PencilLine aria-hidden="true" />}
+        onClick={() => onEdit(account.id)}
+      >
+        Sửa tài khoản
+      </RowMenuItem>
       {profile ? (
         <RowMenuItem
           icon={<Eye aria-hidden="true" />}
@@ -687,7 +627,7 @@ function RowActions({
       )}
       {locked ? null : (
         <>
-          {profile || !pending ? <RowMenuSeparator /> : null}
+          <RowMenuSeparator />
           <RowMenuItem
             danger
             icon={<Lock aria-hidden="true" />}
@@ -717,9 +657,6 @@ function RowActions({
     return (
       <>
         <span className="absolute top-3 right-2">{menu}</span>
-        <div className="mt-3">
-          <AccountEdit accountId={account.id} />
-        </div>
         {button ? <div className="mt-3">{button}</div> : null}
         {feedback ? <div className="mt-2">{feedback}</div> : null}
       </>
@@ -731,7 +668,6 @@ function RowActions({
       <div className="flex items-center justify-end gap-1.5">
         {button}
         {menu}
-        <AccountEdit accountId={account.id} />
       </div>
       {feedback}
     </div>

@@ -59,9 +59,8 @@ import {
 import { Absent } from "~/ui/absent";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
-import { EmptyState, LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
+import { LiveRegion, Skeleton, SkeletonRows } from "~/ui/feedback";
 import { Field, FormActions, Input, Select } from "~/ui/field";
 import { Figures } from "~/ui/figure";
 import { QueryBoundary } from "~/ui/query-boundary";
@@ -145,7 +144,7 @@ function dateOnly(value: IsoDate): string {
  * `/students/{id}` is the profile, `/students/{id}/overview` is credits and
  * active packages, `/packages` is what they bought, `/payments` is what they
  * paid, `/my-schedule` is what they attended. Each tab fetches what it asks;
- * the profile header reads the overview too, which the default tab loads anyway.
+ * the profile header reads only the profile.
  *
  * The page is a profile panel (who, how to reach them, what to do next) with
  * the tabs at its foot, then each tab as a main column and a 360px side column
@@ -291,8 +290,10 @@ export default function StaffStudentDetail() {
  * Who this is, how to reach them, and what to do next — shown on every tab.
  * The tab list sits at the panel's foot, its active rule on the panel's edge.
  *
- * "Gọi" is copper because it is the contact action (ADR 0006, decision 9);
- * "Bán gói" is the screen's one ink ask.
+ * The phone number is itself the `tel:` link, so there is no separate "Gọi"
+ * button beside it (docs/UI_QUALITY.md, staff grammar). "Bán gói" is the
+ * screen's one ask. Whether the student needs a renewal call is said once, in
+ * the active-package panel where the renew action is — not here as well.
  */
 function ProfileHeader({
   student,
@@ -305,7 +306,6 @@ function ProfileHeader({
   onEdit: () => void;
   onSell: () => void;
 }) {
-  const overview = useStudentOverview(student.id);
   const status = STUDENT_STATUS[student.status];
 
   return (
@@ -314,18 +314,28 @@ function ProfileHeader({
         <Avatar name={student.full_name} size="xl" />
 
         <div className="min-w-0 flex-1 basis-64">
-          <h1
-            id="student-name"
-            className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em] md:text-[2rem]"
-          >
-            {student.full_name}
-          </h1>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h1
+              id="student-name"
+              className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em] md:text-[2rem]"
+            >
+              {student.full_name}
+            </h1>
+            <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+          </div>
 
-          <ul className="text-ink-2 mt-2 flex flex-wrap gap-x-5 gap-y-1.5 text-sm [&_svg]:size-4 [&_svg]:shrink-0">
+          <ul className="text-ink-2 mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm [&_svg]:size-4 [&_svg]:shrink-0">
             <li className="inline-flex items-center gap-1.5">
               <Phone aria-hidden="true" />
               <span className="sr-only">Điện thoại</span>
-              <Figures className="text-ink">{formatPhone(student.phone)}</Figures>
+              {/* 44px tall on a phone so it is a real touch target; inline
+                  height on a desk screen, where it is clicked with a mouse. */}
+              <a
+                href={telHref(student.phone)}
+                className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper inline-flex min-h-11 items-center underline underline-offset-[5px] md:min-h-0"
+              >
+                {formatPhone(student.phone)}
+              </a>
             </li>
             <li className="inline-flex items-center gap-1.5">
               <DoorOpen aria-hidden="true" />
@@ -337,23 +347,9 @@ function ProfileHeader({
               {student.user_id !== null ? "Đã có tài khoản" : "Chưa có tài khoản"}
             </li>
           </ul>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
-            {overview.data?.needs_renewal ? (
-              <StatusBadge tone="attention">Cần liên hệ gia hạn</StatusBadge>
-            ) : null}
-            <DemoDataNotice />
-          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button asChild variant="copper">
-            <a href={telHref(student.phone)}>
-              <Phone className="size-4" aria-hidden="true" />
-              <span>Gọi</span>
-            </a>
-          </Button>
           <Button
             variant="secondary"
             icon={<Pencil className="size-4" aria-hidden="true" />}
@@ -477,12 +473,22 @@ function ActivePackagesPanel({
       {data?.needs_renewal ? (
         <PanelFooter className="bg-warning-wash/45 text-ink flex-nowrap items-start justify-start gap-2.5 rounded-b-lg">
           {/* The backend decides the threshold and only says whether it is
-              reached, so the note names no number of sessions or days. */}
+              reached, so the note names no number of sessions or days. This is
+              the one place the page says it; the renewal call is made and
+              recorded from the renewals list, so the way there sits beside it. */}
           <TriangleAlert
             className="text-warning mt-0.5 size-4 shrink-0"
             aria-hidden="true"
           />
-          <span className="min-w-0">Học viên này đang ở ngưỡng cần liên hệ gia hạn.</span>
+          <span className="min-w-0">
+            Học viên này đang ở ngưỡng cần liên hệ gia hạn.{" "}
+            <Link
+              to="/studio/gia-han"
+              className="decoration-rule-2 hover:text-copper hover:decoration-copper whitespace-nowrap underline underline-offset-[6px]"
+            >
+              Mở danh sách gia hạn
+            </Link>
+          </span>
         </PanelFooter>
       ) : null}
     </Panel>
@@ -501,17 +507,20 @@ function ActivePackage({
   return (
     <div className="grid gap-5 px-4 py-5 sm:grid-cols-[minmax(0,1fr)_13rem] md:px-5">
       <div className="min-w-0">
-        <p className="text-ink flex flex-wrap items-center gap-2 text-sm font-medium">
-          {item.name}
-          <ClassTypeTag type={item.class_type} />
-        </p>
+        <p className="text-ink text-sm font-medium">{item.name}</p>
         <p className="mt-3 flex flex-wrap items-baseline gap-x-2.5">
           <Figures display className="text-ink text-d2 leading-none">
             {item.credits_remaining}
           </Figures>{" "}
           <span className="text-ink-2 text-sm">buổi còn lại</span>
         </p>
+        {/* The class type is a category, so it is plain text in the same order
+            as the package rows under "Gói & thanh toán", not a tag. */}
         <p className="text-ink-2 mt-3 text-xs">
+          {CLASS_TYPE[item.class_type]}
+          <span className="mx-1.5" aria-hidden="true">
+            ·
+          </span>
           Bắt đầu <Figures className="text-ink">{dateOnly(item.start_date)}</Figures>
           <span className="mx-1.5" aria-hidden="true">
             ·
@@ -547,24 +556,38 @@ function ActivePackage({
   );
 }
 
+/**
+ * Renewal calls, append-only: they are recorded on the renewals screen, never
+ * here. A side panel, so with nothing to list it is its heading and one line,
+ * not an empty state (docs/UI_QUALITY.md, staff grammar).
+ */
 function RenewalContactsPanel({ studentId }: { studentId: number }) {
   const contacts = useRenewalHistory(studentId);
+  const nothing = contacts.isPending
+    ? null
+    : contacts.isError
+      ? "Không tải được lịch sử liên hệ."
+      : (contacts.data?.length ?? 0) === 0
+        ? "Chưa liên hệ lần nào."
+        : null;
+
+  if (nothing) {
+    // PanelHeader's spacing and type without its rule: with no body under
+    // it, the rule would sit on the panel's own border.
+    return (
+      <Panel className="px-4 py-3.5 md:px-5">
+        <h2 className="text-ink text-base font-semibold">Lịch sử liên hệ gia hạn</h2>
+        <p className="text-ink-2 mt-0.5 text-sm">{nothing}</p>
+      </Panel>
+    );
+  }
 
   return (
     <Panel>
-      <PanelHeader
-        title="Lịch sử liên hệ gia hạn"
-        description="Chỉ thêm, không sửa dòng cũ. Ghi nhận một lần liên hệ ở màn hình gia hạn."
-      />
+      <PanelHeader title="Lịch sử liên hệ gia hạn" />
       <div className="px-4 md:px-5">
         {contacts.isPending ? (
           <SkeletonRows rows={2} className="py-4" />
-        ) : (contacts.data?.length ?? 0) === 0 ? (
-          <EmptyState
-            className="py-6"
-            title="Chưa liên hệ lần nào"
-            description="Khi nhân viên ghi nhận một cuộc gọi gia hạn, nó xuất hiện ở đây."
-          />
         ) : (
           <ul className="-mx-4 md:-mx-5">
             {(contacts.data ?? []).map((contact) => (
@@ -590,14 +613,6 @@ function RenewalContactsPanel({ studentId }: { studentId: number }) {
           </ul>
         )}
       </div>
-      <PanelFooter>
-        <Link
-          to="/studio/gia-han"
-          className="text-ink decoration-rule-2 hover:text-copper hover:decoration-copper underline underline-offset-[6px]"
-        >
-          Mở danh sách gia hạn
-        </Link>
-      </PanelFooter>
     </Panel>
   );
 }
@@ -658,7 +673,7 @@ function CommerceTab({
       <TabGrid
         main={
           <Panel>
-            <PanelHeader title="Gói tập" description="Các gói học viên này đã mua." />
+            <PanelHeader title="Gói tập" />
             <div className="px-4 md:px-5">
               <QueryBoundary
                 query={packages}
@@ -705,14 +720,21 @@ function CommerceTab({
               }
             />
             <div className="px-4 md:px-5">
+              {/* A side panel: with no payments it is one line, not an empty
+                  state (docs/UI_QUALITY.md, staff grammar). */}
               <QueryBoundary
                 query={payments}
                 skeletonRows={3}
-                emptyTitle="Chưa có khoản thu nào"
-                emptyDescription="Các khoản thu gắn với gói của học viên này sẽ xuất hiện ở đây."
+                isEmpty={() => false}
                 errorDescription="Không tải được lịch sử thanh toán."
               >
-                {(items) => <PaymentList payments={items} />}
+                {(items) =>
+                  items.length === 0 ? (
+                    <p className="text-ink-2 py-3 text-sm">Chưa có khoản thu nào.</p>
+                  ) : (
+                    <PaymentList payments={items} />
+                  )
+                }
               </QueryBoundary>
             </div>
             <PageControls
@@ -957,14 +979,6 @@ function LedgerLink({ packageId, studentId }: { packageId: number; studentId: nu
     >
       Xem sổ buổi
     </Link>
-  );
-}
-
-function ClassTypeTag({ type }: { type: ClassType }) {
-  return (
-    <span className="bg-sand-deep text-ink-2 rounded-sm px-1.5 py-0.5 text-xs font-normal">
-      {CLASS_TYPE[type]}
-    </span>
   );
 }
 

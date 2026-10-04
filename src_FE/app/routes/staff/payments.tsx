@@ -1,13 +1,4 @@
-import {
-  Banknote,
-  ChartColumn,
-  Check,
-  Info,
-  Landmark,
-  Plus,
-  TriangleAlert,
-  X,
-} from "lucide-react";
+import { Banknote, ChartColumn, Check, Info, Landmark, Plus, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router";
 
@@ -39,7 +30,6 @@ import {
 } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DataTable, Td, Th, Tr } from "~/ui/data-table";
-import { DemoDataNotice } from "~/ui/demo-data-notice";
 import { Dialog, DialogContent } from "~/ui/dialog";
 import { LiveRegion } from "~/ui/feedback";
 import { Field, FormActions, Select, Textarea } from "~/ui/field";
@@ -223,12 +213,9 @@ export default function StaffPayments() {
       <Panel aria-label="Các khoản thanh toán">
         <Toolbar
           trailing={
-            <>
-              {query.isFetching && !query.isPending ? (
-                <span className="text-ink-2 text-xs">Đang cập nhật</span>
-              ) : null}
-              <DemoDataNotice />
-            </>
+            query.isFetching && !query.isPending ? (
+              <span className="text-ink-2 text-xs">Đang cập nhật</span>
+            ) : null
           }
         >
           <SegmentFilter
@@ -324,18 +311,16 @@ export default function StaffPayments() {
         />
       </Panel>
 
-      <InlineNote icon={<Info aria-hidden="true" />}>
-        <p>
-          Giao dịch chờ xác nhận và đã hủy vẫn hiển thị trong bảng nhưng không vào tổng
-          tiền. Số liệu doanh thu chính thức lấy từ báo cáo, không từ tổng của bảng này.
-        </p>
-        <p className="mt-1.5">
-          Buổi tập đã được cộng vào gói từ lúc bán gói, không đợi bước ghi nhận tiền này.
-          {studentId === null
-            ? " Danh sách thanh toán không kèm tên học viên: chọn một học viên để thấy tên người và tên gói trên từng dòng."
-            : null}
-        </p>
-      </InlineNote>
+      {/* One sentence, and only while it explains what is on screen: unfiltered,
+          rows carry a package id and no person. What the total counts is said
+          on the total line; that credits arrive at sale is said where money is
+          confirmed. */}
+      {studentId === null ? (
+        <InlineNote icon={<Info aria-hidden="true" />}>
+          Phiếu thu không kèm tên học viên: chọn một học viên để thấy tên người và tên gói
+          trên từng dòng.
+        </InlineNote>
+      ) : null}
 
       <LiveRegion message={notice} />
 
@@ -406,7 +391,8 @@ function StudentCell({ student }: { student: StudentResponse }) {
 /**
  * Recorded, not yet confirmed. Confirming is the money action on this screen,
  * so it is copper (ADR 0006, 9) and it lives here, at the top, rather than in
- * the log below.
+ * the log below. The attention ground already says "waiting": no icon tile,
+ * and the items are hairline rows on it, not cards inside a card.
  */
 function PendingPanel({
   payments,
@@ -420,30 +406,20 @@ function PendingPanel({
   onConfirmed: (message: string) => void;
 }) {
   return (
-    <Panel
-      tone="attention"
-      aria-labelledby="pending-title"
-      className="flex flex-col gap-4 px-4 py-4 md:px-5"
-    >
-      <div className="flex items-start gap-3.5">
-        <span
-          aria-hidden="true"
-          className="bg-warning-wash text-warning grid size-10 shrink-0 place-items-center rounded-md"
-        >
-          <TriangleAlert className="size-4" />
-        </span>
-        <div className="min-w-0">
-          <h2 id="pending-title" className="text-ink text-base font-semibold">
-            <Figures>{formatNumber(payments.length)}</Figures> khoản thu đang chờ xác nhận
-          </h2>
-          <p className="text-ink-2 mt-0.5 text-sm">
-            Xác nhận khi tiền đã thực sự vào quỹ hoặc tài khoản studio. Chỉ khoản đã xác
-            nhận mới được cộng vào doanh thu.
-          </p>
-        </div>
+    <Panel tone="attention" aria-labelledby="pending-title">
+      <div className="px-4 pt-3.5 md:px-5">
+        <h2 id="pending-title" className="text-ink text-base font-semibold">
+          <Figures>{formatNumber(payments.length)}</Figures> khoản thu đang chờ xác nhận
+        </h2>
+        {/* What confirming does, and what it does not: the credits were added
+            when the package was sold. */}
+        <p className="text-ink-2 mt-0.5 text-sm">
+          Xác nhận khi tiền đã vào quỹ hoặc tài khoản studio; buổi tập đã cộng vào gói từ
+          lúc bán.
+        </p>
       </div>
 
-      <ul className="flex flex-col gap-2.5">
+      <ul className="divide-warning/30 mt-1.5 divide-y px-4 md:px-5">
         {payments.map((payment) => (
           <PendingItem
             key={payment.id}
@@ -480,7 +456,7 @@ function PendingItem({
   );
 
   return (
-    <li className="bg-paper border-rule flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border px-4 py-3.5">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
       {/* Written out rather than a PersonCell: the line under the name is
           long, and a Vietnamese line is wrapped, never truncated (AGENTS P5). */}
       <div className="flex min-w-0 flex-1 basis-60 items-start gap-3">
@@ -489,12 +465,14 @@ function PendingItem({
           <p className="text-ink text-sm font-medium">
             {student ? student.full_name : packageName}
           </p>
-          <p className="text-ink-2 text-xs">{facts}</p>
-          {payment.note ? <p className="text-ink-2 mt-1 text-xs">{payment.note}</p> : null}
+          <p className="text-ink-2 text-xs">
+            {facts}
+            {payment.note ? ` · ${payment.note}` : null}
+          </p>
         </div>
       </div>
 
-      <Figures display className="text-ink text-2xl whitespace-nowrap">
+      <Figures display className="text-ink text-xl whitespace-nowrap">
         {formatVnd(payment.amount)}
       </Figures>
 
