@@ -4,11 +4,13 @@ Tài liệu này là nơi duy nhất phát biểu quy tắc nghiệp vụ của 
 khai hằng số ở [`src_BE/app/domain/rules.py`](../src_BE/app/domain/rules.py);
 nếu hai chỗ lệch nhau thì một trong hai là lỗi, không phải là "hai phiên bản".
 
-Phạm vi hiện hành đã được chủ dự án xác nhận: chỉ học viên đăng ký/hủy/đổi cho mình, bỏ hàng chờ, khóa hủy/đổi sau hạn,
+Nguồn gốc: `docs/nguon/pham-vi-xac-nhan.xlsx` (13.09) là baseline nghiệp vụ,
+thay cho sheet "Phạm vi & giả định" trong `.xlsm` (ảnh chụp 24.08).
+**Xác nhận mới của chủ dự án ngày 2026-09-14 được ưu tiên hơn baseline:**
+chỉ học viên đăng ký/hủy/đổi cho mình, bỏ hàng chờ, khóa hủy/đổi sau hạn,
 gói còn hạn ngày học và HLV điểm danh sau lớp. Chốt tiếp: bỏ dời lịch/ân hạn,
-không yêu cầu lịch sử ngày gia hạn, bổ sung tự sửa hồ sơ. Tài liệu nguồn cũ được giữ trên nhánh legacy.
-Xem [các quyết định còn mở](../src_FE/docs/OPEN_QUESTIONS.md) và
-[checklist release](../src_FE/docs/RELEASE_CHECKLIST.md).
+không yêu cầu lịch sử ngày gia hạn, bổ sung tự sửa hồ sơ. Hai file nguồn không sửa.
+Xem [đối chiếu nguồn và các phần chưa chốt](doi-chieu-nguon-va-nghiep-vu.md).
 
 > **Mục "Đang chờ khách xác nhận"** ở cuối tài liệu liệt kê các quy tắc đang
 > chạy theo **mặc định an toàn**. Chúng đã được cài đặt thật, không phải chỗ

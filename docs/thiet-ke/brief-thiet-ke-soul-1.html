@@ -1,0 +1,341 @@
+<title>Brief thiết kế Soul-1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --paper:#EDEFF2; --panel:#F6F7F9; --ink:#13171B; --ink-2:#58626B; --ink-3:#8A939B;
+  --rule:#C7CED4; --rule-2:#DDE2E6; --signal:#0E6E64; --signal-wash:#DEEBE9;
+  --flag:#96271F; --flag-wash:#F3E2E0;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#131719; --panel:#1A1F22; --ink:#E6EAEC; --ink-2:#98A2A9; --ink-3:#6C767D;
+    --rule:#2C3438; --rule-2:#232A2E; --signal:#5FBFB2; --signal-wash:#16302D;
+    --flag:#E08C82; --flag-wash:#33201E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131719; --panel:#1A1F22; --ink:#E6EAEC; --ink-2:#98A2A9; --ink-3:#6C767D;
+  --rule:#2C3438; --rule-2:#232A2E; --signal:#5FBFB2; --signal-wash:#16302D;
+  --flag:#E08C82; --flag-wash:#33201E;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Be Vietnam Pro","Helvetica Neue",Arial,sans-serif;
+  font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:68rem; margin:0 auto; padding-inline:clamp(1rem,4vw,3rem); padding-block:0;}
+h1,h2,h3{font-family:Newsreader,Georgia,serif; text-wrap:balance; margin:0; font-weight:400;}
+p,ul,ol{margin:0;}
+a{color:var(--signal);}
+.mono,code{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+.num{font-variant-numeric:tabular-nums;}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--ink); padding-block:clamp(2.5rem,6vw,4.5rem) 1.5rem;}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:.7rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-2); margin-bottom:1.25rem;}
+h1{font-size:clamp(2.3rem,6vw,4rem); font-weight:300; line-height:1.08; letter-spacing:-.02em;}
+h1 em{font-style:normal; color:var(--signal);}
+.lede{max-width:52ch; margin-top:1.15rem; font-size:1.02rem; color:var(--ink-2);}
+.meta{display:flex; flex-wrap:wrap; gap:.35rem 2rem; margin-top:1.9rem;
+  font-family:"IBM Plex Mono",monospace; font-size:.74rem; color:var(--ink-2);}
+.meta b{font-weight:500; color:var(--ink);}
+
+section{padding-block:clamp(2.5rem,5vw,3.75rem); border-bottom:1px solid var(--rule-2);}
+section:last-of-type{border-bottom:none;}
+.snum{font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.14em;
+  color:var(--signal); text-transform:uppercase;}
+h2{font-size:clamp(1.45rem,2.8vw,2rem); letter-spacing:-.012em; margin:.45rem 0 .7rem; font-weight:400;}
+.sub{max-width:55ch; color:var(--ink-2); margin-bottom:2rem;}
+.body-copy{max-width:55ch; display:grid; gap:1rem; color:var(--ink-2);}
+.body-copy strong{color:var(--ink); font-weight:600;}
+
+/* evidence tags — giữ quy ước nhãn nguồn của bản đối chiếu */
+.tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:.63rem;
+  letter-spacing:.1em; text-transform:uppercase; padding:.15rem .45rem;
+  border:1px solid currentColor; border-radius:2px; vertical-align:.12em; font-weight:500;}
+.t-m{color:var(--signal);} .t-o{color:var(--ink-2);} .t-j{color:var(--ink-3);}
+
+/* danh sách nguyên tắc */
+.prin{display:grid; border-top:1px solid var(--rule);}
+.prin > div{display:grid; grid-template-columns:2.5rem minmax(0,17ch) minmax(0,1fr);
+  gap:.5rem 1.25rem; padding-block:.9rem; border-bottom:1px solid var(--rule-2); align-items:baseline;}
+.prin .k{font-family:"IBM Plex Mono",monospace; font-size:.8rem; color:var(--signal);}
+.prin .n{font-weight:600; font-size:.94rem;}
+.prin .d{color:var(--ink-2); font-size:.91rem; max-width:52ch;}
+@media(max-width:640px){
+  .prin > div{grid-template-columns:2.5rem 1fr;}
+  .prin .d{grid-column:2/3;}
+}
+
+/* bảng */
+.tbl-wrap{overflow-x:auto; border-top:1px solid var(--ink);}
+table{width:100%; border-collapse:collapse; min-width:40rem;}
+th,td{text-align:left; padding:.68rem .85rem; border-bottom:1px solid var(--rule-2); vertical-align:baseline;}
+thead th{font-family:"IBM Plex Mono",monospace; font-size:.69rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-2); font-weight:500; border-bottom:1px solid var(--rule);}
+td.v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;}
+td.nowrap{white-space:nowrap;}
+th.r,td.r{text-align:right;}
+td.hold{color:var(--signal); font-weight:600;}
+td.no{color:var(--flag);}
+tbody tr:hover{background:var(--panel);}
+.note{margin-top:.9rem; font-size:.83rem; color:var(--ink-2); max-width:58ch;}
+
+/* việc cần làm */
+.jobs{display:grid; border-top:1px solid var(--ink);}
+.jobs > div{display:grid; grid-template-columns:2rem minmax(0,1fr) 9rem;
+  gap:.4rem 1.25rem; padding-block:1.05rem; border-bottom:1px solid var(--rule-2); align-items:baseline;}
+.jobs .k{font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--ink-3);}
+.jobs .t{font-weight:600; font-size:.98rem;}
+.jobs .why{grid-column:2/3; color:var(--ink-2); font-size:.9rem; max-width:52ch;}
+.jobs .f{font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--signal);
+  text-align:right; letter-spacing:.04em;}
+@media(max-width:720px){
+  .jobs > div{grid-template-columns:2rem 1fr;}
+  .jobs .f{grid-column:2/3; text-align:left; margin-top:.2rem;}
+  .jobs .why{grid-column:2/3;}
+}
+
+/* danh sách cấm / cho phép */
+.rules{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem;}
+@media(max-width:760px){.rules{grid-template-columns:1fr;}}
+.rules h3{font-size:.98rem; font-weight:500; padding-bottom:.55rem; border-bottom:1px solid var(--ink);
+  font-family:"Be Vietnam Pro",sans-serif;}
+.rules ul{list-style:none; padding:0;}
+.rules li{padding-block:.8rem; border-bottom:1px solid var(--rule-2); font-size:.91rem; color:var(--ink-2);}
+.rules li b{display:block; color:var(--ink); font-weight:600; margin-bottom:.15rem;}
+
+/* câu hỏi mở */
+.q{border-top:1px solid var(--rule); display:grid;}
+.q > div{padding-block:1.15rem; border-bottom:1px solid var(--rule-2); display:grid; gap:.3rem;}
+.q .ask{font-weight:600; font-size:.98rem; max-width:58ch;}
+.q .ctx{color:var(--ink-2); font-size:.9rem; max-width:56ch;}
+
+/* khối nhấn */
+.callout{border:1px solid var(--rule); background:var(--panel); border-radius:2px;
+  padding:clamp(1.25rem,3.5vw,2rem); display:grid; gap:.85rem;}
+.callout .big{font-family:Newsreader,Georgia,serif; font-size:clamp(1.15rem,2.2vw,1.5rem);
+  line-height:1.4; letter-spacing:-.01em; color:var(--ink); max-width:46ch;}
+.callout p{color:var(--ink-2); max-width:56ch; font-size:.94rem;}
+
+footer{padding-block:2.5rem 4rem; font-family:"IBM Plex Mono",monospace;
+  font-size:.72rem; color:var(--ink-3); border-top:1px solid var(--rule-2);}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px;}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Brief thiết kế · Pilates Studio Nha Trang · 14.09.2026</p>
+  <h1>Cấu trúc đến từ<br><em>chữ và đường kẻ</em>.</h1>
+  <p class="lede">Hướng Soul-1 đã được chốt sau bản đối chiếu ngày 25.08. Tài liệu này mô tả hệ đã khoá, năm hạng mục cần thiết kế, và những ngưỡng phải đạt trước khi nghiệm thu.</p>
+  <div class="meta">
+    <span><b>Gửi</b> Bên thiết kế</span>
+    <span><b>Sản phẩm</b> Web quản lý &amp; đặt lớp, một cơ sở</span>
+    <span><b>Quy mô</b> 51 chức năng · 58 màn hình</span>
+    <span><b>Mốc MVP</b> 02.10.2026</span>
+  </div>
+</header>
+
+<section>
+  <p class="snum">01 — Bối cảnh</p>
+  <h2>Việc đang ở đâu</h2>
+  <div class="body-copy">
+    <p>Studio Pilates tại Nha Trang, <strong>một cơ sở</strong>, hai loại lớp: Group và Private (Duo tính là Private hai khách). Hệ thống phục vụ bốn nhóm người: khách xem website, studio/nhân viên, huấn luyện viên, và học viên.</p>
+    <p>Hai hướng giao diện đã được dựng song song và đo trực tiếp bằng DOM/CSSOM cùng axe-core trên sáu màn hình tương ứng. <strong>Soul-1 được chọn làm nền</strong> vì hai rủi ro lớn nhất — 103 lỗi truy cập nghiêm trọng, và dữ liệu bịa hiển thị trên trang công khai — đều nằm ở hướng còn lại. Bốn ưu thế thật của hướng kia đã được tách ra thành việc cần làm ở mục 04.</p>
+    <p>Phần cần bên thiết kế: <strong>hệ token, đặc tả typography tiếng Việt, và năm hạng mục ở mục 04</strong>. Không cần dựng lại toàn bộ 58 màn hình — hệ đã có và đang chạy.</p>
+  </div>
+</section>
+
+<section>
+  <p class="snum">02 — Bất biến</p>
+  <h2>Năm nguyên tắc đã khoá</h2>
+  <p class="sub">Không phải tiêu chuẩn chung của ngành. Đây là năm điều đã tự khoá lại sau bản audit; mọi đề xuất sẽ được đọc lại theo đúng năm điều này.</p>
+  <div class="prin">
+    <div><span class="k">P1</span><span class="n">Một màn hình, một chủ thể</span><span class="d">Mắt được yêu cầu so sánh đúng một thứ xuống trang. Mọi thứ khác là thuộc tính của nó.</span></div>
+    <div><span class="k">P2</span><span class="n">Một điều nói một lần</span><span class="d">Không lặp lại cùng một sự kiện ở hai chỗ trên cùng màn hình.</span></div>
+    <div><span class="k">P3</span><span class="n">Không bịa dữ kiện</span><span class="d">Ô trống phải trông như ô trống đang chờ. Tên người, giá, số liệu kinh doanh — không có thì không hiện. Chi tiết ở mục 05.</span></div>
+    <div><span class="k">P4</span><span class="n">Một token một chức năng</span><span class="d">Thêm một token cách token cũ một chút là thêm một quyết định không ai nhớ nổi.</span></div>
+    <div><span class="k">P5</span><span class="n">Tiếng Việt quyết định typography</span><span class="d">Dấu chồng quyết định leading. Chuỗi không vừa thì container đổi, không phải chuỗi.</span></div>
+  </div>
+</section>
+
+<section>
+  <p class="snum">03 — Hệ hiện tại</p>
+  <h2>Soul-1, đo được <span class="tag t-m">đo</span></h2>
+  <p class="sub">Trích từ CSSOM trên bốn màn hình vận hành và hai trang công khai, viewport 1440×900. Cột bên phải là ràng buộc cần giữ, không phải mô tả thẩm mỹ.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Thuộc tính</th><th class="r">Hiện tại</th><th>Ràng buộc cần giữ</th></tr></thead>
+    <tbody>
+      <tr><td>Card — khối bo góc ≥6px có nền hoặc viền</td><td class="v r num">0</td><td class="hold">Giữ 0. Cấu trúc do đường kẻ 1px và khoảng trắng tạo ra</td></tr>
+      <tr><td>Pill — chip bo tròn hoàn toàn</td><td class="v r num">0</td><td class="hold">Giữ 0. Badge bo 2px, gần vuông</td></tr>
+      <tr><td>Node có đổ bóng</td><td class="v r num">0</td><td class="hold">Bóng chỉ dành cho lớp nổi thật: dialog, dropdown</td></tr>
+      <tr><td>Số giá trị bo góc đang dùng</td><td class="v r num">1–3</td><td class="hold">Trần 3 giá trị trên toàn hệ</td></tr>
+      <tr><td>Số cỡ chữ trên một màn hình</td><td class="v r num">5–6</td><td>Trần 6 bậc. Gọn hơn thì tốt</td></tr>
+      <tr><td>Bộ chữ</td><td class="v r nowrap">Newsreader + Be Vietnam Pro</td><td class="hold">Không đổi. Cả hai đã kiểm tra với dấu chồng</td></tr>
+      <tr><td>H1 trang chủ</td><td class="v r nowrap">100px / 300 / 1.04</td><td>Cần xác nhận lại biên độ — xem mục 07</td></tr>
+      <tr><td>Độ dài dòng văn bản, trung vị</td><td class="v r num">63 cpl</td><td class="no">Phải siết về ~55 cpl. Hiện cao nhất 68</td></tr>
+      <tr><td>Lỗi truy cập serious + critical</td><td class="v r num">0</td><td class="hold">Giữ 0 trên mọi màn hình bàn giao</td></tr>
+      <tr><td>Chữ số trong cột so sánh</td><td class="v r nowrap">tabular-nums</td><td class="hold">Canh phải, chữ số đều bề ngang</td></tr>
+      <tr><td>Dấu trừ trong sổ buổi</td><td class="v r nowrap">U+2212</td><td class="hold">Không dùng hyphen</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Con số “0 card” không tự nó là ưu điểm — nó là mức độ trung thành với hướng đã chọn: hairline làm cấu trúc. Nếu có lý do thiết kế đủ mạnh để phá một dòng trong bảng này, hãy nêu ra để bàn, đừng lặng lẽ phá.</p>
+</section>
+
+<section>
+  <p class="snum">04 — Việc cần thiết kế</p>
+  <h2>Năm hạng mục</h2>
+  <p class="sub">Bốn hạng mục đầu là ưu thế thật của hướng còn lại, đã đo được, cần port sang Soul-1. Hạng mục thứ năm là điểm yếu tự phát hiện. Mã <code>F0x</code> là mã tính năng trong kế hoạch triển khai.</p>
+  <div class="jobs">
+    <div>
+      <span class="k">01</span>
+      <span class="t">Siết measure xuống ~55 cpl</span>
+      <span class="f">F00 · hệ nền</span>
+      <span class="why">Trung vị hiện tại 63, cao nhất 68 — chạm mép trên của vùng đọc thoải mái. Sửa ở token, mọi màn hình hưởng. Đây là việc rẻ nhất và tác động rộng nhất trong năm việc.</span>
+    </div>
+    <div>
+      <span class="k">02</span>
+      <span class="t">Điểm neo mép trái cho danh sách dài</span>
+      <span class="f">F03 · F07</span>
+      <span class="why">Danh sách học viên hiện thuần chữ, không có gì để mắt bám khi quét xuống. Avatar chữ cái là một lời giải đã được kiểm chứng, nhưng không bắt buộc — cần một điểm neo, không nhất thiết là hình tròn.</span>
+    </div>
+    <div>
+      <span class="k">03</span>
+      <span class="t">Định vị cột “hôm nay” trên lịch tuần</span>
+      <span class="f">F06</span>
+      <span class="why">Hiện đánh dấu bằng nhãn cỡ nhỏ, mắt phải tìm. Nền cột nhạt định vị nhanh hơn. Lịch tuần là màn hình vận hành chính, dùng nhiều nhất trong ngày.</span>
+    </div>
+    <div>
+      <span class="k">04</span>
+      <span class="t">Nhãn cho ô ảnh đang chờ</span>
+      <span class="f">F02</span>
+      <span class="why">Studio sẽ cung cấp ảnh sau; hiện ô ảnh để trống hoàn toàn, giữ đúng hình học cuối cùng nhưng không nói gì với người đang xem. Cần một nhãn nói rõ ảnh đang chờ, không phải ảnh bị lỗi.</span>
+    </div>
+    <div>
+      <span class="k">05</span>
+      <span class="t">Thu thước giờ lịch tuần về khung thật</span>
+      <span class="f">F06</span>
+      <span class="why">Thước hiện trải 06–19 vì có lớp tối, để lại khoảng trống lớn giữa trưa. Cần khung giờ thật studio dạy, và cách xử lý khoảng nghỉ giữa ngày.</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="snum">05 — P3</p>
+  <h2>Quy tắc nội dung <span class="tag t-m">đo</span></h2>
+  <p class="sub">Đây là mục có rủi ro cao nhất, và là lý do chính hướng còn lại bị loại. Khách trực tiếp tham gia nghiệm thu từ 28.09 đến 02.10 — mọi thứ hiển thị trên trang công khai sẽ được đọc như một lời khẳng định.</p>
+  <div class="rules">
+    <div>
+      <h3>Không được xuất hiện</h3>
+      <ul>
+        <li><b>Chứng chỉ, bằng cấp, số năm kinh nghiệm của HLV</b>Studio chưa cung cấp. Đây là bịa thông tin hành nghề của một người có thật.</li>
+        <li><b>Tên người Việt trông như thật trong dữ liệu mẫu</b>Dùng dạng tự khai là mẫu: “Học viên Demo 01”.</li>
+        <li><b>Giá gói và danh mục gói</b>Chưa xác nhận. Không dựng bảng giá có số.</li>
+        <li><b>Giờ mở cửa</b>Chưa ai cung cấp.</li>
+        <li><b>Số liệu kinh doanh</b>Doanh thu tháng, phần trăm tăng trưởng, tổng học viên — không có backend nào tính ra chúng ở giai đoạn này.</li>
+        <li><b>“Tối đa 3 người mỗi lớp”</b>Đây là con số của cơ sở Đà Nẵng. Quy tắc nghiệp vụ ghi rõ không được xuất hiện trong nội dung Nha Trang.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Cách xử lý chỗ trống</h3>
+      <ul>
+        <li><b>Ô trống trông như ô trống đang chờ</b>Giữ nguyên hình học cuối cùng để bố cục không nhảy khi nội dung về, nhưng có nhãn nói rõ đang chờ gì.</li>
+        <li><b>Nhãn nói thật, không nói khéo</b>“Ảnh studio — đang chờ” đúng hơn “Sắp ra mắt”.</li>
+        <li><b>Số chưa có thì để trống, không để 0</b>0 là một giá trị, không phải trạng thái thiếu dữ liệu.</li>
+        <li><b>Banner “dữ liệu mẫu” không cứu được trang công khai</b>Banner nằm trên màn hình vận hành. Tên HLV, chứng chỉ, giá và giờ mở cửa nằm ở nơi khách hàng thật đọc.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="snum">06 — Ngưỡng</p>
+  <h2>Phải đạt, không thương lượng</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Ngưỡng</th><th>Mức</th><th>Vì sao</th></tr></thead>
+    <tbody>
+      <tr><td>Lỗi truy cập serious + critical</td><td class="v nowrap">0 · axe-core</td><td>Chuẩn hiện tại của Soul-1. Hướng còn lại có 103 lỗi, trong đó 95 lỗi tương phản — quỹ sửa không có trong kế hoạch</td></tr>
+      <tr><td>Tương phản chữ trên nền</td><td class="v nowrap">WCAG AA</td><td>Cả chế độ sáng và tối</td></tr>
+      <tr><td>Thông tin mã hoá bằng màu</td><td class="v nowrap">Luôn có tầng thứ hai</td><td>Chữ, ký hiệu hoặc vị trí. Trạng thái lớp tô nền màu làm người mù màu mất một tầng thông tin</td></tr>
+      <tr><td>Thiết bị</td><td class="v nowrap">Desktop + điện thoại</td><td>Khách đã chốt web dùng tốt trên cả hai; chưa làm ứng dụng riêng</td></tr>
+      <tr><td>Lịch tuần</td><td class="v nowrap">Dùng thư viện có sẵn</td><td>Kế hoạch chốt không tự xây calendar. Thiết kế chip lớp phải override được, xem mục 07</td></tr>
+      <tr><td>Ngân sách dựng giao diện</td><td class="v nowrap">195 giờ / 58 hạng mục</td><td>≈ 3,4 giờ mỗi màn hình. Không có chỗ cho màn hình ngoại lệ — mọi thứ phải tái dùng component</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Ngưỡng cuối là ngưỡng dễ bị bỏ qua nhất. Một màn hình được thiết kế riêng, dù đẹp, sẽ ăn mất quỹ của ba màn hình khác.</p>
+</section>
+
+<section>
+  <p class="snum">07 — Cần trả lời</p>
+  <h2>Ba câu chưa có dữ liệu</h2>
+  <p class="sub">Ba câu này chặn việc bắt đầu. Câu 1 và 2 cần bên thiết kế trả lời; câu 3 cần phía kế hoạch.</p>
+  <div class="q">
+    <div>
+      <p class="ask">Bảng 6 cột hiển thị thế nào ở 400px?</p>
+      <p class="ctx">Danh sách học viên hiện 6 cột, mọi cột đều là dữ kiện. Giữ 6 cột và cuộn ngang, hay rút còn 3 cột với hàng mở rộng? Toàn bộ số đo hiện có đều lấy ở 1440×900 — <span class="tag t-j">chưa đo</span> ở khổ điện thoại.</p>
+    </div>
+    <div>
+      <p class="ask">Thư viện lịch nào, và chip lớp override được tới đâu?</p>
+      <p class="ctx">Chip lớp của Soul-1 là hình chữ nhật kẻ, góc vuông, một đường gáy 2px bên trái mang đúng một thông tin: đầy hay còn chỗ. Phần lớn thư viện lịch mặc định ra card bo góc. Cần xác nhận trước khi F06 bắt đầu.</p>
+    </div>
+    <div>
+      <p class="ask">Mốc thời gian trong kế hoạch có còn hiệu lực không?</p>
+      <p class="ctx">Kế hoạch triển khai đặt ngày phát triển đầu tiên là 10.08.2026 và ghi trạng thái toàn bộ 58 hạng mục là “chưa bắt đầu”. Hôm nay là 14.09. Các cửa sổ F02, F03, F05 và F06 đều đã trôi qua theo lịch cũ. Cần chốt lại mốc trước khi ấn định hạn giao thiết kế.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="snum">08 — Bàn giao</p>
+  <h2>Cần nhận được gì</h2>
+  <div class="rules">
+    <div>
+      <h3>Trong phạm vi lần này</h3>
+      <ul>
+        <li><b>Hệ token</b>Màu, thang chữ, thang khoảng cách, bo góc — tối đa 3 giá trị. Dạng biến để nhập thẳng vào mã, kèm bản đọc được cho người.</li>
+        <li><b>Specimen tiếng Việt</b>Dấu chồng ở H1 và ở nhãn viết hoa giãn chữ. Kèm ngưỡng leading an toàn cho từng bậc chữ.</li>
+        <li><b>Năm hạng mục ở mục 04</b>Mỗi hạng mục: một trạng thái desktop và một trạng thái 400px.</li>
+        <li><b>Đặc tả chip lớp</b>Kích thước, đường gáy, cách thể hiện lớp đầy so với lớp còn chỗ.</li>
+        <li><b>Trạng thái rỗng</b>Cách trình bày ô ảnh chờ, bảng chưa có dòng, số chưa có dữ liệu.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ngoài phạm vi giai đoạn này</h3>
+      <ul>
+        <li><b>Bộ icon mới</b>Hệ hiện tại gần như không dùng icon. Nếu cần, nêu lý do cụ thể theo màn hình.</li>
+        <li><b>Minh hoạ và motion</b>Chưa có ngân sách dựng.</li>
+        <li><b>Thanh toán trực tuyến</b>Giai đoạn này chỉ ghi nhận tiền mặt và chuyển khoản.</li>
+        <li><b>Giao diện gửi tin tự động</b>Zalo, WhatsApp, SMS đều chưa thuộc phạm vi — chỉ có nút mở kênh.</li>
+        <li><b>Ứng dụng di động, đa cơ sở, báo cáo nâng cao</b>Đã chốt để sau MVP.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="snum">09 — Tinh thần</p>
+  <h2>Đọc lại theo thước đo</h2>
+  <div class="callout">
+    <p class="big">Hướng còn lại trông đắt hơn trong ba giây đầu. Soul-1 giữ được ở phút thứ ba.</p>
+    <p><span class="tag t-j">suy đoán</span> &nbsp;Card bo góc, pill màu, avatar tròn là ngôn ngữ dễ thiện cảm ngay — và cũng là ngôn ngữ mà mọi template quản trị đều nói. Đây là công cụ nhân viên studio mở tám tiếng mỗi ngày, không phải trang đích xem một lần.</p>
+    <p><span class="tag t-o">quan sát</span> &nbsp;Hệ này nghiêm ngặt, nên nó dễ bị rò rỉ: một card thêm vào vì “chỗ này cần tách ra”, một pill thêm vào vì “trạng thái cần nổi”. Mỗi lần như vậy đều có lý do hợp lý tại chỗ, và cộng lại thì hệ không còn.</p>
+    <p><span class="tag t-m">đo</span> &nbsp;Cách kiểm tra nhanh một đề xuất: đếm card, đếm pill, đếm bóng đổ, đếm giá trị bo góc, đo độ dài dòng. Năm con số đó nói được phần lớn.</p>
+  </div>
+</section>
+
+<footer>
+  Căn cứ: bản đối chiếu Soul-1 / Soul-2 ngày 25.08.2026 (đo bằng DOM/CSSOM và axe-core) · Danh sách 51 chức năng đã được khách xác nhận · Kế hoạch triển khai MVP nội bộ, 58 hạng mục / 527 giờ · Mọi nhận định trong tài liệu này đều mang nhãn nguồn bằng chứng
+</footer>
+
+</div>
