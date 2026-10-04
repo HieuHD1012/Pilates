@@ -1,5 +1,5 @@
 import { test, expect, account, adminToken, signIn, uid, call, API } from "./helpers/live";
-import type { AnnouncementResponse } from "../app/lib/api/schema";
+import type { AnnouncementResponse, PublicAnnouncement } from "../app/lib/api/schema";
 
 test("STAFF creates, edits, publishes, hides and deletes announcements through the UI", async ({
   page,
@@ -35,7 +35,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   );
   await visitor.goto("/khuyen-mai");
   expect(
-    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+    ((await (await publicRead).json()) as PublicAnnouncement[]).some(
       (item) => item.id === row.id,
     ),
   ).toBe(false);
@@ -61,7 +61,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   );
   await visitor.reload();
   expect(
-    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+    ((await (await publicRead).json()) as PublicAnnouncement[]).some(
       (item) => item.id === row.id,
     ),
   ).toBe(true);
@@ -78,7 +78,7 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   );
   await visitor.reload();
   expect(
-    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+    ((await (await publicRead).json()) as PublicAnnouncement[]).some(
       (item) => item.id === row.id,
     ),
   ).toBe(false);

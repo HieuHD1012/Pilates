@@ -25,6 +25,7 @@ if ($Action -eq 'check') {
 
 $savedEnvironment = @{}
 $liveEnvironment = @{
+    PYTHONUTF8 = '1'
     DATABASE_URL = 'postgresql+psycopg://pilates:pilates@localhost:5435/pilates_fe_test'
     ENVIRONMENT = 'test'
     JWT_SECRET = "isolated-e2e-$([guid]::NewGuid())"
