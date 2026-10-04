@@ -153,7 +153,7 @@ export const FIRST_VISIT_STEPS = [
     title: "Đặt lớp trực tuyến",
     // Neutral on purpose. "From the second session" is the usual journey, not a
     // rule the backend enforces, and the owner has not confirmed it as policy
-    // (SOUL_BUSINESS_AUDIT.md, BR-10).
+    // (docs/BUSINESS_RULES.md, cancellation policy).
     body: "Khi đã có tài khoản và gói, bạn tự đặt, đổi hoặc hủy lớp trong tài khoản của mình.",
   },
 ];

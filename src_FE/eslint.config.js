@@ -14,8 +14,6 @@ export default tseslint.config(
       "test-results/**",
       "coverage/**",
       "public/mockServiceWorker.js",
-      "docs/source/**",
-      ".agents/**",
     ],
   },
   js.configs.recommended,
@@ -116,15 +114,5 @@ export default tseslint.config(
   {
     files: ["e2e/**/*.ts", "scripts/**/*.mjs", "*.config.{ts,js,mjs}"],
     languageOptions: { globals: { ...globals.node } },
-  },
-  {
-    /**
-     * Các script `tang1-*` là driver Playwright: chúng chứa cả code chạy trong
-     * Node và code chạy trong trang qua `page.evaluate`. Cần cả hai bộ global —
-     * tắt `no-undef` thì mất luôn lỗi gõ sai tên thật.
-     */
-    files: ["scripts/tang1-*.mjs"],
-    languageOptions: { globals: { ...globals.node, ...globals.browser } },
-    rules: { "no-restricted-imports": "off" },
   },
 );

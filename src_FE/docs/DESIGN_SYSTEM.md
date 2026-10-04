@@ -24,7 +24,7 @@ the answer is a token, not an exception.
 
 | Token           | Value     | Contrast on `sand`   | Use                                                             |
 | --------------- | --------- | -------------------- | --------------------------------------------------------------- |
-| `sand`          | `#fff5ec` | —                    | Public canvas (Soul cream)                                      |
+| `sand`          | `#fff5ec` | —                    | Public canvas (cream)                                           |
 | `sand-deep`     | `#f8e9da` | —                    | Recessed public field (linen), hover                            |
 | `chalk`         | `#fffaf5` | —                    | Application canvas                                              |
 | `paper`         | `#ffffff` | —                    | Application surfaces: tables, panels, dialogs                   |
@@ -37,7 +37,7 @@ the answer is a token, not an exception.
 | `rule-dark`     | `#4b3c2f` | —                    | Hairline on dark fields                                         |
 | `copper`        | `#9a4e2d` | 5.58 : 1             | The brand colour: public CTA, links, focus ring, "today"        |
 | `copper-2`      | `#7a3b20` | —                    | Hover / pressed                                                 |
-| `copper-wash`   | `#fce5d1` | —                    | Selected choice chip, lead-context note (Soul peach)            |
+| `copper-wash`   | `#fce5d1` | —                    | Selected choice chip, lead-context note (peach)                 |
 | `copper-bright` | `#c97b4b` | 3.04 : 1             | **Non-text only**: display numerals ≥ 40px, accent strokes      |
 | `amber`         | `#d4a574` | 8.19 : 1 on ink-deep | Accent text on the ink field only                               |
 | `success`       | `#3c6a3b` | 5.89 : 1             | Status only; public "Còn chỗ" dot                               |
@@ -45,8 +45,8 @@ the answer is a token, not an exception.
 | `danger`        | `#b3261e` | 6.08 : 1             | Status and destructive actions only                             |
 | `info`          | `#2b5673` | 7.28 : 1             | Status only                                                     |
 
-Values from ADR 0005 ("Warm Measure"), which replaced the lacquer red and
-green-black ink with the owner's Soul palette. White on `copper` is 6.00 : 1;
+Values are governed by ADR 0005 and the current Reference Lock.
+White on `copper` is 6.00 : 1;
 white on `ink` is 15.42 : 1.
 
 **Two colour rules that matter**
@@ -119,9 +119,8 @@ and a 0.9s draw read as a pop.
 `rule-draw` and `fade-rise` are the reveal keyframes; `fade-in` (content replaced
 in place) and `rise-in` (a bar arriving at a phone edge) are the two interaction
 keyframes. Scroll reveals exist only on the narrative pages, on desktop, for a
-section hairline and the method photograph — see `app/features/public/motion.tsx` and
-`docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CHUYEN_DONG.md` at the
-repository root. Reduced motion is handled once, globally, in the base layer.
+section hairline and the method photograph — see `app/features/public/motion.tsx` and the current
+[Reference Lock](REFERENCE_LOCK.md). Reduced motion is handled once, globally, in the base layer.
 
 ## Utilities worth knowing
 

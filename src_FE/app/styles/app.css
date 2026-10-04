@@ -497,8 +497,8 @@
    SCROLL REVEALS — narrative pages, desktop, secondary elements only.
    Armed by app/features/public/motion.tsx, which sets <html data-motion> only
    after marking what is already on screen. Without that attribute every
-   [data-reveal] element is simply visible. The decision table is
-   docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CHUYEN_DONG.md.
+   [data-reveal] element is simply visible. The current motion contract is
+   docs/DESIGN_SYSTEM.md.
    ══════════════════════════════════════════════════════════════════════════ */
 html[data-motion] {
   --reveal-rule: 900ms;

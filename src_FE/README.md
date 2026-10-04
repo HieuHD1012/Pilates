@@ -4,21 +4,18 @@ Public website and studio-management application for a boutique Pilates studio
 in Nha Trang. React 19 · React Router v8 (framework mode, `ssr: false`) ·
 Vite 8 · TypeScript 6 strict · Tailwind CSS 4 · TanStack Query 5.
 
-The owner confirmed the name **J Pilates** on 2026-10-03. Soul references in
-research and provisional-policy provenance identify the Đà Nẵng reference site,
-not this product. Existing `soul:*` session-storage keys and demo account
-credentials remain compatible with previously created local sessions/accounts;
-they are not public brand text.
+The product name is **J Pilates**. Existing `soul:*` session-storage keys and
+demo account credentials remain compatible with previously created local
+sessions/accounts; they are not public brand text.
 
 ## Start here
 
 |                                                      |                                              |
 | ---------------------------------------------------- | -------------------------------------------- |
 | **[AGENTS.md](AGENTS.md)**                           | The contract. Read before changing anything. |
-| [AI_PLAYBOOK.md](AI_PLAYBOOK.md)                     | The loop to run for every feature.           |
 | [docs/PRODUCT.md](docs/PRODUCT.md)                   | What this product is and what is confirmed.  |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)         | Stack, rendering model, layers.              |
-| [docs/DESIGN_DIRECTION.md](docs/DESIGN_DIRECTION.md) | Why the design looks like this.              |
+| [docs/DESIGN_DIRECTION.md](docs/DESIGN_DIRECTION.md) | Current approved visual direction.           |
 | [docs/REFERENCE_LOCK.md](docs/REFERENCE_LOCK.md)     | The visual governance document.              |
 | [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md)     | What the studio has not answered yet.        |
 

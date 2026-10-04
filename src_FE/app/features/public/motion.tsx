@@ -4,8 +4,7 @@ import { useLocation } from "react-router";
 /**
  * Scroll reveals on the public site.
  *
- * The decision behind every line here is in
- * docs/thiet-ke/huong-thiet-ke-2026-10/PHAN_TICH_CHUYEN_DONG.md. In short: the
+ * Follow docs/DESIGN_SYSTEM.md and docs/REFERENCE_LOCK.md: the
  * narrative pages only (home, studio), desktop with a mouse only, secondary
  * elements only (a section's hairline, the method photograph), once per page
  * load, and never for anything already on screen when the page opens. Body

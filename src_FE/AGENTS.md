@@ -10,10 +10,9 @@ this file wins.
 1. AGENTS.md
 2. Accepted ADRs (docs/adr/)
 3. Canonical docs (docs/*.md)
-4. Scoped agent rules (.cursor/rules/*.mdc, CLAUDE.md)
-5. Confirmed feature requirements (docs/PRODUCT.md, docs/source/)
-6. Existing approved implementation precedent (the three reference screens)
-7. AI preference — always last
+4. Confirmed feature requirements (docs/PRODUCT.md)
+5. Existing approved implementation precedent (the three reference screens)
+6. AI preference — always last
 ```
 
 ---
@@ -157,7 +156,7 @@ app/
   styles/      The token layer
   test/        Vitest setup and the provider-aware render helper
   ui/          Design-system primitives
-docs/          Canonical documentation; docs/adr/ for decisions; docs/source/ for the brief
+docs/          Current product, design and deployment contracts; docs/adr/ for decisions
 e2e/           Playwright specs. `*.spec.ts` run against the real build artifact;
                `*.app.spec.ts` run against the dev server, because MSW only starts
                in development and the built artifact has no backend at all

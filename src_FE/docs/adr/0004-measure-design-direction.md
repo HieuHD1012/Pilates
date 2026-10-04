@@ -1,49 +1,21 @@
-# ADR 0004 — "Measure" as the design direction
+# ADR 0004 — Editorial and operational typography
 
-**Status:** Accepted · 2026-08-18
-
-## Context
-
-The brief deliberately refused to name a visual style and asked for a
-researched, committed direction rather than an averaged one. The existing Soul
-site belongs to the Đà Nẵng branch and is brand ancestry, not a specification.
+**Status:** Accepted foundations; colour decision superseded by ADR 0005.
 
 ## Decision
 
-Adopt **Measure**, recorded in `docs/DESIGN_DIRECTION.md` and governed by
-`docs/REFERENCE_LOCK.md`. Its three load-bearing decisions:
+Use a shared grid and hairline structure for editorial public content. Use
+Newsreader for display text and tabular figures, and Be Vietnam Pro for body
+text and controls. Preserve readable Vietnamese diacritics.
 
-1. The hairline rule is the structural unit; content is ruled, not carded.
-2. Numerals are set in Newsreader with tabular figures and optical sizing.
-3. One chromatic mark — an oxidised lacquer red — on plaster and green-black ink.
-
-Two of the three are evidence-driven rather than aesthetic:
-
-- **Syne**, which sets the largest numerals on the existing site, ships no
-  Vietnamese subset (verified against the Google Fonts API). The incumbent type
-  system cannot set its own market's language.
-- **Be Vietnam Pro** has no `tnum` and proportional digits (verified with
-  `fontTools` against the shipped web font). A product built on session
-  balances, capacities and prices cannot align a column in it. Hence the serif
-  numeral — a constraint turned into the product's signature.
+The current palette and public composition are governed by
+[ADR 0005](0005-warm-measure-palette.md),
+[Reference Lock](../REFERENCE_LOCK.md) and
+[Design System](../DESIGN_SYSTEM.md). Staff panels and navigation follow
+[ADR 0006](0006-operational-workspace.md).
 
 ## Consequences
 
-- The token layer deletes Tailwind's stock colour, radius and shadow namespaces,
-  so the direction cannot be diluted by reaching for a default utility.
-- Public and operational surfaces share tokens, rules, figures and status
-  vocabulary while differing in density and pacing.
-- Photography is specified as briefs before it exists, and the layouts are
-  required to hold up without it.
-- No all-caps Vietnamese anywhere, which rules out the conventional tracked-caps
-  eyebrow and replaces it with `label-micro`.
-
-## Rejected
-
-Coastal Nha Trang · quiet-luxury cream/sage/serif · dark editorial fashion-film ·
-clinical rehabilitation · soft organic. Reasons in `docs/DESIGN_DIRECTION.md` §3.
-
-## Revisit if
-
-The triggers in `docs/REFERENCE_LOCK.md` § "Reconsideration" occur. Not for
-preference, and never screen by screen.
+Use the declared tokens and Figures primitive. Keep application task density
+and public editorial hierarchy appropriate to their respective audiences.
+Historical style comparisons and rejected directions live on legacy branches.

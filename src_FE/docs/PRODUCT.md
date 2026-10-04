@@ -26,11 +26,8 @@ Class times/capacity are immutable after creation. Recurrence omits known
 conflicts and writes the currently available set atomically. Payments are staff-recorded cash/transfer,
 not online payment. Contact links do not imply automated messaging.
 
-The earlier workbook `docs/source/Pilates_Danh_Sach_Chuc_Nang_Va_Cau_Hoi_Xac_Nhan.xlsx`
-is discovery history, not a current acceptance receipt. Its old 8-hour Private
-window, waitlists, staff booking and 26-week recurrence limit were
-superseded by the implemented backend. Current cancellation is Group 4h/Private
-1h. Do not restore unsupported features to satisfy historical counts.
+Current cancellation is Group 4h/Private 1h. Product scope and the API
+contract govern acceptance; do not restore excluded historical features.
 
 ## Readiness
 
@@ -49,7 +46,6 @@ it does not prove every business scenario on a deployed API.
 - Capped APIs without pagination still need scale decisions; the UI must never
   silently treat incomplete records as a complete operational answer.
 
-See [FE_PRODUCTION_REVIEW_REPORT.md](FE_PRODUCTION_REVIEW_REPORT.md) for measured
-results and remaining gates, and [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) for studio
+See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for remaining release gates, and [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) for studio
 and backend decisions. Historical “all delivered” or route-parity statements
 are not current production approval.

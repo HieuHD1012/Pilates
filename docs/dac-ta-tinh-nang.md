@@ -12,7 +12,7 @@ bấm vào thì chuyện gì xảy ra**. Không có mã nguồn trong tài liệ
 
 **Quy ước đọc khung màn hình:** các khung dưới đây là **bố cục thông tin**, không
 phải bản thiết kế đồ hoạ. Chúng nói *màn hình có gì và xếp theo thứ tự nào*.
-Hình thức cuối cùng theo hệ thiết kế Soul-1 ([`thiet-ke/`](thiet-ke/)).
+Hình thức cuối cùng theo hệ thiết kế Soul-1 ([Hệ thiết kế hiện hành](../src_FE/docs/DESIGN_SYSTEM.md)).
 
 > Ký hiệu: `[ Nút ]` · `( ) Chọn một` · `▸` mở rộng · `▪` mục danh sách ·
 > `⋯` còn nữa · `⚠` cảnh báo hiện cho người dùng.
@@ -756,17 +756,12 @@ Thanh toán online · tự động gửi Zalo/WhatsApp/SMS · QR check-in · đ�
 lớp · ghi chú bài tập · lương và hoa hồng HLV · nhiều cơ sở, nhiều phòng, quản lý
 thiết bị · ứng dụng di động · báo cáo nâng cao · chế độ nền tối.
 
-## Phụ lục E · Hiện trạng ngày 15/09/2026
+## Phụ lục E · Điều kiện ra mắt
 
-| Phần | Trạng thái |
-|---|---|
-| Quy tắc nghiệp vụ, API, tài liệu | Xong — 88 endpoint, 522 test xanh |
-| Giao diện người dùng (`src_FE/`) | **Chưa bắt đầu** — đây là việc quyết định ngày ra mắt |
-| Nhập dữ liệu thật của studio | Chưa — chờ studio điền file Excel mẫu |
-| Chạy thử với người dùng thật (UAT) | Chưa |
-
-Mốc MVP đang giữ ở **18/11/2026**, với điều kiện phần giao diện bắt đầu ngay.
-Chi tiết tiến độ: [`plans/260914-0856-pilates-mvp-rebaseline/plan.md`](../plans/260914-0856-pilates-mvp-rebaseline/plan.md).
+Giao diện công khai và các màn vận hành đã được triển khai. Trước khi ra mắt,
+hoàn thành dữ kiện studio, ảnh thật, kiểm thử với API/dữ liệu kiểm soát và
+nghiệm thu vận hành theo [checklist release](../src_FE/docs/RELEASE_CHECKLIST.md).
+Test cục bộ không thay thế nghiệm thu trên môi trường triển khai.
 
 ---
 
@@ -777,5 +772,5 @@ Chi tiết tiến độ: [`plans/260914-0856-pilates-mvp-rebaseline/plan.md`](..
 | Vì sao quy tắc lại như vậy | [`business-rules.md`](business-rules.md) |
 | Màn hình này gọi API nào | [`api-cho-frontend.md`](api-cho-frontend.md) |
 | API nhận gì, trả gì | [`api/README.md`](api/README.md) |
-| Giao diện phải trông ra sao | [`thiet-ke/`](thiet-ke/) |
+| Giao diện phải trông ra sao | [Hệ thiết kế hiện hành](../src_FE/docs/DESIGN_SYSTEM.md) |
 | Triển khai lên máy chủ | [`deployment.md`](deployment.md) |

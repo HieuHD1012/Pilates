@@ -21,7 +21,7 @@ behavior below; studio facts and release acceptance remain separate decisions.
 | Q15 Progress photos     | Protected endpoints and authorized FE view exist; ADMIN/assigned TRAINER/self access, STAFF denied, ADMIN delete | Consent, retention and production permission tests                   |
 | Cancellation window     | GROUP 4h, PRIVATE 1h, exact deadline included by current server                                                  | Owner confirmation that public copy and deployed API agree           |
 
-## Gaps found when wiring the real API (18/09/2026)
+## Current API constraints
 
 The frontend now calls the backend's own 88 endpoints (`docs/API_MAPPING.md`).
 Five things a screen wanted turned out to have no endpoint behind them. None is
@@ -133,7 +133,7 @@ copied: another city's address, phone or map link is a wrong door, not a policy.
 | Private cancellation window 1 hour (was 8)     | **Not Soul** — matches what the backend enforces; Soul publishes both 12h and 3h | `CANCELLATION_POLICY.private`                   | Owner picks one window per format; backend and copy must agree. |
 | Demo catalogue 5/10/20/30 packs at Soul prices | Soul /packages                                                                   | `app/mocks/fixtures.ts` (DEMO, dev only)        | Real packages and prices are entered by staff.                  |
 
-## Staff workspace: what the redesign canvas showed but the API does not serve (03/10/2026)
+## Staff capabilities without API support
 
 The approved staff redesign (ADR 0006) drew a few things no endpoint provides.
 They are **not built**; each needs a backend answer first.
