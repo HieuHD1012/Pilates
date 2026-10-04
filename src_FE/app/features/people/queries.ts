@@ -251,6 +251,13 @@ export function useAccounts(params: AccountListParams = {}) {
   });
 }
 
+export function useAccount(accountId: number) {
+  return useQuery({
+    queryKey: queryKeys.accounts.detail(accountId),
+    queryFn: () => accountsApi.get(accountId),
+  });
+}
+
 /**
  * Creating a login.
  *

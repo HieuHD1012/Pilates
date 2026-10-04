@@ -73,7 +73,7 @@ function PublicHeader() {
   // label; repeating it in the same viewport is one subject rendered twice.
   // The consultation page IS the ask, so a header link to itself is noise.
   const pageOwnsTheAsk = ["/", "/dat-tu-van", "/goi-tap", "/lien-he"].includes(
-    location.pathname,
+    location.pathname.replace(/\/+$/, "") || "/",
   );
 
   // Reset during render rather than in an effect: navigating away must close

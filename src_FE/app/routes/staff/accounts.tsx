@@ -1,3 +1,4 @@
+import { AccountEdit } from "~/features/people/account-edit";
 import {
   CalendarDays,
   Eye,
@@ -716,6 +717,9 @@ function RowActions({
     return (
       <>
         <span className="absolute top-3 right-2">{menu}</span>
+        <div className="mt-3">
+          <AccountEdit accountId={account.id} />
+        </div>
         {button ? <div className="mt-3">{button}</div> : null}
         {feedback ? <div className="mt-2">{feedback}</div> : null}
       </>
@@ -727,6 +731,7 @@ function RowActions({
       <div className="flex items-center justify-end gap-1.5">
         {button}
         {menu}
+        <AccountEdit accountId={account.id} />
       </div>
       {feedback}
     </div>

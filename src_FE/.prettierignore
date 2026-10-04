@@ -3,6 +3,7 @@ build
 coverage
 playwright-report
 test-results
+visual-qa/live
 public/mockServiceWorker.js
 docs/source
 .agents

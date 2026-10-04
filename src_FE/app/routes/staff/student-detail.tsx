@@ -1,3 +1,4 @@
+import { ProgressGallery } from "~/features/people/photo-gallery";
 import {
   ChevronRight,
   DoorOpen,
@@ -26,7 +27,6 @@ import { useMySchedule } from "~/features/booking/queries";
 import { HistoryMonthPicker, useHistoryMonth } from "~/features/booking/history-range";
 import { PageControls } from "~/ui/page-controls";
 import {
-  useProgressPhotos,
   useStudent,
   useStudentOverview,
   useUpdateStudent,
@@ -879,46 +879,7 @@ function HistoryTab({ studentId }: { studentId: number }) {
  * token and re-authorised on every read, so there is no gallery of static URLs.
  */
 function PhotosTab({ studentId }: { studentId: number }) {
-  const query = useProgressPhotos(studentId);
-
-  return (
-    <Panel>
-      <PanelHeader
-        title="Ảnh tiến trình"
-        description="Các mốc chụp ảnh giúp theo dõi tiến trình của học viên theo thời gian."
-      />
-      <div className="px-4 md:px-5">
-        <QueryBoundary
-          query={query}
-          skeletonRows={3}
-          emptyTitle="Chưa có ảnh tiến trình"
-          emptyDescription="Ảnh do học viên hoặc huấn luyện viên phụ trách tải lên."
-          errorDescription="Không tải được danh sách ảnh."
-        >
-          {(photos) => (
-            <ul className="-mx-4 md:-mx-5">
-              {photos.map((photo) => (
-                <li
-                  key={photo.id}
-                  className="rule-b flex flex-wrap items-baseline justify-between gap-3 px-4 py-3 last:border-b-0 md:px-5"
-                >
-                  <span className="text-ink text-sm">
-                    <Figures>{formatDate(photo.taken_at)}</Figures>{" "}
-                    <Figures className="text-ink-2 text-xs">
-                      {formatTime(photo.taken_at)}
-                    </Figures>
-                  </span>
-                  <span className="text-ink-2 text-xs">
-                    Tải lên bởi tài khoản #{photo.uploaded_by}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </QueryBoundary>
-      </div>
-    </Panel>
-  );
+  return <ProgressGallery studentId={studentId} />;
 }
 
 /**

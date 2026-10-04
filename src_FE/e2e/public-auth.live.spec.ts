@@ -82,12 +82,20 @@ test("student changes profile and password through the real API", async ({
   await page.getByRole("button", { name: "Đổi mật khẩu", exact: true }).click();
   await expect(page.getByLabel(/^Mật khẩu hiện tại/)).toHaveValue("");
   await page.getByRole("button", { name: "Đăng xuất", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Xác nhận đăng xuất", exact: true })
+    .click();
   await expect(page).toHaveURL(/dang-nhap/);
   await signIn(page, data.studentAccount.email, "ci-changed-password-2026");
 });
 
 type MailList = { messages: { ID: string; To: { Address: string }[] }[] };
-async function resetUrl(request: Parameters<typeof fixture>[0], email: string) {
+async function resetUrl(
+  request: Parameters<typeof fixture>[0],
+  email: string,
+  previousUrl?: string,
+) {
   const mailpit = process.env.MAILPIT_URL ?? "http://127.0.0.1:8025";
   let id = "";
   await expect
@@ -99,13 +107,27 @@ async function resetUrl(request: Parameters<typeof fixture>[0], email: string) {
       return id;
     })
     .not.toBe("");
-  const body = (await (await request.get(`${mailpit}/api/v1/message/${id}`)).json()) as {
-    Text: string;
-    HTML: string;
+  const readUrl = async () => {
+    const body = (await (await request.get(`${mailpit}/api/v1/message/${id}`)).json()) as {
+      Text: string;
+      HTML: string;
+    };
+    const url = `${body.Text}\n${body.HTML}`.match(
+      /http:\/\/localhost:\d+\/dat-lai-mat-khau\?token=[A-Za-z0-9_-]+/,
+    )?.[0];
+    return url;
   };
-  const url = `${body.Text}\n${body.HTML}`.match(
-    /http:\/\/localhost:\d+\/dat-lai-mat-khau\?token=[A-Za-z0-9_-]+/,
-  )?.[0];
+  await expect
+    .poll(async () => {
+      const rows = (await (
+        await request.get(`${mailpit}/api/v1/messages`)
+      ).json()) as MailList;
+      id =
+        rows.messages.find((item) => item.To.some((to) => to.Address === email))?.ID ?? "";
+      return (await readUrl()) !== previousUrl;
+    })
+    .toBe(true);
+  const url = await readUrl();
   expect(url).toBeDefined();
   return url!;
 }
@@ -143,7 +165,7 @@ test("reset email is delivered locally; link works once and expired link is refu
     data.token,
   );
   databaseFixture("expire-reset", data.studentAccount.id);
-  await page.goto(await resetUrl(request, data.studentAccount.email));
+  await page.goto(await resetUrl(request, data.studentAccount.email, url));
   await page.getByLabel("Mật khẩu mới", { exact: false }).first().fill(PASSWORD);
   await page.getByLabel(/Nhập lại mật khẩu mới/).fill(PASSWORD);
   await page.getByRole("button", { name: "Lưu mật khẩu mới", exact: true }).click();

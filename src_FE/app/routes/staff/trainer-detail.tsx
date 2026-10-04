@@ -1,3 +1,4 @@
+import { TrainerPhotoUpload } from "~/features/people/photo-gallery";
 import {
   CalendarCheck,
   CalendarPlus,
@@ -177,6 +178,11 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
       <div className="grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-5 md:gap-6">
           <MonthStats trainerId={trainer.id} />
+          <Panel>
+            <PanelBody>
+              <TrainerPhotoUpload trainerId={trainer.id} />
+            </PanelBody>
+          </Panel>
 
           <Panel>
             <PanelHeader

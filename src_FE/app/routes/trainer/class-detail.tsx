@@ -113,9 +113,12 @@ export default function TrainerClassDetail() {
                   {entries.map((entry) => (
                     <li key={entry.id} className="rule-b py-3">
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-                        <span className="text-ink min-w-0 text-sm">
+                        <Link
+                          to={`/hlv/hoc-vien/${entry.student_id}`}
+                          className="text-ink min-w-0 text-sm underline underline-offset-4"
+                        >
                           {entry.student_name}
-                        </span>
+                        </Link>
                         <StatusBadge tone={STATUS[entry.status].tone}>
                           {STATUS[entry.status].label}
                         </StatusBadge>

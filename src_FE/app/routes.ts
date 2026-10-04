@@ -53,6 +53,7 @@ export default [
       route("lich-day", "routes/trainer/schedule.tsx"),
       route("lop/:classId", "routes/trainer/class-detail.tsx"),
       route("ho-so", "routes/trainer/profile.tsx"),
+      route("hoc-vien/:studentId", "routes/trainer/student-progress.tsx"),
     ]),
   ]),
 

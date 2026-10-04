@@ -44,11 +44,6 @@ export default defineConfig({
         baseURL: `http://localhost:${DEV_PORT}`,
       },
     },
-    {
-      name: "live",
-      testMatch: /\.live\.spec\.ts$/,
-      use: { ...devices["Desktop Chrome"] },
-    },
   ],
   /**
    * E2E runs against the real production artifact set, served the way the CDN

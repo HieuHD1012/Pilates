@@ -51,7 +51,7 @@ export async function account(
   request: APIRequestContext,
   token: string,
   role: "STAFF" | "ADMIN" | "TRAINER" | "STUDENT",
-  profile: { student_id?: number; trainer_id?: number } = {},
+  profile: { student_id?: number } = {},
 ) {
   const email = `${role.toLowerCase()}-${uid()}@example.com`;
   const row = await call<AccountResponse>(
@@ -94,9 +94,14 @@ export async function fixture(request: APIRequestContext) {
   const studentAccount = await account(request, token, "STUDENT", {
     student_id: student.id,
   });
-  const trainerAccount = await account(request, token, "TRAINER", {
-    trainer_id: trainer.id,
-  });
+  const trainerAccount = await account(request, token, "TRAINER");
+  await call(
+    request,
+    "PATCH",
+    `/trainers/${trainer.id}`,
+    { user_id: trainerAccount.id },
+    token,
+  );
   const staffAccount = await account(request, token, "STAFF");
   const type = await call<PackageTypeResponse>(
     request,
@@ -183,7 +188,9 @@ export const test = baseTest.extend<{ liveGuard: void }>({
     async ({ page }, use, info) => {
       const errors: string[] = [];
       const evidence: { method: string; path: string; status: number }[] = [];
-      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("pageerror", (error) =>
+        errors.push(`${new URL(page.url()).pathname}: ${error.message}`),
+      );
       page.on("response", (response) => {
         if (!response.url().startsWith(API)) return;
         const path = new URL(response.url()).pathname;
@@ -201,8 +208,10 @@ export const test = baseTest.extend<{ liveGuard: void }>({
       });
       expect(errors).toEqual([]);
       expect(
-        await page.evaluate(
-          async () => (await navigator.serviceWorker.getRegistrations()).length,
+        await page.evaluate(async () =>
+          navigator.serviceWorker
+            ? (await navigator.serviceWorker.getRegistrations()).length
+            : 0,
         ),
       ).toBe(0);
       expect(

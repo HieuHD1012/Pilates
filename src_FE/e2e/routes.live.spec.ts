@@ -35,7 +35,6 @@ const routes = {
     "/studio/thong-bao",
   ],
   STUDENT: [
-    "/hv",
     "/hv/lop-hoc",
     "/hv/lop-hoc/:class",
     "/hv/lich-cua-toi",

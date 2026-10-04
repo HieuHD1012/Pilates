@@ -1,3 +1,4 @@
+import { TrainerPhotoUpload } from "~/features/people/photo-gallery";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -57,6 +58,9 @@ export default function TrainerProfile() {
           {(trainer) => (
             <>
               <Portrait trainer={trainer} />
+              <div className="my-5">
+                <TrainerPhotoUpload trainerId={trainer.id} />
+              </div>
 
               <DetailList>
                 <DetailRow label="Họ và tên">{trainer.full_name}</DetailRow>

@@ -1,3 +1,4 @@
+import { ProgressGallery } from "~/features/people/photo-gallery";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -38,7 +39,8 @@ export default function StudentAccount() {
   const session = useSession();
   // `GET /auth/me` is the only source of `student_id`; the studio's own record
   // for that person is a second request against it.
-  const profile = useStudent(session.data?.student_id ?? null);
+  const studentId = session.data?.student_id ?? null;
+  const profile = useStudent(studentId);
   const packages = useStudentPackages();
   const logout = useLogout();
   const [confirming, setConfirming] = useState(false);
@@ -139,7 +141,9 @@ export default function StudentAccount() {
                   <DetailRow label="Tên gói">{active.name_snapshot}</DetailRow>
                   <DetailRow label="Số buổi còn lại">
                     <span className="flex items-baseline gap-1.5">
-                      <Figures display className="text-ink text-2xl">{active.balance_cached}</Figures>
+                      <Figures display className="text-ink text-2xl">
+                        {active.balance_cached}
+                      </Figures>
                       <span className="text-ink-2 text-xs">
                         / <Figures>{active.credits_snapshot}</Figures> buổi
                       </span>
@@ -155,6 +159,11 @@ export default function StudentAccount() {
         </div>
       </section>
 
+      {studentId !== null ? (
+        <div className="mt-8">
+          <ProgressGallery studentId={studentId} />
+        </div>
+      ) : null}
       <nav aria-label="Trang liên quan" className="rule-t mt-8">
         <ul>
           {STUDENT_SECONDARY_NAV.map((item) => {
