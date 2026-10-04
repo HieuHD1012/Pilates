@@ -3,7 +3,8 @@ import { Link } from "react-router";
 
 import { useLeads } from "~/features/leads/queries";
 import type { LeadResponse, LeadStatus } from "~/lib/api/schema";
-import { formatDate, formatPhone, formatTime, telHref } from "~/lib/format";
+import { cn } from "~/lib/cn";
+import { formatDate, formatDayMonth, formatPhone, formatTime, telHref } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Figures } from "~/ui/figure";
 import { PageHeader } from "~/ui/layout";
@@ -12,7 +13,6 @@ import { StatusBadge, type StatusTone } from "~/ui/status";
 import {
   Avatar,
   Panel,
-  PanelFooter,
   SegmentFilter,
   Toolbar,
   WorkspacePage,
@@ -190,27 +190,36 @@ export default function StaffLeads() {
                   new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
               );
 
+              // Filtered to one status, every row would carry the same pill:
+              // the tab already says it (docs/UI_QUALITY.md, principle 2).
+              const showStatus = status === "all";
               return (
-                <ul aria-label="Khách quan tâm, mới nhất trước" className="-mx-4 md:-mx-5">
-                  {sorted.map((lead) => (
-                    <li key={lead.id} className="rule-b last:border-b-0">
-                      <LeadRow lead={lead} />
-                    </li>
-                  ))}
-                </ul>
+                <div className="-mx-4 md:-mx-5">
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      "rule-b text-ink-2 bg-chalk hidden px-5 py-2.5 text-xs font-medium lg:grid lg:gap-6",
+                      showStatus ? ROW_COLUMNS_WITH_STATUS : ROW_COLUMNS,
+                    )}
+                  >
+                    <span className="pl-12">Khách</span>
+                    <span>Nhu cầu</span>
+                    <span>Nhận lúc</span>
+                    {showStatus ? <span>Trạng thái</span> : null}
+                  </div>
+                  <ul aria-label="Khách quan tâm, mới nhất trước">
+                    {sorted.map((lead) => (
+                      <li key={lead.id} className="rule-b last:border-b-0">
+                        <LeadRow lead={lead} showStatus={showStatus} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               );
             }}
           </QueryBoundary>
         </div>
 
-        {query.data && query.data.length > 0 ? (
-          <PanelFooter>
-            <span>
-              Đang hiển thị <Figures className="text-ink">{query.data.length}</Figures>{" "}
-              khách
-            </span>
-          </PanelFooter>
-        ) : null}
         <PageControls
           offset={offset}
           limit={LIMIT}
@@ -223,59 +232,102 @@ export default function StaffLeads() {
   );
 }
 
-/**
- * One enquiry as a person: who, when, how to reach them, what they asked for,
- * and where it stands.
- *
- * The name's link is stretched over the whole row so the row is the target;
- * the phone sits above that layer as its own `tel:` link, because calling back
- * is the reason this list exists. The need is never truncated — a Vietnamese
- * sentence about a lower-back problem is why staff pick up the phone, and P5
- * forbids resolving it by hover — so it wraps onto as many lines as it needs.
- */
-function LeadRow({ lead }: { lead: LeadResponse }) {
+/** The number as its own `tel:` link, above the row's stretched link. */
+function PhoneLink({ phone, className }: { phone: string; className?: string }) {
   return (
-    <div className="hover:bg-sand/70 relative flex items-start gap-3 px-4 py-4 transition-colors duration-200 md:px-5">
-      <Avatar name={lead.full_name} />
+    <a
+      href={telHref(phone)}
+      className={cn(
+        "figures text-ink-2 hover:text-copper relative min-h-11 items-center self-start text-xs lg:min-h-6 lg:min-w-24",
+        className,
+      )}
+    >
+      {formatPhone(phone)}
+    </a>
+  );
+}
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+/**
+ * Wide-screen columns. Staff compare enquiries down the list — what each person
+ * asked for, how long they have waited, where each stands — so each attribute
+ * keeps one column and the eye runs straight down it, instead of every fact
+ * piling into the left edge with the status a screen-width away.
+ */
+const ROW_COLUMNS = "lg:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)_8.5rem]";
+const ROW_COLUMNS_WITH_STATUS =
+  "lg:grid-cols-[minmax(13rem,16rem)_minmax(0,1fr)_8.5rem_9rem]";
+
+/**
+ * One enquiry: the person, what they asked for, when it arrived and through
+ * which door, and — in the unfiltered view — where it stands.
+ *
+ * Ranked by what the decision "who do I call next" needs: the name and the
+ * need carry ink; when, how and the phone are quieter reference. The name's
+ * link is stretched over the whole row so the row is the target; the phone
+ * sits above that layer as its own `tel:` link. The need is never truncated —
+ * a Vietnamese sentence about a lower-back problem is why staff pick up the
+ * phone, and P5 forbids resolving it by hover — so it wraps.
+ *
+ * On a phone the same order stacks: name with its status beside it, the need,
+ * then the reference line.
+ */
+function LeadRow({ lead, showStatus }: { lead: LeadResponse; showStatus: boolean }) {
+  const status = showStatus ? (
+    <StatusBadge tone={STATUS_TONE[lead.status]} className="shrink-0">
+      {STATUS_LABEL[lead.status]}
+    </StatusBadge>
+  ) : null;
+
+  return (
+    <div
+      className={cn(
+        "hover:bg-sand/70 relative px-4 py-3.5 transition-colors duration-200 md:px-5 lg:grid lg:items-start lg:gap-6",
+        showStatus ? ROW_COLUMNS_WITH_STATUS : ROW_COLUMNS,
+      )}
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <Avatar name={lead.full_name} />
+        <div className="flex min-w-0 flex-col">
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
             <Link
               to={`/studio/khach-quan-tam/${lead.id}`}
-              className="text-ink hover:text-copper text-sm font-medium after:absolute after:inset-0"
+              className="text-ink hover:text-copper inline-flex min-h-6 items-center text-sm font-medium after:absolute after:inset-0"
             >
               {lead.full_name}
             </Link>
-            <span className="text-ink-2 text-xs">
-              <Figures>{formatDate(lead.created_at)}</Figures>{" "}
-              <Figures>{formatTime(lead.created_at)}</Figures>
-            </span>
-          </div>
-          <StatusBadge tone={STATUS_TONE[lead.status]} className="shrink-0">
-            {STATUS_LABEL[lead.status]}
-          </StatusBadge>
-        </div>
-
-        <p className="text-ink-2 text-sm">
-          <a
-            href={telHref(lead.phone)}
-            className="figures text-ink decoration-rule-2 hover:text-copper hover:decoration-copper relative inline-flex min-h-11 items-center underline underline-offset-[6px] md:min-h-0"
-          >
-            {formatPhone(lead.phone)}
-          </a>
-          <span className="mx-1.5" aria-hidden="true">
-            ·
+            {/* On a phone the status stays with the name it describes. */}
+            <span className="lg:hidden">{status}</span>
           </span>
-          {sourceLabel(lead.source)}
-        </p>
-
-        {lead.need === null || lead.need.trim() === "" ? (
-          <p className="text-ink-2 mt-0.5 text-sm">Chưa ghi nhu cầu</p>
-        ) : (
-          <p className="text-ink mt-0.5 text-sm">{lead.need}</p>
-        )}
+          <PhoneLink phone={lead.phone} className="hidden lg:inline-flex" />
+        </div>
       </div>
+
+      {lead.need === null || lead.need.trim() === "" ? (
+        <p className="text-ink-2 mt-1 pl-12 text-sm lg:mt-0 lg:pl-0">Chưa ghi nhu cầu</p>
+      ) : (
+        <p className="text-ink mt-1.5 pl-12 text-sm lg:mt-0 lg:pl-0">{lead.need}</p>
+      )}
+
+      {/* Phone: one reference line — number, day, door — set as plain text so
+          it wraps at a space and never strands a separator at a line start.
+          The number's 44px target is that line's height, not an extra row. */}
+      <p className="text-ink-2 mt-0.5 pl-12 text-xs lg:hidden">
+        <PhoneLink phone={lead.phone} className="inline-flex align-middle" />
+        {" · "}
+        <Figures>{formatDayMonth(lead.created_at)}</Figures>{" "}
+        <Figures>{formatTime(lead.created_at)}</Figures>
+        {" · "}
+        <span className="whitespace-nowrap">{sourceLabel(lead.source)}</span>
+      </p>
+
+      {/* Wide screens (lg): the "Nhận lúc" column, the full date over the door. */}
+      <p className="text-ink-2 hidden text-xs lg:block">
+        <Figures>{formatDate(lead.created_at)}</Figures>{" "}
+        <Figures>{formatTime(lead.created_at)}</Figures>
+        <span className="block">{sourceLabel(lead.source)}</span>
+      </p>
+
+      {showStatus ? <div className="hidden lg:block">{status}</div> : null}
     </div>
   );
 }

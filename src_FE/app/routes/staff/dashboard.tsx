@@ -202,8 +202,8 @@ function TaskRow({ task }: { task: Task }) {
         to={task.to}
         className="hover:bg-sand/60 flex min-h-11 items-center gap-3 px-4 py-3 md:px-5"
       >
-        <TaskTitle waiting={waiting}>{task.title}</TaskTitle>
         <TaskCount count={task.count} waiting={waiting} />
+        <TaskTitle waiting={waiting}>{task.title}</TaskTitle>
         <ChevronRight className="text-ink-2 size-4 shrink-0" aria-hidden="true" />
       </Link>
     </li>
@@ -220,6 +220,7 @@ function AttendanceRow({ sessions }: { sessions: SessionRowResponse[] }) {
   return (
     <li className="rule-b last:border-b-0">
       <div className="flex min-h-11 items-center gap-3 px-4 py-3 md:px-5">
+        <TaskCount count={sessions.length} waiting={waiting} />
         <span className="flex min-w-0 flex-1 flex-col">
           <TaskTitle waiting={waiting}>Lớp chờ điểm danh</TaskTitle>
           {waiting ? (
@@ -228,9 +229,6 @@ function AttendanceRow({ sessions }: { sessions: SessionRowResponse[] }) {
             </span>
           ) : null}
         </span>
-        <TaskCount count={sessions.length} waiting={waiting} />
-        {/* Holds the chevron's width so this count lines up with the others. */}
-        <span className="size-4 shrink-0" aria-hidden="true" />
       </div>
       {waiting ? (
         <ul className="pb-2">
@@ -238,7 +236,7 @@ function AttendanceRow({ sessions }: { sessions: SessionRowResponse[] }) {
             <li key={session.class_session_id}>
               <Link
                 to={`/studio/lich/${session.class_session_id}`}
-                className="hover:bg-sand/60 flex min-h-11 items-center gap-3 py-2 pr-4 pl-7 md:pr-5 md:pl-8"
+                className="hover:bg-sand/60 flex min-h-11 items-center gap-3 py-2 pr-4 pl-[3.75rem] md:pr-5 md:pl-16"
               >
                 {/* Outside today's list a time alone is ambiguous, so the day
                     comes with it. */}
@@ -282,7 +280,9 @@ function TaskCount({
   waiting: boolean;
 }) {
   return (
-    <span className="w-14 shrink-0 text-right text-base">
+    // A fixed leading column: the figures line up down the list and sit
+    // beside the words they count, not across the panel from them.
+    <span className="w-8 shrink-0 text-right text-base">
       {count === undefined ? (
         <span className="text-ink-2 text-xs">Đang tải</span>
       ) : count === null ? (

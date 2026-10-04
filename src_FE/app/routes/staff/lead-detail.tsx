@@ -131,12 +131,19 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
           <div className="flex items-start gap-4 px-4 pt-5 md:px-6 md:pt-6">
             <Avatar name={lead.full_name} size="lg" />
             <div className="min-w-0 flex-1">
-              <h1
-                id="lead-name"
-                className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em]"
-              >
-                {lead.full_name}
-              </h1>
+              {/* The status sits with the name it describes, not a panel-width
+                  away at the far edge (docs/UI_QUALITY.md, principle 3). */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <h1
+                  id="lead-name"
+                  className="font-display text-ink text-[1.625rem] leading-tight font-normal tracking-[-0.01em]"
+                >
+                  {lead.full_name}
+                </h1>
+                <StatusBadge tone={STATUS_TONE[lead.status]} className="shrink-0">
+                  {STATUS_LABEL[lead.status]}
+                </StatusBadge>
+              </div>
               {/* Where and when the enquiry came in. Said once, here — the facts
                   below hold only what this line does not. */}
               <p className="text-ink-2 mt-1 text-sm">
@@ -150,9 +157,6 @@ function LeadBody({ lead }: { lead: LeadResponse }) {
                 </span>
               </p>
             </div>
-            <StatusBadge tone={STATUS_TONE[lead.status]} className="mt-1 shrink-0">
-              {STATUS_LABEL[lead.status]}
-            </StatusBadge>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 px-4 py-5 md:px-6">

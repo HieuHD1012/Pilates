@@ -129,18 +129,18 @@ export default function StaffClassDetail() {
                 </Figures>{" "}
                 chỗ đã giữ
                 {live && session.data.seats_left === 0 ? " · đủ chỗ" : null}
+                {/* The meter illustrates the fraction, so it sits right after
+                    it rather than alone at the panel's far edge. */}
+                {session.data.capacity > 0 ? (
+                  <Meter
+                    className="ml-3 inline-block w-24 align-middle"
+                    value={session.data.booked_count}
+                    max={session.data.capacity}
+                    tone={session.data.seats_left === 0 ? "attention" : "neutral"}
+                  />
+                ) : null}
               </>
             ) : undefined
-          }
-          actions={
-            session.data && session.data.capacity > 0 ? (
-              <Meter
-                className="w-32"
-                value={session.data.booked_count}
-                max={session.data.capacity}
-                tone={session.data.seats_left === 0 ? "attention" : "neutral"}
-              />
-            ) : null
           }
         />
 
