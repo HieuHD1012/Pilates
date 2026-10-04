@@ -65,11 +65,22 @@ test("STAFF previews and creates recurrence; trainer reassignment updates detail
   request,
 }) => {
   const data = await fixture(request);
+  // This trainer has no pre-existing class. The fixture's default session is
+  // two days from now and could overlap 23:00 when this suite runs at night.
+  const recurrenceTrainer = await call<TrainerResponse>(
+    request,
+    "POST",
+    "/trainers",
+    {
+      full_name: `E2E HLV định kỳ ${data.trainer.id}`,
+    },
+    data.token,
+  );
   await signIn(page, data.staffAccount.email);
   await page.goto("/studio/lich");
   await page.getByRole("button", { name: "Lớp định kỳ", exact: true }).click();
   let dialog = page.getByRole("dialog");
-  await dialog.getByLabel(/Huấn luyện viên/).selectOption(String(data.trainer.id));
+  await dialog.getByLabel(/Huấn luyện viên/).selectOption(String(recurrenceTrainer.id));
   await dialog.getByLabel("Ngày", { exact: false }).first().fill(studioDay(1));
   await dialog.getByLabel(/Giờ bắt đầu/).fill("23:00");
   await dialog.getByLabel(/Sức chứa/).fill("3");
