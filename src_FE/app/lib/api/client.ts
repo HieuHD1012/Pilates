@@ -4,18 +4,25 @@
  * Rules encoded here (see docs/QUERY_CONVENTIONS.md and docs/API_MAPPING.md):
  *  - one fetch adapter, no second HTTP client;
  *  - every authenticated call carries `Authorization: Bearer <access_token>`;
- *  - **at most one `/auth/refresh` is ever in flight.** The backend rotates the
+ *  - **one `/auth/refresh` per session in this tab.** The backend rotates the
  *    refresh token with a ten-second grace window and treats a spent token
  *    presented after it as theft — it then revokes every session that person
  *    has. Two parallel 401s each calling refresh is exactly that shape, so 401s
  *    queue behind one shared promise instead;
- *  - raw backend error text never reaches a regular user — callers render copy
- *    keyed off `ApiError.code`;
- *  - a refresh that fails broadcasts once so the session layer reacts in a
- *    single place.
+ *  - Web Locks serialize rotation across tabs when supported; persisted token
+ *    changes are checked before rotation. Other browsers use the backend grace;
+ *  - structured backend messages are rendered by the shared error copy helper;
+ *  - rejected refresh credentials end the session once; transient outages keep
+ *    the credentials so the user can retry.
  */
 
-import { clearTokens, getTokens, setTokens } from "./tokens";
+import {
+  clearTokens,
+  getSessionVersion,
+  getTokens,
+  rotateSessionTokens,
+  syncTokensFromStorage,
+} from "./tokens";
 import type { ApiErrorDetail, TokenPair } from "./schema";
 
 export interface ApiErrorBody {
@@ -164,37 +171,88 @@ export function buildUrl(path: string, searchParams?: SearchParams): string {
  * The shared refresh. While this is non-null every other 401 waits on it
  * instead of starting a second rotation.
  */
-let inFlightRefresh: Promise<boolean> | null = null;
+let inFlightRefresh: { version: number; promise: Promise<void> } | null = null;
 
-async function rotateTokens(): Promise<boolean> {
+function assertSession(version: number): void {
+  // Check persisted credentials even if a suspended tab has not received its
+  // storage event yet. A late response must not overwrite another tab's login.
+  syncTokensFromStorage();
+  if (version !== getSessionVersion()) {
+    throw new DOMException("The requesting session has ended", "AbortError");
+  }
+}
+
+function networkError(error: unknown): Error {
+  if (
+    error !== null &&
+    typeof error === "object" &&
+    "name" in error &&
+    error.name === "AbortError"
+  )
+    return error as Error;
+  return new ApiError(0, { code: "network_error" }, "Network request failed");
+}
+
+async function rotateTokens(version: number): Promise<void> {
+  syncTokensFromStorage();
+  assertSession(version);
   const current = getTokens();
-  if (current === null) return false;
+  if (current === null) return;
 
+  let response: Response;
   try {
-    const response = await fetch(buildUrl("/auth/refresh"), {
+    response = await fetch(buildUrl("/auth/refresh"), {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token: current.refresh }),
     });
-    if (!response.ok) {
+  } catch (error) {
+    assertSession(version);
+    throw networkError(error);
+  }
+  assertSession(version);
+  if (!response.ok) {
+    const error = new ApiError(
+      response.status,
+      await parseErrorBody(response),
+      response.statusText,
+      retryAfterSeconds(response),
+    );
+    assertSession(version);
+    // Only a definitive authentication rejection ends the session. A 5xx,
+    // rate limit or offline refresh is recoverable without signing in again.
+    if (response.status === 401) {
       clearTokens();
-      return false;
+      broadcastUnauthorized();
     }
-    const pair = (await response.json()) as TokenPair;
-    setTokens({ access: pair.access_token, refresh: pair.refresh_token });
-    return true;
-  } catch {
-    // A network failure is not proof the session is gone; leave the tokens
-    // alone so a reconnect can use them.
-    return false;
+    throw error;
+  }
+  const pair = (await response.json()) as TokenPair;
+  assertSession(version);
+  if (
+    !rotateSessionTokens(
+      { access: pair.access_token, refresh: pair.refresh_token },
+      version,
+    )
+  ) {
+    throw new DOMException("The requesting session has ended", "AbortError");
   }
 }
 
-function refreshSession(): Promise<boolean> {
-  inFlightRefresh ??= rotateTokens().finally(() => {
-    inFlightRefresh = null;
+function refreshSession(version: number): Promise<void> {
+  if (inFlightRefresh?.version === version) return inFlightRefresh.promise;
+  // HTTPS browsers coordinate rotations across tabs. The storage check inside
+  // the lock prevents a resumed tab from replaying a token already spent by
+  // another tab; unsupported browsers retain the server grace-window fallback.
+  const rotation =
+    typeof navigator !== "undefined" && navigator.locks
+      ? navigator.locks.request("j-pilates:refresh", () => rotateTokens(version))
+      : rotateTokens(version);
+  const promise = rotation.finally(() => {
+    if (inFlightRefresh?.promise === promise) inFlightRefresh = null;
   });
-  return inFlightRefresh;
+  inFlightRefresh = { version, promise };
+  return promise;
 }
 
 async function parseErrorBody(response: Response): Promise<ApiErrorBody | undefined> {
@@ -264,45 +322,59 @@ async function send(path: string, options: RequestOptions): Promise<Response> {
 }
 
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  syncTokensFromStorage();
+  const version = getSessionVersion();
+  const credential = options.anonymous === true ? null : getTokens()?.access;
+  const checkSession = () => {
+    options.signal?.throwIfAborted();
+    if (options.anonymous !== true) assertSession(version);
+  };
   let response: Response;
   try {
     response = await send(path, options);
-  } catch {
-    // Network-level failure: no status, no body.
-    throw new ApiError(0, { code: "network_error" }, "Network request failed");
+  } catch (error) {
+    checkSession();
+    throw networkError(error);
   }
+  checkSession();
 
   const refreshable =
     options.anonymous !== true && !NO_REFRESH_PATHS.some((p) => path.startsWith(p));
 
   if (response.status === 401 && refreshable && getTokens() !== null) {
-    const rotated = await refreshSession();
-    if (rotated) {
-      try {
-        response = await send(path, options);
-      } catch {
-        throw new ApiError(0, { code: "network_error" }, "Network request failed");
-      }
+    // A different request may already have rotated this access token.
+    if (credential === getTokens()?.access) await refreshSession(version);
+    checkSession();
+    try {
+      response = await send(path, options);
+    } catch (error) {
+      checkSession();
+      throw networkError(error);
     }
+    checkSession();
   }
 
-  if (response.status === 401) {
+  if (response.status === 401 && options.anonymous !== true) {
     clearTokens();
     broadcastUnauthorized();
   }
 
   if (!response.ok) {
+    const body = await parseErrorBody(response);
+    if (response.status !== 401) checkSession();
     throw new ApiError(
       response.status,
-      await parseErrorBody(response),
+      body,
       response.statusText,
       retryAfterSeconds(response),
     );
   }
 
   if (response.status === 204) return undefined as T;
-  if (options.responseType === "blob") return (await response.blob()) as T;
-  return (await response.json()) as T;
+  const result =
+    options.responseType === "blob" ? await response.blob() : await response.json();
+  checkSession();
+  return result as T;
 }
 
 export const api = {

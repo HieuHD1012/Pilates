@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import { useMySchedule } from "~/features/booking/queries";
+import { HistoryMonthPicker, useHistoryMonth } from "~/features/booking/history-range";
 import type { BookingStatus, ClassType, MyScheduleItem } from "~/lib/api/schema";
 import { formatDate, formatTime, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
@@ -12,10 +13,7 @@ import { StatusBadge, type StatusTone } from "~/ui/status";
 import type { Route } from "./+types/booking-history";
 
 export function meta(_: Route.MetaArgs) {
-  return [
-    { title: "Lịch sử đặt lớp — J Pilates" },
-    { name: "robots", content: "noindex" },
-  ];
+  return [{ title: "Lịch sử đặt lớp — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**
@@ -65,7 +63,11 @@ function closedEntries(items: MyScheduleItem[]): MyScheduleItem[] {
  * would be a second definition of what counts as history.
  */
 export default function BookingHistory() {
-  const query = useMySchedule({ include_cancelled: true, limit: 500 });
+  const history = useHistoryMonth();
+  const query = useMySchedule(
+    { ...history.params, include_cancelled: true, limit: 500 },
+    history.params !== null,
+  );
 
   return (
     <div className="gutter mx-auto max-w-(--container-column) py-5">
@@ -76,6 +78,11 @@ export default function BookingHistory() {
       </p>
 
       <DemoDataNotice className="mt-5" />
+      <HistoryMonthPicker
+        month={history.month}
+        onChange={history.setMonth}
+        capped={query.data?.length === 500}
+      />
 
       <div className="mt-5">
         <QueryBoundary

@@ -20,13 +20,12 @@ import {
   type SegmentOption,
 } from "~/ui/workspace";
 
+import { PageControls } from "~/ui/page-controls";
+
 import type { Route } from "./+types/leads";
 
 export function meta(_: Route.MetaArgs) {
-  return [
-    { title: "Khách quan tâm — J Pilates" },
-    { name: "robots", content: "noindex" },
-  ];
+  return [{ title: "Khách quan tâm — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**
@@ -116,10 +115,19 @@ function segmentOptions(
 }
 
 export default function StaffLeads() {
+  const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<LeadStatus | "all">("all");
-  const query = useLeads({ status: status === "all" ? undefined : status, limit: LIMIT });
+  const query = useLeads({
+    status: status === "all" ? undefined : status,
+    limit: LIMIT,
+    offset,
+  });
 
-  const options = segmentOptions(status, query.data, !query.isPlaceholderData);
+  const options = segmentOptions(
+    status,
+    query.data,
+    !query.isPlaceholderData && offset === 0,
+  );
 
   return (
     <WorkspacePage>
@@ -141,7 +149,10 @@ export default function StaffLeads() {
             label="Lọc theo trạng thái"
             options={options}
             value={status}
-            onChange={setStatus}
+            onChange={(next) => {
+              setOffset(0);
+              setStatus(next);
+            }}
           />
         </Toolbar>
 
@@ -163,7 +174,13 @@ export default function StaffLeads() {
             }
             emptyAction={
               status === "all" ? undefined : (
-                <Button variant="secondary" onClick={() => setStatus("all")}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setOffset(0);
+                    setStatus("all");
+                  }}
+                >
                   Xem tất cả
                 </Button>
               )
@@ -196,6 +213,13 @@ export default function StaffLeads() {
             </span>
           </PanelFooter>
         ) : null}
+        <PageControls
+          offset={offset}
+          limit={LIMIT}
+          count={query.data?.length ?? 0}
+          pending={query.isFetching}
+          onChange={setOffset}
+        />
       </Panel>
     </WorkspacePage>
   );

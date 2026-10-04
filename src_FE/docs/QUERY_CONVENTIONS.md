@@ -16,11 +16,15 @@ it. Features import from there; nothing else builds a URL.
   `isRateLimited`, `isRetryableConflict`, `isServer`.
 - Every authenticated call carries `Authorization: Bearer <access_token>` from
   `app/lib/api/tokens.ts`.
-- **At most one `/auth/refresh` is in flight.** The backend rotates the refresh
+- **One `/auth/refresh` per requesting session in a tab.** The backend rotates the refresh
   token with a ten-second grace window and treats a spent token presented after
   it as theft — it revokes every session that person has. So 401s queue behind
-  one shared promise. Never call refresh from a component.
-- `401` dispatches one `soul:unauthorized` event. A single listener in `root.tsx`
+  one shared promise. Web Locks serialize tabs where available; storage is
+  checked again before rotation. Other browsers rely on the server grace
+  window. Never call refresh from a component.
+- A definitive refresh-credential `401` ends the session; 429/5xx/offline
+  preserves credentials and exposes retry. Anonymous 401 does not clear another
+  account. A terminal authenticated `401` dispatches one `soul:unauthorized` event. A single listener in `root.tsx`
   handles the redirect, and only for `/hv`, `/hlv`, `/studio` paths — a stale
   session must never eject a visitor reading the public site.
 - **Show the backend's `message`.** It is written in Vietnamese for the end user
@@ -96,3 +100,40 @@ Do not read the clock during render. `Date.now()` in a component body is
 rejected by `react-hooks/purity`. Anchor time-dependent filtering to
 `query.dataUpdatedAt`, which is stable between renders and changes when the data
 does — see `app/routes/student/classes.tsx`.
+
+## Identity boundaries and binary ownership
+
+Requests capture a session version. A response from a previous account is
+aborted before entering the cache. Sign-in/out and external storage changes
+clear QueryClient and remount route observers; clearing a cache alone does not
+replace mounted observer data. Same-tab credential rotation preserves identity.
+Cross-tab token changes are handled conservatively as a boundary.
+
+Private photo object URLs belong to QueryCache. Replacement, removal, expiry
+and cache clear revoke them. Binary requests consume cancellation signals and
+check them before creating a URL. Components do not retain a second URL cache.
+
+## Mutation dependencies
+
+`app/lib/api/invalidation.ts` is the shared resource dependency matrix.
+Mutation `onSuccess` returns/awaits `invalidateChange(client, change)` so active
+readers refresh before pending UI is released. Booking, class cancellation,
+attendance and commerce affect reports, renewal queues and balances beyond the
+screen that initiated them. Balance writes do not invalidate private photo files.
+
+Raw booking arrays, joined rosters and calendar seat-count maps have distinct
+registered keys. Never put different data shapes under the same key.
+
+## Array-only list contracts
+
+Students/leads/accounts/payments use server offsets and PageControls without an
+invented total. Directory selectors collect offset pages until complete instead
+of silently losing people after row 200. Counts derived from a page describe
+that page, not the whole studio.
+
+History uses selectable months and explicit +07:00 half-open boundaries because
+`/my-schedule` has no offset. A 500-row month shows an incompleteness notice.
+Bookable responses at the 300-ID cap fail explicitly; absent IDs cannot prove
+ineligibility. Staff calendar occupancy falls back to class detail counts when
+the weekly booking response reaches 500, with six concurrent requests maximum.
+These safeguards do not create missing backend pagination capabilities.

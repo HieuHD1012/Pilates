@@ -1,5 +1,5 @@
 import { api } from "../client";
-import { clearTokens, setTokens } from "../tokens";
+import { clearTokens, getSessionVersion, setTokens } from "../tokens";
 import type {
   ChangePasswordRequest,
   ForgotPasswordRequest,
@@ -20,19 +20,31 @@ import type {
 export const authApi = {
   /** `POST /auth/login` — stores the pair; everything after it is authenticated. */
   async login(body: LoginRequest): Promise<MeResponse> {
+    const version = getSessionVersion();
     const pair = await api.post<TokenPair>("/auth/login", body, { anonymous: true });
+    if (version !== getSessionVersion()) {
+      throw new DOMException("Sign-in was superseded", "AbortError");
+    }
     setTokens({ access: pair.access_token, refresh: pair.refresh_token });
     return authApi.me();
   },
 
-  /** `POST /auth/logout` — revokes the refresh token on the server, then locally. */
+  /** The backend revokes all sessions. Local sign-out takes effect immediately. */
   async logout(): Promise<void> {
+    // Capture/send the old credential before clearing it; do not wait for an
+    // offline server to discard private data on this device.
+    const request = api.post<MessageResponse>("/auth/logout");
+    clearTokens();
     try {
-      await api.post<MessageResponse>("/auth/logout");
-    } finally {
-      // A failed call still ends the session on this device. Leaving the tokens
-      // behind because the network blinked is the worse of the two outcomes.
-      clearTokens();
+      await request;
+    } catch (error) {
+      if (!(
+        error !== null &&
+        typeof error === "object" &&
+        "name" in error &&
+        error.name === "AbortError"
+      ))
+        throw error;
     }
   },
 

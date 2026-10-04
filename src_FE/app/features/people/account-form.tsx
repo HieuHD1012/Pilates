@@ -7,7 +7,7 @@ import type { AccountCreateRequest, Role } from "~/lib/api/schema";
 import { Button } from "~/ui/button";
 import { Field, FormActions, Input, Select } from "~/ui/field";
 
-import { useStudents } from "./queries";
+import { useStudentDirectory } from "./queries";
 
 /**
  * Creating a login for someone.
@@ -113,7 +113,7 @@ export function AccountForm({
   // Only fetched for the role that needs it. Student profiles without a login
   // are the ones worth offering, but the backend refuses a second link anyway,
   // so the list stays whole rather than second-guessing it.
-  const students = useStudents({ limit: 200 });
+  const students = useStudentDirectory();
 
   return (
     <form
@@ -249,7 +249,7 @@ export function AccountForm({
       ) : null}
 
       <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
+        <Button variant="secondary" size="sm" disabled={pending} onClick={onCancel}>
           Huỷ
         </Button>
         <Button type="submit" size="sm" pending={pending}>

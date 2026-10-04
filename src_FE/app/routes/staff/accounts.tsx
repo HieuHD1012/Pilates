@@ -47,6 +47,8 @@ import {
   WorkspacePage,
 } from "~/ui/workspace";
 
+import { PageControls } from "~/ui/page-controls";
+
 import type { Route } from "./+types/accounts";
 
 export function meta(_: Route.MetaArgs) {
@@ -136,7 +138,8 @@ export default function StaffAccounts() {
 }
 
 function AccountsScreen() {
-  const query = useAccounts({ limit: 200 });
+  const [offset, setOffset] = useState(0);
+  const query = useAccounts({ limit: 200, offset });
   const create = useCreateAccount();
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
@@ -225,7 +228,7 @@ function AccountsScreen() {
       {/* Who holds which role, counted from the list already on screen. */}
       {query.data ? (
         <ul
-          aria-label="Số tài khoản theo vai trò"
+          aria-label="Số tài khoản theo vai trò trong trang này"
           className="grid grid-cols-2 gap-3 xl:grid-cols-4"
         >
           {ROLE_ORDER.map((role) => (
@@ -253,6 +256,13 @@ function AccountsScreen() {
                     {accounts.filter((account) => account.role === role).length}
                   </Figures>
                 </span>
+                <PageControls
+                  offset={offset}
+                  limit={200}
+                  count={accounts.length}
+                  pending={query.isFetching}
+                  onChange={setOffset}
+                />
               </Panel>
             </li>
           ))}
@@ -440,7 +450,8 @@ function AccountsScreen() {
 
         <PanelFooter>
           <span>
-            <Figures className="text-ink">{accounts.length}</Figures> tài khoản
+            <Figures className="text-ink">{accounts.length}</Figures> tài khoản trong trang
+            này
           </span>
           <span className="measure-wide text-xs">
             Khóa tài khoản thu hồi luôn mọi phiên đang mở, không chỉ chặn lần đăng nhập sau.
@@ -452,6 +463,7 @@ function AccountsScreen() {
       <Dialog open={target !== null} onOpenChange={(open) => (open ? null : close())}>
         {target ? (
           <DialogContent
+            busy={setLocked.isPending}
             title={target.is_active ? "Khóa tài khoản" : "Mở lại tài khoản"}
             description={`${target.full_name ?? target.email} · ${ROLE_LABEL[target.role]}`}
             footer={
@@ -525,6 +537,7 @@ function AccountsScreen() {
         }}
       >
         <DialogContent
+          busy={create.isPending}
           title="Tạo tài khoản"
           description="Người này sẽ nhận lời mời và tự đặt mật khẩu. Studio không đặt mật khẩu thay ai."
         >

@@ -1,11 +1,7 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { packagesApi, paymentsApi, renewalsApi } from "~/lib/api/endpoints";
+import { invalidateChange } from "~/lib/api/invalidation";
 import { queryKeys, roots } from "~/lib/api/query-keys";
 import type {
   AdjustCreditsRequest,
@@ -44,7 +40,7 @@ export function useCreatePackageType() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: PackageTypeCreateRequest) => packagesApi.createType(input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -58,7 +54,7 @@ export function useUpdatePackageType(packageTypeId: number) {
   return useMutation({
     mutationFn: (input: PackageTypeUpdateRequest) =>
       packagesApi.updateType(packageTypeId, input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -80,7 +76,10 @@ export function useStudentPackages(
 ) {
   return useQuery({
     queryKey: queryKeys.packages.ofStudent(params),
-    queryFn: () => packagesApi.list(params),
+    queryFn: () =>
+      params.limit !== undefined || params.offset !== undefined
+        ? packagesApi.list(params)
+        : packagesApi.all(params),
     enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
@@ -107,7 +106,7 @@ export function useSellPackage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: SellPackageRequest) => packagesApi.sell(input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -116,7 +115,7 @@ export function useRenewPackage(packageId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: RenewPackageRequest) => packagesApi.renew(packageId, input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -125,7 +124,7 @@ export function useAdjustCredits(packageId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: AdjustCreditsRequest) => packagesApi.adjust(packageId, input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -158,7 +157,7 @@ export function useRecordPayment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: RecordPaymentRequest) => paymentsApi.create(input),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -167,7 +166,7 @@ export function useConfirmPayment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (paymentId: number) => paymentsApi.confirm(paymentId),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -181,7 +180,7 @@ export function useVoidPayment() {
   return useMutation({
     mutationFn: ({ paymentId, reason }: { paymentId: number; reason: string }) =>
       paymentsApi.void(paymentId, { reason }),
-    onSuccess: () => invalidateCommerce(queryClient),
+    onSuccess: () => invalidateChange(queryClient, "commerce"),
   });
 }
 
@@ -233,20 +232,4 @@ export function useLogRenewalContact() {
     mutationFn: (input: RenewalContactRequest) => renewalsApi.logContact(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.renewals }),
   });
-}
-
-/**
- * Money and credits move together often enough that separating the
- * invalidations only produces screens that disagree: selling a package changes
- * a balance, a payment changes the revenue report, and both change who the
- * renewal list thinks needs a call.
- */
-function invalidateCommerce(queryClient: QueryClient) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: roots.packages }),
-    queryClient.invalidateQueries({ queryKey: roots.payments }),
-    queryClient.invalidateQueries({ queryKey: roots.renewals }),
-    queryClient.invalidateQueries({ queryKey: roots.reports }),
-    queryClient.invalidateQueries({ queryKey: roots.students }),
-  ]);
 }

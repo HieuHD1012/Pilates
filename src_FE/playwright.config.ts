@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4173;
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
 /** The dev server, where MSW is live. See the `app` project below. */
-const DEV_PORT = 5199;
+const DEV_PORT = Number(process.env.PLAYWRIGHT_DEV_PORT ?? 5199);
 
 export default defineConfig({
   testDir: "./e2e",
@@ -18,7 +18,7 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testIgnore: /\.app\.spec\.ts$/,
+      testIgnore: /\.(app|live)\.spec\.ts$/,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
@@ -26,16 +26,15 @@ export default defineConfig({
       // only, so CI and local runs use the same engine. Adding a WebKit project
       // means adding webkit to that install step.
       name: "mobile",
-      testIgnore: /\.app\.spec\.ts$/,
+      testIgnore: /\.(app|live)\.spec\.ts$/,
       use: { ...devices["Pixel 7"] },
     },
     {
       /**
        * The application shell, which needs data. `app/entry.client.tsx` starts
        * MSW only in development, so the production artifact has no backend at all
-       * and every staff and student screen is untestable against it. This project
-       * points at the dev server instead — the one place those screens can be
-       * exercised until a real API exists.
+       * without an API. This project checks fixture-driven UI behavior. The
+       * separate live project checks the built artifact against the real API.
        */
       name: "app",
       testMatch: /\.app\.spec\.ts$/,
@@ -44,6 +43,11 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
         baseURL: `http://localhost:${DEV_PORT}`,
       },
+    },
+    {
+      name: "live",
+      testMatch: /\.live\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
   /**
@@ -59,6 +63,7 @@ export default defineConfig({
     },
     {
       command: `npm run dev -- --port ${DEV_PORT} --strictPort`,
+      env: { VITE_ENABLE_MSW: "true", VITE_API_BASE_URL: "" },
       port: DEV_PORT,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

@@ -13,7 +13,7 @@ const PHONE = "0938 111 222";
 
 async function signInAsStaff(page: Page) {
   await page.goto("/");
-  await page.evaluate(() => localStorage.setItem("soul:demo-role", "staff"));
+  await page.evaluate(() => localStorage.setItem("soul:demo-role", "ADMIN"));
   await page.goto("/studio/hoc-vien");
   await expect(page.getByRole("heading", { name: "Học viên" })).toBeVisible();
 }
@@ -31,10 +31,10 @@ test.describe("staff writes", () => {
     // The new record resolves on its own route — proof the create and the read
     // agree on the id.
     await expect(page.getByRole("heading", { name: NAME })).toBeVisible();
-    await expect(page).toHaveURL(/\/studio\/hoc-vien\/s-/);
+    await expect(page).toHaveURL(/\/studio\/hoc-vien\/\d+/);
 
     // A new record reports the day it was created, not the seed roster's date.
-    await expect(page.getByText("Chưa có gói")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Bán gói", exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Sửa hồ sơ" }).click();
     const edit = page.getByRole("dialog");
@@ -57,12 +57,14 @@ test.describe("staff writes", () => {
     await dialog.getByLabel("Họ và tên").fill("Nguyễn Văn Gốc");
     await dialog.getByLabel("Số điện thoại").fill("0977 654 321");
     await dialog.getByRole("button", { name: "Tạo hồ sơ", exact: true }).click();
-    await expect(page).toHaveURL(/\/studio\/hoc-vien\/s-/);
+    await expect(page).toHaveURL(/\/studio\/hoc-vien\/\d+/);
 
     // Client-side back, not page.goto: MSW state lives in the page, so a reload
     // would discard the record this test just created.
     await page.goBack();
-    await expect(page.getByRole("cell", { name: "Nguyễn Văn Gốc" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Nguyễn Văn Gốc", exact: true }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Tạo học viên" }).click();
     dialog = page.getByRole("dialog");
@@ -77,12 +79,12 @@ test.describe("staff writes", () => {
 
   test("converts an enquiry into a student and links the two records", async ({ page }) => {
     await page.goto("/");
-    await page.evaluate(() => localStorage.setItem("soul:demo-role", "staff"));
+    await page.evaluate(() => localStorage.setItem("soul:demo-role", "ADMIN"));
     await page.goto("/studio/khach-quan-tam");
     await expect(page.getByRole("heading", { name: "Khách quan tâm" })).toBeVisible();
 
     await page
-      .getByRole("link", { name: /Khách Demo/ })
+      .getByRole("link", { name: /DEMO Khách/ })
       .first()
       .click();
     // The URL changes before the detail renders, so wait for something only the
@@ -93,11 +95,10 @@ test.describe("staff writes", () => {
 
     await convert.click();
     const dialog = page.getByRole("dialog");
-    // Prefilled from the enquiry — staff should not retype what the studio has.
-    await expect(dialog.getByLabel("Họ và tên")).toHaveValue(leadName);
+    await expect(dialog).toContainText(leadName);
     await dialog.getByRole("button", { name: "Tạo hồ sơ học viên" }).click();
 
-    await expect(page).toHaveURL(/\/studio\/hoc-vien\/s-/);
+    await expect(page).toHaveURL(/\/studio\/hoc-vien\/\d+/);
     await expect(page.getByRole("heading", { name: leadName })).toBeVisible();
   });
 });

@@ -20,12 +20,15 @@ export function DialogContent({
   children,
   footer,
   className,
+  busy = false,
 }: {
   title: string;
   description?: string;
   children?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  /** A caller-owned transaction is pending; dismissing does not cancel it. */
+  busy?: boolean;
 }) {
   return (
     <DialogPrimitive.Portal>
@@ -36,6 +39,13 @@ export function DialogContent({
         )}
       />
       <DialogPrimitive.Content
+        aria-busy={busy || undefined}
+        onEscapeKeyDown={(event) => {
+          if (busy) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (busy) event.preventDefault();
+        }}
         className={cn(
           "fixed top-1/2 left-1/2 z-(--z-dialog) w-[calc(100vw-2rem)] max-w-md",
           "bg-paper shadow-dialog -translate-x-1/2 -translate-y-1/2 rounded-md",
@@ -59,6 +69,7 @@ export function DialogContent({
             ) : null}
           </div>
           <DialogPrimitive.Close
+            disabled={busy}
             className="text-ink-2 hover:text-ink -m-2 flex size-11 shrink-0 items-center justify-center rounded-xs"
             aria-label="Đóng"
           >

@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -12,6 +12,7 @@ import {
 
 import type { Route } from "./+types/root";
 import { createQueryClient } from "./lib/query-client";
+import { getSessionVersion, subscribeTokens } from "./lib/api/tokens";
 import { useUnauthorizedRedirect } from "./features/auth/use-unauthorized-redirect";
 import { Button } from "./ui/button";
 import "./styles/app.css";
@@ -50,13 +51,18 @@ export default function App() {
   // One QueryClient per browser session, created lazily so it is never shared
   // across prerender passes at build time.
   const [queryClient] = useState(createQueryClient);
+  const sessionVersion = useSyncExternalStore(subscribeSession, getSessionVersion, () => 0);
 
   return (
     <QueryClientProvider client={queryClient}>
       <SessionWatcher />
-      <Outlet />
+      <Outlet key={sessionVersion} />
     </QueryClientProvider>
   );
+}
+
+function subscribeSession(listener: () => void) {
+  return subscribeTokens(() => listener());
 }
 
 function SessionWatcher() {

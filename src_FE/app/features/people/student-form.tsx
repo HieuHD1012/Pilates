@@ -73,7 +73,7 @@ export function StudentForm({
    * A duplicate phone is the one rejection this form expects, and it belongs on
    * the phone field — not in a banner the eye has to hunt for.
    */
-  const duplicatePhone = error instanceof ApiError && error.code === "phone_taken";
+  const duplicatePhone = error instanceof ApiError && error.code === "STUDENT_PHONE_TAKEN";
   const otherFailure = error instanceof ApiError && !duplicatePhone && !error.isValidation;
 
   return (
@@ -168,7 +168,7 @@ export function StudentForm({
       ) : null}
 
       <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
+        <Button variant="secondary" size="sm" disabled={pending} onClick={onCancel}>
           Huỷ
         </Button>
         <Button type="submit" size="sm" pending={pending}>

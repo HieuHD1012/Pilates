@@ -390,6 +390,7 @@ function ReassignTrainerDialog({
       }}
     >
       <DialogContent
+        busy={assign.isPending}
         title="Đổi huấn luyện viên"
         description={`${weekdayLong(session.starts_at)}, ${formatTimeRange(session.starts_at, session.ends_at)}. Giờ và sức chứa của lớp không thay đổi.`}
       >
@@ -427,7 +428,12 @@ function ReassignTrainerDialog({
           ) : null}
 
           <FormActions>
-            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={assign.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Huỷ
             </Button>
             <Button
@@ -492,11 +498,16 @@ function CancelClassDialog({
       }}
     >
       <DialogContent
+        busy={cancel.isPending}
         title="Hủy lớp này"
         description={`${weekdayLong(session.starts_at)}, ${formatTimeRange(session.starts_at, session.ends_at)}. ${session.booked_count} lượt đăng ký sẽ được hoàn buổi.`}
       >
         <div className="flex flex-col gap-4">
-          <Field label="Lý do hủy" required hint="Học viên sẽ được báo lý do này.">
+          <Field
+            label="Lý do hủy"
+            required
+            hint="Lý do được lưu vào hồ sơ lớp. Studio chủ động báo cho học viên."
+          >
             {({ id }) => (
               <Textarea
                 id={id}
@@ -514,7 +525,12 @@ function CancelClassDialog({
           ) : null}
 
           <FormActions>
-            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={cancel.isPending}
+              onClick={() => onOpenChange(false)}
+            >
               Giữ lớp
             </Button>
             <Button

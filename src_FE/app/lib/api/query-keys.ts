@@ -53,6 +53,7 @@ export const queryKeys = {
   },
 
   students: {
+    directory: () => ["students", "directory"] as const,
     list: (params: StudentListParams) => ["students", "list", params] as const,
     detail: (studentId: number) => ["students", "detail", studentId] as const,
     overview: (studentId: number) => ["students", "overview", studentId] as const,
@@ -62,6 +63,8 @@ export const queryKeys = {
   },
 
   trainers: {
+    directory: (params: Omit<TrainerListParams, "offset" | "limit"> = {}) =>
+      ["trainers", "directory", params] as const,
     list: (params: TrainerListParams) => ["trainers", "list", params] as const,
     detail: (trainerId: number) => ["trainers", "detail", trainerId] as const,
     photo: (trainerId: number) => ["trainers", "photo", trainerId] as const,
@@ -96,6 +99,8 @@ export const queryKeys = {
   },
 
   bookings: {
+    roster: (sessionId: number) => ["bookings", "roster", sessionId] as const,
+    seatCounts: (params: BookingListParams) => ["bookings", "seat-counts", params] as const,
     list: (params: BookingListParams) => ["bookings", "list", params] as const,
   },
 
@@ -133,15 +138,22 @@ export const queryKeys = {
 export const roots = {
   session: ["session"],
   public: ["public"],
+  publicSchedule: ["public", "schedule"],
+  publicPackages: ["public", "packages"],
   accounts: ["accounts"],
   leads: ["leads"],
   students: ["students"],
+  studentDetails: ["students", "detail"],
+  studentLists: ["students", "list"],
+  studentDirectory: ["students", "directory"],
+  studentOverviews: ["students", "overview"],
   trainers: ["trainers"],
   announcements: ["announcements"],
   packages: ["packages"],
   payments: ["payments"],
   classes: ["classes"],
   bookings: ["bookings"],
+  bookingRosters: ["bookings", "roster"],
   mySchedule: ["my-schedule"],
   renewals: ["renewals"],
   reports: ["reports"],

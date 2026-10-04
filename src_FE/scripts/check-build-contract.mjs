@@ -6,7 +6,7 @@
  * are invisible until someone deep-links in production, so they are checked by
  * a machine rather than remembered by a person. See docs/DEPLOYMENT.md.
  */
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import { publicPrerenderPaths } from "../app/content/prerender-paths.ts";
@@ -77,12 +77,17 @@ for (const [label, needle] of [
   }
 }
 
-// 5. Mock Service Worker must never be wired into a production bundle.
-const assets = await readFile(htmlPathFor("/"), "utf8").catch(() => "");
-if (assets.includes("mockServiceWorker")) {
-  failures.push(
-    "Production HTML references mockServiceWorker — fixtures leaked into the build.",
-  );
+// 5. Inspect every emitted JS chunk, including lazy imports. Checking HTML alone
+// misses a retained development graph that never appears in the document.
+if (await exists(join(CLIENT, "mockServiceWorker.js"))) {
+  failures.push("Development worker is present in the deployable artifact.");
+}
+for (const file of await readdir(join(CLIENT, "assets"))) {
+  if (!file.endsWith(".js")) continue;
+  const source = await readFile(join(CLIENT, "assets", file), "utf8");
+  if (/mockServiceWorker\.js|Mock Service Worker|DEMO Huấn luyện viên/.test(source)) {
+    failures.push(`Development mocks leaked into ${file}.`);
+  }
 }
 
 if (failures.length > 0) {

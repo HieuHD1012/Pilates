@@ -7,6 +7,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
 
 import { ROLE_HOME } from "~/features/auth/use-session";
+import { safeReturnPath } from "~/features/auth/navigation";
 import { ApiError } from "~/lib/api/client";
 import { authApi } from "~/lib/api/endpoints";
 import { queryKeys } from "~/lib/api/query-keys";
@@ -49,11 +50,12 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: (values: FormValues) => authApi.login(values),
     async onSuccess(user) {
+      queryClient.clear();
       queryClient.setQueryData(queryKeys.session(), user);
       const next = searchParams.get("next");
       // Only same-origin relative paths are honoured, so a crafted ?next= can
       // never bounce a signed-in studio account off to another site.
-      const safeNext = next && /^\/(?!\/)/.test(next) ? next : null;
+      const safeNext = safeReturnPath(next);
       await navigate(safeNext ?? ROLE_HOME[user.role], { replace: true });
     },
   });

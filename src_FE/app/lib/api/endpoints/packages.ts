@@ -1,4 +1,5 @@
 import { api } from "../client";
+import { collectPages } from "../pagination";
 import type {
   AdjustCreditsRequest,
   PackageLedgerResponse,
@@ -39,6 +40,10 @@ export const packagesApi = {
   /** `GET /packages` — omitting `student_id` as a student pins it to yourself. */
   list: (params: StudentPackageListParams = {}) =>
     api.get<StudentPackageResponse[]>("/packages", { searchParams: params }),
+
+  /** Complete package choices/history, including rows after the default 50. */
+  all: (params: Omit<StudentPackageListParams, "limit" | "offset"> = {}) =>
+    collectPages((page) => packagesApi.list({ ...params, ...page })),
 
   /** `POST /packages/sell` — creates the package and credits it in one transaction. */
   sell: (body: SellPackageRequest) =>

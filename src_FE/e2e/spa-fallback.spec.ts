@@ -10,6 +10,17 @@ import { expect, test } from "@playwright/test";
  */
 
 test.describe("SPA fallback", () => {
+  test.beforeEach(async ({ page }) => {
+    // The local artifact host has no API. Explicitly model an authentication
+    // rejection; an offline/503 API is a recoverable state, not a logout.
+    await page.route("**/api/auth/me", (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: { code: "unauthenticated" } }),
+      }),
+    );
+  });
   test("a deep link into the application boots the app, not the homepage", async ({
     page,
   }) => {
@@ -39,4 +50,10 @@ test.describe("SPA fallback", () => {
     await page.goto("/dang-nhap");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
   });
+});
+
+test("a missing asset is a real 404 instead of an HTML fallback", async ({ request }) => {
+  const response = await request.get("/assets/missing.js");
+  expect(response.status()).toBe(404);
+  expect(response.headers()["x-content-type-options"]).toBe("nosniff");
 });

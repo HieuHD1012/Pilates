@@ -34,11 +34,24 @@ const schema = z.object({
     .string()
     .trim()
     .min(1, "Nhập số tiền")
-    .transform((value) => value.replace(/[^\d]/g, ""))
-    .refine((digits) => digits.length > 0 && Number(digits) > 0, "Nhập số tiền lớn hơn 0")
-    // 500 triệu is far above any plausible single package; a longer number is a
-    // typo, and a typo in a money record is the expensive kind.
-    .refine((digits) => Number(digits) <= 500_000_000, "Số tiền vượt mức hợp lý"),
+    .refine(
+      (value) =>
+        /^(?:\d+|\d{1,3}(?:[.]\d{3})+|\d{1,3}(?:[,]\d{3})+|\d{1,3}(?: \d{3})+)$/.test(
+          value,
+        ),
+      "Nhập số tiền nguyên đồng, không có dấu âm hoặc phần lẻ",
+    )
+    .transform((value) => value.replace(/[., ]/g, ""))
+    .refine((digits) => Number(digits) >= 0, "Số tiền không được âm")
+    .refine(
+      (digits) => Number.isSafeInteger(Number(digits)),
+      "Số tiền quá lớn để ghi nhận chính xác",
+    )
+    // Numeric(12, 2) in the current backend payment schema; not a studio cap.
+    .refine(
+      (digits) => Number(digits) <= 9_999_999_999,
+      "Số tiền vượt giới hạn lưu trữ của hệ thống",
+    ),
   method: z.enum(["CASH", "TRANSFER"]),
   note: z.string().trim().max(500, "Ghi chú quá dài"),
 });
@@ -89,8 +102,8 @@ export function PaymentForm({
   // Echoed back in words as it is typed, because "4250000" and "42500000" look
   // alike in a box and differ by a factor of ten.
   const amountField = useWatch({ control, name: "amount" });
-  const typed = Number(String(amountField ?? "").replace(/[^\d]/g, ""));
-  const preview = Number.isFinite(typed) && typed > 0 ? formatVnd(typed) : null;
+  const parsedAmount = schema.shape.amount.safeParse(String(amountField ?? ""));
+  const preview = parsedAmount.success ? formatVnd(Number(parsedAmount.data)) : null;
 
   // The packages to pay for load once a student is chosen; there is no
   // studio-wide list of sold packages to pick from, and there should not be.
@@ -262,7 +275,7 @@ export function PaymentForm({
       ) : null}
 
       <FormActions>
-        <Button variant="secondary" size="sm" onClick={onCancel}>
+        <Button variant="secondary" size="sm" disabled={pending} onClick={onCancel}>
           Huỷ
         </Button>
         <Button type="submit" size="sm" pending={pending}>

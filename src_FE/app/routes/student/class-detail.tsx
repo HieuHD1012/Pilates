@@ -8,7 +8,6 @@ import {
   useClassSession,
   useMySchedule,
 } from "~/features/booking/queries";
-import { useStudentPackages } from "~/features/commerce/queries";
 import { formatDate, formatLeadTime, formatTimeRange, weekdayLong } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { DetailList, DetailRow as Row } from "~/ui/detail-list";
@@ -40,12 +39,13 @@ export default function ClassDetail() {
   const sessionId = Number(classId);
   const query = useClassSession(sessionId);
   const bookable = useBookableIds();
-  const mySchedule = useMySchedule();
-  const packages = useStudentPackages();
+  const mySchedule = useMySchedule(
+    { starts_from: query.data?.starts_at, starts_to: query.data?.ends_at, limit: 500 },
+    query.isSuccess,
+  );
   const booking = useBookClass();
   const [confirming, setConfirming] = useState(false);
 
-  const activePackage = (packages.data ?? []).find((item) => item.status === "ACTIVE");
   const item = query.data;
 
   if (query.isPending) {
@@ -84,7 +84,6 @@ export default function ClassDetail() {
   const canBook = (bookable.data ?? []).includes(sessionId);
   // A booking always costs exactly one credit; the backend deducts one.
   const cost = 1;
-  const remaining = activePackage?.balance_cached ?? null;
   const hasRoom = item.seats_left > 0;
 
   /**
@@ -155,17 +154,9 @@ export default function ClassDetail() {
             <Row label="Trừ vào gói">
               <Figures>{cost}</Figures> buổi
             </Row>
-            {remaining !== null ? (
-              <Row label="Số buổi còn lại">
-                <span className="flex items-baseline gap-2">
-                  <Figures className="text-ink-2 line-through">{remaining}</Figures>
-                  <span aria-hidden="true" className="text-ink-3">
-                    →
-                  </span>
-                  <Figures className="text-ink">{Math.max(remaining - cost, 0)}</Figures>
-                </span>
-              </Row>
-            ) : null}
+            <Row label="Gói được trừ buổi">
+              Hệ thống chọn gói hợp lệ có hạn dùng sớm nhất.
+            </Row>
             {/* The deadline is computed per booking, so it exists only once the
               booking does. Rather than restate the studio's policy here — a
               second copy that would drift the day it changes — this points at
@@ -176,6 +167,13 @@ export default function ClassDetail() {
           </DetailList>
         </section>
       )}
+
+      {bookable.isError ? (
+        <ErrorState
+          description="Chưa kiểm tra được gói tập cho buổi này. Vui lòng thử lại."
+          onRetry={() => void bookable.refetch()}
+        />
+      ) : null}
 
       {booked ? (
         <div className="rule-t border-t-success mt-8 pt-5">
@@ -228,13 +226,24 @@ export default function ClassDetail() {
         </div>
       )}
 
-      <Dialog open={confirming} onOpenChange={setConfirming}>
+      <Dialog
+        open={confirming}
+        onOpenChange={(open) => {
+          if (!booking.isPending) setConfirming(open);
+        }}
+      >
         <DialogContent
+          busy={booking.isPending}
           title="Xác nhận đặt lớp"
           description={`${item.class_type === "PRIVATE" ? "Lớp riêng" : "Lớp nhóm"} · ${weekdayLong(item.starts_at)} ${formatDate(item.starts_at)}`}
           footer={
             <>
-              <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={booking.isPending}
+                onClick={() => setConfirming(false)}
+              >
                 Quay lại
               </Button>
               <Button
@@ -264,4 +273,3 @@ export default function ClassDetail() {
     </div>
   );
 }
-

@@ -50,10 +50,7 @@ import { Panel, PanelBody, SegmentFilter, Toolbar, WorkspacePage } from "~/ui/wo
 import type { Route } from "./+types/calendar";
 
 export function meta(_: Route.MetaArgs) {
-  return [
-    { title: "Lịch & lớp học — J Pilates" },
-    { name: "robots", content: "noindex" },
-  ];
+  return [{ title: "Lịch & lớp học — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**
@@ -105,13 +102,14 @@ export default function StaffCalendar() {
   // While the next week's counts load, the previous week's map is still held
   // as placeholder data. Its entries are other classes, so reading this week's
   // ids out of it would print 0 for every class; treat it as not measured.
-  const seats = seatCounts.isPlaceholderData ? undefined : seatCounts.data;
+  const seats =
+    seatCounts.isPlaceholderData || seatCounts.isError ? undefined : seatCounts.data;
   const trainerFilterId = useId();
   const trainerNames = trainerNameMap(trainers.data);
   const fullCount = items.filter(
     (item) => (seats?.get(item.id) ?? 0) >= item.capacity,
   ).length;
-  const bookedTotal = [...(seats?.values() ?? [])].reduce((sum, n) => sum + n, 0);
+  const bookedTotal = items.reduce((sum, item) => sum + (seats?.get(item.id) ?? 0), 0);
   const capacityTotal = items.reduce((sum, item) => sum + item.capacity, 0);
 
   const loaded = query.isSuccess && items.length > 0;
@@ -196,6 +194,17 @@ export default function StaffCalendar() {
         }
       />
 
+      {seatCounts.isError ? (
+        <ErrorState
+          description="Chưa tải được sĩ số. Số chỗ đã đặt chưa được xác nhận."
+          onRetry={() => void seatCounts.refetch()}
+        />
+      ) : null}
+      {items.length === 500 ? (
+        <p role="status" className="text-ink-2 mb-4 text-sm">
+          Danh sách đạt giới hạn 500 lớp. Chọn bộ lọc hẹp hơn để xem đầy đủ.
+        </p>
+      ) : null}
       <Panel className="overflow-hidden">
         <Toolbar
           trailing={
@@ -332,6 +341,7 @@ export default function StaffCalendar() {
         }}
       >
         <DialogContent
+          busy={create.isPending || preview.isPending}
           title={creating === "recurring" ? "Lớp định kỳ" : "Thêm lớp"}
           description={
             creating === "recurring"
@@ -386,11 +396,17 @@ export default function StaffCalendar() {
         }}
       >
         <DialogContent
+          busy={createRecurrence.isPending}
           title="Xem trước lịch lặp"
-          description="Những buổi sẽ được tạo. Buổi trùng lịch huấn luyện viên được đánh dấu và sẽ bị bỏ qua."
+          description="Buổi trùng lịch tại thời điểm tạo sẽ được bỏ qua. Những buổi còn lại được ghi cùng một giao dịch; nếu xung đột phát sinh trong lúc ghi, toàn bộ lần ghi bị hủy."
           footer={
             <>
-              <Button variant="secondary" size="sm" onClick={() => setPattern(null)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={createRecurrence.isPending}
+                onClick={() => setPattern(null)}
+              >
                 Quay lại
               </Button>
               <Button

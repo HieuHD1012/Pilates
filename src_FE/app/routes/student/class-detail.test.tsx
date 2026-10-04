@@ -73,10 +73,10 @@ describe("student class booking", () => {
 
     await screen.findByRole("heading", { name: "Lớp nhóm" });
 
-    // The balance change is shown as 4 → 3 before anything is clicked.
-    const consequence = screen.getByText("Số buổi còn lại").closest("div")!;
-    await waitFor(() => expect(within(consequence).getByText("4")).toBeInTheDocument());
-    expect(within(consequence).getByText("3")).toBeInTheDocument();
+    // Before booking the backend has not chosen the charged package. Do not
+    // forecast a balance from the first ACTIVE package in an unrelated list.
+    expect(screen.getByText(/Hệ thống chọn gói hợp lệ/)).toBeInTheDocument();
+    expect(screen.queryByText("Số buổi còn lại")).not.toBeInTheDocument();
 
     // The cancellation deadline is computed per booking, so this screen says
     // where the backend's own number will appear rather than printing a policy.

@@ -9,6 +9,7 @@ import {
   useMySchedule,
 } from "~/features/booking/queries";
 import type { MyScheduleItem } from "~/lib/api/schema";
+import { useStudioToday } from "~/features/public/schedule-ui";
 import {
   addDays,
   formatDate,
@@ -31,7 +32,11 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function MySchedule() {
-  const query = useMySchedule();
+  const today = useStudioToday();
+  const query = useMySchedule(
+    { starts_from: today ? `${today}T00:00:00+07:00` : undefined, limit: 500 },
+    today !== null,
+  );
   // `GET /my-schedule` without `include_cancelled` still returns finished
   // classes; the live ones are the bookings still being held.
   const items = (query.data ?? []).filter((item) => item.booking_status === "BOOKED");
@@ -194,12 +199,18 @@ function ChangeBookingDialog({
     >
       {booking ? (
         <DialogContent
+          busy={change.isPending}
           title="Đổi buổi"
           description={`Bạn đang đặt ${weekdayLong(booking.starts_at)} ${formatTimeRange(booking.starts_at, booking.ends_at)}. Đổi buổi không trừ thêm buổi nào.`}
         >
           <div className="flex flex-col gap-4">
             {candidates.isPending ? (
               <SkeletonRows rows={2} />
+            ) : candidates.isError ? (
+              <ErrorState
+                description="Chưa kiểm tra được các lớp có thể đổi sang."
+                onRetry={() => void candidates.refetch()}
+              />
             ) : options.length === 0 ? (
               <p className="measure text-ink-2 text-sm">
                 Hiện không còn buổi nào bạn đặt được bằng gói đang có. Nhắn studio nếu bạn
@@ -233,7 +244,12 @@ function ChangeBookingDialog({
             ) : null}
 
             <FormActions>
-              <Button variant="secondary" size="sm" onClick={onClose}>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={change.isPending}
+                onClick={onClose}
+              >
                 Để nguyên
               </Button>
               <Button
@@ -285,6 +301,7 @@ function CancelBookingDialog({
     >
       {booking ? (
         <DialogContent
+          busy={cancel.isPending}
           title="Hủy buổi này"
           description={`${weekdayLong(booking.starts_at)} ${formatTimeRange(booking.starts_at, booking.ends_at)}.`}
         >
@@ -302,7 +319,12 @@ function CancelBookingDialog({
             ) : null}
 
             <FormActions>
-              <Button variant="secondary" size="sm" onClick={onClose}>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={cancel.isPending}
+                onClick={onClose}
+              >
                 Giữ buổi
               </Button>
               <Button

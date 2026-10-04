@@ -1,7 +1,7 @@
 import { ArrowRight, ChartColumn, Eye } from "lucide-react";
 import { Link } from "react-router";
 
-import { useTrainers } from "~/features/people/queries";
+import { useTrainerDirectory } from "~/features/people/queries";
 import type { TrainerResponse } from "~/lib/api/schema";
 import { formatPhone } from "~/lib/format";
 import { Button } from "~/ui/button";
@@ -16,10 +16,7 @@ import { Avatar, InlineNote, Panel, WorkspacePage } from "~/ui/workspace";
 import type { Route } from "./+types/trainers";
 
 export function meta(_: Route.MetaArgs) {
-  return [
-    { title: "Huấn luyện viên — J Pilates" },
-    { name: "robots", content: "noindex" },
-  ];
+  return [{ title: "Huấn luyện viên — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /**
@@ -39,7 +36,7 @@ export function meta(_: Route.MetaArgs) {
 export default function StaffTrainers() {
   // Everyone, not just the active ones: this is the screen where a trainer who
   // has stopped teaching is found again.
-  const query = useTrainers({ limit: 200 });
+  const query = useTrainerDirectory();
 
   const trainers = query.data ?? [];
   const activeCount = trainers.filter((trainer) => trainer.is_active).length;

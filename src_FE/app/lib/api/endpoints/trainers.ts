@@ -1,4 +1,5 @@
 import { api } from "../client";
+import { collectPages } from "../pagination";
 import type {
   TrainerCreateRequest,
   TrainerListParams,
@@ -11,6 +12,8 @@ import type {
  * cannot publish themselves (`is_public`) or move the profile to another login.
  */
 export const trainersApi = {
+  all: (params: Omit<TrainerListParams, "offset" | "limit"> = {}) =>
+    collectPages((page) => trainersApi.list({ ...params, ...page })),
   /** `GET /trainers` — ADMIN, STAFF. */
   list: (params: TrainerListParams = {}) =>
     api.get<TrainerResponse[]>("/trainers", { searchParams: params }),

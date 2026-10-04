@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { ApiError } from "~/lib/api/client";
 import { authApi } from "~/lib/api/endpoints";
+import { invalidateChange } from "~/lib/api/invalidation";
 import { queryKeys } from "~/lib/api/query-keys";
 import type { MeResponse } from "~/lib/api/schema";
 import { Button } from "~/ui/button";
@@ -48,9 +49,10 @@ export function MyProfileForm({ me }: { me: MeResponse }) {
         // An empty box means "no number", which the backend stores as null.
         phone: values.phone === "" ? null : values.phone,
       }),
-    onSuccess(updated) {
+    async onSuccess(updated) {
       queryClient.setQueryData(queryKeys.session(), updated);
       reset({ full_name: updated.full_name ?? "", phone: updated.phone ?? "" });
+      await invalidateChange(queryClient, "profile");
     },
     onError(error) {
       if (error instanceof ApiError && error.isValidation) {
