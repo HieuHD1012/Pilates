@@ -62,6 +62,38 @@ test("ADMIN creates a catalogue offer, STAFF sells and renews it, ledger updates
     data.token,
   );
   expect(packages.reduce((sum, item) => sum + item.balance_cached, 0)).toBe(17);
+  await page.goto("/studio/goi-tap");
+  await page
+    .getByRole("article", { name, exact: true })
+    .getByRole("button", { name: /Thao tác/ })
+    .click();
+  await page.getByRole("button", { name: "Sửa gói", exact: true }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Giá", { exact: true }).fill("600000");
+  await dialog.getByRole("button", { name: "Lưu gói", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(
+    (
+      await call<StudentPackageResponse[]>(
+        request,
+        "GET",
+        `/packages?student_id=${data.student.id}`,
+        undefined,
+        data.token,
+      )
+    ).find((item) => item.id === sold.id)!.price_snapshot,
+  ).toBe("500000.00");
+  expect(
+    (
+      await call<PackageTypeResponse[]>(
+        request,
+        "GET",
+        "/package-types",
+        undefined,
+        data.token,
+      )
+    ).find((item) => item.id === type.id)!.price,
+  ).toBe("600000.00");
 });
 
 test("receipt transitions PENDING to CONFIRMED to VOID; revenue and credits reconcile", async ({
@@ -112,6 +144,10 @@ test("receipt transitions PENDING to CONFIRMED to VOID; revenue and credits reco
   );
   expect(confirmed.amount).toBe("1000000.00");
   expect(confirmed.status).toBe("CONFIRMED");
+  await row.getByRole("button", { name: /Thao tác/ }).click();
+  await page.getByRole("button", { name: "Xem phiếu", exact: true }).click();
+  await expect(page.getByRole("dialog").getByText(note, { exact: true })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Đóng", exact: true }).click();
   await row.getByRole("button", { name: /Thao tác/ }).click();
   await page.getByRole("button", { name: "Hủy phiếu", exact: true }).click();
   dialog = page.getByRole("dialog");

@@ -7,9 +7,15 @@ import {
   databaseFixture,
   ledger,
   API,
+  studioDay,
 } from "./helpers/live";
-import type { ClassSessionResponse, BookingResult } from "../app/lib/api/schema";
-import { studioDay } from "./helpers/demo";
+import type {
+  ClassSessionResponse,
+  BookingResult,
+  RecurrencePreviewResponse,
+  RecurrenceCreateResponse,
+  TrainerResponse,
+} from "../app/lib/api/schema";
 
 test("STAFF creates class in studio timezone; duplicate trainer slot is refused without dropping form", async ({
   page,
@@ -52,6 +58,63 @@ test("STAFF creates class in studio timezone; duplicate trainer slot is refused 
       )
     ).trainer_id,
   ).toBe(data.trainer.id);
+});
+
+test("STAFF previews and creates recurrence; trainer reassignment updates detail and access", async ({
+  page,
+  request,
+}) => {
+  const data = await fixture(request);
+  await signIn(page, data.staffAccount.email);
+  await page.goto("/studio/lich");
+  await page.getByRole("button", { name: "Lớp định kỳ", exact: true }).click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByLabel(/Huấn luyện viên/).selectOption(String(data.trainer.id));
+  await dialog.getByLabel("Ngày", { exact: false }).first().fill(studioDay(1));
+  await dialog.getByLabel(/Giờ bắt đầu/).fill("23:00");
+  await dialog.getByLabel(/Sức chứa/).fill("3");
+  await dialog.getByLabel("Lặp đến ngày", { exact: false }).fill(studioDay(7));
+  for (const checkbox of await dialog.getByRole("checkbox").all()) await checkbox.check();
+  const previewResponse = page.waitForResponse((response) =>
+    response.url().endsWith("/classes/recurrence/preview"),
+  );
+  await dialog.getByRole("button", { name: "Xem trước", exact: true }).click();
+  const preview = (await (await previewResponse).json()) as RecurrencePreviewResponse;
+  expect(preview.available_count).toBe(7);
+  dialog = page.getByRole("dialog");
+  const createResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/classes/recurrence") &&
+      response.request().method() === "POST",
+  );
+  await dialog.getByRole("button", { name: "Tạo 7 buổi", exact: true }).click();
+  const created = (await (await createResponse).json()) as RecurrenceCreateResponse;
+  await expect(dialog).toBeHidden();
+  expect(created.sessions).toHaveLength(7);
+  const replacement = await call<TrainerResponse>(
+    request,
+    "POST",
+    "/trainers",
+    { full_name: `E2E HLV thay ${data.trainer.id}` },
+    data.token,
+  );
+  await page.goto(`/studio/lich/${data.session.id}`);
+  await page.getByRole("button", { name: "Đổi huấn luyện viên", exact: true }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel(/Huấn luyện viên/).selectOption(String(replacement.id));
+  await dialog.getByRole("button", { name: "Lưu", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(
+    (
+      await call<ClassSessionResponse>(
+        request,
+        "GET",
+        `/classes/${data.session.id}`,
+        undefined,
+        data.token,
+      )
+    ).trainer_id,
+  ).toBe(replacement.id);
 });
 
 test("class cancellation refunds held booking and updates student schedule", async ({

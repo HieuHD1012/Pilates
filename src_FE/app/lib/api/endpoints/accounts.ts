@@ -1,4 +1,5 @@
 import { api } from "../client";
+import { collectPages } from "../pagination";
 import type {
   AccountCreateRequest,
   AccountListParams,
@@ -9,6 +10,8 @@ import type {
 
 /** `docs/api/accounts/` — ADMIN only, every one of them. */
 export const accountsApi = {
+  trainerDirectory: () =>
+    collectPages((page) => accountsApi.list({ ...page, role: "TRAINER" })),
   /** `GET /accounts` */
   list: (params: AccountListParams = {}) =>
     api.get<AccountResponse[]>("/accounts", { searchParams: params }),

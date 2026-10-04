@@ -32,6 +32,17 @@ test("public enquiry becomes a student through STAFF UI", async ({ page, request
   expect(lead.full_name).toBe(name);
   await signIn(page, data.staffAccount.email);
   await page.goto(`/studio/khach-quan-tam/${lead.id}`);
+  await page
+    .getByLabel("Trạng thái sau khi liên hệ", { exact: true })
+    .selectOption("CONTACTED");
+  await page.getByLabel("Ghi chú", { exact: true }).fill("Đã trao đổi nhu cầu tập luyện.");
+  const update = page.waitForResponse(
+    (response) =>
+      response.url() === `${API}/leads/${lead.id}` &&
+      response.request().method() === "PATCH",
+  );
+  await page.getByRole("button", { name: "Lưu kết quả", exact: true }).click();
+  expect((await update).status()).toBe(200);
   await page.getByRole("button", { name: "Chuyển thành học viên", exact: true }).click();
   await page
     .getByRole("dialog")

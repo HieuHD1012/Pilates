@@ -2,7 +2,11 @@ import { Armchair, CalendarCheck, Gauge, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { useClassReport, useTrainerClassSizes } from "~/features/reports/queries";
+import {
+  useClassReport,
+  useTrainerClassSizes,
+  useReportExport,
+} from "~/features/reports/queries";
 import { ReportRangeToolbar, ReportSwitcher } from "~/features/reports/report-frame";
 import { formatNumber, studioDateKey } from "~/lib/format";
 import { Button } from "~/ui/button";
@@ -15,10 +19,7 @@ import { Kpi, Meter, Panel, PanelHeader, WorkspacePage } from "~/ui/workspace";
 import type { Route } from "./+types/report-classes";
 
 export function meta(_: Route.MetaArgs) {
-  return [
-    { title: "Báo cáo lớp học — J Pilates" },
-    { name: "robots", content: "noindex" },
-  ];
+  return [{ title: "Báo cáo lớp học — J Pilates" }, { name: "robots", content: "noindex" }];
 }
 
 /** The studio's current calendar month, as two date keys. */
@@ -45,6 +46,7 @@ export default function StaffReportClasses() {
   const params = { period_start: range.from, period_end: range.to };
   const query = useClassReport(params);
   const sizes = useTrainerClassSizes(params);
+  const download = useReportExport("class-sizes");
 
   return (
     <WorkspacePage>
@@ -55,10 +57,33 @@ export default function StaffReportClasses() {
           </Link>
         }
         title="Báo cáo lớp học"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              pending={download.isPending}
+              onClick={() => download.mutate({ ...params, format: "csv" })}
+            >
+              Xuất CSV
+            </Button>
+            <Button
+              variant="secondary"
+              pending={download.isPending}
+              onClick={() => download.mutate({ ...params, format: "xlsx" })}
+            >
+              Xuất Excel
+            </Button>
+          </>
+        }
         description="Số lớp đã xếp, lượt đăng ký và mức lấp đầy trong khoảng ngày bạn chọn."
       />
 
       <ReportSwitcher />
+      {download.isError ? (
+        <p role="alert" className="text-danger text-sm">
+          Chưa tải được báo cáo. Vui lòng thử lại.
+        </p>
+      ) : null}
 
       <ReportRangeToolbar
         range={range}

@@ -2,6 +2,7 @@ import { ArrowRight, ChartColumn, Eye } from "lucide-react";
 import { Link } from "react-router";
 
 import { useTrainerDirectory } from "~/features/people/queries";
+import { TrainerEditor } from "~/features/people/trainer-editor";
 import type { TrainerResponse } from "~/lib/api/schema";
 import { formatPhone } from "~/lib/format";
 import { Button } from "~/ui/button";
@@ -50,6 +51,7 @@ export default function StaffTrainers() {
         actions={
           <>
             <DemoDataNotice />
+            <TrainerEditor />
             <Button asChild variant="secondary">
               <Link to="/studio/bao-cao/huan-luyen-vien">
                 <ChartColumn className="size-4" aria-hidden="true" />

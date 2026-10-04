@@ -82,6 +82,12 @@ jobs:
         run: |
           cd src_BE && uv sync --frozen
           cd ../src_FE && npm ci && npm run e2e:install
+      - name: Compare FE types with generated backend OpenAPI
+        run: |
+          cd src_BE
+          uv run python -m scripts.export_openapi ../src_FE/visual-qa/live/openapi.json
+          cd ../src_FE
+          node scripts/check-api-contract.mjs visual-qa/live/openapi.json
       - name: Live browser suite twice on fresh databases
         shell: bash
         run: |
@@ -105,7 +111,9 @@ jobs:
             result=0
             npm run e2e:live || result=$?
             mkdir -p "visual-qa/live/run-$round"
-            cp -R playwright-report test-results "visual-qa/live/run-$round/"
+            for folder in playwright-report test-results; do
+              if [ -d "$folder" ]; then cp -R "$folder" "visual-qa/live/run-$round/"; fi
+            done
             cp /tmp/pilates-api.log "visual-qa/live/run-$round/backend.log"
             ../src_BE/.venv/bin/python ../scripts/redact_live_artifacts.py "visual-qa/live/run-$round/test-results" "visual-qa/live/run-$round/playwright-report"
             cd "$GITHUB_WORKSPACE/src_BE"
@@ -115,6 +123,10 @@ jobs:
             trap - EXIT
             if [ "$result" -ne 0 ]; then exit "$result"; fi
           done
+      - name: Mask browser credentials before uploading evidence
+        if: always()
+        run: |
+          src_BE/.venv/bin/python scripts/redact_live_artifacts.py src_FE/test-results src_FE/playwright-report src_FE/visual-qa/live/run-1/test-results src_FE/visual-qa/live/run-1/playwright-report src_FE/visual-qa/live/run-2/test-results src_FE/visual-qa/live/run-2/playwright-report
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -163,7 +175,9 @@ jobs:
 
       # Rule DTZ chặn naive datetime — lệch 7 giờ vượt cả hai ngưỡng hủy 4h/1h.
       - name: Lint (gồm cổng chặn naive datetime)
-        run: uv run ruff check .
+        run: |
+          uv run ruff check . ../scripts
+          uv run python ../scripts/test_redact_live_artifacts.py
 
       - name: Kiểm migration khớp model
         run: |

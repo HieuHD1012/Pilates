@@ -1,4 +1,5 @@
 import { TrainerPhotoUpload } from "~/features/people/photo-gallery";
+import { TrainerEditor } from "~/features/people/trainer-editor";
 import {
   CalendarCheck,
   CalendarPlus,
@@ -164,6 +165,7 @@ function TrainerRecord({ trainer }: { trainer: TrainerResponse }) {
 
           {/* Calling is the contact action, so it is copper (ADR 0006, 9).
               With no number on file there is nothing to call. */}
+          <TrainerEditor trainer={trainer} />
           {trainer.phone ? (
             <Button asChild variant="copper">
               <a href={telHref(trainer.phone)}>

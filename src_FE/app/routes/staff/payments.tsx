@@ -15,6 +15,7 @@ import { PaymentForm } from "~/features/commerce/payment-form";
 import {
   useConfirmPayment,
   usePayments,
+  usePayment,
   useRecordPayment,
   useStudentPackages,
   useVoidPayment,
@@ -548,9 +549,9 @@ function RowActions({
   confirmInline: boolean;
 }) {
   const [voiding, setVoiding] = useState(false);
+  const [viewing, setViewing] = useState(false);
+  const detail = usePayment(viewing ? payment.id : null);
   const confirm = useConfirmPayment();
-
-  if (payment.status === "VOID") return null;
 
   return (
     <span className="flex items-center justify-end gap-1.5">
@@ -568,17 +569,70 @@ function RowActions({
       ) : null}
 
       <RowMenu label={`Thao tác cho phiếu ${formatVnd(payment.amount)}`}>
-        <RowMenuItem
-          danger
-          icon={<X aria-hidden="true" />}
-          note="Phiếu vẫn nằm trong sổ, kèm lý do hủy."
-          onClick={() => setVoiding(true)}
-        >
-          Hủy phiếu
-        </RowMenuItem>
+        <RowMenuItem onClick={() => setViewing(true)}>Xem phiếu</RowMenuItem>
+        {payment.status !== "VOID" ? (
+          <RowMenuItem
+            danger
+            icon={<X aria-hidden="true" />}
+            note="Phiếu vẫn nằm trong sổ, kèm lý do hủy."
+            onClick={() => setVoiding(true)}
+          >
+            Hủy phiếu
+          </RowMenuItem>
+        ) : null}
       </RowMenu>
 
       <VoidDialog payment={payment} open={voiding} onOpenChange={setVoiding} />
+      <Dialog open={viewing} onOpenChange={setViewing}>
+        <DialogContent title={`Phiếu thu #${payment.id}`}>
+          <QueryBoundary query={detail} errorDescription="Chưa tải được phiếu thu.">
+            {(row) => (
+              <dl className="grid gap-4 text-sm">
+                <div>
+                  <dt className="text-ink-2">Số tiền</dt>
+                  <dd>
+                    {formatVnd(row.amount)} · {METHOD[row.method].label}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-ink-2">Trạng thái</dt>
+                  <dd>{STATUS[row.status].label}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-2">Gói tập</dt>
+                  <dd>#{row.student_package_id}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-2">Ghi nhận</dt>
+                  <dd>
+                    {formatDate(row.recorded_at)} · {formatTime(row.recorded_at)}
+                  </dd>
+                </div>
+                {row.confirmed_at ? (
+                  <div>
+                    <dt className="text-ink-2">Xác nhận</dt>
+                    <dd>
+                      {formatDate(row.confirmed_at)} · {formatTime(row.confirmed_at)}
+                    </dd>
+                  </div>
+                ) : null}
+                {row.note ? (
+                  <div>
+                    <dt className="text-ink-2">Ghi chú</dt>
+                    <dd>{row.note}</dd>
+                  </div>
+                ) : null}
+                {row.void_reason ? (
+                  <div>
+                    <dt className="text-ink-2">Lý do hủy</dt>
+                    <dd>{row.void_reason}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            )}
+          </QueryBoundary>
+        </DialogContent>
+      </Dialog>
     </span>
   );
 }

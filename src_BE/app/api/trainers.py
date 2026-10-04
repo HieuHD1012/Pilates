@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.content_rules import clean_public_text
-from app.core.errors import BusinessError, ForbiddenError, NotFoundError
+from app.core.errors import BusinessError, ForbiddenError, NotFoundError, ValidationError
 from app.core.permissions import Actor, get_current_actor, require_staff
 from app.core.upload_guard import (
     STORED_CONTENT_TYPE,
@@ -26,6 +26,7 @@ from app.core.upload_guard import (
 from app.db import get_db
 from app.domain.rules import Role
 from app.models.people import Trainer
+from app.models.user import User
 from app.schemas.people import TrainerCreate, TrainerResponse, TrainerUpdate
 
 router = APIRouter(prefix="/trainers", tags=["trainers"])
@@ -73,6 +74,24 @@ def _clean_public_profile_fields(data: dict) -> dict:
     return data
 
 
+def _validate_account_link(db: Session, user_id: int | None, trainer_id: int | None = None) -> None:
+    if user_id is None:
+        return
+    # Lock the target account to serialize two requests linking it at once.
+    user = db.scalar(select(User).where(User.id == user_id).with_for_update())
+    if user is None:
+        raise NotFoundError("Không tìm thấy tài khoản huấn luyện viên.")
+    if user.role is not Role.TRAINER:
+        raise BusinessError(
+            "TRAINER_ACCOUNT_ROLE", "Chỉ liên kết tài khoản có quyền huấn luyện viên."
+        )
+    linked = db.scalar(select(Trainer.id).where(Trainer.user_id == user_id))
+    if linked is not None and linked != trainer_id:
+        raise BusinessError(
+            "TRAINER_ACCOUNT_TAKEN", "Tài khoản này đã liên kết với hồ sơ huấn luyện viên khác."
+        )
+
+
 @router.get("", response_model=list[TrainerResponse])
 def list_trainers(
     actor: Actor = Depends(require_staff),
@@ -99,6 +118,7 @@ def create_trainer(
 ) -> Trainer:
     """Thêm hồ sơ huấn luyện viên."""
     data = _clean_public_profile_fields(payload.model_dump())
+    _validate_account_link(db, data.get("user_id"))
     trainer = Trainer(**data)
     db.add(trainer)
     db.flush()
@@ -143,6 +163,12 @@ def update_trainer(
         for field in ("is_public", "is_active", "user_id"):
             data.pop(field, None)
 
+    for field in ("is_public", "is_active"):
+        if field in data and data[field] is None:
+            raise ValidationError(f"{field} không được để trống.")
+    if "user_id" in data:
+        _validate_account_link(db, data["user_id"], trainer_id)
+
     for field, value in data.items():
         setattr(trainer, field, value)
     return trainer
@@ -186,7 +212,5 @@ def get_trainer_photo(
     """Ảnh đại diện HLV dạng nhị phân. Trả 404 kèm mã `NO_PHOTO` khi chưa có ảnh."""
     trainer = _get_or_404(db, trainer_id, actor)
     if not trainer.photo_key:
-        raise BusinessError(
-            "NO_PHOTO", "Huấn luyện viên này chưa có ảnh.", http_status=404
-        )
+        raise BusinessError("NO_PHOTO", "Huấn luyện viên này chưa có ảnh.", http_status=404)
     return Response(content=read_image(trainer.photo_key), media_type=STORED_CONTENT_TYPE)

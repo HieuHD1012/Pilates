@@ -178,7 +178,11 @@ export function useCreateTrainer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: TrainerCreateRequest) => trainersApi.create(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: roots.trainers }),
+    async onSuccess() {
+      await queryClient.invalidateQueries({ queryKey: roots.trainers });
+      await queryClient.invalidateQueries({ queryKey: roots.public });
+      await queryClient.invalidateQueries({ queryKey: roots.accounts });
+    },
   });
 }
 
@@ -195,6 +199,7 @@ export function useUpdateTrainer(trainerId: number) {
       await queryClient.invalidateQueries({ queryKey: roots.trainers });
       // A published-or-not change reaches the public roster too.
       await queryClient.invalidateQueries({ queryKey: roots.public });
+      await queryClient.invalidateQueries({ queryKey: roots.accounts });
     },
   });
 }
@@ -241,6 +246,13 @@ export function useTrainerMonthStats(params: TrainerStatsParams | null) {
 }
 
 /* ── Accounts ───────────────────────────────────────────────────────────── */
+export function useTrainerAccountDirectory(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.accounts.trainerDirectory(),
+    queryFn: accountsApi.trainerDirectory,
+    enabled,
+  });
+}
 
 export function useAccounts(params: AccountListParams = {}) {
   return useQuery({

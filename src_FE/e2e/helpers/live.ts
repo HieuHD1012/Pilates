@@ -20,6 +20,15 @@ import type {
 export const API = process.env.LIVE_API_URL!;
 export const PASSWORD = "ci-disposable-password-2026";
 export const uid = () => randomUUID().replaceAll("-", "").slice(0, 16);
+export function studioDay(offset = 0) {
+  const date = new Date(Date.now() + offset * 86400000);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
 export function phone() {
   return `09${BigInt(`0x${uid()}`).toString().slice(-8)}`;
 }

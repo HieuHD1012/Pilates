@@ -43,6 +43,7 @@ export const queryKeys = {
   },
 
   accounts: {
+    trainerDirectory: () => ["accounts", "trainer-directory"] as const,
     list: (params: AccountListParams) => ["accounts", "list", params] as const,
     detail: (accountId: number) => ["accounts", "detail", accountId] as const,
   },

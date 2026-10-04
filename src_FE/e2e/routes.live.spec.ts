@@ -106,5 +106,5 @@ test("STAFF and students cannot use ADMIN operations or another student's data",
         headers: { Authorization: `Bearer ${data.studentToken}` },
       })
     ).status(),
-  ).toBe(404);
+  ).toBe(403);
 });

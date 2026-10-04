@@ -525,9 +525,15 @@ export const handlers: HttpHandler[] = [
   http.delete(url("/students/:studentId/progress-photos/:photoId"), () =>
     HttpResponse.json(null, { status: 204 }),
   ),
-  http.get(url("/students/:studentId/progress-photos/:photoId/file"), () =>
-    fail(404, "NO_PHOTO", "Bản demo không có tệp ảnh."),
-  ),
+  http.get(url("/students/:studentId/progress-photos/:photoId/file"), () => {
+    const bytes = Uint8Array.from(
+      atob(
+        "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAO0lEQVR4nO3RQREAMAjEwKP6K6IiEFgJ4cMvK+CYCdXvZtNZXY8HBvwBMhEyETIRMhEyETIRMhEyUcgHSfACIJF+Q0IAAAAASUVORK5CYII=",
+      ),
+      (char) => char.charCodeAt(0),
+    );
+    return new HttpResponse(bytes, { headers: { "Content-Type": "image/png" } });
+  }),
 
   /* trainers ------------------------------------------------------------ */
 

@@ -72,7 +72,7 @@ export default function ResetPassword() {
   const done = mutation.isSuccess;
 
   /**
-   * 410 / `reset_token_invalid` is the backend saying the link is spent or past
+   * 401 / UNAUTHORIZED is the backend saying the link is spent or past
    * its expiry — a different outcome from a rejected password, and it cannot be
    * fixed by editing the form. A URL with no token at all is the same dead end
    * arriving earlier, so it renders the same way instead of a form that is
@@ -80,7 +80,9 @@ export default function ResetPassword() {
    */
   const tokenRejected =
     mutation.error instanceof ApiError &&
-    (mutation.error.status === 410 || mutation.error.code === "reset_token_invalid");
+    (mutation.error.status === 401 ||
+      mutation.error.status === 410 ||
+      mutation.error.code === "reset_token_invalid");
   const linkDead = !token || tokenRejected;
 
   // Covers a network failure, a 5xx, and a 422 whose field errors did not map

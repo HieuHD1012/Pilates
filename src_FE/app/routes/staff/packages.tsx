@@ -197,6 +197,7 @@ function useSellingToggle(item: PackageTypeResponse, onNotice: Notify) {
 }
 
 function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: Notify }) {
+  const [editing, setEditing] = useState(false);
   const { update, toggle } = useSellingToggle(item, onNotice);
   const price = decimalToNumber(item.price);
   const titleId = `package-${item.id}`;
@@ -214,6 +215,7 @@ function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: 
       <div className="-mt-1 -mr-1.5 mb-2 flex items-center justify-between gap-2">
         <StatusBadge tone="positive">Đang bán</StatusBadge>
         <RowMenu label={`Thao tác cho ${item.name}`}>
+          <RowMenuItem onClick={() => setEditing(true)}>Sửa gói</RowMenuItem>
           <RowMenuItem
             danger
             icon={<X aria-hidden="true" />}
@@ -274,6 +276,9 @@ function PackageCard({ item, onNotice }: { item: PackageTypeResponse; onNotice: 
         </dl>
       </div>
 
+      <Dialog open={editing} onOpenChange={setEditing}>
+        {editing ? <PackageTypeForm item={item} onDone={() => setEditing(false)} /> : null}
+      </Dialog>
       {update.isError ? (
         <p role="alert" className="text-danger mt-2 text-xs">
           Chưa đổi được trạng thái bán. Vui lòng thử lại.
@@ -380,8 +385,16 @@ const schema = z.object({
 
 type PackageTypeValues = z.infer<typeof schema>;
 
-function PackageTypeForm({ onDone }: { onDone: () => void }) {
-  const create = useCreatePackageType();
+function PackageTypeForm({
+  onDone,
+  item,
+}: {
+  onDone: () => void;
+  item?: PackageTypeResponse;
+}) {
+  const createNew = useCreatePackageType();
+  const update = useUpdatePackageType(item?.id ?? 0);
+  const create = item ? update : createNew;
 
   const {
     register,
@@ -390,19 +403,23 @@ function PackageTypeForm({ onDone }: { onDone: () => void }) {
   } = useForm<PackageTypeValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
-      credits: "",
-      duration_days: "",
-      price: "",
-      class_type: "GROUP",
+      name: item?.name ?? "",
+      credits: item ? String(item.credits) : "",
+      duration_days: item ? String(item.duration_days) : "",
+      price: item?.price ?? "",
+      class_type: item?.class_type ?? "GROUP",
     },
   });
 
   return (
     <DialogContent
       busy={create.isPending}
-      title="Thêm gói vào danh mục"
-      description="Gói mới xuất hiện ở màn hình bán gói và trên trang công khai nếu để trạng thái đang bán."
+      title={item ? "Sửa gói trong danh mục" : "Thêm gói vào danh mục"}
+      description={
+        item
+          ? "Chỉ áp dụng cho lần bán mới. Gói học viên đã mua giữ giá, số buổi và thời hạn tại lúc bán."
+          : "Gói mới xuất hiện ở màn hình bán gói và trên trang công khai nếu để trạng thái đang bán."
+      }
     >
       <form
         noValidate
@@ -510,7 +527,7 @@ function PackageTypeForm({ onDone }: { onDone: () => void }) {
             Quay lại
           </Button>
           <Button type="submit" size="sm" pending={create.isPending}>
-            Thêm gói
+            {item ? "Lưu gói" : "Thêm gói"}
           </Button>
         </FormActions>
       </form>

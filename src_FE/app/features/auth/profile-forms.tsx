@@ -28,7 +28,13 @@ const profileSchema = z.object({
 
 type ProfileValues = z.infer<typeof profileSchema>;
 
-export function MyProfileForm({ me }: { me: MeResponse }) {
+export function MyProfileForm({
+  me,
+  requirePhone = false,
+}: {
+  me: MeResponse;
+  requirePhone?: boolean;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -38,7 +44,17 @@ export function MyProfileForm({ me }: { me: MeResponse }) {
     reset,
     setError,
   } = useForm<ProfileValues>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(
+      requirePhone
+        ? profileSchema.extend({
+            phone: z
+              .string()
+              .trim()
+              .min(1, "Hồ sơ học viên cần số điện thoại")
+              .max(32, "Số điện thoại quá dài"),
+          })
+        : profileSchema,
+    ),
     defaultValues: { full_name: me.full_name ?? "", phone: me.phone ?? "" },
   });
 
@@ -85,7 +101,7 @@ export function MyProfileForm({ me }: { me: MeResponse }) {
         )}
       </Field>
 
-      <Field label="Số điện thoại" error={errors.phone?.message}>
+      <Field label="Số điện thoại" required={requirePhone} error={errors.phone?.message}>
         {({ id, describedBy, invalid }) => (
           <Input
             id={id}

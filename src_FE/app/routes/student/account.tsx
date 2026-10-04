@@ -99,8 +99,11 @@ export default function StudentAccount() {
       <section className="mt-8">
         <h2 className="text-ink text-sm font-medium">Sửa thông tin của bạn</h2>
         <div className="mt-3">
-          {session.data ? (
-            <MyProfileForm me={session.data} />
+          {session.data && profile.data ? (
+            <MyProfileForm
+              me={{ ...session.data, phone: session.data.phone ?? profile.data.phone }}
+              requirePhone
+            />
           ) : (
             <p className="text-ink-2 text-sm">Đang tải thông tin tài khoản.</p>
           )}
