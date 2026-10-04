@@ -48,7 +48,7 @@ class Actor:
         return self.role in (Role.ADMIN, Role.STAFF)
 
 
-def get_current_actor(request: Request, db: Session = Depends(get_db)) -> Actor:
+def get_current_actor(request: Request, db: Session = Depends(get_db, scope="function")) -> Actor:
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
         raise UnauthorizedError()

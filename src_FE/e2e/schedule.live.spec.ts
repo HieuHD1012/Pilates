@@ -74,7 +74,13 @@ test("STAFF previews and creates recurrence; trainer reassignment updates detail
   await dialog.getByLabel(/Giờ bắt đầu/).fill("23:00");
   await dialog.getByLabel(/Sức chứa/).fill("3");
   await dialog.getByLabel("Lặp đến ngày", { exact: false }).fill(studioDay(7));
-  for (const checkbox of await dialog.getByRole("checkbox").all()) await checkbox.check();
+  for (const checkbox of await dialog.getByRole("checkbox").all()) {
+    if (!(await checkbox.isChecked())) {
+      await checkbox.focus();
+      await checkbox.press("Space");
+      await expect(checkbox).toBeChecked();
+    }
+  }
   const previewResponse = page.waitForResponse((response) =>
     response.url().endsWith("/classes/recurrence/preview"),
   );

@@ -147,7 +147,9 @@ test("two student UI sessions race for last seat; one debit and one refusal; dup
       ledger(request, data.token, data.sold.id),
       ledger(request, data.token, rival.sold.id),
     ]);
-    expect(balances.map((item) => item.closing_balance).sort()).toEqual([9, 10]);
+    expect(balances.map((item) => item.closing_balance).sort((a, b) => a - b)).toEqual([
+      9, 10,
+    ]);
     const winner = writes[0]!.status() === 201 ? data : rival;
     expect(
       (
@@ -229,6 +231,9 @@ test("no matching package or insufficient credits cannot book; no debit is recor
   await signIn(page, data.studentAccount.email);
   await page.goto(`/hv/lop-hoc/${privateClass.id}`);
   await expect(
+    page.getByText("Gói tập hiện tại của bạn chưa dùng được cho buổi này."),
+  ).toBeVisible();
+  await expect(
     page.getByRole("button", { name: "Đặt lớp này", exact: true }),
   ).toBeDisabled();
   await call(
@@ -240,7 +245,27 @@ test("no matching package or insufficient credits cannot book; no debit is recor
   );
   await page.goto(`/hv/lop-hoc/${data.session.id}`);
   await expect(
+    page.getByText("Gói tập hiện tại của bạn chưa dùng được cho buổi này."),
+  ).toBeVisible();
+  await expect(
     page.getByRole("button", { name: "Đặt lớp này", exact: true }),
   ).toBeDisabled();
   expect((await ledger(request, data.token, data.sold.id)).closing_balance).toBe(0);
+});
+
+test("expired package with remaining credits is ineligible and retains its balance", async ({
+  page,
+  request,
+}) => {
+  const data = await fixture(request);
+  databaseFixture("expired-package", data.sold.id);
+  await signIn(page, data.studentAccount.email);
+  await page.goto(`/hv/lop-hoc/${data.session.id}`);
+  await expect(
+    page.getByText("Gói tập hiện tại của bạn chưa dùng được cho buổi này."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Đặt lớp này", exact: true }),
+  ).toBeDisabled();
+  expect((await ledger(request, data.token, data.sold.id)).closing_balance).toBe(10);
 });

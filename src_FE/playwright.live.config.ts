@@ -39,7 +39,7 @@ export default defineConfig({
     },
     {
       name: "live-mobile",
-      testMatch: /(?:production-api|public-auth|trainer)\.live\.spec\.ts$/,
+      testMatch: /(?:production-api|public-auth|trainer|bookings|photos|auth-session)\.live\.spec\.ts$/,
       use: { ...devices["Pixel 7"] },
     },
   ],

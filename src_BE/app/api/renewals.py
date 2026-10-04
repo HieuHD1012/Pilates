@@ -28,7 +28,7 @@ router = APIRouter(prefix="/renewals", tags=["renewals"])
 @router.get("/summary", response_model=RenewalSummaryResponse)
 def summary(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> RenewalSummaryResponse:
     """Bảng tổng hợp nhắc gia hạn — **chỉ đếm người, không có số liệu kinh doanh**.
 
@@ -46,7 +46,7 @@ def summary(
 @router.get("", response_model=list[RenewalCandidateResponse])
 def list_candidates(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     max_credits: int | None = Query(default=None, ge=0),
     max_days: int | None = Query(default=None, ge=0),
     contacted: bool | None = None,
@@ -87,7 +87,7 @@ def list_candidates(
 def create_contact(
     payload: RenewalContactCreate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> RenewalContact:
     """Ghi kết quả một lần liên hệ. Lịch sử là append — không sửa dòng cũ."""
     return renewal_query.record_contact(
@@ -106,7 +106,7 @@ def create_contact(
 def contact_history(
     student_id: int,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     limit: int = Query(default=50, ge=1, le=200),
 ) -> list[RenewalContact]:
     """Lịch sử liên hệ gia hạn của một học viên, mới nhất trước."""

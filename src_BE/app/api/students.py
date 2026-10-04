@@ -51,15 +51,14 @@ def _assert_phone_free(db: Session, phone: str, exclude_id: int | None = None) -
     if existing is not None:
         raise BusinessError(
             "STUDENT_PHONE_TAKEN",
-            f"Số điện thoại {phone} đã thuộc học viên "
-            f"#{existing.id} ({existing.full_name}).",
+            f"Số điện thoại {phone} đã thuộc học viên #{existing.id} ({existing.full_name}).",
         )
 
 
 @router.get("", response_model=list[StudentResponse])
 def list_students(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     status: StudentStatus | None = None,
     q: str | None = Query(default=None, max_length=120),
     limit: int = Query(default=50, ge=1, le=200),
@@ -84,7 +83,7 @@ def list_students(
 def create_student(
     payload: StudentCreate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Student:
     """Thêm học viên. Số điện thoại là khoá nhận diện nên không được trùng."""
     phone = normalize_phone(payload.phone)
@@ -121,7 +120,7 @@ def create_student(
 def get_student(
     student_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Student:
     """Chi tiết một học viên. Học viên chỉ đọc được hồ sơ của chính mình."""
     assert_can_read_student(actor, student_id)
@@ -132,7 +131,7 @@ def get_student(
 def get_student_overview(
     student_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> StudentOverview:
     """Tổng quan: số buổi còn lại và các gói đang hoạt động.
 
@@ -168,7 +167,7 @@ def update_student(
     student_id: int,
     payload: StudentUpdate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Student:
     """Sửa hồ sơ học viên."""
     student = _get_or_404(db, student_id)

@@ -81,7 +81,7 @@ def _account_response(db: Session, user: User) -> AccountResponse:
 
 @router.get("", response_model=list[AccountResponse])
 def list_accounts(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     role: Role | None = None,
     is_active: bool | None = None,
     q: str | None = Query(default=None, max_length=120),
@@ -103,7 +103,7 @@ def list_accounts(
 def create_account(
     payload: AccountCreate,
     background: BackgroundTasks,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> AccountResponse:
     """Admin cấp tài khoản. STUDENT bắt buộc có student_id của hồ sơ đã tạo.
 
@@ -156,14 +156,16 @@ def create_account(
 
 
 @router.get("/{account_id}", response_model=AccountResponse)
-def get_account(account_id: int, db: Session = Depends(get_db)) -> AccountResponse:
+def get_account(
+    account_id: int, db: Session = Depends(get_db, scope="function")
+) -> AccountResponse:
     """Chi tiết một tài khoản."""
     return _account_response(db, _get_or_404(db, account_id))
 
 
 @router.patch("/{account_id}", response_model=AccountResponse)
 def update_account(
-    account_id: int, payload: AccountUpdate, db: Session = Depends(get_db)
+    account_id: int, payload: AccountUpdate, db: Session = Depends(get_db, scope="function")
 ) -> AccountResponse:
     """Sửa hồ sơ tài khoản.
 
@@ -218,7 +220,7 @@ def update_account(
 def lock_account(
     account_id: int,
     actor: Actor = Depends(require_admin),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> MessageResponse:
     """Khoá tài khoản và thu hồi mọi phiên đang mở.
 
@@ -235,7 +237,9 @@ def lock_account(
 
 
 @router.post("/{account_id}/unlock", response_model=MessageResponse)
-def unlock_account(account_id: int, db: Session = Depends(get_db)) -> MessageResponse:
+def unlock_account(
+    account_id: int, db: Session = Depends(get_db, scope="function")
+) -> MessageResponse:
     """Mở khoá tài khoản đã bị khoá."""
     user = _get_or_404(db, account_id)
     user.is_active = True
@@ -246,7 +250,7 @@ def unlock_account(account_id: int, db: Session = Depends(get_db)) -> MessageRes
 def send_reset_link(
     account_id: int,
     background: BackgroundTasks,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> MessageResponse:
     """Gửi lại liên kết đặt mật khẩu. Token chỉ đi qua email, không trả về đây."""
     user = _get_or_404(db, account_id)

@@ -68,7 +68,7 @@ def _get_photo(db: Session, student_id: int, photo_id: int) -> ProgressPhoto:
 def list_progress_photos(
     student_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> list[ProgressPhoto]:
     """Danh sách ảnh, sắp theo thời điểm chụp để so sánh bắt đầu ↔ hiện tại."""
     assert_can_view_progress_photos(db, actor, student_id)
@@ -86,7 +86,7 @@ def list_progress_photos(
 def upload_progress_photo(
     student_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     file: UploadFile = File(...),
     taken_at: datetime | None = Form(default=None),
 ) -> ProgressPhoto:
@@ -119,7 +119,7 @@ def get_progress_photo_file(
     student_id: int,
     photo_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Response:
     """Nội dung nhị phân của một ảnh tiến trình.
 
@@ -145,7 +145,7 @@ def delete_progress_photo(
     student_id: int,
     photo_id: int,
     actor: Actor = Depends(require_admin),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> None:
     """Xoá vĩnh viễn một ảnh tiến trình — **chỉ ADMIN**.
 

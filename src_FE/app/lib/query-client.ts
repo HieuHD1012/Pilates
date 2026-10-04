@@ -42,6 +42,9 @@ export function createQueryClient(): QueryClient {
       },
       mutations: {
         retry: false,
+        // Report a failed write immediately, retaining the form for an explicit
+        // retry. Silently queuing payments/bookings while offline is misleading.
+        networkMode: "always",
       },
     },
   });

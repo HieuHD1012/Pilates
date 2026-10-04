@@ -32,7 +32,7 @@ def _get_or_404(db: Session, announcement_id: int) -> Announcement:
 
 @router.get("", response_model=list[AnnouncementResponse])
 def list_announcements(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     is_published: bool | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
@@ -48,7 +48,7 @@ def list_announcements(
 def create_announcement(
     payload: AnnouncementCreate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Announcement:
     """Tạo thông báo.
 
@@ -58,9 +58,7 @@ def create_announcement(
     lễ tân đăng vào tuần nghiệm thu.
     """
     announcement = Announcement(
-        title=clean_public_text(
-            payload.title, field="title", max_length=200, allow_empty=False
-        ),
+        title=clean_public_text(payload.title, field="title", max_length=200, allow_empty=False),
         body=clean_public_text(
             payload.body, field="body", max_length=10_000, rich=True, allow_empty=False
         ),
@@ -78,7 +76,7 @@ def update_announcement(
     announcement_id: int,
     payload: AnnouncementUpdate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Announcement:
     """Sửa thông báo. Nội dung được lọc lại qua whitelist HTML."""
     announcement = _get_or_404(db, announcement_id)
@@ -101,6 +99,8 @@ def update_announcement(
 
 
 @router.delete("/{announcement_id}", status_code=204)
-def delete_announcement(announcement_id: int, db: Session = Depends(get_db)) -> None:
+def delete_announcement(
+    announcement_id: int, db: Session = Depends(get_db, scope="function")
+) -> None:
     """Xoá hẳn một thông báo."""
     db.delete(_get_or_404(db, announcement_id))

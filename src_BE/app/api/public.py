@@ -30,7 +30,7 @@ router = APIRouter(prefix="/public", tags=["public"])
 
 
 @router.get("/trainers", response_model=list[PublicTrainer])
-def list_public_trainers(db: Session = Depends(get_db)) -> list[PublicTrainer]:
+def list_public_trainers(db: Session = Depends(get_db, scope="function")) -> list[PublicTrainer]:
     """Đội ngũ HLV công khai.
 
     `is_public` quyết định ai xuất hiện; `is_active` loại người đã nghỉ. Chọn
@@ -50,7 +50,7 @@ def list_public_trainers(db: Session = Depends(get_db)) -> list[PublicTrainer]:
 
 @router.get("/announcements", response_model=list[PublicAnnouncement])
 def list_public_announcements(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     limit: int = Query(default=20, ge=1, le=100),
 ) -> list[PublicAnnouncement]:
     """Thông báo đã đăng.
@@ -75,7 +75,7 @@ def list_public_announcements(
 
 
 @router.get("/packages", response_model=list[PublicPackage])
-def list_public_packages(db: Session = Depends(get_db)) -> list[PublicPackage]:
+def list_public_packages(db: Session = Depends(get_db, scope="function")) -> list[PublicPackage]:
     """Gói tập đang bán.
 
     Giá hiện **khi studio đã cung cấp**. Chưa có thì trả `null` để giao diện
@@ -107,7 +107,7 @@ def list_public_packages(db: Session = Depends(get_db)) -> list[PublicPackage]:
 
 @router.get("/schedule", response_model=list[PublicClassSession])
 def list_public_schedule(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     days: int = Query(default=14, ge=1, le=60),
 ) -> list[PublicClassSession]:
     """Lịch lớp công khai — lần chạy hai của F02, khép lại trong cửa sổ F06.
@@ -172,7 +172,7 @@ def list_public_schedule(
 
 @router.get("/trainer-photos/{prefix}/{key}")
 def get_public_trainer_photo(
-    prefix: str, key: str, db: Session = Depends(get_db)
+    prefix: str, key: str, db: Session = Depends(get_db, scope="function")
 ) -> Response:
     """Ảnh HLV công khai.
 

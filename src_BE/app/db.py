@@ -22,7 +22,12 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def get_db() -> Iterator[Session]:
-    """Dependency của FastAPI: một transaction cho một request."""
+    """One transaction per request; consumers use Depends(..., scope="function").
+
+    Commit must finish before HTTP success is sent, including deferred database
+    constraints. FastAPI's default request scope instead exits after the response.
+    No streaming response may continue reading from this session after return.
+    """
     db = SessionLocal()
     try:
         yield db

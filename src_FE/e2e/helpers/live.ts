@@ -178,7 +178,10 @@ export async function ledger(request: APIRequestContext, token: string, packageI
     token,
   );
 }
-export function databaseFixture(action: "ended" | "closed" | "expire-reset", id: number) {
+export function databaseFixture(
+  action: "ended" | "closed" | "expire-reset" | "expired-package",
+  id: number,
+) {
   const python =
     process.env.LIVE_PYTHON ??
     (process.platform === "win32"

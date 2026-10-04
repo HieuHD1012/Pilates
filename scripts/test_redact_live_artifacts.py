@@ -29,7 +29,8 @@ class RedactionTest(unittest.TestCase):
 
     def test_tokens_and_query_link(self):
         result = redact(
-            b'{"refresh_token":"opaque-secret"} /reset?token=random-secret&next=x Bearer eyJabc.def.ghi'
+            b'{"refresh_token":"opaque-secret"} /reset?token=random-secret&next=x '
+            b"Bearer eyJabc.def.ghi"
         )
         self.assertNotIn(b"opaque-secret", result)
         self.assertNotIn(b"random-secret", result)

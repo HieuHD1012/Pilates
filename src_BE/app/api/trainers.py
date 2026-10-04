@@ -95,7 +95,7 @@ def _validate_account_link(db: Session, user_id: int | None, trainer_id: int | N
 @router.get("", response_model=list[TrainerResponse])
 def list_trainers(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     is_active: bool | None = None,
     is_public: bool | None = None,
     limit: int = Query(default=50, ge=1, le=200),
@@ -114,7 +114,7 @@ def list_trainers(
 def create_trainer(
     payload: TrainerCreate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Trainer:
     """Thêm hồ sơ huấn luyện viên."""
     data = _clean_public_profile_fields(payload.model_dump())
@@ -129,7 +129,7 @@ def create_trainer(
 def get_trainer(
     trainer_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Trainer:
     """Chi tiết HLV.
 
@@ -146,7 +146,7 @@ def update_trainer(
     trainer_id: int,
     payload: TrainerUpdate,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Trainer:
     """Sửa hồ sơ huấn luyện viên.
 
@@ -178,7 +178,7 @@ def update_trainer(
 def upload_trainer_photo(
     trainer_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     file: UploadFile = File(...),
 ) -> Trainer:
     """Tải ảnh HLV.
@@ -207,7 +207,7 @@ def upload_trainer_photo(
 def get_trainer_photo(
     trainer_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Response:
     """Ảnh đại diện HLV dạng nhị phân. Trả 404 kèm mã `NO_PHOTO` khi chưa có ảnh."""
     trainer = _get_or_404(db, trainer_id, actor)

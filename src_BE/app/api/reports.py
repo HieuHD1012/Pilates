@@ -71,7 +71,7 @@ def _session_rows(rows) -> list[SessionRowResponse]:
 @router.get("/revenue", response_model=RevenueSummaryResponse)
 def revenue(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
 ) -> RevenueSummaryResponse:
@@ -101,7 +101,7 @@ def revenue(
 @router.get("/revenue/detail", response_model=list[RevenueRowResponse])
 def revenue_detail(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
     limit: int = Query(default=500, ge=1, le=1000),
@@ -127,7 +127,7 @@ def revenue_detail(
 @router.get("/classes", response_model=ClassStatsResponse)
 def classes(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
 ) -> ClassStatsResponse:
@@ -165,7 +165,7 @@ def _trainer_rows(
 @router.get("/trainers", response_model=list[TrainerStatsResponse])
 def trainers(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
 ) -> list[TrainerStatsResponse]:
@@ -212,7 +212,7 @@ def _class_size_rows(
 @router.get("/trainers/class-sizes", response_model=list[TrainerClassSizeResponse])
 def trainer_class_sizes(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
 ) -> list[TrainerClassSizeResponse]:
@@ -246,7 +246,7 @@ def trainer_class_sizes(
 @router.get("/trainers/class-sizes/export")
 def export_trainer_class_sizes(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
     file_format: str = Query(default="csv", pattern="^(csv|xlsx)$", alias="format"),
@@ -281,7 +281,7 @@ def export_trainer_class_sizes(
 @router.get("/trainers/export")
 def export_trainers(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     period_start: date | None = None,
     period_end: date | None = None,
     file_format: str = Query(default="csv", pattern="^(csv|xlsx)$", alias="format"),
@@ -315,7 +315,7 @@ def export_trainers(
 @router.get("/unconfirmed-payments", response_model=list[UnconfirmedPaymentResponse])
 def unconfirmed_payments(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     older_than_days: int = Query(default=UNCONFIRMED_PAYMENT_ALERT_DAYS, ge=0, le=365),
 ) -> list[UnconfirmedPaymentResponse]:
     """Gói đã cộng buổi mà tiền chưa xác nhận quá hạn."""
@@ -337,7 +337,7 @@ def unconfirmed_payments(
 @router.get("/dashboard", response_model=DashboardResponse)
 def dashboard(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> DashboardResponse:
     """Bốn con số, lịch hôm nay và các lớp đã kết thúc còn chờ HLV điểm danh.
 

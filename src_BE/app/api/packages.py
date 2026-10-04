@@ -56,7 +56,7 @@ def _get_student_package(db: Session, package_id: int) -> StudentPackage:
 
 @types_router.get("", response_model=list[PackageTypeResponse])
 def list_package_types(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     class_type: ClassType | None = None,
     is_selling: bool | None = None,
 ) -> list[PackageType]:
@@ -71,14 +71,12 @@ def list_package_types(
 
 @types_router.post("", response_model=PackageTypeResponse, status_code=201)
 def create_package_type(
-    payload: PackageTypeCreate, db: Session = Depends(get_db)
+    payload: PackageTypeCreate, db: Session = Depends(get_db, scope="function")
 ) -> PackageType:
     """Thêm một loại gói vào danh mục."""
     package_type = PackageType(
         # Tên gói hiển thị trên trang công khai nên đi qua validator nội dung.
-        name=clean_public_text(
-            payload.name, field="name", max_length=120, allow_empty=False
-        ),
+        name=clean_public_text(payload.name, field="name", max_length=120, allow_empty=False),
         price=payload.price,
         credits=payload.credits,
         duration_days=payload.duration_days,
@@ -92,7 +90,9 @@ def create_package_type(
 
 @types_router.patch("/{package_type_id}", response_model=PackageTypeResponse)
 def update_package_type(
-    package_type_id: int, payload: PackageTypeUpdate, db: Session = Depends(get_db)
+    package_type_id: int,
+    payload: PackageTypeUpdate,
+    db: Session = Depends(get_db, scope="function"),
 ) -> PackageType:
     """Sửa loại gói.
 
@@ -120,7 +120,7 @@ def update_package_type(
 @router.get("", response_model=list[StudentPackageResponse])
 def list_student_packages(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     student_id: int | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
@@ -155,7 +155,7 @@ def list_student_packages(
 def sell_package(
     payload: SellPackageRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> StudentPackage:
     """Bán gói cho học viên — tạo gói và cộng buổi trong **một transaction**."""
     package_type = _get_package_type(db, payload.package_type_id)
@@ -173,7 +173,7 @@ def renew_package(
     package_id: int,
     payload: RenewPackageRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> StudentPackage:
     """Gia hạn một gói đang có: cộng buổi và đẩy ngày hết hạn.
 
@@ -194,7 +194,7 @@ def renew_package(
 def get_package_ledger(
     package_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> PackageLedgerResponse:
     """Sổ buổi của **một gói của một học viên** — không phải sổ chung toàn studio.
 
@@ -202,9 +202,7 @@ def get_package_ledger(
     cho hai trường hợp là một bộ đếm số gói của studio.
     """
     package = db.get(StudentPackage, package_id)
-    if package is None or (
-        not actor.is_staff_or_admin and package.student_id != actor.student_id
-    ):
+    if package is None or (not actor.is_staff_or_admin and package.student_id != actor.student_id):
         raise NotFoundError("Không tìm thấy gói tập.")
 
     rows = credit_ledger.running_balance(db, package_id)
@@ -232,7 +230,7 @@ def adjust_credits(
     package_id: int,
     payload: AdjustCreditsRequest,
     actor: Actor = Depends(require_admin),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> StudentPackage:
     """Điều chỉnh số buổi thủ công — **chỉ ADMIN**, bắt buộc lý do."""
     return package_sales.adjust_credits(

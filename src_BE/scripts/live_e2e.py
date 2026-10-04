@@ -10,6 +10,7 @@ from sqlalchemy import select, text
 from app.config import get_settings
 from app.db import SessionLocal, engine
 from app.domain.rules import now
+from app.models.money import StudentPackage
 from app.models.people import Trainer
 from app.models.scheduling import ClassSession
 from app.models.user import PasswordReset
@@ -18,7 +19,10 @@ from app.services.ledger_invariants import assert_ledger_is_sound
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["reset", "reconcile", "ended", "closed", "expire-reset"])
+    parser.add_argument(
+        "action",
+        choices=["reset", "reconcile", "ended", "closed", "expire-reset", "expired-package"],
+    )
     parser.add_argument("--id", type=int)
     args = parser.parse_args()
     settings = get_settings()
@@ -31,6 +35,12 @@ def main() -> None:
     with SessionLocal.begin() as db:
         if args.action == "reconcile":
             assert_ledger_is_sound(db)
+        elif args.action == "expired-package":
+            row = db.get(StudentPackage, args.id)
+            if row is None or not row.name_snapshot.startswith("Gói E2E "):
+                raise SystemExit("Refusing to alter a package not owned by an E2E fixture")
+            row.start_date = now().date() - timedelta(days=91)
+            row.end_date = now().date() - timedelta(days=1)
         elif args.action == "expire-reset":
             row = db.scalar(
                 select(PasswordReset)

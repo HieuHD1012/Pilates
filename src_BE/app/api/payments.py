@@ -24,7 +24,7 @@ router = APIRouter(prefix="/payments", tags=["payments"], dependencies=[Depends(
 
 @router.get("", response_model=list[PaymentResponse])
 def list_payments(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     student_package_id: int | None = None,
     student_id: int | None = None,
     status: PaymentStatus | None = None,
@@ -36,16 +36,16 @@ def list_payments(
     if student_package_id is not None:
         stmt = stmt.where(Payment.student_package_id == student_package_id)
     if student_id is not None:
-        stmt = stmt.join(
-            StudentPackage, StudentPackage.id == Payment.student_package_id
-        ).where(StudentPackage.student_id == student_id)
+        stmt = stmt.join(StudentPackage, StudentPackage.id == Payment.student_package_id).where(
+            StudentPackage.student_id == student_id
+        )
     if status is not None:
         stmt = stmt.where(Payment.status == status)
     return list(db.scalars(stmt.limit(limit).offset(offset)))
 
 
 @router.get("/{payment_id}", response_model=PaymentResponse)
-def get_payment(payment_id: int, db: Session = Depends(get_db)) -> Payment:
+def get_payment(payment_id: int, db: Session = Depends(get_db, scope="function")) -> Payment:
     """Chi tiết một giao dịch thanh toán."""
     payment = db.get(Payment, payment_id)
     if payment is None:
@@ -57,7 +57,7 @@ def get_payment(payment_id: int, db: Session = Depends(get_db)) -> Payment:
 def record_payment(
     payload: RecordPaymentRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Payment:
     """Ghi nhận một khoản thu, mặc định ở trạng thái chờ xác nhận.
 
@@ -77,12 +77,10 @@ def record_payment(
 def confirm_payment(
     payment_id: int,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Payment:
     """Xác nhận đã nhận tiền. Chỉ `CONFIRMED` mới vào báo cáo doanh thu."""
-    return payment_service.confirm_payment(
-        db, payment_id=payment_id, actor_user_id=actor.id
-    )
+    return payment_service.confirm_payment(db, payment_id=payment_id, actor_user_id=actor.id)
 
 
 @router.post("/{payment_id}/void", response_model=PaymentResponse)
@@ -90,7 +88,7 @@ def void_payment(
     payment_id: int,
     payload: VoidPaymentRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Payment:
     """Huỷ giao dịch — bị chặn nếu gói đã tiêu buổi.
 

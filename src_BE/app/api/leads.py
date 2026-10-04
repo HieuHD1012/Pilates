@@ -27,7 +27,7 @@ router = APIRouter(prefix="/leads", tags=["leads"], dependencies=[Depends(requir
 
 @public_router.post("/leads", response_model=MessageResponse, status_code=201)
 def submit_lead(
-    payload: LeadCreate, request: Request, db: Session = Depends(get_db)
+    payload: LeadCreate, request: Request, db: Session = Depends(get_db, scope="function")
 ) -> MessageResponse:
     """Nhận form tư vấn từ khách ẩn danh.
 
@@ -68,14 +68,12 @@ def submit_lead(
             )
         )
 
-    return MessageResponse(
-        message="Đã nhận thông tin. Studio sẽ liên hệ với bạn sớm."
-    )
+    return MessageResponse(message="Đã nhận thông tin. Studio sẽ liên hệ với bạn sớm.")
 
 
 @router.get("", response_model=list[LeadResponse])
 def list_leads(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     status: LeadStatus | None = None,
     source: str | None = Query(default=None, max_length=64),
     q: str | None = Query(default=None, max_length=120),
@@ -94,7 +92,7 @@ def list_leads(
 
 
 @router.get("/{lead_id}", response_model=LeadResponse)
-def get_lead(lead_id: int, db: Session = Depends(get_db)) -> Lead:
+def get_lead(lead_id: int, db: Session = Depends(get_db, scope="function")) -> Lead:
     """Chi tiết một khách quan tâm."""
     lead = db.get(Lead, lead_id)
     if lead is None:
@@ -125,7 +123,7 @@ def _assert_assignable(db: Session, user_id: int | None) -> None:
 
 @router.patch("/{lead_id}", response_model=LeadResponse)
 def update_lead(
-    lead_id: int, payload: LeadUpdate, db: Session = Depends(get_db)
+    lead_id: int, payload: LeadUpdate, db: Session = Depends(get_db, scope="function")
 ) -> Lead:
     """Cập nhật trạng thái theo dõi và ghi chú của một khách quan tâm."""
     lead = get_lead(lead_id, db)
@@ -143,7 +141,7 @@ def update_lead(
 def convert_lead(
     lead_id: int,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ):
     """Chuyển khách quan tâm thành học viên, không phải nhập lại gì."""
     return convert_lead_to_student(db, lead_id)

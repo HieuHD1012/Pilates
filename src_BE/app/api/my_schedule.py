@@ -50,7 +50,7 @@ def _resolve_target(actor: Actor, student_id: int | None) -> int:
 @router.get("/my-schedule", response_model=list[MyScheduleItem])
 def my_schedule(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     student_id: int | None = None,
     starts_from: datetime | None = None,
     starts_to: datetime | None = None,
@@ -74,9 +74,7 @@ def my_schedule(
         .limit(limit)
     )
     if not include_cancelled:
-        stmt = stmt.where(
-            Booking.status.in_(HELD_BOOKING_STATUSES)
-        )
+        stmt = stmt.where(Booking.status.in_(HELD_BOOKING_STATUSES))
     if starts_from is not None:
         stmt = stmt.where(ClassSession.starts_at >= starts_from)
     if starts_to is not None:
@@ -125,7 +123,7 @@ def _schedule_item(
 @router.get("/my-schedule/bookable", response_model=list[int])
 def bookable_sessions(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     student_id: int | None = None,
     starts_to: datetime | None = None,
     limit: int = Query(default=100, ge=1, le=300),

@@ -61,7 +61,7 @@ def _cancel_result(
 def create_booking(
     payload: BookingCreate,
     actor: Actor = Depends(require_student),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> BookingResult:
     """Học viên tự đăng ký: thành công thì BOOKED và trừ ngay 1 buổi."""
     outcome = booking_service.book(
@@ -79,7 +79,7 @@ def cancel_booking(
     booking_id: int,
     payload: CancelBookingRequest | None = None,
     actor: Actor = Depends(require_student),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> CancelBookingResult:
     """Hủy một đăng ký.
 
@@ -101,7 +101,7 @@ def change_booking(
     booking_id: int,
     payload: ChangeBookingRequest,
     actor: Actor = Depends(require_student),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> ChangeBookingResult:
     """Đổi sang buổi lớp khác — hủy buổi cũ và đặt buổi mới trong một giao dịch.
 
@@ -125,7 +125,7 @@ def mark_attendance(
     booking_id: int,
     payload: AttendanceRequest,
     actor: Actor = Depends(require_trainer),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> Booking:
     """HLV điểm danh sau ends_at: ATTENDED hoặc NO_SHOW, không đổi số buổi.
 
@@ -139,7 +139,7 @@ def mark_attendance(
 @router.get("", response_model=list[BookingResponse])
 def list_bookings(
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     class_session_id: int | None = None,
     student_id: int | None = None,
     status: BookingStatus | None = None,
@@ -174,9 +174,7 @@ def list_bookings(
     if student_id is not None:
         stmt = stmt.where(Booking.student_id == student_id)
     if held_only:
-        stmt = stmt.where(
-            Booking.status.in_(HELD_BOOKING_STATUSES)
-        )
+        stmt = stmt.where(Booking.status.in_(HELD_BOOKING_STATUSES))
     if status is not None:
         stmt = stmt.where(Booking.status == status)
     return list(db.scalars(stmt))

@@ -62,7 +62,7 @@ def _get_session(db: Session, session_id: int) -> ClassSession:
 @router.get("", response_model=list[ClassSessionResponse])
 def list_sessions(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     starts_from: datetime | None = None,
     starts_to: datetime | None = None,
     trainer_id: int | None = None,
@@ -102,7 +102,7 @@ def list_sessions(
 @router.get("/my-schedule", response_model=list[ClassSessionResponse])
 def my_schedule(
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     starts_from: datetime | None = None,
     starts_to: datetime | None = None,
 ) -> list[ClassSession]:
@@ -137,7 +137,7 @@ def trainer_monthly_stats(
     year: int = Query(ge=2020, le=2100),
     month: int = Query(ge=1, le=12),
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> TrainerMonthlyStats:
     """Số lớp của một HLV trong tháng.
 
@@ -167,7 +167,7 @@ def trainer_monthly_stats(
 def get_session_detail(
     session_id: int,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> ClassSessionDetail:
     """Chi tiết một buổi lớp.
 
@@ -206,7 +206,7 @@ def get_session_detail(
 def attendance_roster(
     session_id: int,
     actor: Actor = Depends(require_trainer),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> list[AttendanceRosterItem]:
     """Danh sách điểm danh của lớp HLV đang dạy, không trả tiền hay thông tin gói.
 
@@ -238,7 +238,7 @@ def attendance_roster(
 def create_session(
     payload: ClassSessionCreate,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> ClassSession:
     """Tạo một buổi lớp. Từ chối nếu HLV đã có lớp trùng giờ."""
     return scheduling.create_session(
@@ -257,7 +257,7 @@ def change_trainer(
     session_id: int,
     payload: ChangeTrainerRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> ClassSession:
     """Đổi HLV của một buổi lớp. Từ chối nếu HLV mới trùng giờ dạy."""
     return scheduling.change_trainer(
@@ -270,7 +270,7 @@ def cancel_session(
     session_id: int,
     payload: CancelSessionRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> CancelSessionResponse:
     """Studio hủy lớp và hoàn buổi cho mọi người đã đăng ký, bất kể thời điểm."""
     outcome = scheduling.cancel_session(
@@ -293,7 +293,7 @@ def cancel_session(
 def preview_recurrence(
     payload: RecurrenceRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> RecurrencePreviewResponse:
     """Xem trước các buổi sẽ tạo, kèm buổi nào trùng giờ HLV."""
     preview = recurrence_service.build_preview(
@@ -321,7 +321,7 @@ def preview_recurrence(
 def create_recurrence(
     payload: RecurrenceRequest,
     actor: Actor = Depends(require_staff),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> RecurrenceCreatedResponse:
     """Tạo cả nhóm buổi — **all-or-nothing**.
 

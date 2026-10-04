@@ -34,7 +34,9 @@ _RATE_LIMITED = "Quá nhiều lần thử. Vui lòng chờ rồi thử lại."
 
 
 @router.post("/login", response_model=TokenPair)
-def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)) -> TokenPair:
+def login(
+    payload: LoginRequest, request: Request, db: Session = Depends(get_db, scope="function")
+) -> TokenPair:
     # Chặn theo cả IP và tài khoản: chỉ theo IP thì đổi IP là qua, chỉ theo
     # tài khoản thì kẻ tấn công rải mật khẩu qua nhiều tài khoản.
     """Đăng nhập bằng email và mật khẩu.
@@ -71,7 +73,7 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
 
 
 @router.post("/refresh", response_model=TokenPair)
-def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPair:
+def refresh(payload: RefreshRequest, db: Session = Depends(get_db, scope="function")) -> TokenPair:
     """Đổi refresh token lấy một cặp token mới.
 
     Xoay token có **cửa sổ ân hạn 10 giây**: trình bày lại token đã dùng sau
@@ -84,7 +86,7 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPair
 
 @router.post("/logout", response_model=MessageResponse)
 def logout(
-    actor: Actor = Depends(get_current_actor), db: Session = Depends(get_db)
+    actor: Actor = Depends(get_current_actor), db: Session = Depends(get_db, scope="function")
 ) -> MessageResponse:
     """Thu hồi refresh token của phiên hiện tại."""
     security.revoke_all_refresh_tokens(db, actor.id)
@@ -96,7 +98,7 @@ def forgot_password(
     payload: ForgotPasswordRequest,
     request: Request,
     background: BackgroundTasks,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> MessageResponse:
     """Gửi liên kết đặt lại qua email.
 
@@ -132,7 +134,9 @@ def forgot_password(
 
 
 @router.post("/reset-password", response_model=MessageResponse)
-def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> MessageResponse:
+def reset_password(
+    payload: ResetPasswordRequest, db: Session = Depends(get_db, scope="function")
+) -> MessageResponse:
     """Đặt mật khẩu mới bằng token nhận qua email. Token dùng một lần."""
     user = security.consume_password_reset(db, payload.token)
     user.password_hash = security.hash_password(payload.new_password)
@@ -146,7 +150,7 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 def change_password(
     payload: ChangePasswordRequest,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> MessageResponse:
     """Đổi mật khẩu khi đang đăng nhập; phải khai đúng mật khẩu cũ."""
     if not security.verify_password(payload.current_password, actor.user.password_hash):
@@ -179,7 +183,7 @@ def me(actor: Actor = Depends(get_current_actor)) -> MeResponse:
 def update_me(
     payload: UpdateMeRequest,
     actor: Actor = Depends(get_current_actor),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> MeResponse:
     """Tự sửa tên và số điện thoại của tài khoản đang đăng nhập.
 
