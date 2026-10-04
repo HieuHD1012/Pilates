@@ -167,7 +167,7 @@ test("ADMIN links new trainer profile to a TRAINER account and publishes it thro
 test("duplicate student phone preserves form; real offline write can be retried", async ({
   page,
   request,
-}) => {
+}, info) => {
   const data = await fixture(request);
   await signIn(page, data.staffAccount.email);
   await page.goto("/studio/hoc-vien");
@@ -179,6 +179,10 @@ test("duplicate student phone preserves form; real offline write can be retried"
   await expect(dialog.getByText(/đã thuộc|đã có/).first()).toBeVisible();
   await expect(dialog.getByLabel(/Họ và tên/)).toHaveValue("E2E bản trùng");
   await dialog.getByLabel(/Số điện thoại/).fill(phone());
+  info.annotations.push({
+    type: "expected-network-failure",
+    description: "Offline POST /students retains form; explicit retry after reconnection.",
+  });
   await page.context().setOffline(true);
   await dialog.getByRole("button", { name: "Tạo hồ sơ", exact: true }).click();
   await expect(dialog.getByRole("alert")).toBeVisible();

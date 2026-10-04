@@ -63,8 +63,10 @@ try {
         return
     }
     if (-not (Test-Path -LiteralPath $liveEnvironment.LIVE_PYTHON)) { throw 'Run setup first.' }
-    $outputRoot = Join-Path $frontendRoot 'visual-qa/live'
+    $outputRoot = Join-Path $frontendRoot "visual-qa/live/local-$([guid]::NewGuid().ToString('N'))"
     New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+    Set-Location $backendRoot
+    Invoke-Checked uv @('run', 'python', '-c', 'import sys; assert sys.version_info >= (3, 12), "Python 3.12 or newer is required"')
     for ($round = 1; $round -le 2; $round++) {
         if (Get-NetTCPConnection -LocalPort 8000,4173 -State Listen -ErrorAction SilentlyContinue) { throw 'Ports 8000 and 4173 must be free; stop the existing servers yourself.' }
         Set-Location $backendRoot
@@ -93,7 +95,7 @@ try {
         $apiProcess = $null
         if ($testExit -ne 0) { throw "Live round $round failed; evidence retained in src_FE/visual-qa/live." }
     }
-    Write-Output 'Both fresh-database live rounds and ledger reconciliation passed.'
+    Write-Output "Both fresh-database live rounds and ledger reconciliation passed. Evidence: $outputRoot"
 } finally {
     if ($apiProcess -and -not $apiProcess.HasExited) { Stop-Process -Id $apiProcess.Id }
     foreach ($key in $savedEnvironment.Keys) { [Environment]::SetEnvironmentVariable($key, $savedEnvironment[$key], 'Process') }

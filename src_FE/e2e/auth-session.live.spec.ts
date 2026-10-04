@@ -46,12 +46,20 @@ test("ADMIN locking an active student revokes its session; unlocking allows UI l
   page,
   request,
   browser,
+  observePage,
 }) => {
   const data = await fixture(request);
   await signIn(page, data.studentAccount.email);
-  const context = await browser.newContext({ baseURL: "http://localhost:4173" });
+  // The student remains mobile; the administrator uses its desktop workspace.
+  const context = await browser.newContext({
+    baseURL: "http://localhost:4173",
+    viewport: { width: 1440, height: 900 },
+    isMobile: false,
+    hasTouch: false,
+  });
   try {
     const admin = await context.newPage();
+    observePage(admin);
     await signIn(admin, process.env.SEED_ADMIN_EMAIL!, process.env.SEED_ADMIN_PASSWORD!);
     await admin.goto("/studio/tai-khoan");
     const row = admin.getByRole("row").filter({ hasText: data.studentAccount.email });

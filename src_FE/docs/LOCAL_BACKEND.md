@@ -73,6 +73,9 @@ mẫu" nằm trên dữ liệu thật.
 
 ## Thứ không dựng được bằng API
 
+Kiểm chứng tích hợp tự động với database riêng, Mailpit và production artifact:
+xem [LIVE_E2E.md](LIVE_E2E.md). Không dùng database dev cho pytest hoặc live reset.
+
 Màn điểm danh của HLV cần **một lớp đã tan mà vẫn có người đăng ký**. Không có
 đường nào qua API tới được trạng thái đó: lớp đã bắt đầu thì không đặt được, và
 studio không dời được giờ lớp — chỉ hủy rồi tạo lại. Trên máy dev thì lùi giờ

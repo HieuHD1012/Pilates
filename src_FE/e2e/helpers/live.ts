@@ -195,25 +195,53 @@ export function databaseFixture(
   expect(result.status, result.stderr || result.stdout).toBe(0);
 }
 
-export const test = baseTest.extend<{ liveGuard: void }>({
-  liveGuard: [
+export const test = baseTest.extend<{ observePage: (page: Page) => void }>({
+  observePage: [
     async ({ page }, use, info) => {
       const errors: string[] = [];
+      const consoleErrors: { text: string; path: string }[] = [];
       const evidence: { method: string; path: string; status: number }[] = [];
-      page.on("pageerror", (error) =>
-        errors.push(`${new URL(page.url()).pathname}: ${error.message}`),
-      );
-      page.on("response", (response) => {
-        if (!response.url().startsWith(API)) return;
-        const path = new URL(response.url()).pathname;
-        evidence.push({
-          method: response.request().method(),
-          path,
-          status: response.status(),
+      const watch = (tab: Page) => {
+        tab.on("pageerror", (error) =>
+          errors.push(`${new URL(tab.url()).pathname}: ${error.message}`),
+        );
+        tab.on("console", (message) => {
+          if (message.type() !== "error") return;
+          const url = message.location().url;
+          consoleErrors.push({
+            text: message.text(),
+            path: url ? new URL(url).pathname : "",
+          });
         });
-        if (response.status() >= 500) errors.push(`${response.status()} ${path}`);
-      });
-      await use();
+        tab.on("response", (response) => {
+          if (!response.url().startsWith(API)) return;
+          const path = new URL(response.url()).pathname;
+          evidence.push({
+            method: response.request().method(),
+            path,
+            status: response.status(),
+          });
+          if (response.status() >= 500) errors.push(`${response.status()} ${path}`);
+        });
+      };
+      watch(page);
+      await use(watch);
+      for (const entry of consoleErrors) {
+        // Chromium logs tested HTTP rejections as resource errors. Application
+        // exceptions and CORS failures must still fail, including negative cases.
+        const testedRejection =
+          /Failed to load resource/.test(entry.text) &&
+          evidence.some(
+            (response) =>
+              response.path === entry.path &&
+              response.status >= 400 &&
+              response.status < 500,
+          );
+        const testedOffline =
+          /Failed to load resource.*ERR_INTERNET_DISCONNECTED/.test(entry.text) &&
+          info.annotations.some((item) => item.type === "expected-network-failure");
+        if (!testedRejection && !testedOffline) errors.push(`${entry.path}: ${entry.text}`);
+      }
       await info.attach("mapping-evidence", {
         body: JSON.stringify(evidence),
         contentType: "application/json",

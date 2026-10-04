@@ -6,6 +6,7 @@ import {
   signIn,
   databaseFixture,
   ledger,
+  API,
 } from "./helpers/live";
 import type { BookingResult } from "../app/lib/api/schema";
 
@@ -24,10 +25,24 @@ test("trainer marks and corrects attendance; student history and ledger remain c
   databaseFixture("ended", data.session.id);
   await signIn(page, data.trainerAccount.email);
   await page.goto(`/hlv/lop/${data.session.id}`);
+  let write = page.waitForResponse(
+    (response) =>
+      response.url().startsWith(API) &&
+      response.url().endsWith("/attendance") &&
+      response.request().method() === "PATCH",
+  );
   await page.getByRole("button", { name: "Đã đến lớp", exact: true }).click();
+  expect((await write).status()).toBe(200);
   await expect(page.getByText("Đã đến lớp", { exact: true }).first()).toBeVisible();
   expect((await ledger(request, data.token, data.sold.id)).closing_balance).toBe(9);
+  write = page.waitForResponse(
+    (response) =>
+      response.url().startsWith(API) &&
+      response.url().endsWith("/attendance") &&
+      response.request().method() === "PATCH",
+  );
   await page.getByRole("button", { name: "Vắng mặt", exact: true }).click();
+  expect((await write).status()).toBe(200);
   await expect(page.getByText("Vắng mặt", { exact: true }).first()).toBeVisible();
   expect((await ledger(request, data.token, data.sold.id)).closing_balance).toBe(9);
   await page.evaluate(() => localStorage.clear());

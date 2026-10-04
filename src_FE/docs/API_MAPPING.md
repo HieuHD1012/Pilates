@@ -1,7 +1,9 @@
 # API mapping
 
-Every endpoint the backend serves, and the one place in this frontend that
-calls it. 88 endpoints, 88 bindings, no second route to the same data.
+Every endpoint the backend serves and its frontend binding, cache and actual
+consumer. There are 88 endpoint bindings; bindings alone are not proof of a
+working business flow. See [API_VERIFICATION_MATRIX.md](API_VERIFICATION_MATRIX.md)
+for the generated contract and [LIVE_E2E.md](LIVE_E2E.md) for reproducible evidence.
 
 The backend contract lives in `../../docs/api/` (generated from the app's own
 OpenAPI and pinned by `src_BE/tests/test_api_docs.py`). **When this file and
@@ -37,15 +39,15 @@ Four rules this layer exists to hold:
 
 ## Conventions that bite
 
-| Thing                            | Rule                                                                                                                            |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Time range params                | Half-open: `starts_from <= x < starts_to`. All of 30/09 means `starts_to = 2026-10-01T00:00:00`.                                |
-| Naive datetimes in query strings | Read as studio time (`Asia/Ho_Chi_Minh`). Sending an offset is equivalent.                                                      |
-| `null` in a response             | _Not measured_, not zero. Render an empty cell. `fill_rate: null` means no classes ran.                                         |
-| `404`                            | Also means "exists, but not yours". Deliberate — do not branch on it.                                                           |
-| `409 CONCURRENT_CONFLICT`        | Retryable. Offer the button again instead of a red error.                                                                       |
-| `detail_path`                    | Use the string the server returned. Never assemble it.                                                                          |
-| Binary endpoints                 | Authenticated images/exports are fetched as blobs (`*Blob`, `export*`); only `/public/trainer-photos/…` is a plain `<img src>`. |
+| Thing                            | Rule                                                                                                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time range params                | Half-open: `starts_from <= x < starts_to`. All of 30/09 means `starts_to = 2026-10-01T00:00:00`.                                                        |
+| Naive datetimes in query strings | Read as studio time (`Asia/Ho_Chi_Minh`). Sending an offset is equivalent.                                                                              |
+| `null` in a response             | _Not measured_, not zero. Render an empty cell. `fill_rate: null` means no classes ran.                                                                 |
+| `403` / `404`                    | Respect each endpoint's contract: another student's profile returns 403; another trainer profile returns 404. Do not infer ownership from status alone. |
+| `409 CONCURRENT_CONFLICT`        | Retryable. Offer the button again instead of a red error.                                                                                               |
+| `detail_path`                    | Use the string the server returned. Never assemble it.                                                                                                  |
+| Binary endpoints                 | Authenticated images/exports are fetched as blobs (`*Blob`, `export*`); only `/public/trainer-photos/…` is a plain `<img src>`.                         |
 
 ### Auth & session — `endpoints/auth.ts`
 
@@ -62,15 +64,15 @@ Four rules this layer exists to hold:
 
 ### Accounts — `endpoints/accounts.ts`
 
-| Method  | Path                                         | Role  | FE binding                      | Cache key / kind      | Consumer                  |
-| ------- | -------------------------------------------- | ----- | ------------------------------- | --------------------- | ------------------------- |
-| `GET`   | `/accounts`                                  | ADMIN | `accountsApi.list`              | `accounts.list(f)`    | routes/staff/accounts.tsx |
-| `POST`  | `/accounts`                                  | ADMIN | `accountsApi.create`            | mutation              | routes/staff/accounts.tsx |
-| `GET`   | `/accounts/{account_id}`                     | ADMIN | `accountsApi.get`               | `accounts.detail(id)` | routes/staff/accounts.tsx |
-| `PATCH` | `/accounts/{account_id}`                     | ADMIN | `accountsApi.update`            | mutation              | routes/staff/accounts.tsx |
-| `POST`  | `/accounts/{account_id}/lock`                | ADMIN | `accountsApi.lock`              | mutation              | routes/staff/accounts.tsx |
-| `POST`  | `/accounts/{account_id}/send-password-reset` | ADMIN | `accountsApi.sendPasswordReset` | mutation              | routes/staff/accounts.tsx |
-| `POST`  | `/accounts/{account_id}/unlock`              | ADMIN | `accountsApi.unlock`            | mutation              | routes/staff/accounts.tsx |
+| Method  | Path                                         | Role  | FE binding                      | Cache key / kind      | Consumer                                                       |
+| ------- | -------------------------------------------- | ----- | ------------------------------- | --------------------- | -------------------------------------------------------------- |
+| `GET`   | `/accounts`                                  | ADMIN | `accountsApi.list`              | `accounts.list(f)`    | routes/staff/accounts.tsx                                      |
+| `POST`  | `/accounts`                                  | ADMIN | `accountsApi.create`            | mutation              | routes/staff/accounts.tsx                                      |
+| `GET`   | `/accounts/{account_id}`                     | ADMIN | `accountsApi.get`               | `accounts.detail(id)` | features/people/account-edit.tsx via routes/staff/accounts.tsx |
+| `PATCH` | `/accounts/{account_id}`                     | ADMIN | `accountsApi.update`            | mutation              | features/people/account-edit.tsx via routes/staff/accounts.tsx |
+| `POST`  | `/accounts/{account_id}/lock`                | ADMIN | `accountsApi.lock`              | mutation              | routes/staff/accounts.tsx                                      |
+| `POST`  | `/accounts/{account_id}/send-password-reset` | ADMIN | `accountsApi.sendPasswordReset` | mutation              | routes/staff/accounts.tsx                                      |
+| `POST`  | `/accounts/{account_id}/unlock`              | ADMIN | `accountsApi.unlock`            | mutation              | routes/staff/accounts.tsx                                      |
 
 ### Public site — `endpoints/public.ts`
 
@@ -104,32 +106,32 @@ Four rules this layer exists to hold:
 
 ### Progress photos — `endpoints/progress-photos.ts`
 
-| Method   | Path                                                     | Role      | FE binding                   | Cache key / kind             | Consumer                                                |
-| -------- | -------------------------------------------------------- | --------- | ---------------------------- | ---------------------------- | ------------------------------------------------------- |
-| `GET`    | `/students/{student_id}/progress-photos`                 | đăng nhập | `progressPhotosApi.list`     | `students.photos(id)`        | routes/staff/student-detail.tsx — tab hidden from STAFF |
-| `POST`   | `/students/{student_id}/progress-photos`                 | đăng nhập | `progressPhotosApi.upload`   | mutation (multipart)         | routes/staff/student-detail.tsx                         |
-| `DELETE` | `/students/{student_id}/progress-photos/{photo_id}`      | ADMIN     | `progressPhotosApi.remove`   | mutation — ADMIN only        | routes/staff/student-detail.tsx                         |
-| `GET`    | `/students/{student_id}/progress-photos/{photo_id}/file` | đăng nhập | `progressPhotosApi.fileBlob` | `students.photoFile(id,pid)` | routes/staff/student-detail.tsx — object URL            |
+| Method   | Path                                                     | Role                                 | FE binding                   | Cache key / kind             | Consumer                                                                                                       |
+| -------- | -------------------------------------------------------- | ------------------------------------ | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GET`    | `/students/{student_id}/progress-photos`                 | ADMIN; own STUDENT; assigned TRAINER | `progressPhotosApi.list`     | `students.photos(id)`        | features/people/photo-gallery.tsx; staff/student-detail.tsx; student/account.tsx; trainer/student-progress.tsx |
+| `POST`   | `/students/{student_id}/progress-photos`                 | ADMIN; own STUDENT; assigned TRAINER | `progressPhotosApi.upload`   | mutation (multipart)         | features/people/photo-gallery.tsx; staff/student-detail.tsx; student/account.tsx; trainer/student-progress.tsx |
+| `DELETE` | `/students/{student_id}/progress-photos/{photo_id}`      | ADMIN                                | `progressPhotosApi.remove`   | mutation — ADMIN only        | features/people/photo-gallery.tsx — ADMIN confirmation                                                         |
+| `GET`    | `/students/{student_id}/progress-photos/{photo_id}/file` | ADMIN; own STUDENT; assigned TRAINER | `progressPhotosApi.fileBlob` | `students.photoFile(id,pid)` | features/people/photo-gallery.tsx; staff/student-detail.tsx; student/account.tsx; trainer/student-progress.tsx |
 
 ### Trainers — `endpoints/trainers.ts`
 
-| Method  | Path                           | Role         | FE binding                | Cache key / kind      | Consumer                                                    |
-| ------- | ------------------------------ | ------------ | ------------------------- | --------------------- | ----------------------------------------------------------- |
-| `GET`   | `/trainers`                    | ADMIN, STAFF | `trainersApi.list`        | `trainers.list(f)`    | routes/staff/trainers.tsx, calendar filter                  |
-| `POST`  | `/trainers`                    | ADMIN, STAFF | `trainersApi.create`      | mutation              | routes/staff/trainers.tsx                                   |
-| `GET`   | `/trainers/{trainer_id}`       | đăng nhập    | `trainersApi.get`         | `trainers.detail(id)` | routes/staff/trainer-detail.tsx, routes/trainer/profile.tsx |
-| `PATCH` | `/trainers/{trainer_id}`       | đăng nhập    | `trainersApi.update`      | mutation              | routes/staff/trainer-detail.tsx, routes/trainer/profile.tsx |
-| `GET`   | `/trainers/{trainer_id}/photo` | đăng nhập    | `trainersApi.photoBlob`   | `trainers.photo(id)`  | routes/staff/trainer-detail.tsx — object URL                |
-| `POST`  | `/trainers/{trainer_id}/photo` | đăng nhập    | `trainersApi.uploadPhoto` | mutation (multipart)  | routes/staff/trainer-detail.tsx                             |
+| Method  | Path                           | Role         | FE binding                | Cache key / kind      | Consumer                                                                                             |
+| ------- | ------------------------------ | ------------ | ------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
+| `GET`   | `/trainers`                    | ADMIN, STAFF | `trainersApi.list`        | `trainers.list(f)`    | routes/staff/trainers.tsx, calendar filter                                                           |
+| `POST`  | `/trainers`                    | ADMIN, STAFF | `trainersApi.create`      | mutation              | features/people/trainer-editor.tsx; photo-gallery.tsx; staff/trainer-detail.tsx; trainer/profile.tsx |
+| `GET`   | `/trainers/{trainer_id}`       | đăng nhập    | `trainersApi.get`         | `trainers.detail(id)` | routes/staff/trainer-detail.tsx, routes/trainer/profile.tsx                                          |
+| `PATCH` | `/trainers/{trainer_id}`       | đăng nhập    | `trainersApi.update`      | mutation              | features/people/trainer-editor.tsx; photo-gallery.tsx; staff/trainer-detail.tsx; trainer/profile.tsx |
+| `GET`   | `/trainers/{trainer_id}/photo` | đăng nhập    | `trainersApi.photoBlob`   | `trainers.photo(id)`  | features/people/trainer-editor.tsx; photo-gallery.tsx; staff/trainer-detail.tsx; trainer/profile.tsx |
+| `POST`  | `/trainers/{trainer_id}/photo` | đăng nhập    | `trainersApi.uploadPhoto` | mutation (multipart)  | features/people/trainer-editor.tsx; photo-gallery.tsx; staff/trainer-detail.tsx; trainer/profile.tsx |
 
 ### Announcements — `endpoints/announcements.ts`
 
-| Method   | Path                               | Role         | FE binding                | Cache key / kind        | Consumer                                    |
-| -------- | ---------------------------------- | ------------ | ------------------------- | ----------------------- | ------------------------------------------- |
-| `GET`    | `/announcements`                   | ADMIN, STAFF | `announcementsApi.list`   | `announcements.list(f)` | routes/staff/announcements.tsx — NEW screen |
-| `POST`   | `/announcements`                   | ADMIN, STAFF | `announcementsApi.create` | mutation                | routes/staff/announcements.tsx — NEW screen |
-| `DELETE` | `/announcements/{announcement_id}` | ADMIN, STAFF | `announcementsApi.remove` | mutation                | routes/staff/announcements.tsx — NEW screen |
-| `PATCH`  | `/announcements/{announcement_id}` | ADMIN, STAFF | `announcementsApi.update` | mutation                | routes/staff/announcements.tsx — NEW screen |
+| Method   | Path                               | Role         | FE binding                | Cache key / kind        | Consumer                       |
+| -------- | ---------------------------------- | ------------ | ------------------------- | ----------------------- | ------------------------------ |
+| `GET`    | `/announcements`                   | ADMIN, STAFF | `announcementsApi.list`   | `announcements.list(f)` | routes/staff/announcements.tsx |
+| `POST`   | `/announcements`                   | ADMIN, STAFF | `announcementsApi.create` | mutation                | routes/staff/announcements.tsx |
+| `DELETE` | `/announcements/{announcement_id}` | ADMIN, STAFF | `announcementsApi.remove` | mutation                | routes/staff/announcements.tsx |
+| `PATCH`  | `/announcements/{announcement_id}` | ADMIN, STAFF | `announcementsApi.update` | mutation                | routes/staff/announcements.tsx |
 
 ### Packages & credit ledger — `endpoints/packages.ts`
 
@@ -197,17 +199,17 @@ Four rules this layer exists to hold:
 
 ### Reports — `endpoints/reports.ts`
 
-| Method | Path                                   | Role         | FE binding                           | Cache key / kind           | Consumer                                 |
-| ------ | -------------------------------------- | ------------ | ------------------------------------ | -------------------------- | ---------------------------------------- |
-| `GET`  | `/reports/classes`                     | ADMIN, STAFF | `reportsApi.classes`                 | `reports.classes(p)`       | routes/staff/report-classes.tsx          |
-| `GET`  | `/reports/dashboard`                   | ADMIN, STAFF | `reportsApi.dashboard`               | `reports.dashboard()`      | routes/staff/dashboard.tsx               |
-| `GET`  | `/reports/revenue`                     | ADMIN, STAFF | `reportsApi.revenue`                 | `reports.revenue(p)`       | routes/staff/report-revenue.tsx          |
-| `GET`  | `/reports/revenue/detail`              | ADMIN, STAFF | `reportsApi.revenueDetail`           | `reports.revenueDetail(p)` | routes/staff/report-revenue.tsx          |
-| `GET`  | `/reports/trainers`                    | ADMIN, STAFF | `reportsApi.trainers`                | `reports.trainers(p)`      | routes/staff/report-trainers.tsx         |
-| `GET`  | `/reports/trainers/class-sizes`        | ADMIN, STAFF | `reportsApi.trainerClassSizes`       | `reports.classSizes(p)`    | routes/staff/report-trainers.tsx         |
-| `GET`  | `/reports/trainers/class-sizes/export` | ADMIN, STAFF | `reportsApi.exportTrainerClassSizes` | download (blob)            | routes/staff/report-trainers.tsx         |
-| `GET`  | `/reports/trainers/export`             | ADMIN, STAFF | `reportsApi.exportTrainers`          | download (blob)            | routes/staff/report-trainers.tsx         |
-| `GET`  | `/reports/unconfirmed-payments`        | ADMIN, STAFF | `reportsApi.unconfirmedPayments`     | `reports.unconfirmed(d)`   | routes/staff/payments.tsx, dashboard.tsx |
+| Method | Path                                   | Role         | FE binding                           | Cache key / kind           | Consumer                         |
+| ------ | -------------------------------------- | ------------ | ------------------------------------ | -------------------------- | -------------------------------- |
+| `GET`  | `/reports/classes`                     | ADMIN, STAFF | `reportsApi.classes`                 | `reports.classes(p)`       | routes/staff/report-classes.tsx  |
+| `GET`  | `/reports/dashboard`                   | ADMIN, STAFF | `reportsApi.dashboard`               | `reports.dashboard()`      | routes/staff/dashboard.tsx       |
+| `GET`  | `/reports/revenue`                     | ADMIN, STAFF | `reportsApi.revenue`                 | `reports.revenue(p)`       | routes/staff/report-revenue.tsx  |
+| `GET`  | `/reports/revenue/detail`              | ADMIN, STAFF | `reportsApi.revenueDetail`           | `reports.revenueDetail(p)` | routes/staff/report-revenue.tsx  |
+| `GET`  | `/reports/trainers`                    | ADMIN, STAFF | `reportsApi.trainers`                | `reports.trainers(p)`      | routes/staff/report-trainers.tsx |
+| `GET`  | `/reports/trainers/class-sizes`        | ADMIN, STAFF | `reportsApi.trainerClassSizes`       | `reports.classSizes(p)`    | routes/staff/report-classes.tsx  |
+| `GET`  | `/reports/trainers/class-sizes/export` | ADMIN, STAFF | `reportsApi.exportTrainerClassSizes` | download (blob)            | routes/staff/report-classes.tsx  |
+| `GET`  | `/reports/trainers/export`             | ADMIN, STAFF | `reportsApi.exportTrainers`          | download (blob)            | routes/staff/report-trainers.tsx |
+| `GET`  | `/reports/unconfirmed-payments`        | ADMIN, STAFF | `reportsApi.unconfirmedPayments`     | `reports.unconfirmed(d)`   | routes/staff/reports.tsx         |
 
 ### Meta — `endpoints/meta.ts`
 

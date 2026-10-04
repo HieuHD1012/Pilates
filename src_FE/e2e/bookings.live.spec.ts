@@ -95,6 +95,7 @@ test("change to a newly full class rolls back; retry changes both bookings witho
 test("two student UI sessions race for last seat; one debit and one refusal; duplicate changes no credits", async ({
   page,
   request,
+  observePage,
 }) => {
   const data = await fixture(request);
   const rival = await fixture(request);
@@ -105,6 +106,7 @@ test("two student UI sessions race for last seat; one debit and one refusal; dup
     .browser()!
     .newContext({ baseURL: "http://localhost:4173" });
   const other = await otherContext.newPage();
+  observePage(other);
   try {
     await signIn(page, data.studentAccount.email);
     await signIn(other, rival.studentAccount.email);
