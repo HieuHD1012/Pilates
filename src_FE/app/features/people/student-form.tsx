@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ApiError } from "~/lib/api/client";
-import type { StudentCreateRequest } from "~/lib/api/schema";
+import type { StudentCreateRequest, StudentStatus } from "~/lib/api/schema";
 import { Button } from "~/ui/button";
-import { Field, FormActions, Input, Textarea } from "~/ui/field";
+import { Field, FormActions, Input, Select, Textarea } from "~/ui/field";
 
 /**
  * One form, three jobs: create a student, edit one, and convert a lead. The
@@ -25,6 +25,8 @@ const schema = z.object({
     .transform((value) => value.replace(/[\s.-]/g, ""))
     .refine((value) => phonePattern.test(value), "Số điện thoại chưa đúng định dạng"),
   email: z.string().trim().email("Email chưa đúng định dạng").or(z.literal("")),
+  dob: z.string().date("Ngày sinh chưa đúng định dạng").or(z.literal("")),
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
   note: z.string().trim().max(500, "Ghi chú quá dài").or(z.literal("")),
 });
 
@@ -35,6 +37,8 @@ const FIELD_ALIASES: Record<string, keyof StudentFormValues> = {
   full_name: "fullName",
   phone: "phone",
   email: "email",
+  dob: "dob",
+  status: "status",
   note: "note",
 };
 
@@ -51,7 +55,7 @@ export function StudentForm({
   pending: boolean;
   /** The mutation's error, so field-level messages land on their own field. */
   error: unknown;
-  onSubmit: (input: StudentCreateRequest) => Promise<unknown>;
+  onSubmit: (input: StudentCreateRequest & { status?: StudentStatus }) => Promise<unknown>;
   onCancel: () => void;
 }) {
   const {
@@ -65,6 +69,8 @@ export function StudentForm({
       fullName: defaultValues?.fullName ?? "",
       phone: defaultValues?.phone ?? "",
       email: defaultValues?.email ?? "",
+      dob: defaultValues?.dob ?? "",
+      status: defaultValues?.status,
       note: defaultValues?.note ?? "",
     },
   });
@@ -86,6 +92,8 @@ export function StudentForm({
           full_name: parsed.fullName,
           phone: parsed.phone,
           email: parsed.email === "" ? null : parsed.email,
+          dob: parsed.dob === "" ? null : parsed.dob,
+          ...(parsed.status ? { status: parsed.status } : {}),
           note: parsed.note === "" ? null : parsed.note,
         }).catch((cause) => {
           if (cause instanceof ApiError && cause.isValidation) {
@@ -144,6 +152,34 @@ export function StudentForm({
           />
         )}
       </Field>
+
+      <Field label="Ngày sinh" hint="Không bắt buộc." error={errors.dob?.message}>
+        {({ id, describedBy, invalid }) => (
+          <Input
+            id={id}
+            type="date"
+            aria-describedby={describedBy}
+            aria-invalid={invalid}
+            {...register("dob")}
+          />
+        )}
+      </Field>
+
+      {defaultValues?.status !== undefined ? (
+        <Field label="Trạng thái học viên" error={errors.status?.message}>
+          {({ id, describedBy, invalid }) => (
+            <Select
+              id={id}
+              aria-describedby={describedBy}
+              aria-invalid={invalid}
+              {...register("status")}
+            >
+              <option value="ACTIVE">Đang học</option>
+              <option value="INACTIVE">Tạm nghỉ</option>
+            </Select>
+          )}
+        </Field>
+      ) : null}
 
       <Field
         label="Ghi chú"

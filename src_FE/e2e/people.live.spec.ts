@@ -34,12 +34,24 @@ test("ADMIN creates and edits student, invites linked account, edits and locks/u
   await page.getByRole("button", { name: "Sửa hồ sơ", exact: true }).click();
   dialog = page.getByRole("dialog");
   await dialog.getByLabel("Email", { exact: true }).fill(email);
+  await dialog.getByLabel("Ngày sinh", { exact: true }).fill("1992-08-17");
+  await dialog.getByLabel("Trạng thái học viên", { exact: true }).selectOption("INACTIVE");
   await dialog.getByRole("button", { name: "Lưu hồ sơ", exact: true }).click();
   await expect(dialog).toBeHidden();
   expect(
     (await call<StudentResponse>(request, "GET", `/students/${id}`, undefined, data.token))
       .email,
   ).toBe(email);
+  const editedStudent = await call<StudentResponse>(
+    request,
+    "GET",
+    `/students/${id}`,
+    undefined,
+    data.token,
+  );
+  expect(editedStudent.dob).toBe("1992-08-17");
+  expect(editedStudent.status).toBe("INACTIVE");
+  await expect(page.getByText("Tạm nghỉ", { exact: true }).first()).toBeVisible();
   await page.goto("/studio/tai-khoan");
   await page.getByRole("button", { name: "Tạo tài khoản", exact: true }).click();
   dialog = page.getByRole("dialog");

@@ -57,6 +57,7 @@ describe("StudentForm", () => {
       full_name: "Trần Quốc Huy",
       phone: "0900000001",
       email: null,
+      dob: null,
       note: null,
     });
   });

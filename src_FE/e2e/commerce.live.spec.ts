@@ -3,6 +3,7 @@ import type {
   PaymentResponse,
   PackageTypeResponse,
   StudentPackageResponse,
+  RevenueSummaryResponse,
 } from "../app/lib/api/schema";
 
 test("ADMIN creates a catalogue offer, STAFF sells and renews it, ledger updates", async ({
@@ -123,7 +124,7 @@ test("receipt transitions PENDING to CONFIRMED to VOID; revenue and credits reco
     )
   ).find((item) => item.note === note)!;
   expect(receipt.status).toBe("PENDING");
-  const before = await call<{ confirmed_amount: string }>(
+  const before = await call<RevenueSummaryResponse>(
     request,
     "GET",
     "/reports/revenue",
@@ -189,6 +190,8 @@ test("ADMIN adjusts credits with a reason and STAFF cannot use that action", asy
   await page.evaluate(() => localStorage.clear());
   await signIn(page, data.staffAccount.email);
   await page.goto(`/studio/so-buoi?goi=${data.sold.id}&hv=${data.student.id}`);
+  await expect(page.getByRole("heading", { name: "Sổ buổi", exact: true })).toBeVisible();
+  await expect(page.locator(".animate-skeleton")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Điều chỉnh buổi", exact: true }),
   ).toHaveCount(0);

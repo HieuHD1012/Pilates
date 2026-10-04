@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, File, Query, Response, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.binary_contract import IMAGE_RESPONSE
 from app.core.content_rules import clean_public_text
 from app.core.errors import BusinessError, ForbiddenError, NotFoundError, ValidationError
 from app.core.permissions import Actor, get_current_actor, require_staff
@@ -203,7 +204,7 @@ def upload_trainer_photo(
     return trainer
 
 
-@router.get("/{trainer_id}/photo")
+@router.get("/{trainer_id}/photo", response_class=Response, responses=IMAGE_RESPONSE)
 def get_trainer_photo(
     trainer_id: int,
     actor: Actor = Depends(get_current_actor),

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { test, expect, fixture, signIn, call, ledger } from "./helpers/live";
+import { test, expect, fixture, signIn, call, ledger, API } from "./helpers/live";
 import type {
   RenewalContactResponse,
   TrainerStatsResponse,
@@ -64,6 +64,14 @@ for (const kind of ["trainers", "class-sizes"] as const)
       await page.getByLabel("Đến ngày", { exact: true }).fill(end);
       await expect(page.locator(".animate-skeleton")).toHaveCount(0);
       const download = page.waitForEvent("download");
+      const response = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.url().startsWith(API) &&
+          url.pathname.endsWith("/export") &&
+          url.searchParams.get("format") === format
+        );
+      });
       await page
         .getByRole("button", {
           name: format === "csv" ? "Xuất CSV" : "Xuất Excel",
@@ -71,6 +79,17 @@ for (const kind of ["trainers", "class-sizes"] as const)
         })
         .click();
       const file = await download;
+      const downloadedResponse = await response;
+      expect(downloadedResponse.status()).toBe(200);
+      expect(downloadedResponse.headers()["content-type"]).toContain(
+        format === "csv"
+          ? "text/csv"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      expect(downloadedResponse.headers()["content-disposition"]).toMatch(
+        /attachment; filename=/,
+      );
+      expect(file.suggestedFilename()).toMatch(new RegExp(`\\.${format}$`));
       expect(await file.failure()).toBeNull();
       const path = info.outputPath(`report.${format}`);
       await file.saveAs(path);

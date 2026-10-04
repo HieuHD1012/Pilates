@@ -13,6 +13,7 @@ from datetime import date, datetime, time, timedelta
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
+from app.core.binary_contract import REPORT_FILE_RESPONSE
 from app.core.permissions import Actor, require_staff
 from app.db import get_db
 from app.domain.rules import TIMEZONE, UNCONFIRMED_PAYMENT_ALERT_DAYS, now, today
@@ -243,7 +244,7 @@ def trainer_class_sizes(
     ]
 
 
-@router.get("/trainers/class-sizes/export")
+@router.get("/trainers/class-sizes/export", response_class=Response, responses=REPORT_FILE_RESPONSE)
 def export_trainer_class_sizes(
     actor: Actor = Depends(require_staff),
     db: Session = Depends(get_db, scope="function"),
@@ -278,7 +279,7 @@ def export_trainer_class_sizes(
     )
 
 
-@router.get("/trainers/export")
+@router.get("/trainers/export", response_class=Response, responses=REPORT_FILE_RESPONSE)
 def export_trainers(
     actor: Actor = Depends(require_staff),
     db: Session = Depends(get_db, scope="function"),

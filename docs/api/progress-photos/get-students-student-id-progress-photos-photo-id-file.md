@@ -40,7 +40,9 @@ Không có.
 
 ### `200`
 
-Không có nội dung.
+Nội dung nhị phân, không phải JSON. Media type theo định dạng trả về:
+
+- `image/jpeg`
 
 ### Lỗi
 

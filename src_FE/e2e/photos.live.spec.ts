@@ -108,6 +108,11 @@ test("trainer uploads portrait, updates own biography; published directory serve
   );
   await signIn(page, data.trainerAccount.email);
   await page.goto("/hlv/ho-so");
+  const bio = `E2E hướng dẫn kiểm soát chuyển động ${data.trainer.id}`;
+  await page.getByLabel("Giới thiệu", { exact: true }).fill(bio);
+  await page.getByLabel("Chuyên môn", { exact: true }).fill("Reformer");
+  await page.getByRole("button", { name: "Lưu hồ sơ", exact: true }).click();
+  await expect(page.getByText("Đã lưu hồ sơ.", { exact: true })).toBeAttached();
   await page.getByLabel("Ảnh huấn luyện viên", { exact: false }).setInputFiles(image);
   await page.getByRole("button", { name: "Lưu ảnh huấn luyện viên", exact: true }).click();
   await expect(
@@ -115,11 +120,13 @@ test("trainer uploads portrait, updates own biography; published directory serve
   ).toBeAttached();
   const directory = await call<PublicTrainer[]>(request, "GET", "/public/trainers");
   const trainer = directory.find((item) => item.full_name === data.trainer.full_name)!;
+  expect(trainer.bio).toBe(bio);
   expect(trainer.photo_key).toBeTruthy();
   const photo = await request.get(`${API}/public/trainer-photos/${trainer.photo_key}`);
   expect(photo.ok()).toBe(true);
   expect(photo.headers()["content-type"]).toMatch(/^image\//);
   await page.goto("/huan-luyen-vien");
+  await expect(page.getByText(bio, { exact: true })).toBeVisible();
   await expect(
     page.getByRole("img", { name: `Chân dung ${data.trainer.full_name}`, exact: true }),
   ).toBeVisible();

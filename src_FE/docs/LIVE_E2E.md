@@ -108,6 +108,9 @@ actually passed. Never interpret endpoint bindings alone as verified workflows.
 - Made trainer creation/account linking, account edits, authenticated progress
   photos, portraits, catalogue edits, receipt details, unconfirmed receipts and
   class-size exports reachable through the existing UI primitives.
+- Student edits include optional birth dates and ACTIVE/INACTIVE status rather
+  than leaving displayed fields impossible to maintain. Credit adjustment controls
+  are ADMIN-only, matching the backend permission.
 - Corrected account-create payload (no unsupported `trainer_id`), linked student
   phone defaults, reset-token 401 handling and prerender trailing-slash hydration.
 - Trainer links validate existence, role and duplicate assignment, returning
@@ -115,6 +118,8 @@ actually passed. Never interpret endpoint bindings alone as verified workflows.
 - Every DB dependency now uses FastAPI function scope: commit/deferred constraints
   finish before HTTP success. A regression test reads a newly created student
   from another transaction at `http.response.start`.
+- Binary endpoints now document JPEG/CSV/XLSX media types and download headers
+  rather than JSON; generated backend API documentation is synchronized.
 - Offline mutations report failure immediately and retain input for explicit
   retry rather than silently queueing a transaction.
 

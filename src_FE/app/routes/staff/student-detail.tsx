@@ -1029,6 +1029,8 @@ function EditStudentForm({
           fullName: student.full_name,
           phone: student.phone,
           email: student.email ?? "",
+          dob: student.dob ?? "",
+          status: student.status,
           note: student.note ?? "",
         }}
         submitLabel="Lưu hồ sơ"

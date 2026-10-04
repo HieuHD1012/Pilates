@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.binary_contract import IMAGE_RESPONSE
 from app.core.errors import NotFoundError
 from app.core.permissions import (
     Actor,
@@ -114,7 +115,7 @@ def upload_progress_photo(
     return photo
 
 
-@router.get("/{photo_id}/file")
+@router.get("/{photo_id}/file", response_class=Response, responses=IMAGE_RESPONSE)
 def get_progress_photo_file(
     student_id: int,
     photo_id: int,

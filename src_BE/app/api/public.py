@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.binary_contract import IMAGE_RESPONSE
 from app.core.errors import ValidationError
 from app.core.upload_guard import STORED_CONTENT_TYPE, read_image
 from app.db import get_db
@@ -170,7 +171,7 @@ def list_public_schedule(
     ]
 
 
-@router.get("/trainer-photos/{prefix}/{key}")
+@router.get("/trainer-photos/{prefix}/{key}", response_class=Response, responses=IMAGE_RESPONSE)
 def get_public_trainer_photo(
     prefix: str, key: str, db: Session = Depends(get_db, scope="function")
 ) -> Response:

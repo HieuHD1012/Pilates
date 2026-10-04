@@ -435,8 +435,16 @@ def render_endpoint(endpoint: Endpoint, book: SchemaBook, target: Path) -> str:
     for status, response in sorted(op.get("responses", {}).items()):
         if status == "422":
             continue
-        schema = (next(iter(response.get("content", {}).values()), {}) or {}).get("schema")
+        content = response.get("content", {})
+        schema = (next(iter(content.values()), {}) or {}).get("schema")
         out += [f"### `{status}`", ""]
+        if schema and schema.get("format") == "binary":
+            out += ["Nội dung nhị phân, không phải JSON. Media type theo định dạng trả về:", ""]
+            out += [f"- `{media}`" for media in content]
+            if "Content-Disposition" in response.get("headers", {}):
+                out += ["", "`Content-Disposition` cung cấp tên tệp tải xuống."]
+            out += [""]
+            continue
         if not schema:
             out += ["Không có nội dung.", ""]
             continue

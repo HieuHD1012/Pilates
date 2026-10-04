@@ -1,5 +1,10 @@
 import { spawnSync } from "node:child_process";
 
+if (process.argv.length > 2)
+  throw new Error(
+    "The live gate runs the complete suite; filtered diagnostic runs must use Playwright directly.",
+  );
+
 for (const key of [
   "LIVE_API_URL",
   "DATABASE_URL",
@@ -48,12 +53,7 @@ const build = spawnSync(process.execPath, [npm, "run", "build"], { stdio: "inher
 if (build.status !== 0) process.exit(build.status ?? 1);
 const result = spawnSync(
   process.execPath,
-  [
-    "node_modules/@playwright/test/cli.js",
-    "test",
-    "--config=playwright.live.config.ts",
-    ...process.argv.slice(2),
-  ],
+  ["node_modules/@playwright/test/cli.js", "test", "--config=playwright.live.config.ts"],
   { stdio: "inherit", env },
 );
 const coverage = spawnSync(

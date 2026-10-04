@@ -17,6 +17,7 @@ import {
 } from "~/features/commerce/queries";
 import { SessionAdjustmentForm } from "~/features/commerce/session-adjustment-form";
 import { useStudent } from "~/features/people/queries";
+import { useSession } from "~/features/auth/use-session";
 import type {
   LedgerEntryResponse,
   LedgerReasonCode,
@@ -266,6 +267,7 @@ function LedgerBody({
   studentId: number | null;
 }) {
   const [adjusting, setAdjusting] = useState(false);
+  const canAdjust = useSession().data?.role === "ADMIN";
   const [saved, setSaved] = useState<string | null>(null);
   const adjust = useAdjustCredits(ledger.student_package_id);
 
@@ -295,14 +297,16 @@ function LedgerBody({
         title="Sổ buổi"
         description={PAGE_DESCRIPTION}
         actions={
-          <Button
-            variant="secondary"
-            className="max-md:min-h-11"
-            icon={<PencilLine className="size-4" aria-hidden="true" />}
-            onClick={() => setAdjusting(true)}
-          >
-            Điều chỉnh buổi
-          </Button>
+          canAdjust ? (
+            <Button
+              variant="secondary"
+              className="max-md:min-h-11"
+              icon={<PencilLine className="size-4" aria-hidden="true" />}
+              onClick={() => setAdjusting(true)}
+            >
+              Điều chỉnh buổi
+            </Button>
+          ) : undefined
         }
       />
 
@@ -409,7 +413,7 @@ function LedgerBody({
       <LiveRegion message={saved} />
 
       <Dialog
-        open={adjusting}
+        open={canAdjust && adjusting}
         onOpenChange={(next) => {
           if (!next) {
             adjust.reset();
