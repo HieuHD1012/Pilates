@@ -4,6 +4,7 @@ import type { AnnouncementResponse } from "../app/lib/api/schema";
 test("STAFF creates, edits, publishes, hides and deletes announcements through the UI", async ({
   page,
   request,
+  observePage,
 }) => {
   const token = await adminToken(request);
   const staff = await account(request, token, "STAFF");
@@ -28,7 +29,17 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   const row = rows.find((item) => item.title === title)!;
   expect(row.is_published).toBe(false);
   const visitor = await page.context().newPage();
+  observePage(visitor);
+  let publicRead = visitor.waitForResponse((response) =>
+    response.url().startsWith(`${API}/public/announcements`),
+  );
   await visitor.goto("/khuyen-mai");
+  expect(
+    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+      (item) => item.id === row.id,
+    ),
+  ).toBe(false);
+  await expect(visitor.locator(".animate-skeleton")).toHaveCount(0);
   await expect(visitor.getByRole("heading", { name: title, exact: true })).toHaveCount(0);
   const edit = async () => {
     const item = page
@@ -45,7 +56,15 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   await dialog.getByLabel("Trạng thái", { exact: true }).selectOption("published");
   await dialog.getByRole("button", { name: "Lưu thông báo", exact: true }).click();
   await expect(dialog).toBeHidden();
+  publicRead = visitor.waitForResponse((response) =>
+    response.url().startsWith(`${API}/public/announcements`),
+  );
   await visitor.reload();
+  expect(
+    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+      (item) => item.id === row.id,
+    ),
+  ).toBe(true);
   await expect(visitor.getByRole("heading", { name: title, exact: true })).toBeVisible();
   await expect(
     visitor.getByText("Nội dung đã sửa qua giao diện.", { exact: true }),
@@ -54,7 +73,16 @@ test("STAFF creates, edits, publishes, hides and deletes announcements through t
   await dialog.getByLabel("Trạng thái", { exact: true }).selectOption("draft");
   await dialog.getByRole("button", { name: "Lưu thông báo", exact: true }).click();
   await expect(dialog).toBeHidden();
+  publicRead = visitor.waitForResponse((response) =>
+    response.url().startsWith(`${API}/public/announcements`),
+  );
   await visitor.reload();
+  expect(
+    ((await (await publicRead).json()) as AnnouncementResponse[]).some(
+      (item) => item.id === row.id,
+    ),
+  ).toBe(false);
+  await expect(visitor.locator(".animate-skeleton")).toHaveCount(0);
   await expect(visitor.getByRole("heading", { name: title, exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: `Thao tác cho ${title}`, exact: true }).click();
   await page.getByRole("button", { name: "Xóa thông báo", exact: true }).click();

@@ -220,6 +220,7 @@ test("PRIVATE cancellation before one-hour deadline refunds once; after it UI fo
   );
   databaseFixture("closed", later.id);
   await page.reload();
+  await expect(page.getByText(data.trainer.full_name, { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Hủy buổi", exact: true })).toHaveCount(0);
   expect((await ledger(request, data.token, sold.id)).closing_balance).toBe(4);
 });

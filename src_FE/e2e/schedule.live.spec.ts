@@ -171,6 +171,7 @@ test("closed cancellation is disabled by BE verdict and direct rejection changes
   databaseFixture("closed", data.session.id);
   await signIn(page, data.studentAccount.email);
   await page.goto("/hv/lich-cua-toi");
+  await expect(page.getByText(data.trainer.full_name, { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Hủy buổi", exact: true })).toHaveCount(0);
   const rejection = await request.post(`${API}/bookings/${result.booking.id}/cancel`, {
     headers: { Authorization: `Bearer ${data.studentToken}` },
