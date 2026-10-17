@@ -4,7 +4,7 @@
 
 ## Context
 
-Soul Pilates TP. Hồ Chí Minh is a small public marketing surface attached to a much
+J Pilates Nha Trang is a small public marketing surface attached to a much
 larger authenticated studio-management application. The public surface needs to
 be indexed. The application does not.
 

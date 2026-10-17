@@ -22,7 +22,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export const meta: Route.MetaFunction = () => [
-  { title: "J Pilates TP. Hồ Chí Minh" },
+  { title: "J Pilates Nha Trang" },
   { name: "theme-color", content: "#fff5ec" },
 ];
 

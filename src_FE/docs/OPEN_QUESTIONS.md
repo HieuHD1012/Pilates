@@ -71,7 +71,7 @@ phone and opening hours must not be copied across.**
 
 ## Commercial
 
-- Package names, session counts, durations and prices for TP. Hồ Chí Minh. `/goi-tap`
+- Package names, session counts, durations and prices for Nha Trang. `/goi-tap`
   explains how packages work and routes to a conversation; it prints no prices.
 - Class capacity per type. Copy says "lớp nhóm nhỏ" and never a number.
 - Class duration. Only present in dev fixtures, never in public copy.
@@ -111,7 +111,7 @@ items are listed so they are not "re-discovered"; open items are work.
 
 - Historical calendar-create gap is closed. Class time/capacity editing is
   excluded by the current API, not an unfinished frontend action.
-- The demo fixtures seed a group capacity of `4`. TP. Hồ Chí Minh has confirmed no
+- The demo fixtures seed a group capacity of `4`. Nha Trang has confirmed no
   capacity, so this number is arbitrary and must not reach public copy —
   see the class-capacity item above.
 - Neither the grid nor the ruler collapses unused midday hours; roughly half the
@@ -120,7 +120,7 @@ items are listed so they are not "re-discovered"; open items are work.
 ## Provisional policies modelled on Soul Pilates Đà Nẵng (03/10/2026)
 
 The owner asked for the public site to follow Soul Đà Nẵng's published policies
-until the TP. Hồ Chí Minh studio confirms its own ("sai gì chủ sửa sau"). These are
+until the Nha Trang studio confirms its own ("sai gì chủ sửa sau"). These are
 **owner-authorised placeholders, not confirmed facts**. Location facts were not
 copied: another city's address, phone or map link is a wrong door, not a policy.
 
@@ -129,7 +129,7 @@ copied: another city's address, phone or map link is a wrong door, not a policy.
 | Group classes: at most 3 students (1:3)        | Soul homepage, "Group Class 1:3"                                                 | `CLASS_FORMATS[group].ratio/size`               | Real capacity per class is still set by staff; must match.      |
 | Private classes: 1 student, 1 trainer (1:1)    | Soul homepage                                                                    | `CLASS_FORMATS[private]`                        | Backend allows capacity 2 (internal Duo) — decide.              |
 | 55-minute sessions                             | Soul timetable                                                                   | `SESSION_MINUTES`; schedule rows use real times | Copy only; rows always show the class's real duration.          |
-| Opening hours Mon–Sat 07:30–19:30              | Soul footer                                                                      | `STUDIO.openingHours`                           | TP. Hồ Chí Minh hours.                                                |
+| Opening hours Mon–Sat 07:30–19:30              | Soul footer                                                                      | `STUDIO.openingHours`                           | Nha Trang hours.                                                      |
 | Private cancellation window 1 hour (was 8)     | **Not Soul** — matches what the backend enforces; Soul publishes both 12h and 3h | `CANCELLATION_POLICY.private`                   | Owner picks one window per format; backend and copy must agree. |
 | Demo catalogue 5/10/20/30 packs at Soul prices | Soul /packages                                                                   | `app/mocks/fixtures.ts` (DEMO, dev only)        | Real packages and prices are entered by staff.                  |
 

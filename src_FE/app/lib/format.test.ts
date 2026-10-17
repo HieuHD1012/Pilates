@@ -45,7 +45,7 @@ describe("formatting", () => {
   it("names weekdays in Vietnamese, computed in the studio zone", () => {
     expect(weekdayShort("2026-08-18T06:30:00+07:00")).toBe("T3");
     expect(weekdayLong("2026-08-18T06:30:00+07:00")).toBe("Thứ ba");
-    // 18:00 UTC Sunday is already Monday in TP. Hồ Chí Minh.
+    // 18:00 UTC Sunday is already Monday in Vietnam (UTC+7).
     expect(weekdayShort("2026-08-16T18:00:00Z")).toBe("T2");
   });
 
@@ -61,7 +61,7 @@ describe("formatting", () => {
   });
 
   it("derives the studio date key from an instant", () => {
-    // 17:30 UTC is 00:30 the following day in TP. Hồ Chí Minh.
+    // 17:30 UTC is 00:30 the following day in Vietnam (UTC+7).
     expect(studioDateKey("2026-08-18T17:30:00Z")).toBe("2026-08-19");
   });
 

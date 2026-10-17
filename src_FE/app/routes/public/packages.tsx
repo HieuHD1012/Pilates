@@ -18,11 +18,11 @@ import type { Route } from "./+types/packages";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Gói tập — J Pilates TP. Hồ Chí Minh" },
+    { title: "Gói tập — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Gói tập tại J Pilates TP. Hồ Chí Minh được tính theo số buổi và thời hạn sử dụng. Liên hệ studio để nhận bảng giá hiện hành.",
+        "Gói tập tại J Pilates Nha Trang được tính theo số buổi và thời hạn sử dụng. Liên hệ studio để nhận bảng giá hiện hành.",
     },
   ];
 }

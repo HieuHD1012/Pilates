@@ -32,7 +32,7 @@ export default function AuthLayout() {
     <div className="bg-sand min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <section
         data-field="dark"
-        aria-label="J Pilates TP. Hồ Chí Minh"
+        aria-label="J Pilates Nha Trang"
         className="bg-ink-deep text-sand relative flex flex-col justify-between gap-6 overflow-hidden px-5 py-6 lg:min-h-dvh lg:px-14 lg:py-12"
       >
         <Link
@@ -48,7 +48,7 @@ export default function AuthLayout() {
           </span>
           <span className="flex flex-col">
             <span className="wordmark text-lg">J PILATES</span>
-            <span className="text-sand/60 mt-1 text-xs">Pilates · TP. Hồ Chí Minh</span>
+            <span className="text-sand/60 mt-1 text-xs">Pilates · Nha Trang</span>
           </span>
         </Link>
 
@@ -72,7 +72,7 @@ export default function AuthLayout() {
         </div>
 
         <p className="text-sand/60 hidden text-xs lg:block">
-          © {new Date().getFullYear()} J Pilates TP. Hồ Chí Minh
+          © {new Date().getFullYear()} J Pilates Nha Trang
         </p>
 
         {/* One hairline circle: the reformer's spring, drawn once. */}

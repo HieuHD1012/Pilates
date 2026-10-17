@@ -1,6 +1,6 @@
 # Current design direction
 
-J Pilates TP. Hồ Chí Minh uses the owner-approved public layout and a warm beige,
+J Pilates Nha Trang uses the owner-approved public layout and a warm beige,
 copper and brown palette. Preserve the existing composition while maintaining
 accessibility and reliable operational workflows.
 

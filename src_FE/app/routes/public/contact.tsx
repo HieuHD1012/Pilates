@@ -12,11 +12,11 @@ import type { Route } from "./+types/contact";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Liên hệ — J Pilates TP. Hồ Chí Minh" },
+    { title: "Liên hệ — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Liên hệ J Pilates TP. Hồ Chí Minh qua điện thoại, Zalo hoặc để lại thông tin tư vấn.",
+        "Liên hệ J Pilates Nha Trang qua điện thoại, Zalo hoặc để lại thông tin tư vấn.",
     },
   ];
 }

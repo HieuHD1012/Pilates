@@ -20,11 +20,11 @@ import type { Route } from "./+types/consultation";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Nhận tư vấn — J Pilates TP. Hồ Chí Minh" },
+    { title: "Nhận tư vấn — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Để lại tên và số điện thoại, J Pilates TP. Hồ Chí Minh sẽ liên hệ tư vấn hình thức tập và gói phù hợp.",
+        "Để lại tên và số điện thoại, J Pilates Nha Trang sẽ liên hệ tư vấn hình thức tập và gói phù hợp.",
     },
   ];
 }

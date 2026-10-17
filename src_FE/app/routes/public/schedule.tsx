@@ -30,11 +30,11 @@ import type { Route } from "./+types/schedule";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Lịch tập — J Pilates TP. Hồ Chí Minh" },
+    { title: "Lịch tập — J Pilates Nha Trang" },
     {
       name: "description",
       content:
-        "Lịch lớp Pilates reformer 14 ngày tới tại J Pilates TP. Hồ Chí Minh. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
+        "Lịch lớp Pilates reformer 14 ngày tới tại J Pilates Nha Trang. Lớp nhóm tối đa 3 người và lớp riêng, xem giờ và chỗ còn trống.",
     },
   ];
 }
@@ -118,7 +118,7 @@ export default function PublicSchedule() {
                   setSelectedKey(null);
                 }}
               />
-              <p className="text-ink-2 text-sm">Giờ TP. Hồ Chí Minh (GMT+7)</p>
+              <p className="text-ink-2 text-sm">Giờ Việt Nam (GMT+7)</p>
             </div>
 
             {today ? (

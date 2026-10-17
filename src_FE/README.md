@@ -1,7 +1,7 @@
-# J Pilates TP. Hồ Chí Minh
+# J Pilates Nha Trang
 
 Public website and studio-management application for a boutique Pilates studio
-in TP. Hồ Chí Minh. React 19 · React Router v8 (framework mode, `ssr: false`) ·
+in Nha Trang. React 19 · React Router v8 (framework mode, `ssr: false`) ·
 Vite 8 · TypeScript 6 strict · Tailwind CSS 4 · TanStack Query 5.
 
 The product name is **J Pilates**. Existing `soul:*` session-storage keys and
@@ -100,7 +100,7 @@ paths to **`/__spa-fallback`** (the extensionless URL for
 
 ## Honesty policy
 
-The TP. Hồ Chí Minh studio has not supplied its address, phone number, opening hours,
+The Nha Trang studio has not supplied its address, phone number, opening hours,
 prices, trainer profiles or photography. This repository does not invent them
 and does not reuse the Đà Nẵng branch's. Unknown facts render as "Đang cập nhật"
 and are tracked in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).

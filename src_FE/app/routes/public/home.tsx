@@ -31,9 +31,9 @@ import { CheckList, SectionRail } from "~/ui/public-page";
 import type { Route } from "./+types/home";
 
 export function meta(_: Route.MetaArgs) {
-  const title = "J Pilates TP. Hồ Chí Minh — Studio reformer, lớp nhóm nhỏ và lớp riêng";
+  const title = "J Pilates Nha Trang — Studio reformer, lớp nhóm nhỏ và lớp riêng";
   const description =
-    "Studio Pilates reformer tại TP. Hồ Chí Minh. Lớp nhóm nhỏ và lớp riêng, huấn luyện viên theo sát từng người. Để lại số điện thoại để được tư vấn.";
+    "Studio Pilates reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng, huấn luyện viên theo sát từng người. Để lại số điện thoại để được tư vấn.";
   return [
     { title },
     { name: "description", content: description },
@@ -70,7 +70,7 @@ function Hero() {
       <div className="gutter mx-auto max-w-(--container-page)">
         <div className="grid grid-cols-1 lg:min-h-[45rem] lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-6">
           <div className="pt-9 md:pt-14 lg:col-span-6 lg:row-start-1 lg:pt-22 lg:pr-10">
-            <p className="label-micro text-copper">Pilates reformer tại TP. Hồ Chí Minh</p>
+            <p className="label-micro text-copper">Pilates reformer tại Nha Trang</p>
             <h1 className="font-display text-d1 text-ink mt-6 font-light">
               Không tập nhiều hơn.
               <br />
