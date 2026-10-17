@@ -1,4 +1,4 @@
-"""Cloud Run must not use a client-supplied X-Forwarded-For prefix for rate limits."""
+"""A trusted proxy must not use a client-supplied X-Forwarded-For prefix."""
 
 from types import SimpleNamespace
 
@@ -7,7 +7,7 @@ from starlette.requests import Request
 from app.core import rate_limit
 
 
-def test_google_proxy_ip_ignores_spoofed_prefix(monkeypatch) -> None:
+def test_trusted_proxy_ip_ignores_spoofed_prefix(monkeypatch) -> None:
     monkeypatch.setattr(
         rate_limit,
         "get_settings",

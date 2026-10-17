@@ -155,6 +155,6 @@ def client_ip(request: Request) -> str:
             addresses = [part.strip() for part in forwarded.split(",")]
             if len(addresses) >= settings.trusted_proxy_hops:
                 # Read the address appended by the trusted proxy, never a
-                # client-provided prefix. Cloud Run uses two trailing hops.
+                # client-provided prefix.
                 return addresses[-settings.trusted_proxy_hops]
     return request.client.host if request.client else "unknown"

@@ -30,11 +30,11 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: src_FE/package-lock.json
-      - name: Require Cloud Run origin
+      - name: Require HTTPS API origin
         shell: bash
         run: |
           if [[ ! "$VITE_API_BASE_URL" =~ ^https://[^/]+$ ]]; then
-            echo 'Set PILATES_API_ORIGIN to the HTTPS Cloud Run service origin' >&2
+            echo 'Set PILATES_API_ORIGIN to the HTTPS API origin' >&2
             exit 1
           fi
       - name: Verify and build

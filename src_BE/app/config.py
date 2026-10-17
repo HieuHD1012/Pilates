@@ -98,8 +98,8 @@ class Settings(BaseSettings):
     #: `X-Forwarded-For` bị bỏ qua hoàn toàn — tin header lúc chưa có proxy là
     #: cho phép bất kỳ ai tự khai IP và vòng qua cổng chống brute-force.
     trust_proxy_headers: bool = False
-    # Google Application Load Balancer appends client IP and load-balancer IP.
-    # Set to 2 on Cloud Run so client-supplied X-Forwarded-For entries are ignored.
+    # Count only proxy hops controlled by the deployment infrastructure.
+    # Never trust client-supplied X-Forwarded-For entries.
     trusted_proxy_hops: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
