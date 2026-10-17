@@ -53,7 +53,8 @@ for (const width of [390, 1440]) {
     test("a student can discover a bookable class, confirm it and cancel it", async ({ page }) => {
       await openAs(page, "/hv/lop-hoc");
       const days = page.getByRole("group", { name: "Chọn ngày" }).getByRole("button");
-      const bookable = page.locator("a[href^='/hv/lop-hoc/']").filter({ hasText: "Đặt được" }).first();
+      const bookable = page.locator("a[href^='/hv/lop-hoc/']")
+        .filter({ has: page.getByText("Đặt được", { exact: true }) }).first();
       for (let i = 0; i < await days.count(); i++) {
         if (await bookable.count()) break;
         await days.nth(i).click();
