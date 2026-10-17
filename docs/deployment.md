@@ -21,7 +21,7 @@ branch đang checkout vào `.env.local` ở gốc repo; backend tự đọc file
 | `CORS_ORIGINS` | ✅ | Allow-list tường minh, **không dùng `*`**. Định dạng là **mảng JSON**, kể cả khi chỉ có một origin: `CORS_ORIGINS='["https://studio.example.com"]'`. Chuỗi trần làm ứng dụng chết lúc khởi động với lỗi parse khó đọc |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, `AWS_REGION` | Neon Object Storage | Do `neon deploy` cấp cho branch; khi có endpoint, backend lưu ảnh vào bucket riêng tư `assets` |
 | `STORAGE_DIR` | chỉ lưu local | Thư mục ảnh khi không dùng Object Storage; phải nằm ngoài web root |
-| `SMTP_*` | ✅ | Gửi email đặt lại mật khẩu và kích hoạt tài khoản |
+| `SMTP_*` hoặc `RESEND_API_KEY` | ✅ khi gửi email thật | Chọn SMTP ở host hỗ trợ, hoặc Resend qua HTTPS trên Render Free |
 | `EMAIL_FROM` | ✅ | Địa chỉ người gửi. Mặc định `no-reply@pilates.local` là **tên miền dành riêng**, MTA thật sẽ từ chối |
 | `RESEND_API_KEY` | Render Free | Nếu có, email đặt lại mật khẩu được gửi qua HTTPS thay vì SMTP. Cần xác minh domain gửi trước khi dùng thật |
 | `PASSWORD_RESET_URL_TEMPLATE` | ✅ | Liên kết trong email đặt lại mật khẩu. Mặc định trỏ `http://localhost:5173` — quên đặt thì email vẫn gửi đi bình thường và **mọi liên kết đều hỏng**, không có lỗi nào báo |

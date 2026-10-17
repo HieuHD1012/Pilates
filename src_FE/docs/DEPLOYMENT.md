@@ -9,6 +9,10 @@ harness, not evidence that a production host has already been configured.
 Do not deploy `build/server`; it is used only for selective prerendering.
 The public homepage is `index.html`; private deep links must fall back to
 `__spa-fallback.html`, not to the marketing homepage.
+On Cloudflare Pages, `_redirects` must target `/__spa-fallback` without the
+`.html` extension. Pages canonicalizes `.html` URLs with a 308 redirect; using
+the file name as the rewrite target changes `/dang-nhap` into
+`/__spa-fallback` and breaks client-side routing.
 
 - Serve public prerendered documents first, then the SPA fallback for route URLs.
 - Missing assets must return 404, not an HTML fallback with status 200.

@@ -7,21 +7,28 @@ in-process.
 
 ## Demo first
 
-1. Connect `HieuHD1012/Pilates` to Render and create the Blueprint from this
-   branch. Use the `j-pilate-api` Free service. Keep automatic deploys off.
-2. Enter the *demo branch's* pooled `DATABASE_URL`, S3 endpoint and credentials,
-   and `CORS_ORIGINS` as a JSON array containing the Pages demo origin. Render
-   generates `JWT_SECRET`. Do not reuse production Neon credentials for demo.
-3. The demo branch already has migrations and seed data. Deploy the service,
-   then check `/health`, a public trainer image, and an authenticated booking.
-4. Set GitHub variable `PILATES_API_ORIGIN` to the Render HTTPS origin and
-   dispatch `Deploy frontend to Cloudflare Pages` with `release_public=false`.
-   Test a hard refresh, login, schedule, booking and image load on the Pages URL.
+1. The `j-pilate-api-demo` Free service is deployed from this branch at
+   `https://j-pilate-api-demo.onrender.com`, with automatic deploys off.
+2. It uses the *demo branch's* pooled `DATABASE_URL`, S3 endpoint and credentials,
+   and `CORS_ORIGINS` contains the Pages demo origin. Do not reuse production
+   Neon credentials for demo.
+3. The demo branch already has migrations and seed data. Check `/health`, a
+   public trainer image, and an authenticated booking after each API deploy.
+4. Build `src_FE` with `VITE_API_BASE_URL` set to the Render demo origin and
+   `VITE_ENABLE_MSW=false`; run `npm run verify`. Copy
+   `build/client/__spa-fallback.html` to `build/client/404.html`, then run
+   `wrangler pages deploy src_FE/build/client --project-name=j-pilate --branch=demo`.
+   The current preview is `https://demo.j-pilate.pages.dev`. Test a hard
+   refresh, login, schedule, booking and image load there.
+5. GitHub variable `PILATES_DEMO_API_ORIGIN` is already set. The optional Pages
+   workflow needs a separate `CLOUDFLARE_API_TOKEN` with Account → Cloudflare
+   Pages → Edit. Until then, deploy preview builds manually with Wrangler.
 
-For a production release, switch the API to production Neon credentials only
-after CI, migrations, reconciliation and a backup/restore rehearsal. Replace
-demo credentials, set `CORS_ORIGINS` to the production Pages origin, and keep
-`ENVIRONMENT=prod`. The frontend's public-content gate still applies.
+For a production release, create a separate `j-pilate-api` service from
+`render.yaml`. Set `PILATES_API_ORIGIN` to its HTTPS origin. Connect production
+Neon only after CI, migrations, reconciliation and a backup/restore rehearsal.
+Set `CORS_ORIGINS` to the production Pages origin and keep `ENVIRONMENT=prod`.
+The frontend's public-content gate still applies.
 
 ## Free plan constraints
 

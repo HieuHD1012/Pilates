@@ -93,8 +93,9 @@ node scripts/shoot.mjs http://localhost:5188 ./shots "/" "/studio/lich@staff"
 
 ## Deploy
 
-`build/client` is the entire artifact. Rewrite unmatched paths to
-**`/__spa-fallback.html`** — not `index.html`. See
+`build/client` is the entire artifact. On Cloudflare Pages, rewrite runtime
+paths to **`/__spa-fallback`** (the extensionless URL for
+`__spa-fallback.html`). See
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Honesty policy

@@ -21,7 +21,8 @@ jobs:
     if: github.repository == 'HieuHD1012/Pilates' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      VITE_API_BASE_URL: ${{ vars.PILATES_API_ORIGIN }}
+      PILATES_DEMO_API_ORIGIN: ${{ vars.PILATES_DEMO_API_ORIGIN }}
+      PILATES_API_ORIGIN: ${{ vars.PILATES_API_ORIGIN }}
       VITE_ENABLE_MSW: 'false'
     steps:
       - uses: actions/checkout@v4
@@ -30,13 +31,21 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: src_FE/package-lock.json
-      - name: Require HTTPS API origin
+      - name: Select HTTPS API origin
         shell: bash
         run: |
-          if [[ ! "$VITE_API_BASE_URL" =~ ^https://[^/]+$ ]]; then
-            echo 'Set PILATES_API_ORIGIN to the HTTPS API origin' >&2
+          if [[ '${{ inputs.release_public }}' == 'true' ]]; then
+            origin="$PILATES_API_ORIGIN"
+            variable='PILATES_API_ORIGIN'
+          else
+            origin="$PILATES_DEMO_API_ORIGIN"
+            variable='PILATES_DEMO_API_ORIGIN'
+          fi
+          if [[ ! "$origin" =~ ^https://[^/]+$ ]]; then
+            echo "Set $variable to the HTTPS API origin" >&2
             exit 1
           fi
+          echo "VITE_API_BASE_URL=$origin" >> "$GITHUB_ENV"
       - name: Verify and build
         working-directory: src_FE
         run: npm ci && npm run verify

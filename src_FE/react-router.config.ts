@@ -14,9 +14,10 @@ import { publicPrerenderPaths } from "./app/content/prerender-paths";
  *               TanStack Query (docs/DATA_OWNERSHIP.md).
  *
  * Because "/" IS pre-rendered, React Router emits the SPA fallback document at
- * `build/client/__spa-fallback.html` — NOT `index.html`. The hosting rewrite
- * MUST point at `__spa-fallback.html`. `npm run check:build-contract` enforces
- * this after every build.
+ * `build/client/__spa-fallback.html` — NOT `index.html`. On Cloudflare Pages,
+ * the hosting rewrite must use the extensionless `/__spa-fallback` target,
+ * which maps to this file without redirecting the requested URL. The build
+ * contract enforces this after every build.
  */
 export default {
   ssr: false,

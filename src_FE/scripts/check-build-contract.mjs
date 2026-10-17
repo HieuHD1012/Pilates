@@ -46,6 +46,12 @@ if (!(await exists(fallback))) {
     `Missing ${fallback}. The hosting rewrite depends on it; see docs/DEPLOYMENT.md.`,
   );
 }
+const redirects = await readFile(join(CLIENT, "_redirects"), "utf8").catch(() => "");
+if (/\/__spa-fallback\.html\s+200/.test(redirects)) {
+  failures.push(
+    "Cloudflare Pages SPA rewrites must target /__spa-fallback without .html; the .html target redirects deep links away from their requested URL.",
+  );
+}
 
 // 3. The rendering mode must still be ssr:false. React Router does emit a
 //    build/server bundle — it uses it at BUILD time to pre-render — but that

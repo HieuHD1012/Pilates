@@ -26,4 +26,5 @@ src_FE/.reference-shots/
 src_FE/visual-qa/
 src_FE/*clusters*.log
 .neon
+.wrangler/
 node_modules/

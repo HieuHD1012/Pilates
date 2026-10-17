@@ -1,11 +1,13 @@
 # Only runtime routes use the SPA document. Public SEO routes keep their
 # prerendered HTML; a catch-all rule would override those static pages.
-/dang-nhap /__spa-fallback.html 200
-/quen-mat-khau /__spa-fallback.html 200
-/dat-lai-mat-khau /__spa-fallback.html 200
-/hv /__spa-fallback.html 200
-/hv/* /__spa-fallback.html 200
-/hlv /__spa-fallback.html 200
-/hlv/* /__spa-fallback.html 200
-/studio /__spa-fallback.html 200
-/studio/* /__spa-fallback.html 200
+# Use the extensionless target: Pages redirects .html URLs to their canonical
+# extensionless URL even when the source rule says 200.
+/dang-nhap /__spa-fallback 200
+/quen-mat-khau /__spa-fallback 200
+/dat-lai-mat-khau /__spa-fallback 200
+/hv /__spa-fallback 200
+/hv/* /__spa-fallback 200
+/hlv /__spa-fallback 200
+/hlv/* /__spa-fallback 200
+/studio /__spa-fallback 200
+/studio/* /__spa-fallback 200
