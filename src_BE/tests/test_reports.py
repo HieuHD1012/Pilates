@@ -309,7 +309,9 @@ def test_overdue_unconfirmed_payments_become_visible(db: Session, admin) -> None
     assert report_queries.unconfirmed_payments(db, older_than_days=60) == []
 
 
-def test_dashboard_shows_no_money_and_links_every_number(db: Session, client, admin) -> None:
+def test_dashboard_shows_no_money_and_links_every_number(
+    db: Session, client, admin, monkeypatch
+) -> None:
     """Bảng tổng hợp mở suốt ngày ở quầy lễ tân, nơi khách nhìn được màn hình.
 
     Khẳng định vào **tập khoá của response**: một ô doanh thu lọt vào đây là
@@ -327,6 +329,11 @@ def test_dashboard_shows_no_money_and_links_every_number(db: Session, client, ad
         actor=actor_for(db, user),
     )
     db.commit()
+
+    # A class 90 minutes from now may be tomorrow near studio midnight.
+    clock = studio_clock(starts)
+    monkeypatch.setattr(report_queries, "now", clock)
+    monkeypatch.setattr("app.api.reports.now", clock)
 
     token = login(client, admin.email)["access_token"]
     body = client.get("/reports/dashboard", headers=auth_header(token)).json()
@@ -415,7 +422,9 @@ def test_class_report_number_matches_the_list_behind_its_own_link(
     assert len(detail.json()) == report["scheduled_sessions"]
 
 
-def test_every_dashboard_number_opens_a_list_of_the_same_size(db: Session, client, admin) -> None:
+def test_every_dashboard_number_opens_a_list_of_the_same_size(
+    db: Session, client, admin, monkeypatch
+) -> None:
     """Bốn con số, bốn đường dẫn, và mỗi đường dẫn phải trả về đúng ngần ấy dòng.
 
     Trỏ tới `/classes` hay `/bookings` trần thì đường dẫn trả về **toàn bộ**
@@ -447,6 +456,10 @@ def test_every_dashboard_number_opens_a_list_of_the_same_size(db: Session, clien
     )
     payment.recorded_at = now() - timedelta(days=30)
     db.commit()
+
+    clock = studio_clock(starts)
+    monkeypatch.setattr(report_queries, "now", clock)
+    monkeypatch.setattr("app.api.reports.now", clock)
 
     token = login(client, admin.email)["access_token"]
     dashboard = client.get("/reports/dashboard", headers=auth_header(token)).json()

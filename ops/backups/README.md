@@ -48,7 +48,13 @@ thành công. Không restore trực tiếp vào production trong lần thử.
 Postgres và Object Storage không có transaction chung: ảnh bị xóa đúng lúc
 backup có thể khiến manifest và dump lệch nhau. Chạy vào giờ vắng và xác minh
 đầy đủ trên branch khôi phục. Workflow kiểm tra rằng `pg_restore` đọc được
-archive và R2 lưu đúng kích thước, metadata SHA-256. **Chưa có lần khôi phục
-thử thật**; cần thực hiện trước khi nhập dữ liệu khách hàng. Kho `objects/` giữ các phiên bản cũ; chưa bật tự xóa
+archive và R2 lưu đúng kích thước, metadata SHA-256. Ngày 17/10/2026, bản
+`snapshots/20261017T155708Z.json` đã được tải từ R2, kiểm tra SHA-256 và khôi
+phục bằng PostgreSQL client 16 vào database `restore_drill_v2` trên Neon branch
+riêng `restore-drill-20261017`. Kiểm tra được 18 bảng, migration `0007` và một
+tài khoản ADMIN đang hoạt động với password hash. Snapshot production lúc đó có
+**0 ảnh và chưa có dữ liệu khách hàng**, nên lần thử này chưa kiểm chứng khôi
+phục ảnh hoặc đăng nhập qua API. Phải thử lại với ảnh và dữ liệu thực trước khi
+coi bản sao lưu đáp ứng đầy đủ nghiệp vụ. Kho `objects/` giữ các phiên bản cũ; chưa bật tự xóa
 để tránh mất ảnh mà một manifest cũ còn tham chiếu. Theo dõi dung lượng R2 và
 đặt chính sách retention sau khi đã xác nhận thời gian cần giữ bản sao lưu.
