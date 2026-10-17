@@ -13,9 +13,8 @@
 Ảnh được giải mã rồi mã hoá lại nên metadata rơi ra hết, và lưu dưới khoá
 ngẫu nhiên.
 
-Thứ tự ở đây quan trọng: kiểm ảnh → cập nhật hàng và **commit** → rồi mới
-ghi tệp mới và xoá tệp cũ. Xoá trước khi commit thì một lần rollback để lại
-`photo_key` trỏ vào tệp đã biến mất, và hồ sơ mất ảnh mà không ai biết.
+Ghi ảnh mới trước khi commit; nếu commit thất bại, xoá ảnh vừa ghi. Chỉ xoá
+ảnh cũ sau khi hàng đã trỏ sang ảnh mới.
 
 ## 2. Request
 

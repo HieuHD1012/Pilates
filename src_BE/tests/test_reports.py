@@ -46,6 +46,14 @@ def _period_now() -> tuple:
     return report_queries.period_bounds(today() - timedelta(days=7), today())
 
 
+def _next_month_reference() -> datetime:
+    """Keep booking fixtures in one complete future month regardless of today's date."""
+    next_month = now().astimezone(TIMEZONE).replace(
+        day=28, hour=9, minute=0, second=0, microsecond=0
+    ) + timedelta(days=4)
+    return next_month.replace(day=15)
+
+
 def _confirmed_payment(db: Session, admin, student, amount: str, method=PaymentMethod.CASH):
     package = give_package(db, student, admin.id, credits=10)
     payment = payments.record_payment(
@@ -194,9 +202,7 @@ def test_trainer_report_matches_the_trainer_detail_screen(db: Session, client, a
     student, user = make_student_account(db, "Học viên Của Hà")
     give_package(db, student, admin.id, credits=10)
 
-    reference = (
-        now().astimezone(TIMEZONE).replace(day=15, hour=9, minute=0, second=0, microsecond=0)
-    )
+    reference = _next_month_reference()
     for offset in (0, 1):
         class_session = make_session(
             db, trainer, admin.id, starts_at=reference + timedelta(days=offset)
@@ -510,9 +516,7 @@ def test_class_size_table_counts_held_seats_not_attendance(db: Session, client, 
         give_package(db, student, admin.id, credits=10)
         students.append((student, user))
 
-    reference = (
-        now().astimezone(TIMEZONE).replace(day=15, hour=9, minute=0, second=0, microsecond=0)
-    )
+    reference = _next_month_reference()
     one, three, empty = (
         make_session(db, trainer, admin.id, starts_at=reference + timedelta(days=offset))
         for offset in (0, 1, 2)
@@ -559,9 +563,7 @@ def test_class_size_table_keeps_classes_larger_than_five(db: Session, client, ad
         give_package(db, student, admin.id, credits=10)
         students.append((student, user))
 
-    reference = (
-        now().astimezone(TIMEZONE).replace(day=15, hour=9, minute=0, second=0, microsecond=0)
-    )
+    reference = _next_month_reference()
     crowded = make_session(db, trainer, admin.id, starts_at=reference, capacity=6)
     _book(db, crowded, students)
     db.commit()
