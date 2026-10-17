@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_use_tls: bool = False
     email_from: str = "no-reply@pilates.local"
+    resend_api_key: SecretStr | None = None
     password_reset_url_template: str = "http://localhost:5173/dat-lai-mat-khau?token={token}"
 
     # --- Tài khoản ADMIN khởi tạo ----------------------------------------

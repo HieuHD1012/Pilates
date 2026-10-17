@@ -23,6 +23,7 @@ branch đang checkout vào `.env.local` ở gốc repo; backend tự đọc file
 | `STORAGE_DIR` | chỉ lưu local | Thư mục ảnh khi không dùng Object Storage; phải nằm ngoài web root |
 | `SMTP_*` | ✅ | Gửi email đặt lại mật khẩu và kích hoạt tài khoản |
 | `EMAIL_FROM` | ✅ | Địa chỉ người gửi. Mặc định `no-reply@pilates.local` là **tên miền dành riêng**, MTA thật sẽ từ chối |
+| `RESEND_API_KEY` | Render Free | Nếu có, email đặt lại mật khẩu được gửi qua HTTPS thay vì SMTP. Cần xác minh domain gửi trước khi dùng thật |
 | `PASSWORD_RESET_URL_TEMPLATE` | ✅ | Liên kết trong email đặt lại mật khẩu. Mặc định trỏ `http://localhost:5173` — quên đặt thì email vẫn gửi đi bình thường và **mọi liên kết đều hỏng**, không có lỗi nào báo |
 | `UPLOAD_MAX_BYTES` | | Giới hạn dung lượng ảnh tiến trình, mặc định 8 MiB |
 | `TRUST_PROXY_HEADERS` | khi có proxy | `true` **chỉ khi** có reverse proxy đứng trước. Xem mục dưới |
@@ -36,6 +37,8 @@ branch đang checkout vào `.env.local` ở gốc repo; backend tự đọc file
   trùng giờ HLV.
 - Neon cung cấp PostgreSQL và Object Storage; frontend tĩnh và FastAPI vẫn cần
   nơi chạy/host riêng. Không đưa khóa `AWS_*` hay `DATABASE_URL` vào frontend.
+- Hướng triển khai free-first hiện dùng Render Free cho FastAPI, Cloudflare
+  Pages cho frontend và R2 cho backup; xem `ops/render/README.md`.
 - **HTTPS bắt buộc.** Access token đi trong header `Authorization`.
 - Múi giờ container không quan trọng (mọi mốc là `timestamptz`, quy tắc tính
   theo `Asia/Ho_Chi_Minh`), nhưng đặt `TZ=Asia/Ho_Chi_Minh` giúp log đọc được.

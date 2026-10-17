@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: j-pilate-api
+    runtime: docker
+    plan: free
+    region: singapore
+    autoDeployTrigger: off
+    dockerfilePath: ./src_BE/Dockerfile
+    dockerContext: ./src_BE
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: prod
+      - key: STORAGE_BACKEND
+        value: s3
+      - key: AWS_REGION
+        value: ap-southeast-1
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: AWS_ENDPOINT_URL_S3
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false

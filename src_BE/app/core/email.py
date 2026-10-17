@@ -1,14 +1,16 @@
 """Email giao dịch — hiện chỉ dùng cho luồng đặt lại mật khẩu.
 
 Token đặt lại **chỉ** đi ra ngoài qua kênh này, không bao giờ nằm trong
-response API. Cấu hình SMTP và bí mật đến từ biến môi trường.
+response API. Render Free dùng Resend qua HTTPS; môi trường khác có thể dùng SMTP.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import smtplib
 from email.message import EmailMessage
+from urllib.request import Request, urlopen
 
 from app.config import get_settings
 
@@ -17,6 +19,26 @@ logger = logging.getLogger(__name__)
 
 def send_email(to: str, subject: str, body: str) -> None:
     settings = get_settings()
+    if settings.resend_api_key:
+        request = Request(
+            "https://api.resend.com/emails",
+            data=json.dumps({
+                "from": settings.email_from,
+                "to": [to],
+                "subject": subject,
+                "text": body,
+            }).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {settings.resend_api_key.get_secret_value()}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urlopen(request, timeout=10) as response:
+            if not 200 <= response.status < 300:
+                raise OSError(f"Resend returned HTTP {response.status}")
+        return
+
     message = EmailMessage()
     message["From"] = settings.email_from
     message["To"] = to
