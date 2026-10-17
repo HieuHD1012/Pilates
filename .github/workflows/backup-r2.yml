@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   backup:
-    if: github.repository == 'HieuHD1012/Pilates' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.PILATES_BACKUP_ENABLED == 'true')
+    if: github.repository == 'HieuHD1012/Pilates' && (github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && vars.PILATES_BACKUP_ENABLED == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
