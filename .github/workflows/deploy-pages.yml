@@ -1,0 +1,65 @@
+name: Deploy frontend to Cloudflare Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_public:
+        description: Deploy production only after the studio content gate passes
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: j-pilate-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'HieuHD1012/Pilates' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_BASE_URL: ${{ vars.PILATES_API_ORIGIN }}
+      VITE_ENABLE_MSW: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src_FE/package-lock.json
+      - name: Require Cloud Run origin
+        shell: bash
+        run: |
+          if [[ ! "$VITE_API_BASE_URL" =~ ^https://[^/]+$ ]]; then
+            echo 'Set PILATES_API_ORIGIN to the HTTPS Cloud Run service origin' >&2
+            exit 1
+          fi
+      - name: Verify and build
+        working-directory: src_FE
+        run: npm ci && npm run verify
+      - name: Require real studio content for production
+        if: inputs.release_public == true
+        working-directory: src_FE
+        run: npm run check:release
+      - name: Give unknown paths a real 404 document
+        shell: bash
+        run: cp src_FE/build/client/__spa-fallback.html src_FE/build/client/404.html
+      - name: Deploy preview artifact
+        if: inputs.release_public != true
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 530c58515a986494f59545756787c4df
+          command: pages deploy src_FE/build/client --project-name=j-pilate --branch=demo
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy production artifact
+        if: inputs.release_public == true
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 530c58515a986494f59545756787c4df
+          command: pages deploy src_FE/build/client --project-name=j-pilate --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

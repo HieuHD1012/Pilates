@@ -19,6 +19,9 @@ import secrets
 from dataclasses import dataclass
 from pathlib import Path
 
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
 from PIL import Image, UnidentifiedImageError
 
 from app.config import get_settings
@@ -66,9 +69,34 @@ def _storage_root() -> Path:
 
 
 def _path_for(storage_key: str) -> Path:
-    if not _STORAGE_KEY_PATTERN.match(storage_key):
+    return _storage_root() / _object_key(storage_key)
+
+
+def _object_key(storage_key: str) -> str:
+    if not _STORAGE_KEY_PATTERN.fullmatch(storage_key):
         raise ValidationError("Khoá ảnh không hợp lệ.", code="INVALID_STORAGE_KEY")
-    return _storage_root() / f"{storage_key}{STORED_SUFFIX}"
+    return f"{storage_key}{STORED_SUFFIX}"
+
+
+def _s3_client():
+    settings = get_settings()
+    if not all(
+        (
+            settings.aws_endpoint_url_s3,
+            settings.aws_region,
+            settings.aws_access_key_id,
+            settings.aws_secret_access_key,
+        )
+    ):
+        raise RuntimeError("Neon Object Storage credentials are incomplete")
+    return boto3.client(
+        "s3",
+        endpoint_url=settings.aws_endpoint_url_s3,
+        region_name=settings.aws_region,
+        aws_access_key_id=settings.aws_access_key_id,
+        aws_secret_access_key=settings.aws_secret_access_key.get_secret_value(),
+        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+    )
 
 
 def prepare_image(raw: bytes, *, prefix: str) -> PreparedImage:
@@ -123,7 +151,16 @@ def prepare_image(raw: bytes, *, prefix: str) -> PreparedImage:
 
 
 def write_prepared(prepared: PreparedImage) -> StoredImage:
-    """Ghi ảnh đã kiểm xuống đĩa."""
+    """Ghi ảnh đã kiểm vào Neon Object Storage hoặc kho local khi phát triển."""
+    if get_settings().use_s3_storage:
+        _s3_client().put_object(
+            Bucket=get_settings().storage_bucket,
+            Key=_object_key(prepared.storage_key),
+            Body=prepared.data,
+            ContentType=prepared.content_type,
+            CacheControl="private, no-store",
+        )
+        return StoredImage(storage_key=prepared.storage_key)
     path = _path_for(prepared.storage_key)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(prepared.data)
@@ -136,6 +173,16 @@ def store_image(raw: bytes, *, prefix: str) -> StoredImage:
 
 
 def read_image(storage_key: str) -> bytes:
+    if get_settings().use_s3_storage:
+        try:
+            response = _s3_client().get_object(
+                Bucket=get_settings().storage_bucket, Key=_object_key(storage_key)
+            )
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") in {"404", "NoSuchKey"}:
+                raise ValidationError("Không tìm thấy tệp ảnh.", code="IMAGE_NOT_FOUND") from exc
+            raise
+        return response["Body"].read()
     path = _path_for(storage_key)
     if not path.is_file():
         raise ValidationError("Không tìm thấy tệp ảnh.", code="IMAGE_NOT_FOUND")
@@ -143,6 +190,11 @@ def read_image(storage_key: str) -> bytes:
 
 
 def delete_image(storage_key: str) -> None:
+    if get_settings().use_s3_storage:
+        _s3_client().delete_object(
+            Bucket=get_settings().storage_bucket, Key=_object_key(storage_key)
+        )
+        return
     _path_for(storage_key).unlink(missing_ok=True)
 
 

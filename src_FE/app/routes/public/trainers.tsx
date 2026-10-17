@@ -11,11 +11,11 @@ import type { Route } from "./+types/trainers";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Huấn luyện viên — J Pilates Nha Trang" },
+    { title: "Huấn luyện viên — J Pilates TP. Hồ Chí Minh" },
     {
       name: "description",
       content:
-        "Đội ngũ huấn luyện viên của J Pilates Nha Trang. Mỗi buổi tập do một huấn luyện viên phụ trách từ đầu đến cuối.",
+        "Đội ngũ huấn luyện viên của J Pilates TP. Hồ Chí Minh. Mỗi buổi tập do một huấn luyện viên phụ trách từ đầu đến cuối.",
     },
   ];
 }

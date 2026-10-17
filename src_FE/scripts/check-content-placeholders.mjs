@@ -15,7 +15,8 @@
  *       name is worse than a visible gap, because nothing signals it is wrong
  *
  *   PLANNING — fails `npm run check:release`, printed loudly on every run:
- *     · a required studio fact still missing with no owner and no date
+ *     · a required studio fact is still missing
+ *     · a missing fact has no owner and no date
  *
  * The split matters. An earlier version failed `verify` on untracked debt, which
  * meant the project's one mandatory gate could not go green until the studio sent
@@ -35,6 +36,7 @@ const releaseMode = process.argv.includes("--release");
 const failures = [];
 const untracked = [];
 const notes = [];
+const missingRequired = [];
 const today = new Date().toISOString().slice(0, 10);
 
 /* ── 1 + 2. Studio facts: owner, date, deadline ─────────────────────────── */
@@ -44,6 +46,7 @@ for (const item of CONTENT_DEBT) {
     notes.push(`${item.label} — chưa có, không chặn launch`);
     continue;
   }
+  missingRequired.push(item.label);
   if (!item.owner || !item.due) {
     untracked.push(
       `${item.label} (${item.key}) — chưa có người phụ trách và hạn.\n` +
@@ -93,6 +96,12 @@ const conceptPhotos = Object.values(PHOTOGRAPHY).filter((b) =>
 if (releaseMode && conceptPhotos.length > 0) {
   failures.push(
     `${conceptPhotos.length} ảnh minh họa tạm vẫn còn trong public/images/concept/ — thay bằng ảnh thật được studio duyệt trước khi release.`,
+  );
+}
+
+if (releaseMode && missingRequired.length > 0) {
+  failures.push(
+    `Thiếu dữ kiện studio bắt buộc: ${missingRequired.join(", ")}. Cần giá trị thật trước khi release.`,
   );
 }
 

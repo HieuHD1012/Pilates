@@ -5,12 +5,12 @@ from collections.abc import Iterator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.config import get_settings
+from app.config import get_settings, sqlalchemy_postgres_url
 
 _settings = get_settings()
 
 engine = create_engine(
-    str(_settings.database_url),
+    sqlalchemy_postgres_url(_settings.database_url),
     pool_pre_ping=True,
     # Mọi mốc thời gian là timestamptz; đặt phiên về UTC để driver luôn trả về
     # datetime aware và không có bước quy đổi ngầm nào theo giờ máy chủ.

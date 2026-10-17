@@ -20,11 +20,18 @@ import tempfile
 from collections.abc import Callable
 from datetime import datetime
 
-os.environ.setdefault(
-    "DATABASE_URL", "postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test"
+# Ignore the app's ambient Neon production connection and require a separately
+# named test URL for any remote test database. The fixture drops its schema.
+os.environ["DATABASE_URL"] = os.getenv(
+    "PILATES_TEST_DATABASE_URL",
+    "postgresql+psycopg://pilates:pilates@localhost:5434/pilates_test",
 )
-os.environ.setdefault("JWT_SECRET", "test-secret-0123456789")
-os.environ.setdefault("ENVIRONMENT", "test")
+os.environ["DATABASE_URL_UNPOOLED"] = os.getenv(
+    "PILATES_TEST_DATABASE_URL_UNPOOLED", os.environ["DATABASE_URL"]
+)
+os.environ["JWT_SECRET"] = "test-secret-0123456789"
+os.environ["ENVIRONMENT"] = "test"
+os.environ["STORAGE_BACKEND"] = os.getenv("PILATES_TEST_STORAGE_BACKEND", "local")
 # Ảnh test không được rơi vào cây mã nguồn: mỗi phiên test một thư mục tạm riêng.
 _STORAGE_DIR = tempfile.mkdtemp(prefix="pilates-test-storage-")
 # Gán thẳng, không `setdefault`: nếu máy dev/CI đã export STORAGE_DIR thì

@@ -10,11 +10,11 @@ import type { Route } from "./+types/about";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Studio — J Pilates Nha Trang" },
+    { title: "Studio — J Pilates TP. Hồ Chí Minh" },
     {
       name: "description",
       content:
-        "J Pilates Nha Trang: studio reformer với lớp nhóm nhỏ và lớp riêng, tập trung vào căn chỉnh và kiểm soát chuyển động.",
+        "J Pilates TP. Hồ Chí Minh: studio reformer với lớp nhóm nhỏ và lớp riêng, tập trung vào căn chỉnh và kiểm soát chuyển động.",
     },
   ];
 }

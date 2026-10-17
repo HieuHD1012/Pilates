@@ -8,16 +8,19 @@ soát dữ liệu sau mỗi lần đổi.
 
 ## 1. Biến môi trường
 
-Không có bí mật nào nằm trong mã nguồn hay trong repo. `.env` bị gitignore và
-chỉ tồn tại trên máy dev.
+Không có bí mật nào nằm trong mã nguồn hay trong repo. `.env` và `.env.local`
+đều bị gitignore. `neon deploy` kéo kết nối và thông tin Object Storage của
+branch đang checkout vào `.env.local` ở gốc repo; backend tự đọc file này.
 
 | Biến | Bắt buộc | Ghi chú |
 |---|---|---|
-| `DATABASE_URL` | ✅ | `postgresql+psycopg://user:pass@host:5432/db` |
+| `DATABASE_URL` | ✅ | URL pooled cho request; URL `postgresql://` của Neon được backend dùng với psycopg 3 |
+| `DATABASE_URL_UNPOOLED` | Neon | URL direct cho Alembic; không chạy migration qua pooler |
 | `JWT_SECRET` | ✅ | Ít nhất 32 byte ngẫu nhiên. Ứng dụng **từ chối khởi động** ở PROD nếu còn giá trị mặc định |
 | `ENVIRONMENT` | ✅ | Đúng một trong `dev` / `test` / `prod`. **`prod`, không phải `production`** — giá trị khác làm ứng dụng chết lúc khởi động. Ở `prod` các phép kiểm cấu hình được bật |
 | `CORS_ORIGINS` | ✅ | Allow-list tường minh, **không dùng `*`**. Định dạng là **mảng JSON**, kể cả khi chỉ có một origin: `CORS_ORIGINS='["https://studio.example.com"]'`. Chuỗi trần làm ứng dụng chết lúc khởi động với lỗi parse khó đọc |
-| `STORAGE_DIR` | ✅ | Thư mục ảnh tiến trình. Phải nằm ngoài cây mã nguồn và **không được web server phục vụ trực tiếp** |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, `AWS_REGION` | Neon Object Storage | Do `neon deploy` cấp cho branch; khi có endpoint, backend lưu ảnh vào bucket riêng tư `assets` |
+| `STORAGE_DIR` | chỉ lưu local | Thư mục ảnh khi không dùng Object Storage; phải nằm ngoài web root |
 | `SMTP_*` | ✅ | Gửi email đặt lại mật khẩu và kích hoạt tài khoản |
 | `EMAIL_FROM` | ✅ | Địa chỉ người gửi. Mặc định `no-reply@pilates.local` là **tên miền dành riêng**, MTA thật sẽ từ chối |
 | `PASSWORD_RESET_URL_TEMPLATE` | ✅ | Liên kết trong email đặt lại mật khẩu. Mặc định trỏ `http://localhost:5173` — quên đặt thì email vẫn gửi đi bình thường và **mọi liên kết đều hỏng**, không có lỗi nào báo |
@@ -31,6 +34,8 @@ chỉ tồn tại trên máy dev.
   lưu là đường phục hồi duy nhất cho một sự cố dữ liệu diện rộng.
 - Extension `btree_gist` (migration đầu tiên tự tạo) — cần cho ràng buộc chống
   trùng giờ HLV.
+- Neon cung cấp PostgreSQL và Object Storage; frontend tĩnh và FastAPI vẫn cần
+  nơi chạy/host riêng. Không đưa khóa `AWS_*` hay `DATABASE_URL` vào frontend.
 - **HTTPS bắt buộc.** Access token đi trong header `Authorization`.
 - Múi giờ container không quan trọng (mọi mốc là `timestamptz`, quy tắc tính
   theo `Asia/Ho_Chi_Minh`), nhưng đặt `TZ=Asia/Ho_Chi_Minh` giúp log đọc được.

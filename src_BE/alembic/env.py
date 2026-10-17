@@ -3,14 +3,18 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from app.config import get_settings
+from app.config import get_settings, sqlalchemy_postgres_url
 from app.models import Base
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", str(get_settings().database_url))
+settings = get_settings()
+config.set_main_option(
+    "sqlalchemy.url",
+    sqlalchemy_postgres_url(settings.database_url_unpooled or settings.database_url),
+)
 target_metadata = Base.metadata
 
 

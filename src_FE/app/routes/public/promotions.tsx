@@ -13,11 +13,11 @@ import type { Route } from "./+types/promotions";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Khuyến mãi & thông báo — J Pilates Nha Trang" },
+    { title: "Khuyến mãi & thông báo — J Pilates TP. Hồ Chí Minh" },
     {
       name: "description",
       content:
-        "Ưu đãi, thay đổi lịch tập và thông báo từ J Pilates Nha Trang, kèm ngày công bố.",
+        "Ưu đãi, thay đổi lịch tập và thông báo từ J Pilates TP. Hồ Chí Minh, kèm ngày công bố.",
     },
   ];
 }

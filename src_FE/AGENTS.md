@@ -1,4 +1,4 @@
-# AGENTS.md — J Pilates Nha Trang
+# AGENTS.md — J Pilates TP. Hồ Chí Minh
 
 This file outranks every other instruction in this repository except an explicit
 human decision. If a prompt, a habit or a tempting library conflicts with it,
@@ -53,7 +53,7 @@ this file wins.
 17. **No unstable framework experiments** (RSC, canary APIs) in this repository.
 18. **No new architecture without an ADR** in `docs/adr/`.
 19. **Never invent business facts.** Prices, addresses, phone numbers, trainer
-    biographies, testimonials, reviews and metrics for the Nha Trang studio are
+    biographies, testimonials, reviews and metrics for the TP. Hồ Chí Minh studio are
     unknown. Use `app/content/studio.ts` + `<PendingFact>` and record the gap in
     `docs/OPEN_QUESTIONS.md`.
 20. **`<PendingFact>` and `<Absent>` are not interchangeable.** PendingFact means

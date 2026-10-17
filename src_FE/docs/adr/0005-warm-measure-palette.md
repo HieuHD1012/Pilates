@@ -6,7 +6,7 @@ decision (item 3) of ADR 0004; the rest of 0004 stands.
 ## Context
 
 The owner approved the current warm beige/copper/brown palette and public
-composition. These decisions are retained for J Pilates Nha Trang.
+composition. These decisions are retained for J Pilates TP. Hồ Chí Minh.
 
 ## Decision
 

@@ -13,11 +13,11 @@ import type { Route } from "./+types/services";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Hình thức tập — J Pilates Nha Trang" },
+    { title: "Hình thức tập — J Pilates TP. Hồ Chí Minh" },
     {
       name: "description",
       content:
-        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại J Pilates Nha Trang.",
+        "Lớp nhóm nhỏ (Group) và lớp riêng (Private) trên máy reformer tại J Pilates TP. Hồ Chí Minh.",
     },
   ];
 }

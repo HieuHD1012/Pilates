@@ -8,6 +8,8 @@ tắc nội dung cấm.
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, File, Query, Response, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -31,6 +33,7 @@ from app.models.user import User
 from app.schemas.people import TrainerCreate, TrainerResponse, TrainerUpdate
 
 router = APIRouter(prefix="/trainers", tags=["trainers"])
+logger = logging.getLogger(__name__)
 
 
 def _get_or_404(db: Session, trainer_id: int, actor: Actor) -> Trainer:
@@ -187,20 +190,30 @@ def upload_trainer_photo(
     Ảnh được giải mã rồi mã hoá lại nên metadata rơi ra hết, và lưu dưới khoá
     ngẫu nhiên.
 
-    Thứ tự ở đây quan trọng: kiểm ảnh → cập nhật hàng và **commit** → rồi mới
-    ghi tệp mới và xoá tệp cũ. Xoá trước khi commit thì một lần rollback để lại
-    `photo_key` trỏ vào tệp đã biến mất, và hồ sơ mất ảnh mà không ai biết.
+    Ghi ảnh mới trước khi commit; nếu commit thất bại, xoá ảnh vừa ghi. Chỉ xoá
+    ảnh cũ sau khi hàng đã trỏ sang ảnh mới.
     """
     trainer = _get_or_404(db, trainer_id, actor)
 
     prepared = prepare_image(read_upload(file), prefix="trainer")
     previous = trainer.photo_key
     trainer.photo_key = prepared.storage_key
-    db.commit()
-
-    write_prepared(prepared)
+    db.flush()
+    try:
+        write_prepared(prepared)
+        db.commit()
+    except Exception:
+        db.rollback()
+        try:
+            delete_image(prepared.storage_key)
+        except Exception:
+            logger.exception("Could not clean up a failed trainer photo upload")
+        raise
     if previous:
-        delete_image(previous)
+        try:
+            delete_image(previous)
+        except Exception:
+            logger.exception("Could not delete the previous trainer photo")
     return trainer
 
 

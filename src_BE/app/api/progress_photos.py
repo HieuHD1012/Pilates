@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
@@ -41,6 +42,7 @@ from app.models.people import ProgressPhoto, Student
 from app.schemas.people import ProgressPhotoResponse
 
 router = APIRouter(prefix="/students/{student_id}/progress-photos", tags=["progress-photos"])
+logger = logging.getLogger(__name__)
 
 
 def _assert_student_exists(db: Session, student_id: int) -> None:
@@ -111,7 +113,16 @@ def upload_progress_photo(
     )
     db.add(photo)
     db.flush()
-    write_prepared(prepared)
+    try:
+        write_prepared(prepared)
+        db.commit()
+    except Exception:
+        db.rollback()
+        try:
+            delete_image(prepared.storage_key)
+        except Exception:
+            logger.exception("Could not clean up a failed progress photo upload")
+        raise
     return photo
 
 

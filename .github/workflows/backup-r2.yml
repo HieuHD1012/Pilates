@@ -1,0 +1,37 @@
+name: Back up Neon to Cloudflare R2
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *' # 03:00 Asia/Ho_Chi_Minh
+
+permissions:
+  contents: read
+
+concurrency:
+  group: j-pilate-r2-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: github.repository == 'HieuHD1012/Pilates' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.PILATES_BACKUP_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEON_DATABASE_URL_UNPOOLED: ${{ secrets.NEON_DATABASE_URL_UNPOOLED }}
+      NEON_AWS_ENDPOINT_URL_S3: ${{ secrets.NEON_AWS_ENDPOINT_URL_S3 }}
+      NEON_AWS_ACCESS_KEY_ID: ${{ secrets.NEON_AWS_ACCESS_KEY_ID }}
+      NEON_AWS_SECRET_ACCESS_KEY: ${{ secrets.NEON_AWS_SECRET_ACCESS_KEY }}
+      R2_BUCKET: j-pilate-backups
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install locked Python dependencies
+        working-directory: src_BE
+        run: uv sync --frozen --no-dev
+      - name: Create and verify R2 snapshot
+        run: src_BE/.venv/bin/python ops/backups/backup_to_r2.py

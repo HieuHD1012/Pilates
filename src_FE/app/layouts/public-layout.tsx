@@ -36,7 +36,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
     <Link
       to="/"
       className="group flex items-center gap-3"
-      aria-label="J Pilates Nha Trang — trang chủ"
+      aria-label="J Pilates TP. Hồ Chí Minh — trang chủ"
     >
       <span
         className={cn(
@@ -59,7 +59,7 @@ function Wordmark({ tone = "ink" }: { tone?: "ink" | "sand" }) {
           tone === "ink" ? "text-ink-2" : "text-sand/70",
         )}
       >
-        Nha Trang
+        TP. Hồ Chí Minh
       </span>
     </Link>
   );
@@ -188,7 +188,7 @@ function PublicFooter() {
           <div className="md:col-span-4">
             <Wordmark tone="sand" />
             <p className="measure text-sand/70 mt-5 text-sm">
-              Studio reformer tại Nha Trang. Lớp nhóm nhỏ và lớp riêng.
+              Studio reformer tại TP. Hồ Chí Minh. Lớp nhóm nhỏ và lớp riêng.
             </p>
             <Link
               to="/dat-tu-van"
@@ -248,7 +248,7 @@ function PublicFooter() {
         </div>
 
         <div className="border-rule-dark text-sand/55 mt-12 flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t pt-6 text-xs">
-          <p>© {new Date().getFullYear()} J Pilates Nha Trang</p>
+          <p>© {new Date().getFullYear()} J Pilates TP. Hồ Chí Minh</p>
           {/* One disclosure for the whole site instead of a caption under every
               frame. Remove with the last file in public/images/concept/. */}
           <p>

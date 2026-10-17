@@ -10,13 +10,18 @@ thật hay không thì phải cắm vào backend thật.
 ```bash
 docker compose up -d db mailpit          # PostgreSQL cổng 5433, Mailpit 8025
 cd src_BE
-uv sync && uv run alembic upgrade head
+uv sync
+# Nếu root repo đã có .env.local do `neon deploy` tạo, ép URL local để không
+# chạy migration hoặc seed vào Neon production qua cấu hình mặc định.
+export DATABASE_URL=postgresql+psycopg://pilates:pilates@localhost:5433/pilates
+export DATABASE_URL_UNPOOLED="$DATABASE_URL"
+uv run alembic upgrade head
 
 cat > .env <<'ENV'
 ENVIRONMENT=dev
 JWT_SECRET=dev-only-change-me
 CORS_ORIGINS=["http://localhost:5177"]
-SEED_ADMIN_EMAIL=admin@soulpilates.vn
+SEED_ADMIN_EMAIL=admin@jpilate.com
 SEED_ADMIN_PASSWORD=<mật khẩu ít nhất 10 ký tự>
 PASSWORD_RESET_URL_TEMPLATE=http://localhost:5177/dat-lai-mat-khau?token={token}
 ENV
@@ -32,7 +37,7 @@ không gắn header vào response của ngoại lệ chưa bắt.
 
 Miền `.local` **không dùng được cho email**: `email-validator` từ chối nó, nên
 tài khoản tạo bằng miền đó đăng nhập được nhưng `GET /accounts` sẽ nổ khi
-serialize. Dùng một miền thật (`soulpilates.vn`, `example.com`).
+serialize. Dùng một miền thật (`jpilate.com`, `example.com`).
 
 ## Dựng dữ liệu để bấm thử
 
@@ -44,16 +49,16 @@ Script đi qua HTTP chứ không ghi thẳng vào bảng, nên dữ liệu nó d
 những trạng thái mà API thật sự tạo được. Nó từ chối chạy trên `prod` và từ
 chối chạy lần hai.
 
-Nó dựng: 3 HLV, 6 học viên, 4 loại gói, 5 gói đã bán (một khoản thu cố ý để
-chờ xác nhận), 31 buổi lớp trải hai tuần, 3 thông báo, 3 khách quan tâm, và 8
+Nó dựng: 3 HLV demo kèm ảnh minh họa, 6 học viên, 4 loại gói, 5 gói đã bán (một khoản thu cố ý để
+chờ xác nhận), khoảng 30 buổi lớp trải hai tuần, 3 thông báo, 3 khách quan tâm, và 8
 lượt đăng ký do chính học viên đặt.
 
 | Vai                    | Đăng nhập                              | Mật khẩu                         |
 | ---------------------- | -------------------------------------- | -------------------------------- |
-| ADMIN                  | `admin@soulpilates.vn`                 | `SEED_ADMIN_PASSWORD`            |
-| STAFF                  | `letan@soulpilates.vn`                 | `SoulPilates2026!`               |
-| TRAINER                | `hlv@soulpilates.vn`                   | `SoulPilates2026!`               |
-| STUDENT                | `mai@example.com`, `nhung@example.com` | `SoulPilates2026!`               |
+| ADMIN                  | `admin@jpilate.com`                    | `SEED_ADMIN_PASSWORD`            |
+| STAFF                  | `letan@example.com`                   | `JPilatesDemo2026!`              |
+| TRAINER                | `hlv@example.com`                     | `JPilatesDemo2026!`              |
+| STUDENT                | `mai@example.com`, `nhung@example.com` | `JPilatesDemo2026!`              |
 | STUDENT chưa kích hoạt | `chi@example.com`                      | chưa có — đặt qua liên kết email |
 
 Backend xác thực bằng **email**, không phải số điện thoại — xem

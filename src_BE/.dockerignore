@@ -1,0 +1,11 @@
+**/.pytest_cache
+**/.ruff_cache
+**/__pycache__
+**/*.pyc
+.env
+.env.*
+.venv
+tests
+var
+gha-creds-*.json
+*.log

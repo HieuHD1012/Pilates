@@ -1,0 +1,157 @@
+name: Deploy API to Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_api:
+        description: Allow unauthenticated browser requests after frontend and email are ready
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: j-pilate-cloud-run
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'HieuHD1012/Pilates' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: j-pilate
+      REGION: asia-southeast1
+      IMAGE: asia-southeast1-docker.pkg.dev/j-pilate/j-pilate-api/backend:${{ github.sha }}
+      RUNTIME_SA: cloud-run-api@j-pilate.iam.gserviceaccount.com
+      FRONTEND_ORIGIN: ${{ vars.PILATES_FRONTEND_ORIGIN }}
+      SMTP_HOST: ${{ vars.PILATES_SMTP_HOST }}
+      SMTP_PORT: ${{ vars.PILATES_SMTP_PORT }}
+      SMTP_USER: ${{ vars.PILATES_SMTP_USER }}
+      SMTP_USE_TLS: ${{ vars.PILATES_SMTP_USE_TLS }}
+      EMAIL_FROM: ${{ vars.PILATES_EMAIL_FROM }}
+      PUBLIC_API: ${{ inputs.public_api }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deployment settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$PUBLIC_API" == "true" ]]; then
+            for name in FRONTEND_ORIGIN SMTP_HOST SMTP_PORT SMTP_USER EMAIL_FROM; do
+              if [[ -z "${!name}" ]]; then
+                echo "Missing $name for public API" >&2
+                exit 1
+              fi
+            done
+          fi
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from urllib.parse import urlsplit
+
+          origin = os.environ["FRONTEND_ORIGIN"].rstrip("/")
+          if origin:
+              parsed = urlsplit(origin)
+              if parsed.scheme != "https" or not parsed.hostname or parsed.path or parsed.query:
+                  raise SystemExit("FRONTEND_ORIGIN must be a bare HTTPS origin")
+          values = {
+              "ENVIRONMENT": "prod",
+              "CORS_ORIGINS": json.dumps([origin] if origin else []),
+              "STORAGE_BACKEND": "s3",
+              "STORAGE_BUCKET": "assets",
+              "AWS_REGION": "ap-southeast-1",
+              "TRUST_PROXY_HEADERS": "true",
+              "TRUSTED_PROXY_HOPS": "2",
+              "TZ": "Asia/Ho_Chi_Minh",
+          }
+          if origin:
+              values["PASSWORD_RESET_URL_TEMPLATE"] = (
+                  origin + "/dat-lai-mat-khau?token={token}"
+              )
+          if os.environ["SMTP_HOST"]:
+              values.update(
+                  SMTP_HOST=os.environ["SMTP_HOST"],
+                  SMTP_PORT=os.environ["SMTP_PORT"] or "587",
+                  SMTP_USER=os.environ["SMTP_USER"],
+                  SMTP_USE_TLS=os.environ["SMTP_USE_TLS"] or "true",
+                  EMAIL_FROM=os.environ["EMAIL_FROM"],
+              )
+          Path(os.environ["RUNNER_TEMP"], "cloud-run-env.yaml").write_text(
+              json.dumps(values), encoding="utf-8"
+          )
+          PY
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: j-pilate
+          workload_identity_provider: projects/449252724960/locations/global/workloadIdentityPools/github/providers/pilates
+          service_account: github-deploy@j-pilate.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build and publish backend image
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          docker build --pull -t "$IMAGE" src_BE
+          docker push "$IMAGE"
+
+      - name: Apply database migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud run jobs deploy j-pilate-migrate \
+            --project="$PROJECT_ID" --region="$REGION" --image="$IMAGE" \
+            --service-account="$RUNTIME_SA" --cpu=1 --memory=512Mi \
+            --tasks=1 --parallelism=1 --max-retries=0 --task-timeout=600s \
+            --command=/app/.venv/bin/alembic --args=upgrade,head \
+            --set-env-vars=ENVIRONMENT=prod \
+            --set-secrets=DATABASE_URL_UNPOOLED=j-pilate-db-url-unpooled:latest,JWT_SECRET=j-pilate-jwt-secret:latest \
+            --quiet
+          gcloud run jobs execute j-pilate-migrate \
+            --project="$PROJECT_ID" --region="$REGION" --wait --quiet
+
+      - name: Deploy API
+        shell: bash
+        run: |
+          set -euo pipefail
+          secrets="DATABASE_URL=j-pilate-db-url:latest,JWT_SECRET=j-pilate-jwt-secret:latest,AWS_ENDPOINT_URL_S3=j-pilate-neon-s3-endpoint:latest,AWS_ACCESS_KEY_ID=j-pilate-neon-s3-key:latest,AWS_SECRET_ACCESS_KEY=j-pilate-neon-s3-secret:latest"
+          access_flag=--no-allow-unauthenticated
+          if [[ "$PUBLIC_API" == "true" ]]; then
+            secrets+=",SMTP_PASSWORD=j-pilate-smtp-password:latest"
+            access_flag=--allow-unauthenticated
+          fi
+          gcloud run deploy j-pilate-api \
+            --project="$PROJECT_ID" --region="$REGION" --image="$IMAGE" \
+            --service-account="$RUNTIME_SA" --port=8080 \
+            --cpu=1 --memory=512Mi --cpu-throttling \
+            --min-instances=0 --max-instances=1 --concurrency=20 --timeout=60s \
+            --ingress=all "$access_flag" \
+            --env-vars-file="$RUNNER_TEMP/cloud-run-env.yaml" \
+            --set-secrets="$secrets" --quiet
+
+      - name: Reconcile credit ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud run jobs deploy j-pilate-reconcile \
+            --project="$PROJECT_ID" --region="$REGION" --image="$IMAGE" \
+            --service-account="$RUNTIME_SA" --cpu=1 --memory=512Mi \
+            --tasks=1 --parallelism=1 --max-retries=0 --task-timeout=600s \
+            --command=/app/.venv/bin/python --args=-m,scripts.reconcile_ledger \
+            --set-env-vars=ENVIRONMENT=prod \
+            --set-secrets=DATABASE_URL=j-pilate-db-url:latest,JWT_SECRET=j-pilate-jwt-secret:latest \
+            --quiet
+          gcloud run jobs execute j-pilate-reconcile \
+            --project="$PROJECT_ID" --region="$REGION" --wait --quiet
+
+      - name: Show deployed URL
+        shell: bash
+        run: |
+          url="$(gcloud run services describe j-pilate-api --project="$PROJECT_ID" --region="$REGION" --format='value(status.url)')"
+          echo "Cloud Run API: $url" >> "$GITHUB_STEP_SUMMARY"

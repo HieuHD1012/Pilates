@@ -14,7 +14,7 @@ import type { Route } from "./+types/reset-password";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Đặt lại mật khẩu — J Pilates Nha Trang" },
+    { title: "Đặt lại mật khẩu — J Pilates TP. Hồ Chí Minh" },
     { name: "robots", content: "noindex" },
   ];
 }

@@ -3,18 +3,30 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, model_validator
+from pydantic import Field, PostgresDsn, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #: Giá trị chỉ dùng được ở DEV/test. Không bao giờ được chạy ở PROD.
 DEV_JWT_SECRET = "dev-only-change-me"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def sqlalchemy_postgres_url(url: PostgresDsn) -> str:
+    """Use the installed psycopg 3 driver for Neon and local PostgreSQL."""
+    value = str(url)
+    if value.startswith("postgresql://"):
+        return value.replace("postgresql://", "postgresql+psycopg://", 1)
+    return value
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=(".env", str(PROJECT_ROOT / ".env.local")),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     environment: Literal["dev", "test", "prod"] = "dev"
@@ -22,6 +34,7 @@ class Settings(BaseSettings):
     database_url: PostgresDsn = Field(
         default="postgresql+psycopg://pilates:pilates@localhost:5433/pilates"
     )
+    database_url_unpooled: PostgresDsn | None = None
 
     # --- Xác thực -------------------------------------------------------
     jwt_secret: str = Field(default=DEV_JWT_SECRET, min_length=8)
@@ -64,7 +77,19 @@ class Settings(BaseSettings):
 
     # --- Ảnh và upload (F03) ---------------------------------------------
     storage_dir: str = "var/storage"
+    storage_backend: Literal["local", "s3"] | None = None
+    storage_bucket: str = "assets"
+    aws_endpoint_url_s3: str | None = None
+    aws_region: str | None = None
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: SecretStr | None = None
     upload_max_bytes: int = 8 * 1024 * 1024
+
+    @property
+    def use_s3_storage(self) -> bool:
+        return self.storage_backend == "s3" or (
+            self.storage_backend is None and self.aws_endpoint_url_s3 is not None
+        )
 
     # --- CORS (F00) -------------------------------------------------------
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
@@ -73,6 +98,9 @@ class Settings(BaseSettings):
     #: `X-Forwarded-For` bị bỏ qua hoàn toàn — tin header lúc chưa có proxy là
     #: cho phép bất kỳ ai tự khai IP và vòng qua cổng chống brute-force.
     trust_proxy_headers: bool = False
+    # Google Application Load Balancer appends client IP and load-balancer IP.
+    # Set to 2 on Cloud Run so client-supplied X-Forwarded-For entries are ignored.
+    trusted_proxy_hops: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
     def _reject_dev_secrets_in_prod(self) -> Settings:

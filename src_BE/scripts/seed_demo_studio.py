@@ -2,10 +2,10 @@
 
     docker compose up -d db mailpit
     uv run alembic upgrade head
-    SEED_ADMIN_EMAIL=admin@soulpilates.vn SEED_ADMIN_PASSWORD=... \
+    SEED_ADMIN_EMAIL=admin@jpilate.com SEED_ADMIN_PASSWORD=... \
         uv run python -m scripts.seed_admin
     uv run uvicorn app.main:app --port 8099
-    SEED_ADMIN_EMAIL=admin@soulpilates.vn SEED_ADMIN_PASSWORD=... \
+    SEED_ADMIN_EMAIL=admin@jpilate.com SEED_ADMIN_PASSWORD=... \
         uv run python -m scripts.seed_demo_studio --base-url http://127.0.0.1:8099
 
 Script **gọi qua HTTP**, không đụng thẳng vào ORM như các script còn lại trong
@@ -15,8 +15,8 @@ lớp, bán gói và ghi thu là hai bước. Dữ liệu nặn thẳng vào b�
 những trạng thái mà API không bao giờ tạo ra, và màn hình đầu tiên đọc phải
 chúng là màn hình đầu tiên nói dối.
 
-Hai chốt an toàn: từ chối chạy khi `ENVIRONMENT=prod`, và từ chối chạy khi
-studio đã có học viên — seed lần hai sẽ nhân đôi gói và sổ buổi.
+Các chốt an toàn: từ chối chạy khi `ENVIRONMENT=prod`, trên Neon nếu không có
+`--allow-remote-demo`, và khi studio đã có học viên hoặc HLV.
 
 Mọi người trong đây đều có tên bắt đầu bằng "DEMO" ở ghi chú hồ sơ, và email
 dùng `example.com`, để không ai nhầm với người thật.
@@ -26,11 +26,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import secrets
 import sys
 import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.config import get_settings
 
@@ -38,25 +41,31 @@ from app.config import get_settings
 STUDIO_TZ = timezone(timedelta(hours=7))
 
 #: Mật khẩu chung cho mọi tài khoản demo. Chỉ dùng ở máy dev.
-DEMO_PASSWORD = "SoulPilates2026!"
+DEMO_PASSWORD = "JPilatesDemo2026!"
+TRAINER_PHOTOS = (
+    "thu-ha.png",
+    "minh-anh.png",
+    "khanh-vy.png",
+)
+PHOTO_DIR = Path(__file__).resolve().parents[2] / "ops" / "demo-assets" / "trainers"
 
 TRAINERS = [
     (
-        "Nguyễn Thu Hà",
+        "DEMO Nguyễn Thu Hà",
         "0905123001",
-        "Mười năm dạy Pilates thiết bị, chuyên phục hồi cột sống.",
+        "Hồ sơ minh họa cho lớp Reformer và bài tập chú trọng căn chỉnh.",
         "Reformer, Phục hồi cột sống",
     ),
     (
-        "Trần Minh Anh",
+        "DEMO Trần Minh Anh",
         "0905123002",
-        "Huấn luyện viên Mat Pilates, làm việc nhiều với người mới bắt đầu.",
+        "Hồ sơ minh họa cho lớp Mat và người mới bắt đầu.",
         "Mat, Người mới bắt đầu",
     ),
     (
-        "Lê Khánh Vy",
+        "DEMO Lê Khánh Vy",
         "0905123003",
-        "Chuyên Pilates trước và sau sinh.",
+        "Hồ sơ minh họa cho buổi tập cá nhân theo mục tiêu vận động.",
         "Tiền sản, Hậu sản",
     ),
 ]
@@ -123,6 +132,25 @@ class Api:
             "access_token"
         ]
 
+    def upload_photo(self, trainer_id: int, path: Path) -> None:
+        """Exercise the same multipart endpoint used by staff in the app."""
+        boundary = f"pilates-demo-{secrets.token_hex(12)}"
+        body = (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="file"; filename="{path.name}"\r\n'
+            "Content-Type: image/png\r\n\r\n"
+        ).encode() + path.read_bytes() + f"\r\n--{boundary}--\r\n".encode()
+        endpoint = f"/trainers/{trainer_id}/photo"
+        request = urllib.request.Request(self.base_url + endpoint, data=body, method="POST")
+        request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+        if self.token:
+            request.add_header("Authorization", f"Bearer {self.token}")
+        try:
+            with urllib.request.urlopen(request) as response:
+                response.read()
+        except urllib.error.HTTPError as error:
+            raise ApiError(f"POST {endpoint} → {error.code} {error.read().decode()}") from error
+
 
 def studio_instant(day: date, hour: int, minute: int = 0) -> str:
     return datetime(day.year, day.month, day.day, hour, minute, tzinfo=STUDIO_TZ).isoformat()
@@ -143,12 +171,14 @@ def seed(api: Api, today: date) -> dict[str, Any]:
         )["id"]
         for name, phone, bio, specialties in TRAINERS
     ]
+    for trainer_id, photo_name in zip(trainer_ids, TRAINER_PHOTOS, strict=True):
+        api.upload_photo(trainer_id, PHOTO_DIR / photo_name)
 
     staff = api(
         "POST",
         "/accounts",
         {
-            "email": "letan@soulpilates.vn",
+            "email": "letan@example.com",
             "full_name": "Phạm Lễ Tân",
             "phone": "0905123010",
             "role": "STAFF",
@@ -159,7 +189,7 @@ def seed(api: Api, today: date) -> dict[str, Any]:
         "POST",
         "/accounts",
         {
-            "email": "hlv@soulpilates.vn",
+            "email": "hlv@example.com",
             "full_name": TRAINERS[0][0],
             "phone": TRAINERS[0][1],
             "role": "TRAINER",
@@ -350,14 +380,31 @@ def seed(api: Api, today: date) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
+    parser.add_argument(
+        "--allow-remote-demo",
+        action="store_true",
+        help="Allow seeding a deliberately isolated Neon demo branch, never production",
+    )
     args = parser.parse_args()
 
     settings = get_settings()
     if settings.environment == "prod":
         print("Không dựng dữ liệu demo trên PROD.", file=sys.stderr)
         return 1
+    db_host = urlsplit(str(settings.database_url)).hostname or ""
+    if db_host.endswith(".neon.tech") and not args.allow_remote_demo:
+        print(
+            "DATABASE_URL đang trỏ Neon. Chỉ chạy trên branch demo riêng với "
+            "--allow-remote-demo; không seed branch production.",
+            file=sys.stderr,
+        )
+        return 1
     if not settings.seed_admin_email or not settings.seed_admin_password:
         print("Cần SEED_ADMIN_EMAIL và SEED_ADMIN_PASSWORD để đăng nhập ADMIN.", file=sys.stderr)
+        return 1
+    missing_photos = [name for name in TRAINER_PHOTOS if not (PHOTO_DIR / name).is_file()]
+    if missing_photos:
+        print(f"Thiếu ảnh HLV demo: {', '.join(missing_photos)}", file=sys.stderr)
         return 1
 
     api = Api(args.base_url)
@@ -367,9 +414,9 @@ def main() -> int:
         print(f"Không đăng nhập được ADMIN: {error}", file=sys.stderr)
         return 1
 
-    if api("GET", "/students?limit=1"):
+    if api("GET", "/students?limit=1") or api("GET", "/trainers?limit=1"):
         print(
-            "Studio đã có học viên — dừng lại. Chạy lần hai sẽ nhân đôi gói và sổ buổi.",
+            "Studio đã có học viên hoặc HLV — dừng lại để tránh seed trùng.",
             file=sys.stderr,
         )
         return 1
@@ -384,8 +431,8 @@ def main() -> int:
     print(f"Đã dựng studio demo: {json.dumps(summary, ensure_ascii=False)}")
     print(f"\nMật khẩu chung: {DEMO_PASSWORD}")
     print(f"  ADMIN   {settings.seed_admin_email} (mật khẩu SEED_ADMIN_PASSWORD)")
-    print("  STAFF   letan@soulpilates.vn")
-    print("  TRAINER hlv@soulpilates.vn")
+    print("  STAFF   letan@example.com")
+    print("  TRAINER hlv@example.com")
     print(f"  STUDENT {STUDENTS[0][2]} · {STUDENTS[1][2]}")
     print(f"  chưa kích hoạt: {STUDENTS[3][2]} — đặt mật khẩu qua liên kết email")
     print(

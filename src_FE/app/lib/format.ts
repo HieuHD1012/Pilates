@@ -1,6 +1,6 @@
 /**
  * Vietnamese-first formatting. Every user-facing number, date and time in this
- * product goes through here so that a studio in Nha Trang reads one consistent
+ * product goes through here so that a studio in TP. Hồ Chí Minh reads one consistent
  * convention — and so nothing accidentally renders in en-US.
  */
 

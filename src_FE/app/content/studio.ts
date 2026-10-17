@@ -4,7 +4,7 @@
  * Anything the studio has not confirmed is `null`, and the UI renders an
  * honest "đang cập nhật" state for it. Nothing in this file may be invented:
  * the address, phone number, opening hours, prices, trainer names and class
- * capacity of the Nha Trang branch are unknown to this repository. The Đà Nẵng
+ * capacity of the TP. Hồ Chí Minh branch are unknown to this repository. The Đà Nẵng
  * site's values are a different branch and must not be copied across.
  *
  * `npm run check:content` lists every unresolved fact.
@@ -21,13 +21,13 @@ export interface StudioFacts {
   whatsappUrl: string | null;
   instagramUrl: string | null;
   email: string | null;
-  /** e.g. "Thứ hai – Thứ bảy · 07:30 – 19:30". Unknown for Nha Trang. */
+  /** e.g. "Thứ hai – Thứ bảy · 07:30 – 19:30". Unknown for TP. Hồ Chí Minh. */
   openingHours: string | null;
 }
 
 export const STUDIO: StudioFacts = {
   name: "J Pilates",
-  city: "Nha Trang",
+  city: "TP. Hồ Chí Minh",
   address: null,
   mapUrl: null,
   phone: null,
@@ -36,13 +36,13 @@ export const STUDIO: StudioFacts = {
   instagramUrl: null,
   email: null,
   // PROVISIONAL (2026-10-03): modelled on Soul Pilates Đà Nẵng's published
-  // hours at the owner's request, pending the Nha Trang owner's confirmation.
+  // hours at the owner's request, pending the TP. Hồ Chí Minh owner's confirmation.
   openingHours: "Thứ hai – Thứ bảy · 07:30 – 19:30",
 };
 
 /**
  * PROVISIONAL POLICIES (2026-10-03). The owner asked for the public site to
- * follow Soul Pilates Đà Nẵng's policies until the Nha Trang studio confirms
+ * follow Soul Pilates Đà Nẵng's policies until the TP. Hồ Chí Minh studio confirms
  * its own ("sai gì chủ sửa sau"). Every value here is a product claim the owner
  * still has to sign off — see docs/OPEN_QUESTIONS.md. Location facts (address,
  * phone, map) are deliberately NOT copied: another city's address is not a

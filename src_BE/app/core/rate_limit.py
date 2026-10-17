@@ -148,8 +148,13 @@ def client_ip(request: Request) -> str:
     Hàm này là **biên tin cậy**, nên chỉ được có đúng một bản: hai bản sao sẽ
     trôi lệch nhau và một trong hai sẽ là bản sai.
     """
-    if get_settings().trust_proxy_headers:
+    settings = get_settings()
+    if settings.trust_proxy_headers:
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
-            return forwarded.split(",")[0].strip()
+            addresses = [part.strip() for part in forwarded.split(",")]
+            if len(addresses) >= settings.trusted_proxy_hops:
+                # Read the address appended by the trusted proxy, never a
+                # client-provided prefix. Cloud Run uses two trailing hops.
+                return addresses[-settings.trusted_proxy_hops]
     return request.client.host if request.client else "unknown"

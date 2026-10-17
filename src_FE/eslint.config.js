@@ -12,7 +12,7 @@ export default tseslint.config(
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",
-      "visual-qa/live/**",
+      "visual-qa/**",
       "coverage/**",
       "public/mockServiceWorker.js",
     ],

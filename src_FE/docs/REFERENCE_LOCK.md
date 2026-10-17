@@ -2,7 +2,7 @@
 
 ## Accepted identity and layout
 
-The owner-confirmed product is **J Pilates Nha Trang**. Preserve the approved
+The owner-confirmed product is **J Pilates TP. Hồ Chí Minh**. Preserve the approved
 public layout and warm beige/copper/brown palette. Use `J Pilates` in copy and
 metadata, `J PILATES` in the wordmark and `J` in monogram slots.
 

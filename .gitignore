@@ -25,3 +25,5 @@ src_FE/test-results/
 src_FE/.reference-shots/
 src_FE/visual-qa/
 src_FE/*clusters*.log
+.neon
+node_modules/

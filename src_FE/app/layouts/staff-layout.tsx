@@ -195,7 +195,7 @@ function StudioMark({ subtitle = false }: { subtitle?: boolean }) {
       <span className="flex flex-col">
         <span className="wordmark text-ink text-base">J PILATES</span>
         {subtitle ? (
-          <span className="text-ink-2 mt-1 text-xs">Nha Trang · Vận hành</span>
+          <span className="text-ink-2 mt-1 text-xs">TP. Hồ Chí Minh · Vận hành</span>
         ) : null}
       </span>
     </div>
