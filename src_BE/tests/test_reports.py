@@ -739,7 +739,10 @@ def test_dashboard_and_detail_keep_marked_registration(
     trainer = make_trainer(db, user=trainer_user)
     student, user = make_student_account(db)
     package = give_package(db, student, admin.id)
-    session = make_session(db, trainer, admin.id, starts_at=now() + timedelta(days=1))
+    # Keep the class and its end time on the same studio day even when CI runs
+    # near midnight; the dashboard's "today" window is the assertion target.
+    next_morning = datetime.combine(today() + timedelta(days=1), time(9), tzinfo=TIMEZONE)
+    session = make_session(db, trainer, admin.id, starts_at=next_morning)
     booking = booking_service.book(
         db, class_session_id=session.id, student_id=student.id, actor=actor_for(db, user)
     ).booking
