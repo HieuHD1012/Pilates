@@ -41,7 +41,7 @@ toàn bộ kho mỗi ngày.
 Tạo một Neon branch/database **mới** để thử. Tải manifest, dump và các object
 liệt kê trong manifest từ R2; kiểm tra SHA-256 từng file. Chạy
 `pg_restore --no-owner --no-acl --dbname=<URL_MOI> database.dump` bằng PostgreSQL
-client 18, sao chép các object về bucket `assets` trên branch mới, rồi kiểm tra
+client 16 (cùng major với Neon hiện tại), sao chép các object về bucket `assets` trên branch mới, rồi kiểm tra
 đăng nhập, một ảnh HLV và một ảnh tiến độ. Chỉ chuyển traffic sau khi kiểm tra
 thành công. Không restore trực tiếp vào production trong lần thử.
 

@@ -20,7 +20,8 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-POSTGRES_IMAGE = "postgres:18-alpine"
+POSTGRES_MAJOR = 16  # Match Neon's server major; older servers reject PG18 restore SQL.
+POSTGRES_IMAGE = f"postgres:{POSTGRES_MAJOR}-alpine"
 SOURCE_BUCKET = "assets"
 MAX_OBJECT_BYTES = 8 * 1024 * 1024
 
@@ -59,6 +60,21 @@ def dump_database(path: Path, database_url: str) -> None:
 
     docker_env = os.environ.copy()
     docker_env["PG_DUMP_URL"] = database_url
+    version_check = subprocess.run(
+        ["docker", "run", "--rm", "-e", "PG_DUMP_URL", POSTGRES_IMAGE,
+         "sh", "-c", 'exec psql "$PG_DUMP_URL" -Atqc "SHOW server_version_num"'],
+        env=docker_env, capture_output=True, check=False,
+    )
+    if version_check.returncode:
+        raise RuntimeError("Could not read Neon PostgreSQL server version")
+    try:
+        server_major = int(version_check.stdout.strip()) // 10000
+    except ValueError as error:
+        raise RuntimeError("Neon returned an invalid PostgreSQL server version") from error
+    if server_major != POSTGRES_MAJOR:
+        raise RuntimeError(
+            f"Backup client PostgreSQL {POSTGRES_MAJOR} does not match Neon server {server_major}"
+        )
     command = [
         "docker", "run", "--rm", "-e", "PG_DUMP_URL", POSTGRES_IMAGE,
         "sh", "-c", 'exec pg_dump --format=custom --no-owner --no-acl "$PG_DUMP_URL"',
