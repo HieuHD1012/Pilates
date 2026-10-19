@@ -31,15 +31,27 @@ const SIZE: Record<Size, string> = {
   lg: "min-h-12 px-6 py-3 text-base gap-2.5",
 };
 
+const CONTENT_GAP: Record<Size, string> = {
+  sm: "gap-1.5",
+  md: "gap-2",
+  lg: "gap-2.5",
+};
+
+const LOADER_SIZE: Record<Size, string> = {
+  sm: "size-3.5",
+  md: "size-4",
+  lg: "size-4",
+};
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   /** Render as the single child element (e.g. a router <Link>). */
   asChild?: boolean;
   /**
-   * Shows a pending affordance and blocks interaction. The original label stays
-   * in the layout as an invisible minimum width, so short labels do not collapse
-   * while the request is in flight.
+   * Shows a pending affordance and blocks interaction. Both content states are
+   * always laid out in the same grid cell, so entering pending never moves the
+   * button or its neighbours.
    */
   pending?: boolean;
   pendingLabel?: string;
@@ -83,36 +95,38 @@ export function Button({
       {asChild ? (
         children
       ) : (
-        <>
-          {pending ? (
+        <span className="grid min-w-0">
+          <span
+            aria-hidden={pending || undefined}
+            className={cn(
+              "col-start-1 row-start-1 inline-flex items-center justify-center whitespace-nowrap transition-opacity duration-150",
+              CONTENT_GAP[size],
+              pending ? "invisible opacity-0" : "visible opacity-100",
+            )}
+          >
+            {icon}
+            <span>{children}</span>
+          </span>
+          <span
+            aria-hidden={!pending || undefined}
+            aria-live={pending ? "polite" : undefined}
+            aria-atomic={pending || undefined}
+            className={cn(
+              "col-start-1 row-start-1 inline-flex items-center justify-center whitespace-nowrap transition-opacity duration-150",
+              CONTENT_GAP[size],
+              pending ? "visible opacity-100" : "invisible opacity-0",
+            )}
+          >
             <LoaderCircle
               aria-hidden="true"
-              className="size-4 shrink-0 animate-spin motion-reduce:animate-none"
-            />
-          ) : (
-            icon
-          )}
-          <span className="grid min-w-0">
-            <span
-              aria-hidden={pending || undefined}
               className={cn(
-                "col-start-1 row-start-1 inline-flex items-center justify-center",
-                pending && "invisible",
+                "shrink-0 animate-spin motion-reduce:animate-none",
+                LOADER_SIZE[size],
               )}
-            >
-              {children}
-            </span>
-            {pending ? (
-              <span
-                aria-live="polite"
-                aria-atomic="true"
-                className="col-start-1 row-start-1 inline-flex items-center justify-center"
-              >
-                {pendingLabel}
-              </span>
-            ) : null}
+            />
+            <span>{pendingLabel}</span>
           </span>
-        </>
+        </span>
       )}
     </Component>
   );
