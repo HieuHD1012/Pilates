@@ -90,7 +90,13 @@ export default function ForgotPassword() {
               </p>
             ) : null}
 
-            <Button type="submit" size="lg" fullWidth pending={mutation.isPending}>
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              pending={mutation.isPending}
+              pendingLabel="Đang gửi hướng dẫn…"
+            >
               Gửi hướng dẫn đặt lại
             </Button>
           </form>

@@ -193,7 +193,13 @@ export default function ResetPassword() {
               </p>
             ) : null}
 
-            <Button type="submit" size="lg" fullWidth pending={mutation.isPending}>
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              pending={mutation.isPending}
+              pendingLabel="Đang lưu mật khẩu…"
+            >
               Lưu mật khẩu mới
             </Button>
           </form>

@@ -275,11 +275,19 @@ function UserBlock({
         type="button"
         onClick={onLogout}
         disabled={pending}
-        aria-label="Đăng xuất"
-        title="Đăng xuất"
+        aria-label={pending ? "Đang đăng xuất" : "Đăng xuất"}
+        aria-busy={pending || undefined}
+        title={pending ? "Đang đăng xuất" : "Đăng xuất"}
         className="text-ink-2 hover:bg-paper hover:text-ink grid size-11 place-items-center rounded-md disabled:cursor-not-allowed lg:size-9"
       >
-        <LogOut className="size-4" aria-hidden="true" />
+        {pending ? (
+          <RefreshCw
+            className="size-4 animate-spin motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+        ) : (
+          <LogOut className="size-4" aria-hidden="true" />
+        )}
       </button>
     </div>
   );

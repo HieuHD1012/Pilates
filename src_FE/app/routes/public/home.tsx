@@ -468,6 +468,7 @@ function Closing() {
                 size="lg"
                 fullWidth
                 pending={isSubmitting || mutation.isPending}
+                pendingLabel="Đang gửi thông tin…"
               >
                 Gửi thông tin
               </Button>

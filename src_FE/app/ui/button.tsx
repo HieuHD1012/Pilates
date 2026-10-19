@@ -1,4 +1,5 @@
 import { Slot } from "@radix-ui/react-slot";
+import { LoaderCircle } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "~/lib/cn";
@@ -36,8 +37,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Render as the single child element (e.g. a router <Link>). */
   asChild?: boolean;
   /**
-   * Shows a pending affordance and blocks interaction. The label stays in
-   * place — a button that swaps its text mid-mutation loses the user's place.
+   * Shows a pending affordance and blocks interaction. The original label stays
+   * in the layout as an invisible minimum width, so short labels do not collapse
+   * while the request is in flight.
    */
   pending?: boolean;
   pendingLabel?: string;
@@ -50,7 +52,7 @@ export function Button({
   size = "md",
   asChild = false,
   pending = false,
-  pendingLabel = "Đang xử lý",
+  pendingLabel = "Đang xử lý…",
   icon,
   fullWidth = false,
   className,
@@ -70,11 +72,7 @@ export function Button({
         "inline-flex max-w-full shrink-0 items-center justify-center rounded-sm text-center font-medium",
         "ease-measure transition-colors duration-200",
         "disabled:cursor-not-allowed",
-        // The pending mark is a hairline that fills, not a spinner.
         "relative overflow-hidden",
-        "data-[pending]:after:absolute data-[pending]:after:inset-x-0 data-[pending]:after:bottom-0",
-        "data-[pending]:after:h-px data-[pending]:after:bg-current data-[pending]:after:opacity-40",
-        "data-[pending]:after:animate-[rule-draw_900ms_var(--ease-measure)_infinite]",
         VARIANT[variant],
         SIZE[size],
         fullWidth && "w-full",
@@ -86,9 +84,34 @@ export function Button({
         children
       ) : (
         <>
-          {icon}
-          <span>{children}</span>
-          {pending ? <span className="sr-only">{pendingLabel}</span> : null}
+          {pending ? (
+            <LoaderCircle
+              aria-hidden="true"
+              className="size-4 shrink-0 animate-spin motion-reduce:animate-none"
+            />
+          ) : (
+            icon
+          )}
+          <span className="grid min-w-0">
+            <span
+              aria-hidden={pending || undefined}
+              className={cn(
+                "col-start-1 row-start-1 inline-flex items-center justify-center",
+                pending && "invisible",
+              )}
+            >
+              {children}
+            </span>
+            {pending ? (
+              <span
+                aria-live="polite"
+                aria-atomic="true"
+                className="col-start-1 row-start-1 inline-flex items-center justify-center"
+              >
+                {pendingLabel}
+              </span>
+            ) : null}
+          </span>
         </>
       )}
     </Component>

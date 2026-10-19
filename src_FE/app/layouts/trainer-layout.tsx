@@ -5,6 +5,7 @@ import { RoleGate } from "~/features/auth/role-gate";
 import { useLogout } from "~/features/auth/use-logout";
 import { useSession } from "~/features/auth/use-session";
 import { cn } from "~/lib/cn";
+import { Button } from "~/ui/button";
 
 /**
  * Schedule-first. A trainer opens this between classes to answer one question:
@@ -46,14 +47,15 @@ export default function TrainerLayout() {
               </ul>
             </nav>
             {user ? (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => logout.mutate()}
-                disabled={logout.isPending}
-                className="text-ink-2 hover:text-ink active:text-ink min-h-11 text-sm disabled:cursor-not-allowed"
+                pending={logout.isPending}
+                pendingLabel="Đang đăng xuất…"
               >
                 Đăng xuất
-              </button>
+              </Button>
             ) : null}
           </div>
         </header>

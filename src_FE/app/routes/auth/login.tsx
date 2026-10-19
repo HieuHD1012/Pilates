@@ -161,7 +161,13 @@ export default function Login() {
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" fullWidth pending={mutation.isPending}>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          pending={mutation.isPending}
+          pendingLabel="Đang đăng nhập…"
+        >
           Đăng nhập
         </Button>
       </form>

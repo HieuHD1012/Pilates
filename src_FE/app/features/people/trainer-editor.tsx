@@ -202,7 +202,13 @@ function TrainerForm({
       {admin && accounts.isError ? (
         <p role="alert">
           Chưa tải được tài khoản HLV.{" "}
-          <Button variant="ghost" size="sm" onClick={() => void accounts.refetch()}>
+          <Button
+            variant="ghost"
+            size="sm"
+            pending={accounts.isFetching}
+            pendingLabel="Đang thử lại…"
+            onClick={() => void accounts.refetch()}
+          >
             Thử lại
           </Button>
         </p>
